@@ -1,0 +1,37 @@
+import { Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import HomePage from './pages/LandingPage/homepage';
+import AboutPage from './pages/LandingPage/about_us';
+import ContactPage from './pages/LandingPage/contact_us';
+import RestaurantsPage from './pages/LandingPage/Restaurants';
+import Login from './pages/Authentication/login';
+import Register from './pages/Authentication/register';
+import ForgotPassword from './pages/Authentication/forgot_password';
+
+import AdminDashboard from './pages/Dashboards/Admin/admin_dashboard';
+
+// Create a client
+const queryClient = new QueryClient();
+
+function App() {
+  console.log('App component is rendering');
+  return (
+    <QueryClientProvider client={queryClient}>
+      <div className="app">
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/restaurants" element={<RestaurantsPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Routes>
+      </div>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
