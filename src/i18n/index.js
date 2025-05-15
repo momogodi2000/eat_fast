@@ -77,7 +77,48 @@ const resources = {
           deliveryFee: 'delivery fee',
           minOrder: 'Min. order',
           tryAdjusting: 'Try adjusting your search or filters',
-          noResults: 'No restaurants found matching your criteria'
+          noResults: 'No restaurants found matching your criteria',
+          category: 'Category',
+          zone: 'Zone',
+          district: 'District',
+          priceRange: 'Price Range',
+          maxDeliveryTime: 'Max Delivery Time',
+          maxDeliveryFee: 'Max Delivery Fee',
+          menu: 'Menu',
+          reviews: 'Reviews',
+          reply: 'Reply',
+          like: 'Like',
+          dislike: 'Dislike',
+
+          // Restaurant specific translations
+          restaurantDescriptions: {
+            foufouDelice: 'A traditional Cameroonian restaurant offering authentic dishes prepared with fresh local ingredients.',
+            mamiNyanga: 'Specializing in traditional dishes from western Cameroon, Mami Nyanga offers a unique culinary experience.',
+            saveursAfrique: 'A fusion of African flavors offering dishes from different countries across the continent in a warm atmosphere.',
+            kwaboRestaurant: 'Kwabo means "welcome" in Pidgin, and that\'s exactly how you\'ll feel in this friendly restaurant.'
+          },
+
+          dishDescriptions: {
+            ndole: 'Traditional Cameroonian dish made with bitter leaves and shrimp',
+            pouletDG: 'Fried chicken with ripe plantains and vegetables',
+            eru: 'Traditional dish made with eru leaves and cassava paste',
+            poissonBraise: 'Fresh grilled fish served with grilled plantains',
+            thieboudienne: 'Fish rice dish typical of Senegalese cuisine',
+            mafe: 'Stew made with peanut sauce and beef',
+            jollofRice: 'Spicy rice typical of West Africa',
+            achuSoup: 'Traditional Cameroonian yellow soup with taro paste'
+          },
+
+          comments: {
+            comment1: 'The DG chicken was delicious, fast delivery!',
+            comment2: 'Excellent traditional cuisine, but delivery was a bit long',
+            comment3: 'The Thieboudienne was authentic and tasty!',
+            comment4: 'Generous portions and excellent value for money',
+            reply1: 'Thank you for your positive feedback!'
+          }
+        
+      
+
         },
         cities: {
           all: 'All Cities'
@@ -337,26 +378,66 @@ const resources = {
         noResults: 'Aucun restaurant ne correspond à vos filtres',
         resetFilters: 'Réinitialiser tous les filtres',
         title: 'Découvrez les Meilleurs Restaurants',
-        subtitle: 'Trouvez et commandez dans les meilleurs restaurants de votre ville',
-        refineSearch: 'Affiner votre recherche',
-        allCategories: 'Toutes les catégories',
-        allZones: 'Toutes les zones',
-        allDistricts: 'Tous les quartiers',
-        allPrices: 'Tous les prix',
-        anyTime: 'N\'importe quand',
-        anyFee: 'Frais quelconques',
-        featured: 'En vedette',
-        loading: 'Chargement des restaurants...',
-        noComments: 'Pas encore de commentaires',
-        writeReview: 'Écrivez votre avis...',
-        writeReply: 'Écrivez votre réponse...',
-        send: 'Envoyer',
-        leaveReview: 'Laisser un avis',
-        popularDishes: 'Plats populaires',
-        deliveryFee: 'frais de livraison',
-        minOrder: 'Commande min.',
-        tryAdjusting: 'Essayez d\'ajuster votre recherche ou vos filtres',
-        noResults: 'Aucun restaurant trouvé correspondant à vos critères',
+    subtitle: 'Trouvez et commandez dans les meilleurs restaurants de votre ville',
+    refineSearch: 'Affiner votre recherche',
+    allCategories: 'Toutes les catégories',
+    allZones: 'Toutes les zones',
+    allDistricts: 'Tous les quartiers',
+    allPrices: 'Tous les prix',
+    anyTime: 'N\'importe quand',
+    anyFee: 'Frais quelconques',
+    featured: 'En vedette',
+    loading: 'Chargement des restaurants...',
+    noComments: 'Pas encore de commentaires',
+    writeReview: 'Écrivez votre avis...',
+    writeReply: 'Écrivez votre réponse...',
+    send: 'Envoyer',
+    leaveReview: 'Laisser un avis',
+    popularDishes: 'Plats populaires',
+    deliveryFee: 'frais de livraison',
+    minOrder: 'Commande min.',
+    tryAdjusting: 'Essayez d\'ajuster votre recherche ou vos filtres',
+    noResults: 'Aucun restaurant trouvé correspondant à vos critères',
+    resetFilters: 'Réinitialiser tous les filtres',
+    category: 'Catégorie',
+    zone: 'Zone',
+    district: 'Quartier',
+    priceRange: 'Gamme de prix',
+    maxDeliveryTime: 'Temps de livraison max',
+    maxDeliveryFee: 'Frais de livraison max',
+    menu: 'Menu',
+    reviews: 'Avis',
+    reply: 'Répondre',
+    like: 'J\'aime',
+    dislike: 'Je n\'aime pas',
+
+    // Restaurant specific translations
+    restaurantDescriptions: {
+      foufouDelice: 'Un restaurant traditionnel camerounais offrant des plats authentiques préparés avec des ingrédients locaux frais.',
+      mamiNyanga: 'Spécialisé dans les plats traditionnels de l\'ouest Cameroun, Mami Nyanga offre une expérience culinaire unique.',
+      saveursAfrique: 'Une fusion de saveurs africaines proposant des plats de différents pays du continent dans une ambiance chaleureuse.',
+      kwaboRestaurant: 'Kwabo signifie "bienvenue" en pidgin, et c\'est exactement ce que vous ressentirez dans ce restaurant convivial.'
+    },
+
+    dishDescriptions: {
+      ndole: 'Plat traditionnel camerounais à base de feuilles amères et crevettes',
+      pouletDG: 'Poulet frit avec plantains mûrs et légumes',
+      eru: 'Plat traditionnel à base de feuilles d\'eru et pâte de manioc',
+      poissonBraise: 'Poisson frais braisé servi avec des plantains grillés',
+      thieboudienne: 'Plat de riz au poisson typique de la cuisine sénégalaise',
+      mafe: 'Ragoût à base de sauce arachide et viande de bœuf',
+      jollofRice: 'Riz épicé typique de l\'Afrique de l\'Ouest',
+      achuSoup: 'Soupe jaune traditionnelle camerounaise avec pâte de taro'
+    },
+
+    comments: {
+      comment1: 'Le poulet DG était délicieux, livraison rapide!',
+      comment2: 'Excellente cuisine traditionnelle, mais livraison un peu longue',
+      comment3: 'Le Thieboudienne était authentique et savoureux!',
+      comment4: 'Portions généreuses et excellent rapport qualité-prix',
+      reply1: 'Merci pour votre retour positif!'
+    },
+
         cities: {
           all: 'Toutes les Villes'
         },

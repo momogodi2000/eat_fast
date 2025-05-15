@@ -10,10 +10,10 @@ import food2 from '../../assets/images/DG.jpeg';
 import food3 from '../../assets/images/couscous.jpeg';
 import food4 from '../../assets/images/mbongo.jpeg';
 import food5 from '../../assets/images/ndoles.jpeg';
-import resto1 from '../../assets/images/eru.jpeg';
-import resto2 from '../../assets/images/eru.jpeg';
-import resto3 from '../../assets/images/eru.jpeg';
-import resto4 from '../../assets/images/eru.jpeg';
+import resto1 from '../../assets/images/resto6.jpeg';
+import resto2 from '../../assets/images/resto2.jpeg';
+import resto3 from '../../assets/images/resto3.jpeg';
+import resto4 from '../../assets/images/resto4.jpeg';
 
 const RestaurantsPage = () => {
   const { t, i18n } = useTranslation();

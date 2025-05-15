@@ -136,7 +136,7 @@ const ContactPage = () => {
               </button>
               
               <Link 
-                to="/login" 
+                to="/test" 
                 className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
               >
                 <User size={20} />
@@ -209,7 +209,7 @@ const ContactPage = () => {
                 </button>
                 <div className="flex items-center space-x-4">
                   <Link 
-                    to="/login" 
+                    to="/test" 
                     className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                   >
                     <User size={20} />
