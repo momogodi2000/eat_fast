@@ -56,7 +56,28 @@ const resources = {
           african: 'African',
           traditional: 'Traditional',
           fastFood: 'Fast Food',
-          vegetarian: 'Vegetarian'
+          vegetarian: 'Vegetarian',
+          title: 'Discover the Best Restaurants',
+          subtitle: 'Find and order from top restaurants in your city',
+          refineSearch: 'Refine Your Search',
+          allCategories: 'All Categories',
+          allZones: 'All Zones',
+          allDistricts: 'All Districts',
+          allPrices: 'All Prices',
+          anyTime: 'Any Time',
+          anyFee: 'Any Fee',
+          featured: 'Featured',
+          loading: 'Loading restaurants...',
+          noComments: 'No comments yet',
+          writeReview: 'Write your review...',
+          writeReply: 'Write your reply...',
+          send: 'Send',
+          leaveReview: 'Leave a Review',
+          popularDishes: 'Popular Dishes',
+          deliveryFee: 'delivery fee',
+          minOrder: 'Min. order',
+          tryAdjusting: 'Try adjusting your search or filters',
+          noResults: 'No restaurants found matching your criteria'
         },
         cities: {
           all: 'All Cities'
@@ -96,6 +117,7 @@ const resources = {
         dislike: 'Dislike',
         menu: 'Menu',
         popularDishes: 'Popular Dishes'
+        
       },
       howItWorks: {
         description: 'Simple and easy way to order your food',
@@ -314,14 +336,27 @@ const resources = {
         found: 'restaurants trouvés',
         noResults: 'Aucun restaurant ne correspond à vos filtres',
         resetFilters: 'Réinitialiser tous les filtres',
-        categories: {
-          title: 'Catégories',
-          all: 'Toutes',
-          african: 'Africain',
-          traditional: 'Traditionnel',
-          fastFood: 'Fast Food',
-          vegetarian: 'Végétarien'
-        },
+        title: 'Découvrez les Meilleurs Restaurants',
+        subtitle: 'Trouvez et commandez dans les meilleurs restaurants de votre ville',
+        refineSearch: 'Affiner votre recherche',
+        allCategories: 'Toutes les catégories',
+        allZones: 'Toutes les zones',
+        allDistricts: 'Tous les quartiers',
+        allPrices: 'Tous les prix',
+        anyTime: 'N\'importe quand',
+        anyFee: 'Frais quelconques',
+        featured: 'En vedette',
+        loading: 'Chargement des restaurants...',
+        noComments: 'Pas encore de commentaires',
+        writeReview: 'Écrivez votre avis...',
+        writeReply: 'Écrivez votre réponse...',
+        send: 'Envoyer',
+        leaveReview: 'Laisser un avis',
+        popularDishes: 'Plats populaires',
+        deliveryFee: 'frais de livraison',
+        minOrder: 'Commande min.',
+        tryAdjusting: 'Essayez d\'ajuster votre recherche ou vos filtres',
+        noResults: 'Aucun restaurant trouvé correspondant à vos critères',
         cities: {
           all: 'Toutes les Villes'
         },
