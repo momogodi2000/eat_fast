@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, MapPin, Clock, Star, ThumbsUp, ThumbsDown, Send, Filter, X, Sun, Moon, ArrowLeft } from 'lucide-react';
+import { ChevronDown, ChevronUp, MapPin, Clock, Star, ThumbsUp, ThumbsDown, Send, Filter, X, Sun, Moon, ArrowLeft, Menu, User, ShoppingBag, Languages } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 // Importation des images (simulations)
 import food1 from '../../assets/images/eru.jpeg';
@@ -15,7 +16,7 @@ import resto3 from '../../assets/images/eru.jpeg';
 import resto4 from '../../assets/images/eru.jpeg';
 
 const RestaurantsPage = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -30,6 +31,7 @@ const RestaurantsPage = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   // Check system preference for dark mode
   useEffect(() => {
@@ -61,6 +63,15 @@ const RestaurantsPage = () => {
     document.documentElement.classList.toggle('dark');
   };
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const changeLanguage = (lng) => {
+    i18n.changeLanguage(lng);
+    localStorage.setItem('selectedLanguage', lng);
+  };
+
   // Simule le chargement des données depuis une API
   useEffect(() => {
     setTimeout(() => {
@@ -80,6 +91,7 @@ const RestaurantsPage = () => {
           zone: "Centre",
           priceRange: "$$",
           featured: true,
+          description: "Un restaurant traditionnel camerounais offrant des plats authentiques préparés avec des ingrédients locaux frais.",
           dishes: [
             { id: 101, name: "Ndolé aux crevettes", price: 3500, image: food1, description: "Plat traditionnel camerounais à base de feuilles amères et crevettes" },
             { id: 102, name: "Poulet DG", price: 4500, image: food2, description: "Poulet frit avec plantains mûrs et légumes" }
@@ -113,6 +125,7 @@ const RestaurantsPage = () => {
           zone: "Nord",
           priceRange: "$$$",
           featured: false,
+          description: "Spécialisé dans les plats traditionnels de l'ouest Cameroun, Mami Nyanga offre une expérience culinaire unique.",
           dishes: [
             { id: 103, name: "Eru et Water fufu", price: 3000, image: food3, description: "Plat traditionnel à base de feuilles d'eru et pâte de manioc" },
             { id: 104, name: "Poisson braisé et plantains", price: 5000, image: food4, description: "Poisson frais braisé servi avec des plantains grillés" }
@@ -144,6 +157,7 @@ const RestaurantsPage = () => {
           zone: "Sud",
           priceRange: "$$",
           featured: false,
+          description: "Une fusion de saveurs africaines proposant des plats de différents pays du continent dans une ambiance chaleureuse.",
           dishes: [
             { id: 105, name: "Thieboudienne", price: 4000, image: food5, description: "Plat de riz au poisson typique de la cuisine sénégalaise" },
             { id: 106, name: "Mafé", price: 3800, image: food1, description: "Ragoût à base de sauce arachide et viande de bœuf" }
@@ -175,6 +189,7 @@ const RestaurantsPage = () => {
           zone: "Ouest",
           priceRange: "$",
           featured: true,
+          description: "Kwabo signifie 'bienvenue' en pidgin, et c'est exactement ce que vous ressentirez dans ce restaurant convivial.",
           dishes: [
             { id: 107, name: "Jollof Rice", price: 3200, image: food2, description: "Riz épicé typique de l'Afrique de l'Ouest" },
             { id: 108, name: "Achu Soup", price: 4200, image: food3, description: "Soupe jaune traditionnelle camerounaise avec pâte de taro" }
@@ -339,7 +354,7 @@ const RestaurantsPage = () => {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      {/* Navigation - Matching Login Page */}
+      {/* Navigation - Updated to match other pages */}
       <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'py-2 shadow-lg backdrop-blur-md bg-opacity-90' : 'py-4'} ${darkMode ? 'bg-gray-800 bg-opacity-90' : 'bg-white bg-opacity-90'}`}>
         <div className="container mx-auto px-4 flex justify-between items-center">
           {/* Logo */}
@@ -350,34 +365,136 @@ const RestaurantsPage = () => {
             className="flex items-center"
           >
             <span className="text-2xl font-bold bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
-              Eat-Fast
+              EatFast
             </span>
           </motion.div>
 
-          <div className="flex items-center space-x-4">
-            <motion.button 
+          <div className="hidden md:flex items-center space-x-6">
+            <nav className="flex items-center space-x-6">
+              <a href="/" className="font-medium hover:text-green-500 transition-colors">
+                {t('nav.home')}
+              </a>
+              <a href="/restaurants" className="font-medium hover:text-green-500 transition-colors">
+                {t('nav.restaurants')}
+              </a>
+              <a href="/about" className="font-medium hover:text-green-500 transition-colors">
+                {t('nav.about')}
+              </a>
+              <a href="/contact" className="font-medium hover:text-green-500 transition-colors">
+                {t('nav.contact')}
+              </a>
+            </nav>
+            
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-1"
+                title={i18n.language === 'en' ? 'Switch to French' : 'Passer en Anglais'}
+              >
+                <Languages size={20} />
+                <span className="text-sm font-medium">{i18n.language === 'en' ? 'FR' : 'EN'}</span>
+              </button>
+              
+              <button 
+                onClick={toggleDarkMode} 
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              </button>
+              
+              <Link 
+                to="/login" 
+                className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+              >
+                <User size={20} />
+                <span>{t('nav.account')}</span>
+              </Link>
+              
+              <button className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                <ShoppingBag size={20} />
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  2
+                </span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="md:hidden flex items-center">
+            <button 
+              onClick={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')}
+              className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              title={i18n.language === 'en' ? 'Switch to French' : 'Passer en Anglais'}
+            >
+              <span className="text-sm font-medium">{i18n.language === 'en' ? 'FR' : 'EN'}</span>
+            </button>
+            <button 
               onClick={toggleDarkMode} 
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </motion.button>
-            
+            </button>
             <button 
-              onClick={() => window.history.back()}
+              onClick={toggleMenu}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              <motion.div
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <ArrowLeft size={20} />
-              </motion.div>
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div 
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+            className={`fixed top-16 left-0 right-0 z-40 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
+          >
+            <nav className="container mx-auto px-4 py-4 flex flex-col space-y-4">
+              <a href="/" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
+                {t('nav.home')}
+              </a>
+              <a href="/restaurants" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
+                {t('nav.restaurants')}
+              </a>
+              <a href="/about" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
+                {t('nav.about')}
+              </a>
+              <a href="/contact" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
+                {t('nav.contact')}
+              </a>
+              <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
+                <button 
+                  onClick={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')}
+                  className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                >
+                  <Languages size={20} />
+                  <span>{i18n.language === 'en' ? 'Français' : 'English'}</span>
+                </button>
+                <div className="flex items-center space-x-4">
+                  <Link 
+                    to="/login" 
+                    className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                  >
+                    <User size={20} />
+                    <span>{t('nav.account')}</span>
+                  </Link>
+                  <button className="relative flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
+                    <ShoppingBag size={20} />
+                    <span>{t('nav.cart')}</span>
+                    <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                      2
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </nav>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <div className="pt-24 pb-12">
@@ -586,6 +703,8 @@ const RestaurantsPage = () => {
                               </div>
                             </div>
                             
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{restaurant.description}</p>
+                            
                             <div className="mt-2 flex items-center text-sm text-gray-600 dark:text-gray-400">
                               <MapPin size={14} className="mr-1" />
                               <span>{restaurant.address}</span>
@@ -663,6 +782,8 @@ const RestaurantsPage = () => {
                               <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">({restaurant.reviewCount})</span>
                             </div>
                           </div>
+                          
+                          <p className="mt-2 text-gray-600 dark:text-gray-400">{restaurant.description}</p>
                           
                           <div className="mt-2 flex items-center text-gray-600 dark:text-gray-400">
                             <MapPin size={16} className="mr-1" />
@@ -801,6 +922,7 @@ const RestaurantContent = ({ restaurant, handleAddComment, handleReaction, newCo
             {/* Plats du restaurant */}
             {activeTab === 'dishes' && (
               <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold mb-4">{t('restaurants.popularDishes')}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {restaurant.dishes.map(dish => (
                     <div key={dish.id} className="flex bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden">
@@ -827,98 +949,104 @@ const RestaurantContent = ({ restaurant, handleAddComment, handleReaction, newCo
               <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                 {/* Liste des commentaires */}
                 <div className="space-y-4 mb-4">
-                  {restaurant.comments.map(comment => (
-                    <div key={comment.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <div className="font-medium">{comment.user}</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">{comment.date}</div>
-                        </div>
-                        <div className="flex space-x-2">
-                          <button 
-                            onClick={() => handleReaction(restaurant.id, comment.id, null, true)}
-                            className="p-1 text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors"
-                          >
-                            <ThumbsUp size={16} />
-                          </button>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">{comment.likes}</span>
-                          <button 
-                            onClick={() => handleReaction(restaurant.id, comment.id, null, false)}
-                            className="p-1 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                          >
-                            <ThumbsDown size={16} />
-                          </button>
-                          <span className="text-sm text-gray-600 dark:text-gray-400">{comment.dislikes}</span>
-                        </div>
-                      </div>
-                      <p className="mt-2 text-gray-700 dark:text-gray-300">{comment.text}</p>
-                      
-                      {/* Bouton de réponse */}
-                      <button 
-                        onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                        className="mt-2 text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors flex items-center"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                        </svg>
-                        {t('restaurants.reply')}
-                      </button>
-                      
-                      {/* Formulaire de réponse */}
-                      {replyingTo === comment.id && (
-                        <div className="mt-2 pl-4 border-l-2 border-gray-300 dark:border-gray-600">
-                          <div className="flex">
-                            <input 
-                              type="text" 
-                              value={newComment}
-                              onChange={(e) => setNewComment(e.target.value)}
-                              placeholder={t('restaurants.writeReply')}
-                              className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400"
-                            />
+                  {restaurant.comments.length === 0 ? (
+                    <div className="text-center py-4 text-gray-500 dark:text-gray-400">
+                      {t('restaurants.noComments')}
+                    </div>
+                  ) : (
+                    restaurant.comments.map(comment => (
+                      <div key={comment.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <div className="font-medium">{comment.user}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400">{comment.date}</div>
+                          </div>
+                          <div className="flex space-x-2">
                             <button 
-                              onClick={() => handleAddComment(restaurant.id, comment.id)}
-                              className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-r-lg transition-colors"
+                              onClick={() => handleReaction(restaurant.id, comment.id, null, true)}
+                              className="p-1 text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors"
                             >
-                              <Send size={16} />
+                              <ThumbsUp size={16} />
                             </button>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{comment.likes}</span>
+                            <button 
+                              onClick={() => handleReaction(restaurant.id, comment.id, null, false)}
+                              className="p-1 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                            >
+                              <ThumbsDown size={16} />
+                            </button>
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{comment.dislikes}</span>
                           </div>
                         </div>
-                      )}
-                      
-                      {/* Réponses */}
-                      {comment.replies.length > 0 && (
-                        <div className="mt-2 pl-4 border-l-2 border-gray-300 dark:border-gray-600 space-y-3">
-                          {comment.replies.map(reply => (
-                            <div key={reply.id} className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <div className="font-medium">{reply.user}</div>
-                                  <div className="text-xs text-gray-500 dark:text-gray-400">{reply.date}</div>
-                                </div>
-                                <div className="flex space-x-2">
-                                  <button 
-                                    onClick={() => handleReaction(restaurant.id, comment.id, reply.id, true)}
-                                    className="p-1 text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors"
-                                  >
-                                    <ThumbsUp size={14} />
-                                  </button>
-                                  <span className="text-xs text-gray-600 dark:text-gray-400">{reply.likes}</span>
-                                  <button 
-                                    onClick={() => handleReaction(restaurant.id, comment.id, reply.id, false)}
-                                    className="p-1 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                                  >
-                                    <ThumbsDown size={14} />
-                                  </button>
-                                  <span className="text-xs text-gray-600 dark:text-gray-400">{reply.dislikes}</span>
-                                </div>
-                              </div>
-                              <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{reply.text}</p>
+                        <p className="mt-2 text-gray-700 dark:text-gray-300">{comment.text}</p>
+                        
+                        {/* Bouton de réponse */}
+                        <button 
+                          onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                          className="mt-2 text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors flex items-center"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
+                          </svg>
+                          {t('restaurants.reply')}
+                        </button>
+                        
+                        {/* Formulaire de réponse */}
+                        {replyingTo === comment.id && (
+                          <div className="mt-2 pl-4 border-l-2 border-gray-300 dark:border-gray-600">
+                            <div className="flex">
+                              <input 
+                                type="text" 
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                placeholder={t('restaurants.writeReply')}
+                                className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400"
+                              />
+                              <button 
+                                onClick={() => handleAddComment(restaurant.id, comment.id)}
+                                className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-r-lg transition-colors"
+                              >
+                                <Send size={16} />
+                              </button>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                          </div>
+                        )}
+                        
+                        {/* Réponses */}
+                        {comment.replies.length > 0 && (
+                          <div className="mt-2 pl-4 border-l-2 border-gray-300 dark:border-gray-600 space-y-3">
+                            {comment.replies.map(reply => (
+                              <div key={reply.id} className="bg-white dark:bg-gray-800 rounded-lg p-2">
+                                <div className="flex justify-between items-start">
+                                  <div>
+                                    <div className="font-medium">{reply.user}</div>
+                                    <div className="text-xs text-gray-500 dark:text-gray-400">{reply.date}</div>
+                                  </div>
+                                  <div className="flex space-x-2">
+                                    <button 
+                                      onClick={() => handleReaction(restaurant.id, comment.id, reply.id, true)}
+                                      className="p-1 text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors"
+                                    >
+                                      <ThumbsUp size={14} />
+                                    </button>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">{reply.likes}</span>
+                                    <button 
+                                      onClick={() => handleReaction(restaurant.id, comment.id, reply.id, false)}
+                                      className="p-1 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
+                                    >
+                                      <ThumbsDown size={14} />
+                                    </button>
+                                    <span className="text-xs text-gray-600 dark:text-gray-400">{reply.dislikes}</span>
+                                  </div>
+                                </div>
+                                <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{reply.text}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))
+                  )}
                 </div>
                 
                 {/* Formulaire d'ajout de commentaire */}
