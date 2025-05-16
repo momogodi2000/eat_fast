@@ -8,11 +8,14 @@ import Login from './pages/Authentication/login';
 import Register from './pages/Authentication/register';
 import ForgotPassword from './pages/Authentication/forgot_password';
 
+
 import AdminDashboard from './pages/Dashboards/Admin/admin_dashboard';
+import UserList from './pages/Dashboards/Admin/Utilisateurs/UserList';
+
+
 
 
 import DashboardRedirect from './components/CommonShare/test';
-
 
 // Create a client
 const queryClient = new QueryClient();
@@ -36,6 +39,8 @@ function App() {
 
           
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/user" element={<UserList />} />
+
         </Routes>
       </div>
     </QueryClientProvider>

@@ -1,15 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from 'react-query';
+/* eslint-disable no-unused-vars */
+// UserList.jsx
+import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslation } from 'react-i18next';
-import { FiEdit, FiTrash2, FiUserPlus, FiSearch, FiFilter } from 'react-icons/fi';
-import { FaUserShield, FaUserTie, FaUser } from 'react-icons/fa';
+import { FiEdit, FiTrash2, FiUserPlus, FiSearch, FiFilter, FiUser } from 'react-icons/fi';
 import { toast } from 'react-toastify';
-import axios from 'axios';
 import * as yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import UserDetailsModal from './UserDetailsModal';
 import UserForm from './UserForm';
+import AdminLayout from '../../../../layouts/admin_layout';
+
+// Mock data for demonstration with added createdAt field
+const mockUsers = [
+  { id: 1, name: 'John Doe', email: 'john@example.com', phone: '123456789', role: 'admin', status: 'active', createdAt: '2024-01-01T00:00:00Z' },
+  { id: 2, name: 'Jane Smith', email: 'jane@example.com', phone: '987654321', role: 'customer', status: 'active', createdAt: '2024-02-15T00:00:00Z' },
+  { id: 3, name: 'Mike Johnson', email: 'mike@example.com', phone: '567891234', role: 'restaurant', status: 'active', createdAt: '2024-03-10T00:00:00Z' },
+  { id: 4, name: 'Sarah Williams', email: 'sarah@example.com', phone: '456789123', role: 'delivery', status: 'inactive', createdAt: '2024-04-05T00:00:00Z' },
+  { id: 5, name: 'Alex Brown', email: 'alex@example.com', phone: '321654987', role: 'customer', status: 'active', createdAt: '2024-05-01T00:00:00Z' },
+];
 
 const UserList = () => {
   const { t } = useTranslation();
@@ -35,15 +45,22 @@ const UserList = () => {
     resolver: yupResolver(userSchema)
   });
 
-  // Fetch users from API
-  const { data: users, isLoading, isError } = useQuery('users', async () => {
-    const { data } = await axios.get('/api/users');
-    return data;
+  // Fetch users with React Query (using mock data)
+  const { data: users, isLoading } = useQuery('users', async () => {
+    // Simulate API call delay
+    return new Promise(resolve => {
+      setTimeout(() => resolve(mockUsers), 500);
+    });
   });
 
   // Delete user mutation
   const deleteUserMutation = useMutation(
-    (userId) => axios.delete(`/api/users/${userId}`),
+    (userId) => {
+      // Simulate API call
+      return new Promise(resolve => {
+        setTimeout(() => resolve({ success: true }), 500);
+      });
+    },
     {
       onSuccess: () => {
         queryClient.invalidateQueries('users');
@@ -57,10 +74,12 @@ const UserList = () => {
 
   // Add/Edit user mutation
   const saveUserMutation = useMutation(
-    (userData) => 
-      selectedUser 
-        ? axios.put(`/api/users/${selectedUser.id}`, userData)
-        : axios.post('/api/users', userData),
+    (userData) => {
+      // Simulate API call
+      return new Promise(resolve => {
+        setTimeout(() => resolve({ success: true, data: userData }), 500);
+      });
+    },
     {
       onSuccess: () => {
         queryClient.invalidateQueries('users');
@@ -78,7 +97,7 @@ const UserList = () => {
   // Filter and paginate users
   const filteredUsers = users?.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+                          user.email.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesRole = selectedRole === 'all' || user.role === selectedRole;
     return matchesSearch && matchesRole;
   }) || [];
@@ -90,6 +109,15 @@ const UserList = () => {
 
   // Handle form submission
   const onSubmit = (data) => {
+    // If editing, add the id to the data
+    if (selectedUser) {
+      data.id = selectedUser.id;
+      data.createdAt = selectedUser.createdAt;
+    } else {
+      // For new users, create an id and createdAt
+      data.id = Date.now();
+      data.createdAt = new Date().toISOString();
+    }
     saveUserMutation.mutate(data);
   };
 
@@ -126,10 +154,7 @@ const UserList = () => {
     setIsFormOpen(true);
   };
 
-  if (isLoading) return <div className="text-center py-8">{t('loading')}...</div>;
-  if (isError) return <div className="text-center py-8 text-red-500">{t('users.loadError')}</div>;
-
-  return (
+  const content = (
     <div className="container mx-auto px-4 py-6 animate-fadeIn">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 bg-clip-text text-transparent mb-4 md:mb-0">
@@ -211,7 +236,13 @@ const UserList = () => {
               </tr>
             </thead>
             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-              {currentUsers.length > 0 ? (
+              {isLoading ? (
+                <tr>
+                  <td colSpan="6" className="px-6 py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                    {t('loading')}...
+                  </td>
+                </tr>
+              ) : currentUsers.length > 0 ? (
                 currentUsers.map((user) => (
                   <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -376,6 +407,12 @@ const UserList = () => {
         t={t}
       />
     </div>
+  );
+
+  return (
+    <AdminLayout>
+      {content}
+    </AdminLayout>
   );
 };
 

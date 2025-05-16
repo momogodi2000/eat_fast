@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome,
   FiShoppingBag,
@@ -20,10 +21,17 @@ import { useTranslation } from 'react-i18next';
 
 const AdminLayout = ({ children }) => {
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [activeItem, setActiveItem] = useState('/admin');
+  
+  // Set active item based on current path
+  useEffect(() => {
+    setActiveItem(location.pathname);
+  }, [location.pathname]);
   
   // Detect screen size
   useEffect(() => {
@@ -86,7 +94,7 @@ const AdminLayout = ({ children }) => {
   const navigationItems = [
     { name: t('dashboard.dashboard'), icon: <FiHome size={20} />, path: '/admin' },
     { name: t('restaurants'), icon: <FiShoppingBag size={20} />, path: '/admin/restaurants' },
-    { name: t('users'), icon: <FiUsers size={20} />, path: '/admin/users' },
+    { name: t('users'), icon: <FiUsers size={20} />, path: '/admin/user' }, // Changed path from '/admin/user' to '/user'
     { name: t('delivery'), icon: <FiTruck size={20} />, path: '/admin/delivery' },
     { name: t('orders'), icon: <FiBarChart2 size={20} />, path: '/admin/orders' },
     { name: t('messages'), icon: <FiMessageSquare size={20} />, path: '/admin/messages' },
@@ -110,6 +118,7 @@ const AdminLayout = ({ children }) => {
   
   // Handle navigation item click
   const handleNavClick = (path) => {
+    navigate(path); // Use React Router's navigate function
     setActiveItem(path);
     if (isMobile) {
       setSidebarOpen(false);
@@ -153,14 +162,10 @@ const AdminLayout = ({ children }) => {
           {/* Navigation Links */}
           <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
             {navigationItems.map((item, index) => (
-              <a
+              <button
                 key={index}
-                href={item.path}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleNavClick(item.path);
-                }}
-                className={`flex items-center px-4 py-3 rounded-lg transition-all duration-200 ${
+                onClick={() => handleNavClick(item.path)}
+                className={`flex items-center w-full px-4 py-3 rounded-lg transition-all duration-200 text-left ${
                   activeItem === item.path 
                     ? `${darkMode ? 'bg-green-800 text-white' : 'bg-green-100 text-green-800'}`
                     : `text-gray-700 dark:text-gray-200 hover:bg-green-100 dark:hover:bg-green-900`
@@ -174,7 +179,7 @@ const AdminLayout = ({ children }) => {
                   {item.icon}
                 </span>
                 <span className={activeItem === item.path ? 'font-medium' : ''}>{item.name}</span>
-              </a>
+              </button>
             ))}
           </nav>
           
