@@ -5,6 +5,7 @@ import { initReactI18next } from 'react-i18next';
 const resources = {
   en: {
     translation: {
+      // Navigation
       nav: {
         home: 'Home',
         restaurants: 'Restaurants',
@@ -13,6 +14,8 @@ const resources = {
         account: 'Account',
         cart: 'Cart'
       },
+
+      // Hero Section
       hero: {
         title: 'Order Delicious Food With',
         subtitle: 'Fast delivery to your doorstep',
@@ -23,6 +26,8 @@ const resources = {
         minutes: 'min',
         location: 'Your Location'
       },
+
+      // Sections
       sections: {
         categories: 'Categories',
         featuredRestaurants: 'Featured Restaurants',
@@ -33,6 +38,8 @@ const resources = {
         contactForm: 'Get In Touch',
         contactInfo: 'Contact Information'
       },
+
+      // Categories
       categories: {
         all: 'All',
         traditional: 'Traditional',
@@ -42,6 +49,8 @@ const resources = {
         seafood: 'Seafood',
         african: 'African'
       },
+
+      // Restaurants
       restaurants: {
         minutes: 'min',
         order: 'Order',
@@ -50,75 +59,60 @@ const resources = {
         found: 'restaurants found',
         noResults: 'No restaurants match your filters',
         resetFilters: 'Reset all filters',
-        categories: {
-          title: 'Categories',
-          all: 'All',
-          african: 'African',
-          traditional: 'Traditional',
-          fastFood: 'Fast Food',
-          vegetarian: 'Vegetarian',
-          title: 'Discover the Best Restaurants',
-          subtitle: 'Find and order from top restaurants in your city',
-          refineSearch: 'Refine Your Search',
-          allCategories: 'All Categories',
-          allZones: 'All Zones',
-          allDistricts: 'All Districts',
-          allPrices: 'All Prices',
-          anyTime: 'Any Time',
-          anyFee: 'Any Fee',
-          featured: 'Featured',
-          loading: 'Loading restaurants...',
-          noComments: 'No comments yet',
-          writeReview: 'Write your review...',
-          writeReply: 'Write your reply...',
-          send: 'Send',
-          leaveReview: 'Leave a Review',
-          popularDishes: 'Popular Dishes',
-          deliveryFee: 'delivery fee',
-          minOrder: 'Min. order',
-          tryAdjusting: 'Try adjusting your search or filters',
-          noResults: 'No restaurants found matching your criteria',
-          category: 'Category',
-          zone: 'Zone',
-          district: 'District',
-          priceRange: 'Price Range',
-          maxDeliveryTime: 'Max Delivery Time',
-          maxDeliveryFee: 'Max Delivery Fee',
-          menu: 'Menu',
-          reviews: 'Reviews',
-          reply: 'Reply',
-          like: 'Like',
-          dislike: 'Dislike',
-
-          // Restaurant specific translations
-          restaurantDescriptions: {
-            foufouDelice: 'A traditional Cameroonian restaurant offering authentic dishes prepared with fresh local ingredients.',
-            mamiNyanga: 'Specializing in traditional dishes from western Cameroon, Mami Nyanga offers a unique culinary experience.',
-            saveursAfrique: 'A fusion of African flavors offering dishes from different countries across the continent in a warm atmosphere.',
-            kwaboRestaurant: 'Kwabo means "welcome" in Pidgin, and that\'s exactly how you\'ll feel in this friendly restaurant.'
-          },
-
-          dishDescriptions: {
-            ndole: 'Traditional Cameroonian dish made with bitter leaves and shrimp',
-            pouletDG: 'Fried chicken with ripe plantains and vegetables',
-            eru: 'Traditional dish made with eru leaves and cassava paste',
-            poissonBraise: 'Fresh grilled fish served with grilled plantains',
-            thieboudienne: 'Fish rice dish typical of Senegalese cuisine',
-            mafe: 'Stew made with peanut sauce and beef',
-            jollofRice: 'Spicy rice typical of West Africa',
-            achuSoup: 'Traditional Cameroonian yellow soup with taro paste'
-          },
-
-          comments: {
-            comment1: 'The DG chicken was delicious, fast delivery!',
-            comment2: 'Excellent traditional cuisine, but delivery was a bit long',
-            comment3: 'The Thieboudienne was authentic and tasty!',
-            comment4: 'Generous portions and excellent value for money',
-            reply1: 'Thank you for your positive feedback!'
-          }
-        
-      
-
+        title: 'Discover the Best Restaurants',
+        subtitle: 'Find and order from top restaurants in your city',
+        refineSearch: 'Refine Your Search',
+        allCategories: 'All Categories',
+        allZones: 'All Zones',
+        allDistricts: 'All Districts',
+        allPrices: 'All Prices',
+        anyTime: 'Any Time',
+        anyFee: 'Any Fee',
+        featured: 'Featured',
+        loading: 'Loading restaurants...',
+        noComments: 'No comments yet',
+        writeReview: 'Write your review...',
+        writeReply: 'Write your reply...',
+        send: 'Send',
+        leaveReview: 'Leave a Review',
+        popularDishes: 'Popular Dishes',
+        deliveryFee: 'delivery fee',
+        minOrder: 'Min. order',
+        tryAdjusting: 'Try adjusting your search or filters',
+        noResults: 'No restaurants found matching your criteria',
+        category: 'Category',
+        zone: 'Zone',
+        district: 'District',
+        priceRange: 'Price Range',
+        maxDeliveryTime: 'Max Delivery Time',
+        maxDeliveryFee: 'Max Delivery Fee',
+        menu: 'Menu',
+        reviews: 'Reviews',
+        reply: 'Reply',
+        like: 'Like',
+        dislike: 'Dislike',
+        restaurantDescriptions: {
+          foufouDelice: 'A traditional Cameroonian restaurant offering authentic dishes prepared with fresh local ingredients.',
+          mamiNyanga: 'Specializing in traditional dishes from western Cameroon, Mami Nyanga offers a unique culinary experience.',
+          saveursAfrique: 'A fusion of African flavors offering dishes from different countries across the continent in a warm atmosphere.',
+          kwaboRestaurant: 'Kwabo means "welcome" in Pidgin, and that\'s exactly how you\'ll feel in this friendly restaurant.'
+        },
+        dishDescriptions: {
+          ndole: 'Traditional Cameroonian dish made with bitter leaves and shrimp',
+          pouletDG: 'Fried chicken with ripe plantains and vegetables',
+          eru: 'Traditional dish made with eru leaves and cassava paste',
+          poissonBraise: 'Fresh grilled fish served with grilled plantains',
+          thieboudienne: 'Fish rice dish typical of Senegalese cuisine',
+          mafe: 'Stew made with peanut sauce and beef',
+          jollofRice: 'Spicy rice typical of West Africa',
+          achuSoup: 'Traditional Cameroonian yellow soup with taro paste'
+        },
+        comments: {
+          comment1: 'The DG chicken was delicious, fast delivery!',
+          comment2: 'Excellent traditional cuisine, but delivery was a bit long',
+          comment3: 'The Thieboudienne was authentic and tasty!',
+          comment4: 'Generous portions and excellent value for money',
+          reply1: 'Thank you for your positive feedback!'
         },
         cities: {
           all: 'All Cities'
@@ -158,8 +152,9 @@ const resources = {
         dislike: 'Dislike',
         menu: 'Menu',
         popularDishes: 'Popular Dishes'
-        
       },
+
+      // How It Works
       howItWorks: {
         description: 'Simple and easy way to order your food',
         step1Title: 'Choose Restaurant',
@@ -169,6 +164,8 @@ const resources = {
         step3Title: 'Fast Delivery',
         step3Description: 'Enjoy prompt delivery to your doorstep'
       },
+
+      // About
       about: {
         title: 'About Eatfast',
         subtitle: 'Revolutionizing food delivery in Cameroon',
@@ -179,17 +176,23 @@ const resources = {
         visionTitle: 'Our Vision',
         visionText: 'To become Cameroon\'s most trusted food delivery platform, known for our speed, reliability, and commitment to local culinary traditions.'
       },
+
+      // Team
       team: {
         ceo: 'CEO & Founder',
         seniorDev: 'Senior Developer',
         juniorDev: 'Junior Developer',
         uiUx: 'UI/UX Designer'
       },
+
+      // Testimonials
       testimonials: {
         customer1: 'Eatfast has transformed my lunch breaks! I can now enjoy meals from my favorite restaurants without leaving the office.',
         customer2: 'The 30-minute delivery guarantee is real! I\'m impressed by their service and the quality of food.',
         customer3: 'As a restaurant owner, Eatfast has helped me reach new customers and increase my sales by 40%.'
       },
+
+      // Contact
       contact: {
         title: 'Contact Us',
         subtitle: 'We\'d love to hear from you',
@@ -211,12 +214,16 @@ const resources = {
           other: 'Other'
         }
       },
+
+      // App
       app: {
         title: 'Download Our Mobile App',
         description: 'Get exclusive app-only offers and faster ordering',
         downloadOn: 'Download on',
         getItOn: 'Get it on'
       },
+
+      // Footer
       footer: {
         description: 'Eatfast is your go-to food delivery app in Cameroon.',
         quickLinks: 'Quick Links',
@@ -236,7 +243,8 @@ const resources = {
         subscribe: 'Subscribe',
         allRightsReserved: 'All rights reserved.'
       },
-      // New translations for login page
+
+      // Login
       login: {
         title: 'Login to Your Account',
         subtitle: 'Welcome back! Please enter your details',
@@ -257,7 +265,7 @@ const resources = {
         footerText: 'By continuing, you agree to our Terms of Service and Privacy Policy'
       },
 
-      // New translations for register page
+      // Register
       register: {
         title: 'Create Your Account',
         subtitle: 'Join our community and start ordering now',
@@ -287,7 +295,7 @@ const resources = {
         backToHome: 'Back to home'
       },
 
-      // Common form translations
+      // Form
       form: {
         requiredField: 'This field is required',
         invalidEmail: 'Please enter a valid email',
@@ -295,6 +303,8 @@ const resources = {
         passwordMatch: 'Passwords must match',
         invalidPhone: 'Please enter a valid phone number'
       },
+
+      // Dashboard
       dashboard: {
         dashboard: 'Dashboard',
         total_orders: 'Total Orders',
@@ -318,7 +328,8 @@ const resources = {
         theme_changed: 'Theme changed',
         language_changed: 'Language changed'
       },
-      // Admin navigation translations
+
+      // Admin Navigation
       users: 'Users',
       delivery: 'Delivery',
       orders: 'Orders',
@@ -327,11 +338,109 @@ const resources = {
       statistics: 'Statistics',
       promotions: 'Promotions',
       settings: 'Settings',
-      logout: 'Logout'
+      logout: 'Logout',
+
+      // User Management
+      userManagement: {
+        title: 'User Management',
+        addUser: 'Add User',
+        editUser: 'Edit User',
+        deleteUser: 'Delete',
+        deleteUserConfirmation: 'Are you sure you want to delete this user?',
+        search: 'Search users...',
+        statusAll: 'All Statuses',
+        statusActive: 'Active',
+        statusInactive: 'Inactive',
+        roles: {
+          admin: 'Admin',
+          livreur: 'Delivery',
+          client: 'Client'
+        },
+        id: 'ID',
+        name: 'Name',
+        email: 'Email',
+        role: 'Role',
+        status: 'Status',
+        registered: 'Registered',
+        actions: 'Actions',
+        showing: 'Showing',
+        to: 'to',
+        of: 'of',
+        results: 'results',
+        previous: 'Previous',
+        next: 'Next',
+        noUsers: 'No users found',
+        export: 'Export to CSV',
+        refresh: 'Refresh',
+        filters: 'Filters',
+        createdAt: 'Created At',
+        lastLogin: 'Last Login',
+        phone: 'Phone',
+        address: 'Address',
+        orders: 'Orders'
+      },
+
+      // User Form
+      userForm: {
+        createTitle: 'Create New User',
+        editTitle: 'Edit User',
+        name: 'Full Name',
+        namePlaceholder: 'Enter full name',
+        email: 'Email',
+        emailPlaceholder: 'Enter email address',
+        phone: 'Phone',
+        phonePlaceholder: 'Enter phone number',
+        role: 'Role',
+        status: 'Status',
+        address: 'Address',
+        addressPlaceholder: 'Enter full address',
+        password: 'Password',
+        passwordPlaceholder: 'Enter password',
+        confirmPassword: 'Confirm Password',
+        confirmPasswordPlaceholder: 'Re-enter password',
+        cancel: 'Cancel',
+        create: 'Create',
+        update: 'Update',
+        saving: 'Saving...',
+        errors: {
+          nameRequired: 'Name is required',
+          emailRequired: 'Email is required',
+          emailInvalid: 'Please enter a valid email',
+          phoneRequired: 'Phone is required',
+          passwordRequired: 'Password is required',
+          passwordLength: 'Password must be at least 6 characters',
+          passwordMatch: 'Passwords must match',
+          addressRequired: 'Address is required'
+        },
+        statuses: {
+          active: 'Active',
+          inactive: 'Inactive'
+        },
+        roles: {
+          admin: 'Admin',
+          livreur: 'Delivery',
+          client: 'Client'
+        }
+      },
+
+      // User Detail
+      userDetail: {
+        fullName: 'Full Name',
+        email: 'Email',
+        phone: 'Phone',
+        address: 'Address',
+        registered: 'Registered',
+        lastLogin: 'Last Login',
+        neverLoggedIn: 'Never logged in',
+        totalOrders: 'Total Orders',
+        editButton: 'Edit',
+        closeButton: 'Close'
+      }
     }
   },
   fr: {
     translation: {
+      // Navigation
       nav: {
         home: 'Accueil',
         restaurants: 'Restaurants',
@@ -340,6 +449,8 @@ const resources = {
         account: 'Compte',
         cart: 'Panier'
       },
+
+      // Hero Section
       hero: {
         title: 'Commandez des Plats Délicieux Avec',
         subtitle: 'Livraison rapide à votre porte',
@@ -350,6 +461,8 @@ const resources = {
         minutes: 'min',
         location: 'Votre Emplacement'
       },
+
+      // Sections
       sections: {
         categories: 'Catégories',
         featuredRestaurants: 'Restaurants en Vedette',
@@ -360,6 +473,8 @@ const resources = {
         contactForm: 'Contactez-Nous',
         contactInfo: 'Informations de Contact'
       },
+
+      // Categories
       categories: {
         all: 'Tous',
         traditional: 'Traditionnel',
@@ -369,6 +484,8 @@ const resources = {
         seafood: 'Fruits de Mer',
         african: 'Africain'
       },
+
+      // Restaurants
       restaurants: {
         minutes: 'min',
         order: 'Commander',
@@ -378,66 +495,61 @@ const resources = {
         noResults: 'Aucun restaurant ne correspond à vos filtres',
         resetFilters: 'Réinitialiser tous les filtres',
         title: 'Découvrez les Meilleurs Restaurants',
-    subtitle: 'Trouvez et commandez dans les meilleurs restaurants de votre ville',
-    refineSearch: 'Affiner votre recherche',
-    allCategories: 'Toutes les catégories',
-    allZones: 'Toutes les zones',
-    allDistricts: 'Tous les quartiers',
-    allPrices: 'Tous les prix',
-    anyTime: 'N\'importe quand',
-    anyFee: 'Frais quelconques',
-    featured: 'En vedette',
-    loading: 'Chargement des restaurants...',
-    noComments: 'Pas encore de commentaires',
-    writeReview: 'Écrivez votre avis...',
-    writeReply: 'Écrivez votre réponse...',
-    send: 'Envoyer',
-    leaveReview: 'Laisser un avis',
-    popularDishes: 'Plats populaires',
-    deliveryFee: 'frais de livraison',
-    minOrder: 'Commande min.',
-    tryAdjusting: 'Essayez d\'ajuster votre recherche ou vos filtres',
-    noResults: 'Aucun restaurant trouvé correspondant à vos critères',
-    resetFilters: 'Réinitialiser tous les filtres',
-    category: 'Catégorie',
-    zone: 'Zone',
-    district: 'Quartier',
-    priceRange: 'Gamme de prix',
-    maxDeliveryTime: 'Temps de livraison max',
-    maxDeliveryFee: 'Frais de livraison max',
-    menu: 'Menu',
-    reviews: 'Avis',
-    reply: 'Répondre',
-    like: 'J\'aime',
-    dislike: 'Je n\'aime pas',
-
-    // Restaurant specific translations
-    restaurantDescriptions: {
-      foufouDelice: 'Un restaurant traditionnel camerounais offrant des plats authentiques préparés avec des ingrédients locaux frais.',
-      mamiNyanga: 'Spécialisé dans les plats traditionnels de l\'ouest Cameroun, Mami Nyanga offre une expérience culinaire unique.',
-      saveursAfrique: 'Une fusion de saveurs africaines proposant des plats de différents pays du continent dans une ambiance chaleureuse.',
-      kwaboRestaurant: 'Kwabo signifie "bienvenue" en pidgin, et c\'est exactement ce que vous ressentirez dans ce restaurant convivial.'
-    },
-
-    dishDescriptions: {
-      ndole: 'Plat traditionnel camerounais à base de feuilles amères et crevettes',
-      pouletDG: 'Poulet frit avec plantains mûrs et légumes',
-      eru: 'Plat traditionnel à base de feuilles d\'eru et pâte de manioc',
-      poissonBraise: 'Poisson frais braisé servi avec des plantains grillés',
-      thieboudienne: 'Plat de riz au poisson typique de la cuisine sénégalaise',
-      mafe: 'Ragoût à base de sauce arachide et viande de bœuf',
-      jollofRice: 'Riz épicé typique de l\'Afrique de l\'Ouest',
-      achuSoup: 'Soupe jaune traditionnelle camerounaise avec pâte de taro'
-    },
-
-    comments: {
-      comment1: 'Le poulet DG était délicieux, livraison rapide!',
-      comment2: 'Excellente cuisine traditionnelle, mais livraison un peu longue',
-      comment3: 'Le Thieboudienne était authentique et savoureux!',
-      comment4: 'Portions généreuses et excellent rapport qualité-prix',
-      reply1: 'Merci pour votre retour positif!'
-    },
-
+        subtitle: 'Trouvez et commandez dans les meilleurs restaurants de votre ville',
+        refineSearch: 'Affiner votre recherche',
+        allCategories: 'Toutes les catégories',
+        allZones: 'Toutes les zones',
+        allDistricts: 'Tous les quartiers',
+        allPrices: 'Tous les prix',
+        anyTime: 'N\'importe quand',
+        anyFee: 'Frais quelconques',
+        featured: 'En vedette',
+        loading: 'Chargement des restaurants...',
+        noComments: 'Pas encore de commentaires',
+        writeReview: 'Écrivez votre avis...',
+        writeReply: 'Écrivez votre réponse...',
+        send: 'Envoyer',
+        leaveReview: 'Laisser un avis',
+        popularDishes: 'Plats populaires',
+        deliveryFee: 'frais de livraison',
+        minOrder: 'Commande min.',
+        tryAdjusting: 'Essayez d\'ajuster votre recherche ou vos filtres',
+        noResults: 'Aucun restaurant trouvé correspondant à vos critères',
+        resetFilters: 'Réinitialiser tous les filtres',
+        category: 'Catégorie',
+        zone: 'Zone',
+        district: 'Quartier',
+        priceRange: 'Gamme de prix',
+        maxDeliveryTime: 'Temps de livraison max',
+        maxDeliveryFee: 'Frais de livraison max',
+        menu: 'Menu',
+        reviews: 'Avis',
+        reply: 'Répondre',
+        like: 'J\'aime',
+        dislike: 'Je n\'aime pas',
+        restaurantDescriptions: {
+          foufouDelice: 'Un restaurant traditionnel camerounais offrant des plats authentiques préparés avec des ingrédients locaux frais.',
+          mamiNyanga: 'Spécialisé dans les plats traditionnels de l\'ouest Cameroun, Mami Nyanga offre une expérience culinaire unique.',
+          saveursAfrique: 'Une fusion de saveurs africaines proposant des plats de différents pays du continent dans une ambiance chaleureuse.',
+          kwaboRestaurant: 'Kwabo signifie "bienvenue" en pidgin, et c\'est exactement ce que vous ressentirez dans ce restaurant convivial.'
+        },
+        dishDescriptions: {
+          ndole: 'Plat traditionnel camerounais à base de feuilles amères et crevettes',
+          pouletDG: 'Poulet frit avec plantains mûrs et légumes',
+          eru: 'Plat traditionnel à base de feuilles d\'eru et pâte de manioc',
+          poissonBraise: 'Poisson frais braisé servi avec des plantains grillés',
+          thieboudienne: 'Plat de riz au poisson typique de la cuisine sénégalaise',
+          mafe: 'Ragoût à base de sauce arachide et viande de bœuf',
+          jollofRice: 'Riz épicé typique de l\'Afrique de l\'Ouest',
+          achuSoup: 'Soupe jaune traditionnelle camerounaise avec pâte de taro'
+        },
+        comments: {
+          comment1: 'Le poulet DG était délicieux, livraison rapide!',
+          comment2: 'Excellente cuisine traditionnelle, mais livraison un peu longue',
+          comment3: 'Le Thieboudienne était authentique et savoureux!',
+          comment4: 'Portions généreuses et excellent rapport qualité-prix',
+          reply1: 'Merci pour votre retour positif!'
+        },
         cities: {
           all: 'Toutes les Villes'
         },
@@ -477,6 +589,8 @@ const resources = {
         menu: 'Menu',
         popularDishes: 'Plats Populaires'
       },
+
+      // How It Works
       howItWorks: {
         description: 'Façon simple et facile de commander votre nourriture',
         step1Title: 'Choisir un Restaurant',
@@ -486,6 +600,8 @@ const resources = {
         step3Title: 'Livraison Rapide',
         step3Description: 'Profitez d\'une livraison rapide à votre porte'
       },
+
+      // About
       about: {
         title: 'À Propos de Eatfast',
         subtitle: 'Révolutionner la livraison de repas au Cameroun',
@@ -496,17 +612,23 @@ const resources = {
         visionTitle: 'Notre Vision',
         visionText: 'Devenir la plateforme de livraison de repas la plus fiable du Cameroun, reconnue pour notre rapidité, notre fiabilité et notre engagement envers les traditions culinaires locales.'
       },
+
+      // Team
       team: {
         ceo: 'PDG & Fondateur',
         seniorDev: 'Développeur Senior',
         juniorDev: 'Développeur Junior',
         uiUx: 'Designer UI/UX'
       },
+
+      // Testimonials
       testimonials: {
         customer1: 'Eatfast a transformé mes pauses déjeuner! Je peux maintenant déguster des repas de mes restaurants préférés sans quitter le bureau.',
         customer2: 'La garantie de livraison en 30 minutes est réelle! Je suis impressionné par leur service et la qualité de la nourriture.',
         customer3: 'En tant que propriétaire de restaurant, Eatfast m\'a aidé à atteindre de nouveaux clients et à augmenter mes ventes de 40%.'
       },
+
+      // Contact
       contact: {
         title: 'Contactez-Nous',
         subtitle: 'Nous serions ravis d\'avoir de vos nouvelles',
@@ -528,12 +650,16 @@ const resources = {
           other: 'Autre'
         }
       },
+
+      // App
       app: {
         title: 'Téléchargez Notre Application Mobile',
         description: 'Obtenez des offres exclusives et des commandes plus rapides',
         downloadOn: 'Télécharger sur',
         getItOn: 'Disponible sur'
       },
+
+      // Footer
       footer: {
         description: 'Eatfast est votre application de livraison de repas de référence au Cameroun.',
         quickLinks: 'Liens Rapides',
@@ -553,6 +679,8 @@ const resources = {
         subscribe: 'S\'abonner',
         allRightsReserved: 'Tous droits réservés.'
       },
+
+      // Login
       login: {
         title: 'Connectez-vous à votre compte',
         subtitle: 'Content de vous revoir! Veuillez entrer vos coordonnées',
@@ -573,7 +701,7 @@ const resources = {
         footerText: 'En continuant, vous acceptez nos Conditions d\'utilisation et notre Politique de confidentialité'
       },
 
-      // New translations for register page
+      // Register
       register: {
         title: 'Créez votre compte',
         subtitle: 'Rejoignez notre communauté et commencez à commander dès maintenant',
@@ -602,8 +730,8 @@ const resources = {
         footerText: 'En créant un compte, vous acceptez nos Conditions d\'utilisation et notre Politique de confidentialité',
         backToHome: 'Retour à l\'accueil'
       },
-      
-      // Common form translations
+
+      // Form
       form: {
         requiredField: 'Ce champ est obligatoire',
         invalidEmail: 'Veuillez entrer un email valide',
@@ -611,6 +739,8 @@ const resources = {
         passwordMatch: 'Les mots de passe doivent correspondre',
         invalidPhone: 'Veuillez entrer un numéro de téléphone valide'
       },
+
+      // Dashboard
       dashboard: {
         dashboard: 'Tableau de bord',
         total_orders: 'Commandes totales',
@@ -634,7 +764,8 @@ const resources = {
         theme_changed: 'Thème changé',
         language_changed: 'Langue changée'
       },
-      // Admin navigation translations  
+
+      // Admin Navigation
       users: 'Utilisateurs',
       delivery: 'Livraison',
       orders: 'Commandes',
@@ -643,7 +774,104 @@ const resources = {
       statistics: 'Statistiques',
       promotions: 'Promotions',
       settings: 'Paramètres',
-      logout: 'Déconnexion'
+      logout: 'Déconnexion',
+
+      // User Management
+      userManagement: {
+        title: 'Gestion des Utilisateurs',
+        addUser: 'Ajouter Utilisateur',
+        editUser: 'Modifier Utilisateur',
+        deleteUser: 'Supprimer',
+        deleteUserConfirmation: 'Êtes-vous sûr de vouloir supprimer cet utilisateur?',
+        search: 'Rechercher des utilisateurs...',
+        statusAll: 'Tous les statuts',
+        statusActive: 'Actif',
+        statusInactive: 'Inactif',
+        roles: {
+          admin: 'Admin',
+          livreur: 'Livreur',
+          client: 'Client'
+        },
+        id: 'ID',
+        name: 'Nom',
+        email: 'Email',
+        role: 'Rôle',
+        status: 'Statut',
+        registered: 'Inscrit',
+        actions: 'Actions',
+        showing: 'Affichage',
+        to: 'à',
+        of: 'sur',
+        results: 'résultats',
+        previous: 'Précédent',
+        next: 'Suivant',
+        noUsers: 'Aucun utilisateur trouvé',
+        export: 'Exporter en CSV',
+        refresh: 'Rafraîchir',
+        filters: 'Filtres',
+        createdAt: 'Créé le',
+        lastLogin: 'Dernière connexion',
+        phone: 'Téléphone',
+        address: 'Adresse',
+        orders: 'Commandes'
+      },
+
+      // User Form
+      userForm: {
+        createTitle: 'Créer un Nouvel Utilisateur',
+        editTitle: 'Modifier Utilisateur',
+        name: 'Nom Complet',
+        namePlaceholder: 'Entrez le nom complet',
+        email: 'Email',
+        emailPlaceholder: 'Entrez l\'adresse email',
+        phone: 'Téléphone',
+        phonePlaceholder: 'Entrez le numéro de téléphone',
+        role: 'Rôle',
+        status: 'Statut',
+        address: 'Adresse',
+        addressPlaceholder: 'Entrez l\'adresse complète',
+        password: 'Mot de passe',
+        passwordPlaceholder: 'Entrez le mot de passe',
+        confirmPassword: 'Confirmer le Mot de Passe',
+        confirmPasswordPlaceholder: 'Entrez à nouveau le mot de passe',
+        cancel: 'Annuler',
+        create: 'Créer',
+        update: 'Mettre à jour',
+        saving: 'Enregistrement...',
+        errors: {
+          nameRequired: 'Le nom est requis',
+          emailRequired: 'L\'email est requis',
+          emailInvalid: 'Veuillez entrer un email valide',
+          phoneRequired: 'Le téléphone est requis',
+          passwordRequired: 'Le mot de passe est requis',
+          passwordLength: 'Le mot de passe doit contenir au moins 6 caractères',
+          passwordMatch: 'Les mots de passe doivent correspondre',
+          addressRequired: 'L\'adresse est requise'
+        },
+        statuses: {
+          active: 'Actif',
+          inactive: 'Inactif'
+        },
+        roles: {
+          admin: 'Admin',
+          livreur: 'Livreur',
+          client: 'Client'
+        }
+      },
+
+      // User Detail
+      userDetail: {
+        fullName: 'Nom Complet',
+        email: 'Email',
+        phone: 'Téléphone',
+        address: 'Adresse',
+        registered: 'Inscrit',
+        lastLogin: 'Dernière Connexion',
+        neverLoggedIn: 'Jamais connecté',
+        totalOrders: 'Commandes Totales',
+        editButton: 'Modifier',
+        closeButton: 'Fermer'
+      }
     }
   }
 };

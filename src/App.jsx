@@ -10,10 +10,9 @@ import ForgotPassword from './pages/Authentication/forgot_password';
 
 
 import AdminDashboard from './pages/Dashboards/Admin/admin_dashboard';
-import UserList from './pages/Dashboards/Admin/Utilisateurs/UserList';
-
-
-
+import UserListPage from './pages/Dashboards/Admin/Utilisateurs/UserList';
+import RestaurantsList from './pages/Dashboards/Admin/Restaurants/RestaurantsList';
+import ContactMessagesAdmin from './pages/Dashboards/Admin/ContactMessages/Contact';
 
 import DashboardRedirect from './components/CommonShare/test';
 
@@ -39,7 +38,13 @@ function App() {
 
           
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/user" element={<UserList />} />
+          <Route path="/admin/user" element={<UserListPage />} />
+          <Route path="/admin/restaurants" element={<RestaurantsList />} />
+          <Route path="/admin/contact-messages" element={<ContactMessagesAdmin />} />
+
+          
+
+
 
         </Routes>
       </div>

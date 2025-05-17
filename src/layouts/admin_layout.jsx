@@ -93,11 +93,11 @@ const AdminLayout = ({ children }) => {
   
   const navigationItems = [
     { name: t('dashboard.dashboard'), icon: <FiHome size={20} />, path: '/admin' },
-    { name: t('restaurants'), icon: <FiShoppingBag size={20} />, path: '/admin/restaurants' },
-    { name: t('users'), icon: <FiUsers size={20} />, path: '/admin/user' }, // Changed path from '/admin/user' to '/user'
+    { name: t('restaurant'), icon: <FiShoppingBag size={20} />, path: '/admin/restaurants' },
+    { name: t('users'), icon: <FiUsers size={20} />, path: '/admin/user' }, 
     { name: t('delivery'), icon: <FiTruck size={20} />, path: '/admin/delivery' },
     { name: t('orders'), icon: <FiBarChart2 size={20} />, path: '/admin/orders' },
-    { name: t('messages'), icon: <FiMessageSquare size={20} />, path: '/admin/messages' },
+    { name: t('support services'), icon: <FiMessageSquare size={20} />, path: '/admin/support-services' },
     { name: t('contactMessages'), icon: <FiMail size={20} />, path: '/admin/contact-messages' },
     { name: t('statistics'), icon: <FiPieChart size={20} />, path: '/admin/statistics' },
     { name: t('promotions'), icon: <FiTag size={20} />, path: '/admin/promotions' },
