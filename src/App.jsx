@@ -13,6 +13,8 @@ import AdminDashboard from './pages/Dashboards/Admin/admin_dashboard';
 import UserListPage from './pages/Dashboards/Admin/Utilisateurs/UserList';
 import RestaurantsList from './pages/Dashboards/Admin/Restaurants/RestaurantsList';
 import ContactMessagesAdmin from './pages/Dashboards/Admin/ContactMessages/Contact';
+import AdminOrdersPage from './pages/Dashboards/Admin/Orders/orders';
+
 
 import DashboardRedirect from './components/CommonShare/test';
 
@@ -41,6 +43,8 @@ function App() {
           <Route path="/admin/user" element={<UserListPage />} />
           <Route path="/admin/restaurants" element={<RestaurantsList />} />
           <Route path="/admin/contact-messages" element={<ContactMessagesAdmin />} />
+          <Route path="/admin/orders" element={<AdminOrdersPage />} />
+
 
           
 
