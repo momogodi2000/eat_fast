@@ -1,123 +1,167 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import AdminLayout from '../../../../layouts/admin_layout';
-import { FiSearch, FiPlusCircle, FiFilter, FiEye, FiEdit, FiTrash2, FiCheckCircle, FiXCircle } from 'react-icons/fi';
+import React, { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { motion } from 'framer-motion';
+import { 
+  FiSearch, 
+  FiPlus, 
+  FiFilter, 
+  FiRefreshCw, 
+  FiDownload, 
+  FiMessageSquare,
+  FiAward,
+  FiAlertTriangle,
+  FiChevronDown,
+  FiEdit,
+  FiTrash2,
+  FiShield,
+  FiStar,
+  FiPackage,
+  FiClock,
+  FiDollarSign,
+  FiMapPin,
+  FiPhone,
+  FiMail,
+  FiShoppingBag, 
+  FiCheck, 
+  FiX, 
+  FiSend 
+} from 'react-icons/fi';
+import { HiOutlineSpeakerphone } from 'react-icons/hi';
+import AdminLayout from '../../../../layouts/admin_layout';
+import { Tooltip, Badge, Modal, Progress } from '../../../../components/ui/ui-components';
 
 // Mock data for restaurants
 const mockRestaurants = [
   {
     id: 1,
-    name: "Le Gourmet",
+    name: "Chez Pierre",
+    address: "123 Avenue Kennedy, Douala",
     cuisine: "Traditionnel Camerounais",
-    location: "Douala, Akwa",
-    rating: 4.7,
+    rating: 4.8,
+    orders: 245,
+    revenue: 1350000,
     status: "active",
-    orders: 238,
-    created: "2024-11-15",
-    image: "/api/placeholder/60/60"
+    verificationStatus: "verified",
+    complianceScore: 97,
+    image: "https://placeholder.com/restaurant1.jpg",
+    createdAt: "2024-12-01",
+    contactPhone: "+237 698765432",
+    contactEmail: "contact@chezpierre.cm",
   },
   {
     id: 2,
-    name: "Saveur Rapide",
-    cuisine: "Fast Food",
-    location: "Yaoundé, Centre",
+    name: "Le Gourmet",
+    address: "45 Rue de la Paix, Yaoundé",
+    cuisine: "Fusion",
     rating: 4.2,
+    orders: 185,
+    revenue: 920000,
     status: "active",
-    orders: 156,
-    created: "2025-01-05",
-    image: "/api/placeholder/60/60"
+    verificationStatus: "pending",
+    complianceScore: 82,
+    image: "https://placeholder.com/restaurant2.jpg",
+    createdAt: "2025-01-15",
+    contactPhone: "+237 699876543",
+    contactEmail: "info@legourmet.cm",
   },
   {
     id: 3,
-    name: "Chef Palace",
-    cuisine: "International",
-    location: "Douala, Bonanjo",
-    rating: 4.8,
-    status: "pending",
-    orders: 42,
-    created: "2025-03-20",
-    image: "/api/placeholder/60/60"
+    name: "Mama Africa",
+    address: "78 Rue des Manguiers, Douala",
+    cuisine: "Local",
+    rating: 4.6,
+    orders: 320,
+    revenue: 1750000,
+    status: "suspended",
+    verificationStatus: "verified",
+    complianceScore: 65,
+    image: "https://placeholder.com/restaurant3.jpg",
+    createdAt: "2024-11-20",
+    contactPhone: "+237 697654321",
+    contactEmail: "mamaafrica@gmail.com",
   },
   {
     id: 4,
-    name: "Mami Nyanga",
-    cuisine: "Fruits de mer",
-    location: "Kribi, Centre-ville",
-    rating: 4.5,
+    name: "Fresh Taste",
+    address: "22 Boulevard de la Liberté, Yaoundé",
+    cuisine: "Healthy",
+    rating: 4.4,
+    orders: 156,
+    revenue: 834000,
     status: "active",
-    orders: 189,
-    created: "2024-12-12",
-    image: "/api/placeholder/60/60"
+    verificationStatus: "verified",
+    complianceScore: 91,
+    image: "https://placeholder.com/restaurant4.jpg",
+    createdAt: "2025-02-05",
+    contactPhone: "+237 696543210",
+    contactEmail: "contact@freshtaste.cm",
   },
   {
     id: 5,
-    name: "La Fourchette d'Or",
-    cuisine: "Français",
-    location: "Yaoundé, Bastos",
-    rating: 4.6,
-    status: "inactive",
-    orders: 95,
-    created: "2025-01-18",
-    image: "/api/placeholder/60/60"
+    name: "Délices Express",
+    address: "5 Avenue de l'Indépendance, Douala",
+    cuisine: "Fast Food",
+    rating: 3.9,
+    orders: 425,
+    revenue: 2100000,
+    status: "active",
+    verificationStatus: "verified",
+    complianceScore: 86,
+    image: "https://placeholder.com/restaurant5.jpg",
+    createdAt: "2024-09-30",
+    contactPhone: "+237 695432109",
+    contactEmail: "delices@express.cm",
   },
   {
     id: 6,
-    name: "Délices d'Afrique",
-    cuisine: "Panafricain",
-    location: "Douala, Bonapriso",
-    rating: 4.3,
-    status: "active",
-    orders: 124,
-    created: "2025-02-01",
-    image: "/api/placeholder/60/60"
-  },
-  {
-    id: 7,
-    name: "Baobab Fusion",
-    cuisine: "Fusion",
-    location: "Buea, Molyko",
-    rating: 4.1,
+    name: "Le Bistrot Chic",
+    address: "12 Rue des Flamboyants, Yaoundé",
+    cuisine: "Français",
+    rating: 4.7,
+    orders: 98,
+    revenue: 1250000,
     status: "pending",
-    orders: 78,
-    created: "2025-03-10",
-    image: "/api/placeholder/60/60"
-  },
+    verificationStatus: "pending",
+    complianceScore: 0,
+    image: "https://placeholder.com/restaurant6.jpg",
+    createdAt: "2025-03-10",
+    contactPhone: "+237 694321098",
+    contactEmail: "contact@bistrotchic.cm",
+  }
 ];
 
-const RestaurantsList = () => {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const [restaurants, setRestaurants] = useState([]);
-  const [filteredRestaurants, setFilteredRestaurants] = useState([]);
+const RestaurantManagement = () => {
+  const { t, i18n } = useTranslation();
+  const chatbotRef = useRef(null);
+  
+  // States
+  const [restaurants, setRestaurants] = useState(mockRestaurants);
+  const [filteredRestaurants, setFilteredRestaurants] = useState(mockRestaurants);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
-  const [filterCuisine, setFilterCuisine] = useState('all');
-  const [isLoading, setIsLoading] = useState(true);
-  const [showFilters, setShowFilters] = useState(false);
-  const [selectedRestaurants, setSelectedRestaurants] = useState([]);
-  const [sortConfig, setSortConfig] = useState({ key: 'name', direction: 'ascending' });
-
-  // Fetch restaurants data
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isChatbotOpen, setIsChatbotOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { role: 'system', content: t('chatbotWelcome') }
+  ]);
+  const [currentMessage, setCurrentMessage] = useState('');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [statsView, setStatsView] = useState('overview'); // overview, performance, compliance
+  
+  // Filter, sort and search effects
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setRestaurants(mockRestaurants);
-      setFilteredRestaurants(mockRestaurants);
-      setIsLoading(false);
-    }, 800);
-  }, []);
-
-  // Handle search and filters
-  useEffect(() => {
-    let results = restaurants;
+    let results = [...restaurants];
     
-    // Apply search term filter
+    // Apply search filter
     if (searchTerm) {
       results = results.filter(restaurant => 
-        restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        restaurant.location.toLowerCase().includes(searchTerm.toLowerCase())
+        restaurant.address.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
     
@@ -126,469 +170,919 @@ const RestaurantsList = () => {
       results = results.filter(restaurant => restaurant.status === filterStatus);
     }
     
-    // Apply cuisine filter
-    if (filterCuisine !== 'all') {
-      results = results.filter(restaurant => restaurant.cuisine === filterCuisine);
-    }
-    
     // Apply sorting
-    if (sortConfig.key) {
-      results = [...results].sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? -1 : 1;
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-          return sortConfig.direction === 'ascending' ? 1 : -1;
-        }
-        return 0;
-      });
-    }
+    results.sort((a, b) => {
+      if (sortBy === 'name') {
+        return sortOrder === 'asc' 
+          ? a.name.localeCompare(b.name)
+          : b.name.localeCompare(a.name);
+      } else if (sortBy === 'rating') {
+        return sortOrder === 'asc' ? a.rating - b.rating : b.rating - a.rating;
+      } else if (sortBy === 'orders') {
+        return sortOrder === 'asc' ? a.orders - b.orders : b.orders - a.orders;
+      } else if (sortBy === 'revenue') {
+        return sortOrder === 'asc' ? a.revenue - b.revenue : b.revenue - a.revenue;
+      }
+      return 0;
+    });
     
     setFilteredRestaurants(results);
-  }, [searchTerm, filterStatus, filterCuisine, restaurants, sortConfig]);
-
-  // Request sort
-  const requestSort = (key) => {
-    let direction = 'ascending';
-    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
-      direction = 'descending';
-    }
-    setSortConfig({ key, direction });
+  }, [restaurants, searchTerm, filterStatus, sortBy, sortOrder, i18n.language]);
+  
+  // Handle restaurant click for details
+  const handleRestaurantClick = (restaurant) => {
+    setSelectedRestaurant(restaurant);
+    setIsDetailModalOpen(true);
   };
-
-  // Handle checkbox selection
-  const handleSelectRestaurant = (id) => {
-    if (selectedRestaurants.includes(id)) {
-      setSelectedRestaurants(selectedRestaurants.filter(restId => restId !== id));
-    } else {
-      setSelectedRestaurants([...selectedRestaurants, id]);
-    }
-  };
-
-  // Handle select all
-  const handleSelectAll = () => {
-    if (selectedRestaurants.length === filteredRestaurants.length) {
-      setSelectedRestaurants([]);
-    } else {
-      setSelectedRestaurants(filteredRestaurants.map(rest => rest.id));
+  
+  // Handle status updates
+  const handleStatusChange = (restaurantId, newStatus) => {
+    setRestaurants(prevRestaurants => 
+      prevRestaurants.map(r => 
+        r.id === restaurantId ? { ...r, status: newStatus } : r
+      )
+    );
+    
+    // Close modal after update
+    if (selectedRestaurant && selectedRestaurant.id === restaurantId) {
+      setIsDetailModalOpen(false);
     }
   };
-
-  // Handle restaurant deletion
-  const handleDeleteRestaurant = (id) => {
-    if (window.confirm(t('confirmDelete'))) {
-      setRestaurants(restaurants.filter(rest => rest.id !== id));
+  
+  // Handle chatbot toggle
+  const toggleChatbot = () => {
+    setIsChatbotOpen(!isChatbotOpen);
+    // Scroll to bottom of chat when opening
+    if (!isChatbotOpen) {
+      setTimeout(() => {
+        if (chatbotRef.current) {
+          chatbotRef.current.scrollTop = chatbotRef.current.scrollHeight;
+        }
+      }, 100);
     }
   };
-
-  // Handle bulk delete
-  const handleBulkDelete = () => {
-    if (selectedRestaurants.length === 0) return;
-    if (window.confirm(t('confirmDeleteMultiple'))) {
-      setRestaurants(restaurants.filter(rest => !selectedRestaurants.includes(rest.id)));
-      setSelectedRestaurants([]);
-    }
+  
+  // Handle chat messages
+  const handleSendMessage = () => {
+    if (!currentMessage.trim()) return;
+    
+    // Add user message
+    setChatMessages(prev => [...prev, { role: 'user', content: currentMessage }]);
+    
+    // Simulate AI response
+    setTimeout(() => {
+      setChatMessages(prev => [...prev, { 
+        role: 'system', 
+        content: t('chatbotResponse', { query: currentMessage })
+      }]);
+      
+      // Scroll to bottom
+      if (chatbotRef.current) {
+        chatbotRef.current.scrollTop = chatbotRef.current.scrollHeight;
+      }
+    }, 1000);
+    
+    setCurrentMessage('');
   };
-
-  // Handle status toggle
-  const handleStatusToggle = (id, currentStatus) => {
-    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-    setRestaurants(restaurants.map(rest => 
-      rest.id === id ? { ...rest, status: newStatus } : rest
-    ));
+  
+  // Handle "Add Restaurant" click
+  const handleAddRestaurant = () => {
+    setIsAddModalOpen(true);
   };
-
-  // Available cuisines for filter
-  const cuisineTypes = ['Traditionnel Camerounais', 'Fast Food', 'International', 'Fruits de mer', 'Français', 'Panafricain', 'Fusion'];
-
-  // Get status badge color
+  
+  // Simulated form submission
+  const handleSubmitNewRestaurant = (e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
+      setIsAddModalOpen(false);
+      
+      // Add success message or notification here
+    }, 2000);
+  };
+  
+  // Simulate data refresh
+  const handleRefreshData = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      // You could fetch new data here in a real application
+    }, 1000);
+  };
+  
+  // Function to get status badge color
   const getStatusBadgeColor = (status) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'inactive':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
+    switch(status) {
+      case 'active': return 'bg-green-500';
+      case 'suspended': return 'bg-red-500';
+      case 'pending': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
     }
   };
-
-  // Navigate to add new restaurant
-  const navigateToAddRestaurant = () => {
-    navigate('/admin/restaurants/add');
+  
+  // Function to get verification badge color
+  const getVerificationBadgeColor = (status) => {
+    switch(status) {
+      case 'verified': return 'bg-blue-500';
+      case 'pending': return 'bg-yellow-500';
+      default: return 'bg-gray-500';
+    }
   };
-
-  // Navigate to view restaurant details
-  const viewRestaurantDetails = (id) => {
-    navigate(`/admin/restaurants/${id}`);
-  };
-
-  // Navigate to edit restaurant
-  const editRestaurant = (id) => {
-    navigate(`/admin/restaurants/${id}/edit`);
+  
+  // Function to get compliance score color
+  const getComplianceScoreColor = (score) => {
+    if (score >= 90) return 'text-green-500';
+    if (score >= 70) return 'text-yellow-500';
+    return 'text-red-500';
   };
 
   return (
     <AdminLayout>
       <div className="animate-fadeIn">
         {/* Page Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-800 dark:text-white">{t('restaurantsManagement')}</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-              {t('totalRestaurants')}: {restaurants.length} | {t('active')}: {restaurants.filter(r => r.status === 'active').length}
-            </p>
-          </div>
-          
-          <button 
-            onClick={navigateToAddRestaurant}
-            className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-md"
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
+          <motion.h1 
+            className="text-2xl md:text-3xl font-bold mb-2 md:mb-0"
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <FiPlusCircle className="mr-2" />
-            {t('addRestaurant')}
-          </button>
+            {t('restaurantManagement')}
+          </motion.h1>
+          
+          <div className="flex flex-wrap items-center gap-2 md:gap-4">
+            <button 
+              onClick={handleAddRestaurant}
+              className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+            >
+              <FiPlus className="mr-2" /> {t('addRestaurant')}
+            </button>
+            
+            <button 
+              onClick={handleRefreshData}
+              className="flex items-center px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+            >
+              <FiRefreshCw className={`mr-2 ${loading ? 'animate-spin' : ''}`} /> {t('refresh')}
+            </button>
+            
+            <button 
+              className="flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+            >
+              <FiDownload className="mr-2" /> {t('export')}
+            </button>
+            
+            <button 
+              onClick={toggleChatbot}
+              className="relative flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+            >
+              <FiMessageSquare className="mr-2" /> {t('aiAssistant')}
+              {!isChatbotOpen && (
+                <span className="absolute -top-2 -right-2 w-4 h-4 bg-red-500 rounded-full"></span>
+              )}
+            </button>
+          </div>
         </div>
         
-        {/* Search and Filters Bar */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            {/* Search Input */}
-            <div className="relative flex-1">
+        {/* Filters & Search */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6">
+          <div className="flex flex-col md:flex-row justify-between gap-4">
+            <div className="relative">
               <FiSearch className="absolute left-3 top-3 text-gray-400" />
-              <input
-                type="text"
+              <input 
+                type="text" 
+                className="pl-10 pr-4 py-2 w-full md:w-80 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 focus:border-transparent transition-all duration-200"
                 placeholder={t('searchRestaurants')}
-                className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:text-white"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             
-            {/* Filter Button */}
-            <button 
-              onClick={() => setShowFilters(!showFilters)}
-              className="flex items-center bg-gray-100 dark:bg-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200"
-            >
-              <FiFilter className="mr-2" />
-              {t('filters')}
-            </button>
-            
-            {/* Bulk Actions (when items selected) */}
-            {selectedRestaurants.length > 0 && (
-              <button 
-                onClick={handleBulkDelete}
-                className="flex items-center bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors duration-200"
-              >
-                <FiTrash2 className="mr-2" />
-                {t('deleteSelected')} ({selectedRestaurants.length})
-              </button>
-            )}
-          </div>
-          
-          {/* Expanded Filters */}
-          {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 animate-fadeIn">
-              {/* Status Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('status')}</label>
+            <div className="flex flex-wrap gap-2">
+              <div className="relative">
                 <select 
-                  value={filterStatus} 
+                  className="pl-4 pr-8 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 focus:border-transparent appearance-none transition-all duration-200"
+                  value={filterStatus}
                   onChange={(e) => setFilterStatus(e.target.value)}
-                  className="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:text-white"
                 >
-                  <option value="all">{t('all')}</option>
-                  <option value="active">{t('active')}</option>
-                  <option value="inactive">{t('inactive')}</option>
-                  <option value="pending">{t('pending')}</option>
+                  <option value="all">{t('allStatuses')}</option>
+                  <option value="active">{t('activeStatus')}</option>
+                  <option value="suspended">{t('suspendedStatus')}</option>
+                  <option value="pending">{t('pendingStatus')}</option>
                 </select>
+                <FiChevronDown className="absolute right-3 top-3 text-gray-400 pointer-events-none" />
               </div>
               
-              {/* Cuisine Type Filter */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('cuisineType')}</label>
+              <div className="relative">
                 <select 
-                  value={filterCuisine} 
-                  onChange={(e) => setFilterCuisine(e.target.value)}
-                  className="w-full p-2 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 dark:text-white"
+                  className="pl-4 pr-8 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 focus:border-transparent appearance-none transition-all duration-200"
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
                 >
-                  <option value="all">{t('all')}</option>
-                  {cuisineTypes.map((cuisine, index) => (
-                    <option key={index} value={cuisine}>{cuisine}</option>
-                  ))}
+                  <option value="name">{t('sortByName')}</option>
+                  <option value="rating">{t('sortByRating')}</option>
+                  <option value="orders">{t('sortByOrders')}</option>
+                  <option value="revenue">{t('sortByRevenue')}</option>
                 </select>
+                <FiChevronDown className="absolute right-3 top-3 text-gray-400 pointer-events-none" />
+              </div>
+              
+              <div className="relative">
+                <select 
+                  className="pl-4 pr-8 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 focus:border-transparent appearance-none transition-all duration-200"
+                  value={sortOrder}
+                  onChange={(e) => setSortOrder(e.target.value)}
+                >
+                  <option value="asc">{t('ascending')}</option>
+                  <option value="desc">{t('descending')}</option>
+                </select>
+                <FiChevronDown className="absolute right-3 top-3 text-gray-400 pointer-events-none" />
+              </div>
+              
+              <button 
+                className="flex items-center px-4 py-2 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-lg transition-colors duration-200"
+              >
+                <FiFilter className="mr-2" /> {t('moreFilters')}
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Stats Overview */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 mb-6 overflow-hidden">
+          <div className="flex flex-wrap mb-4 border-b border-gray-200 dark:border-gray-700 pb-2">
+            <button 
+              className={`mr-4 pb-2 font-medium ${statsView === 'overview' ? 'text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400' : 'text-gray-600 dark:text-gray-400'}`}
+              onClick={() => setStatsView('overview')}
+            >
+              {t('overview')}
+            </button>
+            <button 
+              className={`mr-4 pb-2 font-medium ${statsView === 'performance' ? 'text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400' : 'text-gray-600 dark:text-gray-400'}`}
+              onClick={() => setStatsView('performance')}
+            >
+              {t('performance')}
+            </button>
+            <button 
+              className={`mr-4 pb-2 font-medium ${statsView === 'compliance' ? 'text-green-600 dark:text-green-400 border-b-2 border-green-600 dark:border-green-400' : 'text-gray-600 dark:text-gray-400'}`}
+              onClick={() => setStatsView('compliance')}
+            >
+              {t('compliance')}
+            </button>
+          </div>
+          
+          {statsView === 'overview' && (
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-gradient-to-br from-green-50 to-blue-50 dark:from-green-900 dark:to-blue-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transform transition-transform hover:scale-105">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-gray-600 dark:text-gray-300">{t('totalRestaurants')}</h3>
+                  <span className="bg-blue-100 dark:bg-blue-800 text-blue-600 dark:text-blue-300 p-1 rounded">
+                    <FiShoppingBag size={16} />
+                  </span>
+                </div>
+                <p className="text-3xl font-bold">{restaurants.length}</p>
+                <div className="flex items-center mt-2 text-sm text-green-600 dark:text-green-400">
+                  <span>+3 {t('thisMonth')}</span>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900 dark:to-pink-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transform transition-transform hover:scale-105">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-gray-600 dark:text-gray-300">{t('activeRestaurants')}</h3>
+                  <span className="bg-purple-100 dark:bg-purple-800 text-purple-600 dark:text-purple-300 p-1 rounded">
+                    <FiAward size={16} />
+                  </span>
+                </div>
+                <p className="text-3xl font-bold">
+                  {restaurants.filter(r => r.status === 'active').length}
+                </p>
+                <div className="flex items-center mt-2 text-sm text-green-600 dark:text-green-400">
+                  <span>85% {t('activeRate')}</span>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-900 dark:to-orange-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transform transition-transform hover:scale-105">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-gray-600 dark:text-gray-300">{t('pendingApproval')}</h3>
+                  <span className="bg-yellow-100 dark:bg-yellow-800 text-yellow-600 dark:text-yellow-300 p-1 rounded">
+                    <FiClock size={16} />
+                  </span>
+                </div>
+                <p className="text-3xl font-bold">
+                  {restaurants.filter(r => r.status === 'pending').length}
+                </p>
+                <div className="flex items-center mt-2 text-sm text-yellow-600 dark:text-yellow-400">
+                  <span>{t('requiresReview')}</span>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-br from-red-50 to-orange-50 dark:from-red-900 dark:to-orange-900 p-4 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 transform transition-transform hover:scale-105">
+                <div className="flex justify-between items-start mb-2">
+                  <h3 className="text-gray-600 dark:text-gray-300">{t('suspendedRestaurants')}</h3>
+                  <span className="bg-red-100 dark:bg-red-800 text-red-600 dark:text-red-300 p-1 rounded">
+                    <FiAlertTriangle size={16} />
+                  </span>
+                </div>
+                <p className="text-3xl font-bold">
+                  {restaurants.filter(r => r.status === 'suspended').length}
+                </p>
+                <div className="flex items-center mt-2 text-sm text-red-600 dark:text-red-400">
+                  <span>{t('requiresAction')}</span>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {statsView === 'performance' && (
+            <div className="rounded-lg overflow-hidden">
+              <div className="flex flex-col md:flex-row">
+                <div className="w-full md:w-1/2 p-4">
+                  <h3 className="text-lg font-medium mb-4">{t('topPerformers')}</h3>
+                  {restaurants
+                    .sort((a, b) => b.orders - a.orders)
+                    .slice(0, 3)
+                    .map(restaurant => (
+                      <div key={restaurant.id} className="flex items-center mb-4 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                        <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center mr-3">
+                          <FiShoppingBag className="text-green-600 dark:text-green-300" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{restaurant.name}</h4>
+                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <FiPackage className="mr-1" /> {restaurant.orders} {t('orders')}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold">
+                            {new Intl.NumberFormat(i18n.language, { 
+                              style: 'currency', 
+                              currency: 'XAF',
+                              maximumFractionDigits: 0
+                            }).format(restaurant.revenue)}
+                          </div>
+                          <div className="flex items-center justify-end text-yellow-500">
+                            <FiStar className="mr-1" /> {restaurant.rating.toFixed(1)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+                <div className="w-full md:w-1/2 p-4">
+                  <h3 className="text-lg font-medium mb-4">{t('needsImprovement')}</h3>
+                  {restaurants
+                    .filter(r => r.status !== 'pending')
+                    .sort((a, b) => a.orders - b.orders)
+                    .slice(0, 3)
+                    .map(restaurant => (
+                      <div key={restaurant.id} className="flex items-center mb-4 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                        <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center mr-3">
+                          <FiAlertTriangle className="text-red-600 dark:text-red-300" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{restaurant.name}</h4>
+                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <FiPackage className="mr-1" /> {restaurant.orders} {t('orders')}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-lg font-bold">
+                            {new Intl.NumberFormat(i18n.language, { 
+                              style: 'currency', 
+                              currency: 'XAF',
+                              maximumFractionDigits: 0
+                            }).format(restaurant.revenue)}
+                          </div>
+                          <div className="flex items-center justify-end text-yellow-500">
+                            <FiStar className="mr-1" /> {restaurant.rating.toFixed(1)}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {statsView === 'compliance' && (
+            <div className="rounded-lg overflow-hidden">
+              <div className="flex flex-col md:flex-row">
+                <div className="w-full md:w-1/2 p-4">
+                  <h3 className="text-lg font-medium mb-4">{t('complianceLeaders')}</h3>
+                  {restaurants
+                    .filter(r => r.complianceScore > 0)
+                    .sort((a, b) => b.complianceScore - a.complianceScore)
+                    .slice(0, 3)
+                    .map(restaurant => (
+                      <div key={restaurant.id} className="flex items-center mb-4 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-800 flex items-center justify-center mr-3">
+                          <FiShield className="text-blue-600 dark:text-blue-300" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{restaurant.name}</h4>
+                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            {restaurant.verificationStatus === 'verified' ? (
+                              <span className="text-green-500 dark:text-green-400">{t('verified')}</span>
+                            ) : (
+                              <span className="text-yellow-500 dark:text-yellow-400">{t('pending')}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${getComplianceScoreColor(restaurant.complianceScore)}`}>
+                            {restaurant.complianceScore}%
+                          </div>
+                          <div className="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-1">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                restaurant.complianceScore >= 90 ? 'bg-green-500' : 
+                                restaurant.complianceScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${restaurant.complianceScore}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                        </div>
+                    ))}
+                </div>
+                <div className="w-full md:w-1/2 p-4">
+                  <h3 className="text-lg font-medium mb-4">{t('complianceIssues')}</h3>
+                  {restaurants
+                    .filter(r => r.complianceScore > 0)
+                    .sort((a, b) => a.complianceScore - b.complianceScore)
+                    .slice(0, 3)
+                    .map(restaurant => (
+                      <div key={restaurant.id} className="flex items-center mb-4 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+                        <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center mr-3">
+                          <FiAlertTriangle className="text-red-600 dark:text-red-300" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium">{restaurant.name}</h4>
+                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            {restaurant.verificationStatus === 'verified' ? (
+                              <span className="text-green-500 dark:text-green-400">{t('verified')}</span>
+                            ) : (
+                              <span className="text-yellow-500 dark:text-yellow-400">{t('pending')}</span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className={`text-lg font-bold ${getComplianceScoreColor(restaurant.complianceScore)}`}>
+                            {restaurant.complianceScore}%
+                          </div>
+                          <div className="w-24 bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-1">
+                            <div 
+                              className={`h-2 rounded-full ${
+                                restaurant.complianceScore >= 90 ? 'bg-green-500' : 
+                                restaurant.complianceScore >= 70 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${restaurant.complianceScore}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
               </div>
             </div>
           )}
         </div>
         
-        {/* Restaurants Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
-          {isLoading ? (
-            <div className="flex justify-center items-center p-12">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
+        {/* Restaurant Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+          {filteredRestaurants.map(restaurant => (
+            <motion.div 
+              key={restaurant.id}
+              onClick={() => handleRestaurantClick(restaurant)}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <div className="h-36 bg-gray-300 dark:bg-gray-700 relative">
+                <div className="absolute top-2 right-2 flex space-x-2">
+                  <Badge 
+                    text={restaurant.status} 
+                    color={getStatusBadgeColor(restaurant.status)}
+                  />
+                  {restaurant.verificationStatus === 'verified' && (
+                    <Tooltip content={t('verified')}>
+                      <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full">
+                        <FiCheck size={14} />
+                      </span>
+                    </Tooltip>
+                  )}
+                </div>
+                
+                <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black to-transparent p-4">
+                  <h3 className="text-white text-xl font-bold truncate">{restaurant.name}</h3>
+                  <p className="text-gray-200 text-sm flex items-center">
+                    <FiMapPin className="mr-1" /> {restaurant.address}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="p-4">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-sm">
+                    {restaurant.cuisine}
+                  </span>
+                  <div className="flex items-center text-yellow-500">
+                    <FiStar className="mr-1" /> {restaurant.rating.toFixed(1)}
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-2 mb-3">
+                  <div className="bg-blue-50 dark:bg-blue-900 p-2 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('totalOrders')}</p>
+                    <p className="text-lg font-bold text-blue-700 dark:text-blue-300">{restaurant.orders}</p>
+                  </div>
+                  <div className="bg-green-50 dark:bg-green-900 p-2 rounded-lg">
+                    <p className="text-xs text-gray-500 dark:text-gray-400">{t('revenue')}</p>
+                    <p className="text-lg font-bold text-green-700 dark:text-green-300">
+                      {new Intl.NumberFormat(i18n.language, { 
+                        style: 'currency', 
+                        currency: 'XAF',
+                        maximumFractionDigits: 0
+                      }).format(restaurant.revenue)}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500 dark:text-gray-400 flex items-center">
+                    <FiClock className="mr-1" /> {new Date(restaurant.createdAt).toLocaleDateString()}
+                  </span>
+                  <span className="text-blue-600 dark:text-blue-400 hover:underline">
+                    {t('viewDetails')} →
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+        
+        {/* Restaurant Grid Empty State */}
+        {filteredRestaurants.length === 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-8 text-center">
+            <div className="flex justify-center mb-4">
+              <HiOutlineSpeakerphone className="text-gray-400 dark:text-gray-500 text-5xl" />
             </div>
-          ) : filteredRestaurants.length === 0 ? (
-            <div className="text-center p-8">
-              <p className="text-gray-500 dark:text-gray-400">{t('noRestaurantsFound')}</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full table-auto">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 text-left">
-                      <input 
-                        type="checkbox" 
-                        checked={selectedRestaurants.length === filteredRestaurants.length && filteredRestaurants.length > 0} 
-                        onChange={handleSelectAll}
-                        className="rounded text-green-600 focus:ring-green-500"
+            <h3 className="text-xl font-medium mb-2">{t('noRestaurantsFound')}</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-4">{t('tryAdjustingFilters')}</p>
+            <button 
+              onClick={() => {
+                setSearchTerm('');
+                setFilterStatus('all');
+                setSortBy('name');
+                setSortOrder('asc');
+              }}
+              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors duration-200"
+            >
+              {t('clearFilters')}
+            </button>
+          </div>
+        )}
+        
+        {/* Restaurant Detail Modal */}
+        {selectedRestaurant && (
+          <Modal
+            isOpen={isDetailModalOpen}
+            onClose={() => setIsDetailModalOpen(false)}
+            title={selectedRestaurant.name}
+          >
+            <div className="p-4">
+              <div className="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 mb-6">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                  <div className="mb-4 md:mb-0">
+                    <h3 className="text-xl font-bold mb-2">{selectedRestaurant.name}</h3>
+                    <p className="flex items-center text-gray-600 dark:text-gray-300 mb-2">
+                      <FiMapPin className="mr-2" /> {selectedRestaurant.address}
+                    </p>
+                    <div className="flex items-center space-x-4">
+                      <p className="flex items-center text-gray-600 dark:text-gray-300">
+                        <FiPhone className="mr-2" /> {selectedRestaurant.contactPhone}
+                      </p>
+                      <p className="flex items-center text-gray-600 dark:text-gray-300">
+                        <FiMail className="mr-2" /> {selectedRestaurant.contactEmail}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  <div className="flex flex-col items-end">
+                    <div className="flex space-x-2 mb-2">
+                      <Badge 
+                        text={selectedRestaurant.status} 
+                        color={getStatusBadgeColor(selectedRestaurant.status)}
                       />
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('name')}
-                    >
-                      {t('restaurant')}
-                      {sortConfig.key === 'name' && (
-                        <span className="ml-1">{sortConfig.direction === 'ascending' ? '↑' : '↓'}</span>
-                      )}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('cuisine')}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('location')}
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('rating')}
-                    >
-                      {t('rating')}
-                      {sortConfig.key === 'rating' && (
-                        <span className="ml-1">{sortConfig.direction === 'ascending' ? '↑' : '↓'}</span>
-                      )}
-                    </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('status')}
-                    </th>
-                    <th 
-                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                      onClick={() => requestSort('orders')}
-                    >
-                      {t('orders')}
-                      {sortConfig.key === 'orders' && (
-                        <span className="ml-1">{sortConfig.direction === 'ascending' ? '↑' : '↓'}</span>
-                      )}
-                    </th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {t('actions')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                  {filteredRestaurants.map((restaurant) => (
-                    <tr 
-                      key={restaurant.id} 
-                      className="hover:bg-gray-50 dark:hover:bg-gray-750 transition-colors duration-150"
-                    >
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <input 
-                          type="checkbox" 
-                          checked={selectedRestaurants.includes(restaurant.id)} 
-                          onChange={() => handleSelectRestaurant(restaurant.id)}
-                          className="rounded text-green-600 focus:ring-green-500"
-                        />
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="h-10 w-10 flex-shrink-0">
-                            <img 
-                              className="h-10 w-10 rounded-full object-cover border border-gray-200 dark:border-gray-600" 
-                              src={restaurant.image} 
-                              alt={restaurant.name} 
-                            />
-                          </div>
-                          <div className="ml-4">
-                            <div className="text-sm font-medium text-gray-900 dark:text-white">{restaurant.name}</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">{t('since')}: {restaurant.created}</div>
-                          </div>
+                      <Badge 
+                        text={selectedRestaurant.verificationStatus} 
+                        color={getVerificationBadgeColor(selectedRestaurant.verificationStatus)}
+                      />
+                    </div>
+                    <div className="flex items-center text-yellow-500">
+                      <FiStar className="mr-1" /> 
+                      <span className="font-bold">{selectedRestaurant.rating.toFixed(1)}</span>
+                      <span className="text-gray-600 dark:text-gray-400 ml-1 text-sm">
+                        (42 {t('reviews')})
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <h4 className="text-lg font-medium mb-3">{t('performance')}</h4>
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('totalOrders')}</p>
+                        <p className="text-2xl font-bold">{selectedRestaurant.orders}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{t('revenue')}</p>
+                        <p className="text-2xl font-bold">
+                          {new Intl.NumberFormat(i18n.language, { 
+                            style: 'currency', 
+                            currency: 'XAF',
+                            maximumFractionDigits: 0
+                          }).format(selectedRestaurant.revenue)}
+                        </p>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">{t('orderTrend')}</p>
+                      <div className="h-20 bg-gray-100 dark:bg-gray-700 rounded flex items-end p-1">
+                        {/* Mock chart bars */}
+                        {Array(12).fill(0).map((_, i) => (
+                          <div 
+                            key={i} 
+                            className="flex-1 mx-0.5 bg-green-500 rounded-t"
+                            style={{ height: `${Math.random() * 70 + 20}%` }}
+                          ></div>
+                        ))}
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        <span>Jan</span>
+                        <span>Dec</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="text-lg font-medium mb-3">{t('compliance')}</h4>
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                    <div className="mb-4">
+                      <div className="flex justify-between items-center mb-1">
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{t('overallCompliance')}</p>
+                        <p className={`font-bold ${getComplianceScoreColor(selectedRestaurant.complianceScore)}`}>
+                          {selectedRestaurant.complianceScore}%
+                        </p>
+                      </div>
+                      <Progress 
+                        value={selectedRestaurant.complianceScore} 
+                        color={
+                          selectedRestaurant.complianceScore >= 90 ? 'green' : 
+                          selectedRestaurant.complianceScore >= 70 ? 'yellow' : 'red'
+                        }
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{t('foodSafety')}</p>
+                          <p className="font-bold text-green-600 dark:text-green-400">95%</p>
                         </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                        {restaurant.cuisine}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                        {restaurant.location}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="text-sm text-gray-900 dark:text-white font-medium">{restaurant.rating}</div>
-                          <div className="ml-1 text-yellow-400">★</div>
+                        <Progress value={95} color="green" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{t('documentation')}</p>
+                          <p className="font-bold text-yellow-600 dark:text-yellow-400">82%</p>
                         </div>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap">
-                        <button
-                          onClick={() => handleStatusToggle(restaurant.id, restaurant.status)}
-                          className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusBadgeColor(restaurant.status)}`}
-                        >
-                          {restaurant.status === 'active' ? (
-                            <FiCheckCircle className="mr-1" />
-                          ) : restaurant.status === 'inactive' ? (
-                            <FiXCircle className="mr-1" />
-                          ) : (
-                            <div className="h-4 w-4 rounded-full border-2 border-yellow-500 border-t-transparent animate-spin mr-1"></div>
-                          )}
-                          {t(restaurant.status)}
-                        </button>
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
-                        {restaurant.orders}
-                      </td>
-                      <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-2">
-                          <button 
-                            onClick={() => viewRestaurantDetails(restaurant.id)}
-                            className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
-                            title={t('view')}
-                          >
-                            <FiEye size={18} />
-                          </button>
-                          <button 
-                            onClick={() => editRestaurant(restaurant.id)}
-                            className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors duration-200"
-                            title={t('edit')}
-                          >
-                            <FiEdit size={18} />
-                          </button>
-                          <button 
-                            onClick={() => handleDeleteRestaurant(restaurant.id)}
-                            className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200"
-                            title={t('delete')}
-                          >
-                            <FiTrash2 size={18} />
-                          </button>
+                        <Progress value={82} color="yellow" />
+                      </div>
+                      <div>
+                        <div className="flex justify-between items-center mb-1">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">{t('customerFeedback')}</p>
+                          <p className="font-bold text-green-600 dark:text-green-400">90%</p>
                         </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        <Progress value={90} color="green" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap justify-end space-x-4">
+                <button 
+                  className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200"
+                >
+                  <FiEdit className="mr-2" /> {t('edit')}
+                </button>
+                
+                {selectedRestaurant.status === 'active' ? (
+                  <button 
+                    onClick={() => handleStatusChange(selectedRestaurant.id, 'suspended')}
+                    className="flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors duration-200"
+                  >
+                    <FiAlertTriangle className="mr-2" /> {t('suspend')}
+                  </button>
+                ) : selectedRestaurant.status === 'suspended' ? (
+                  <button 
+                    onClick={() => handleStatusChange(selectedRestaurant.id, 'active')}
+                    className="flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200"
+                  >
+                    <FiCheck className="mr-2" /> {t('activate')}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => handleStatusChange(selectedRestaurant.id, 'active')}
+                    className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
+                  >
+                    <FiCheck className="mr-2" /> {t('approve')}
+                  </button>
+                )}
+                
+                <button 
+                  className="flex items-center px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-colors duration-200"
+                >
+                  <FiTrash2 className="mr-2" /> {t('delete')}
+                </button>
+              </div>
             </div>
-          )}
-          
-          {/* Table Footer with Pagination */}
-          <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex flex-col md:flex-row items-center justify-between">
-            <div className="text-sm text-gray-500 dark:text-gray-400 mb-4 md:mb-0">
-              {t('showing')} {filteredRestaurants.length} {t('of')} {restaurants.length} {t('restaurants')}
+          </Modal>
+        )}
+        
+        {/* Add Restaurant Modal */}
+        <Modal
+          isOpen={isAddModalOpen}
+          onClose={() => setIsAddModalOpen(false)}
+          title={t('addNewRestaurant')}
+        >
+          <form onSubmit={handleSubmitNewRestaurant} className="p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('restaurantName')}</label>
+                <input 
+                  type="text" 
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                  placeholder={t('enterRestaurantName')}
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('cuisineType')}</label>
+                <select 
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">{t('selectCuisine')}</option>
+                  <option value="traditional">{t('traditional')}</option>
+                  <option value="fastfood">{t('fastFood')}</option>
+                  <option value="italian">{t('italian')}</option>
+                  <option value="fusion">{t('fusion')}</option>
+                  <option value="healthy">{t('healthy')}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('contactPhone')}</label>
+                <input 
+                  type="text" 
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                  placeholder="+237 6XX XXX XXX"
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('contactEmail')}</label>
+                <input 
+                  type="email" 
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                  placeholder="restaurant@example.com"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('address')}</label>
+                <input 
+                  type="text" 
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                  placeholder={t('enterFullAddress')}
+                />
+              </div>
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('city')}</label>
+                <select 
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="">{t('selectCity')}</option>
+                  <option value="douala">Douala</option>
+                  <option value="yaounde">Yaoundé</option>
+                  <option value="bafoussam">Bafoussam</option>
+                  <option value="limbe">Limbe</option>
+                  <option value="buea">Buea</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('initialStatus')}</label>
+                <select 
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                >
+                  <option value="pending">{t('pendingApproval')}</option>
+                  <option value="active">{t('activeImmediately')}</option>
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('restaurantLogo')}</label>
+                <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-4 text-center">
+                  <div className="flex flex-col items-center">
+                    <FiPackage className="text-gray-400 text-3xl mb-2" />
+                    <p className="text-gray-600 dark:text-gray-400 mb-2">{t('dragImageHere')}</p>
+                    <button type="button" className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg">
+                      {t('browseFiles')}
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
             
-            <div className="flex items-center space-x-1">
-              <button className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200">
-                {t('previous')}
+            <div className="flex justify-end space-x-4">
+              <button 
+                type="button"
+                onClick={() => setIsAddModalOpen(false)}
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-lg transition-colors duration-200"
+              >
+                {t('cancel')}
               </button>
-              <button className="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200">
-                1
-              </button>
-              <button className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
-                2
-              </button>
-              <button className="px-3 py-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200">
-                {t('next')}
+              <button 
+                type="submit"
+                disabled={loading}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 flex items-center"
+              >
+                {loading && <FiRefreshCw className="animate-spin mr-2" />}
+                {t('createRestaurant')}
               </button>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Statistics Cards - Hidden on mobile, shown on larger screens */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 hidden md:grid">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('totalRestaurants')}</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">{restaurants.length}</p>
-            </div>
-            <div className="h-12 w-12 rounded-full bg-green-100 dark:bg-green-900 flex items-center justify-center">
-              <FiShoppingBag className="h-6 w-6 text-green-600 dark:text-green-400" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div className="bg-green-600 h-2 rounded-full" style={{ width: '100%' }}></div>
-            </div>
-          </div>
-        </div>
+          </form>
+        </Modal>
         
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('activeRestaurants')}</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {restaurants.filter(r => r.status === 'active').length}
-              </p>
+        {/* Chatbot Assistant */}
+        {isChatbotOpen && (
+          <motion.div 
+            className="fixed bottom-20 right-6 w-80 md:w-96 h-96 bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden z-50 flex flex-col"
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="bg-green-600 dark:bg-green-700 p-3 text-white flex justify-between items-center">
+              <h3 className="font-medium">{t('aiAssistant')}</h3>
+              <button onClick={toggleChatbot} className="p-1 hover:bg-green-700 dark:hover:bg-green-800 rounded">
+                <FiX />
+              </button>
             </div>
-            <div className="h-12 w-12 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-              <FiCheckCircle className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+            
+            <div 
+              ref={chatbotRef} 
+              className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
+            >
+              {chatMessages.map((msg, index) => (
+                <div 
+                  key={index} 
+                  className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div 
+                    className={`max-w-3/4 rounded-lg p-3 ${
+                      msg.role === 'user' 
+                        ? 'bg-blue-500 text-white' 
+                        : 'bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                    }`}>
+                    {msg.content}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-          <div className="mt-4">
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full" 
-                style={{ width: `${(restaurants.filter(r => r.status === 'active').length / restaurants.length) * 100}%` }}
-              ></div>
+            
+            <div className="p-3 border-t border-gray-200 dark:border-gray-700 flex">
+              <input 
+                type="text" 
+                className="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                placeholder={t('askAnything')}
+                value={currentMessage}
+                onChange={(e) => setCurrentMessage(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+              />
+              <button 
+                onClick={handleSendMessage}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-r-lg"
+              >
+                <FiSend />
+              </button>
             </div>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('pendingApproval')}</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {restaurants.filter(r => r.status === 'pending').length}
-              </p>
-            </div>
-            <div className="h-12 w-12 rounded-full bg-yellow-100 dark:bg-yellow-900 flex items-center justify-center">
-              <FiXCircle className="h-6 w-6 text-yellow-600 dark:text-yellow-400" />
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                className="bg-yellow-600 h-2 rounded-full" 
-                style={{ width: `${(restaurants.filter(r => r.status === 'pending').length / restaurants.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
-        
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 transform transition-all duration-300 hover:scale-105 hover:shadow-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('averageRating')}</p>
-              <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                {(restaurants.reduce((acc, rest) => acc + rest.rating, 0) / restaurants.length).toFixed(1)}
-              </p>
-            </div>
-            <div className="h-12 w-12 rounded-full bg-purple-100 dark:bg-purple-900 flex items-center justify-center">
-              <span className="text-xl text-purple-600 dark:text-purple-400">★</span>
-            </div>
-          </div>
-          <div className="mt-4">
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-              <div 
-                className="bg-purple-600 h-2 rounded-full" 
-                style={{ width: `${(restaurants.reduce((acc, rest) => acc + rest.rating, 0) / restaurants.length / 5) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-        </div>
+          </motion.div>
+        )}
       </div>
     </AdminLayout>
   );
 };
 
-export default RestaurantsList;
+export default RestaurantManagement;

@@ -11,9 +11,14 @@ import ForgotPassword from './pages/Authentication/forgot_password';
 
 import AdminDashboard from './pages/Dashboards/Admin/admin_dashboard';
 import UserListPage from './pages/Dashboards/Admin/Utilisateurs/UserList';
-import RestaurantsList from './pages/Dashboards/Admin/Restaurants/RestaurantsList';
+import RestaurantManagement from './pages/Dashboards/Admin/Restaurants/RestaurantsList';
 import ContactMessagesAdmin from './pages/Dashboards/Admin/ContactMessages/Contact';
 import AdminOrdersPage from './pages/Dashboards/Admin/Orders/orders';
+import StatisticsPage from './pages/Dashboards/Admin/Statistics/StatisticsPage';
+import AdminSupportPage from './pages/Dashboards/Admin/AdminSupport/AdminSupportPage.js';
+import AdminSettingsPage from './pages/Dashboards/Admin/Settings/AdminSettingsPage.jsx';
+import AdminDeliveryManagement from './pages/Dashboards/Admin/Delivery/delivery_managemnet.jsx';
+
 
 
 import DashboardRedirect from './components/CommonShare/test';
@@ -41,9 +46,18 @@ function App() {
           
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/user" element={<UserListPage />} />
-          <Route path="/admin/restaurants" element={<RestaurantsList />} />
+          <Route path="/admin/restaurants" element={<RestaurantManagement />} />
           <Route path="/admin/contact-messages" element={<ContactMessagesAdmin />} />
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
+          <Route path="/admin/statistics" element={<StatisticsPage />} />
+          <Route path="/admin/support-services" element={<AdminSupportPage />} />
+          <Route path="/admin/settings" element={<AdminSettingsPage />} />
+          <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
+
+
+
+
+
 
 
           
