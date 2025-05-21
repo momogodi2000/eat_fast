@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Sun, Moon, ChevronDown, User, ShoppingBag, Menu, X, Mail, Phone, MapPin, Send, Languages } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
+import logo from '../../assets/logo/eat_fast.png';
+
+
 const ContactPage = () => {
   const { t, i18n } = useTranslation();
   const [darkMode, setDarkMode] = useState(false);
@@ -435,7 +438,7 @@ const ContactPage = () => {
                   <h3 className="text-lg font-bold mb-4">Find Us On Map</h3>
                   <div className="aspect-w-16 aspect-h-9 rounded-xl overflow-hidden">
                     <img 
-                      src="/api/placeholder/800/400" 
+                      src= {logo} 
                       alt="EatFast Location Map" 
                       className="w-full h-full object-cover"
                     />

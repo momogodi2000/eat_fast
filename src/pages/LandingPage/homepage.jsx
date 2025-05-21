@@ -18,6 +18,8 @@ import resto from '../../assets/images/resto6.jpeg';
 import alain from '../../assets/avartar/avatar2.jpg';
 import momo from '../../assets/avartar/avatar3.png';
 import yvan from '../../assets/avartar/avartar.jpeg';
+import logo from '../../assets/logo/eat_fast.png';
+
 
 const HomePage = () => {
   const { t, i18n } = useTranslation();
@@ -420,21 +422,30 @@ const HomePage = () => {
                 transition={{ delay: 0.7, duration: 0.5 }}
                 className="flex flex-wrap gap-4"
               >
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full font-medium flex items-center space-x-2 shadow-lg"
-                >
-                  <span>{t('hero.orderButton')}</span>
-                  <ChevronDown size={16} />
-                </motion.button>
-                <motion.button 
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className={`px-6 py-3 rounded-full font-medium flex items-center space-x-2 border ${darkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-300 hover:bg-gray-100'} transition shadow-lg`}
-                >
-                  <span>{t('hero.becomePartner')}</span>
-                </motion.button>
+                  <Link to="/menu">
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full font-medium flex items-center space-x-2 shadow-lg"
+                  >
+                    <span>{t('hero.orderButton')}</span>
+                    <ChevronDown size={16} />
+                  </motion.button>
+                </Link>
+
+
+                <Link to="/become" className="block">
+                  <motion.button 
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full font-medium flex items-center space-x-2 shadow-lg"
+                  >
+                    <span>{t('hero.becomePartner')}</span>
+                    <ChevronDown size={16} />
+                  </motion.button>
+                </Link>
+
+
               </motion.div>
             </motion.div>
             
@@ -455,7 +466,7 @@ const HomePage = () => {
               >
                 <div className="relative rounded-2xl overflow-hidden transform perspective-1000 rotateY-3 shadow-2xl">
                   <img 
-                    src="/api/placeholder/600/400" 
+                    src= {logo} 
                     alt="Eat-Fast Food Delivery" 
                     className="w-full h-auto rounded-2xl"
                   />
@@ -641,6 +652,80 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Avez-vous faim? Section */}
+        <section className={`py-12 ${darkMode ? 'bg-gray-800' : 'bg-green-50'}`}>
+          <div className="container mx-auto px-4">
+            <div className="flex flex-col md:flex-row items-center justify-between">
+              <motion.div
+                initial={{ opacity: 0, x: -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7 }}
+                viewport={{ once: true }}
+                className="w-full md:w-1/2 mb-8 md:mb-0"
+              >
+                <h2 className="text-3xl font-bold mb-4">Avez-vous faim?</h2>
+                <p className="text-lg mb-6 dark:text-gray-300">
+                  Découvrez tous nos menus savoureux préparés avec des ingrédients frais et livrés rapidement à votre porte.
+                </p>
+                <div className="flex flex-wrap gap-4">
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => window.location.href = '/menu'}
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full font-medium shadow-lg"
+                  >
+                    Voir tous les menus
+                  </motion.button>
+                </div>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.7 }}
+                viewport={{ once: true }}
+                className={`w-full md:w-1/2 p-6 rounded-xl ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-lg`}
+              >
+                <div className="flex items-start mb-4">
+                  <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-full mr-4">
+                    <Gift className="text-yellow-500 dark:text-yellow-300" size={24} />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Connectez-vous pour profiter de nos promotions</h3>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4">
+                      Inscrivez-vous ou connectez-vous pour accéder à des offres exclusives, des réductions spéciales et suivre vos commandes.
+                    </p>
+                    <div className="flex flex-wrap gap-4">
+                      <Link to="/login">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full font-medium transition shadow-md"
+                        >
+                          Se connecter
+                        </motion.button>
+                      </Link>
+                      <Link to="/register">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`px-6 py-2 rounded-full font-medium border ${darkMode ? 'border-gray-600 hover:bg-gray-600' : 'border-gray-300 hover:bg-gray-100'} transition shadow-md`}
+                        >
+                          S'inscrire
+                        </motion.button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                  <Award className="mr-2" size={16} />
+                  <span>Nouveaux utilisateurs: 5% de réduction sur votre première commande</span>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </section>
+
      {/* How It Works */}
      <section className="py-12">
         <div className="container mx-auto px-4">
@@ -779,7 +864,7 @@ const HomePage = () => {
               className="w-full md:w-1/2 flex justify-center"
             >
               <motion.img 
-                src="/images/app-screens.png" 
+                src= {logo}
                 alt="EatFast Mobile App" 
                 className="max-w-xs rounded-3xl shadow-2xl"
                 whileHover={{ 

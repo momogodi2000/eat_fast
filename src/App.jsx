@@ -18,6 +18,8 @@ import StatisticsPage from './pages/Dashboards/Admin/Statistics/StatisticsPage';
 import AdminSupportPage from './pages/Dashboards/Admin/AdminSupport/AdminSupportPage.js';
 import AdminSettingsPage from './pages/Dashboards/Admin/Settings/AdminSettingsPage.jsx';
 import AdminDeliveryManagement from './pages/Dashboards/Admin/Delivery/delivery_managemnet.jsx';
+import BecomeAPartner from './pages/LandingPage/BecomeAPartner.jsx';
+import MenuPage from './pages/LandingPage/menus.jsx';
 
 
 
@@ -39,6 +41,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/become" element={<BecomeAPartner />} />
+          <Route path="/menu" element={<MenuPage />} />
+
+
 
 
         <Route path="/test" element={<DashboardRedirect />} />
