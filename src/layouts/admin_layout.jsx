@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FiHome,
@@ -19,14 +19,119 @@ import {
 import { HiOutlineMoon, HiOutlineSun } from 'react-icons/hi';
 import { useTranslation } from 'react-i18next';
 
+// Create contexts for theme and language
+const ThemeContext = createContext();
+const LanguageContext = createContext();
+
+// Custom hooks to use contexts
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+};
+
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within a LanguageProvider');
+  }
+  return context;
+};
+
+// Theme Provider Component
+const ThemeProvider = ({ children }) => {
+  const [darkMode, setDarkMode] = useState(() => {
+    // Check localStorage first, then system preference
+    const savedTheme = localStorage.getItem('eatfast-admin-theme');
+    if (savedTheme !== null) {
+      return savedTheme === 'dark';
+    }
+    // Fallback to system preference
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+
+  useEffect(() => {
+    // Save theme preference to localStorage
+    localStorage.setItem('eatfast-admin-theme', darkMode ? 'dark' : 'light');
+    
+    // Apply theme to document
+    if (darkMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [darkMode]);
+
+  const toggleTheme = () => {
+    setDarkMode(prev => !prev);
+  };
+
+  return (
+    <ThemeContext.Provider value={{ darkMode, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+// Language Provider Component
+const LanguageProvider = ({ children }) => {
+  const { i18n } = useTranslation();
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    // Check localStorage first, then i18n default
+    const savedLanguage = localStorage.getItem('eatfast-admin-language');
+    return savedLanguage || i18n.language || 'en';
+  });
+
+  useEffect(() => {
+    // Initialize language from localStorage on mount
+    const savedLanguage = localStorage.getItem('eatfast-admin-language');
+    if (savedLanguage && savedLanguage !== i18n.language) {
+      i18n.changeLanguage(savedLanguage).catch(err => {
+        console.error('Error initializing language:', err);
+      });
+    }
+  }, [i18n]);
+
+  const changeLanguage = async (newLanguage) => {
+    try {
+      await i18n.changeLanguage(newLanguage);
+      setCurrentLanguage(newLanguage);
+      localStorage.setItem('eatfast-admin-language', newLanguage);
+    } catch (err) {
+      console.error('Error changing language:', err);
+    }
+  };
+
+  return (
+    <LanguageContext.Provider value={{ currentLanguage, changeLanguage }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
+
+// Main AdminLayout Component
 const AdminLayout = ({ children }) => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
+  const { darkMode, toggleTheme } = useTheme();
+  const { currentLanguage, changeLanguage } = useLanguage();
+  
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    // Restore sidebar state from localStorage
+    const savedSidebarState = localStorage.getItem('eatfast-admin-sidebar');
+    return savedSidebarState !== null ? JSON.parse(savedSidebarState) : true;
+  });
+  
   const [isMobile, setIsMobile] = useState(false);
   const [activeItem, setActiveItem] = useState('/admin');
+  
+  // Save sidebar state to localStorage
+  useEffect(() => {
+    localStorage.setItem('eatfast-admin-sidebar', JSON.stringify(sidebarOpen));
+  }, [sidebarOpen]);
   
   // Set active item based on current path
   useEffect(() => {
@@ -36,11 +141,14 @@ const AdminLayout = ({ children }) => {
   // Detect screen size
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-      if (window.innerWidth < 768) {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
         setSidebarOpen(false);
       } else {
-        setSidebarOpen(true);
+        // Restore saved sidebar state for desktop
+        const savedSidebarState = localStorage.getItem('eatfast-admin-sidebar');
+        setSidebarOpen(savedSidebarState !== null ? JSON.parse(savedSidebarState) : true);
       }
     };
     
@@ -49,46 +157,9 @@ const AdminLayout = ({ children }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   
-  // Detect system theme preference
-  useEffect(() => {
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      setDarkMode(true);
-    }
-    
-    // Listen for changes
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e) => setDarkMode(e.matches);
-    
-    if (mediaQuery.addEventListener) {
-      mediaQuery.addEventListener('change', handleChange);
-      return () => mediaQuery.removeEventListener('change', handleChange);
-    } else {
-      // Fallback for older browsers
-      mediaQuery.addListener(handleChange);
-      return () => mediaQuery.removeListener(handleChange);
-    }
-  }, []);
-  
-  // Update theme when darkMode changes
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [darkMode]);
-  
-  const toggleTheme = () => {
-    setDarkMode(!darkMode);
-  };
-  
   const handleLanguageChange = (e) => {
     const newLanguage = e.target.value;
-    i18n.changeLanguage(newLanguage).then(() => {
-      // Language changed successfully
-    }).catch(err => {
-      console.error('Error changing language:', err);
-    });
+    changeLanguage(newLanguage);
   };
   
   const navigationItems = [
@@ -118,11 +189,21 @@ const AdminLayout = ({ children }) => {
   
   // Handle navigation item click
   const handleNavClick = (path) => {
-    navigate(path); // Use React Router's navigate function
+    navigate(path);
     setActiveItem(path);
     if (isMobile) {
       setSidebarOpen(false);
     }
+  };
+  
+  const handleLogout = () => {
+    // Clear all stored preferences on logout if needed
+    // localStorage.removeItem('eatfast-admin-theme');
+    // localStorage.removeItem('eatfast-admin-language');
+    // localStorage.removeItem('eatfast-admin-sidebar');
+    
+    // Implement logout logic here
+    console.log('Logout clicked');
   };
 
   return (
@@ -198,6 +279,7 @@ const AdminLayout = ({ children }) => {
             </div>
             
             <button 
+              onClick={handleLogout}
               className="flex items-center w-full px-4 py-2 mt-5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-red-100 dark:hover:bg-red-900 transition-all duration-200"
             >
               <FiLogOut className="mr-3 text-red-600" size={20} />
@@ -229,7 +311,7 @@ const AdminLayout = ({ children }) => {
               {/* Language Selector */}
               <select 
                 className="form-select rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-green-500 transition-shadow duration-200"
-                value={i18n.language}
+                value={currentLanguage}
                 onChange={handleLanguageChange}
               >
                 <option value="fr">FR</option>
@@ -297,4 +379,15 @@ const AdminLayout = ({ children }) => {
   );
 };
 
-export default AdminLayout;
+// Main component that wraps AdminLayout with providers
+const AdminLayoutWithProviders = ({ children }) => {
+  return (
+    <ThemeProvider>
+      <LanguageProvider>
+        <AdminLayout>{children}</AdminLayout>
+      </LanguageProvider>
+    </ThemeProvider>
+  );
+};
+
+export default AdminLayoutWithProviders;

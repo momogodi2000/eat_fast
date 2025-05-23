@@ -1,1118 +1,957 @@
-import { useState, useEffect } from 'react';
-import AdminLayout from '../../../../layouts/admin_layout';
-import { motion } from 'framer-motion';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-
-// Icons from react-icons (using newer version)
-import { 
-  FiTruck, 
-  FiRefreshCw, 
-  FiAlertCircle, 
-  FiMessageSquare, 
-  FiCheckCircle, 
-  FiXCircle,
-  FiFilter, 
-  FiClock, 
-  FiPieChart, 
-  FiDownload,
-  FiCalendar, 
-  FiMail, 
+import {
+  FiMapPin,
+  FiTruck,
+  FiClock,
   FiPhone,
-  FiPlus, 
-  FiArrowRight,
+  FiMail,
+  FiFilter,
   FiSearch,
+  FiRefreshCw,
+  FiDownload,
   FiUser,
-  FiStar
+  FiPackage,
+  FiDollarSign,
+  FiSend,
+  FiAlertTriangle,
+  FiCheckCircle,
+  FiXCircle,
+  FiNavigation,
+  FiEye,
+  FiArrowRight,
+  FiStar,
+  FiCalendar,
+  FiTarget
 } from 'react-icons/fi';
-import { HiLocationMarker, HiOutlineLocationMarker } from 'react-icons/hi';
+import { motion, AnimatePresence } from 'framer-motion';
+import AdminLayout from '../../../../layouts/admin_layout';
 
-// Custom marker icons for leaflet
-const createCustomIcon = (color, type) => {
-  return L.divIcon({
-    className: 'custom-div-icon',
-    html: `
-      <div style="background-color: ${color}; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(0,0,0,0.3);">
-        <svg viewBox="0 0 24 24" width="18" height="18" stroke="white" fill="none" strokeWidth="2">
-          ${type === 'bike' ? 
-            '<path d="M19 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5zM5 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5z M21 15v-2a4 4 0 0 0-4-4h-3M3 15v-2a4 4 0 0 1 4-4h5l3 4"></path>' : 
-            '<path d="M16 8h-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2h2"></path>'}
-        </svg>
-      </div>
-    `,
-    iconSize: [30, 30],
-    iconAnchor: [15, 15]
-  });
-};
-
-// Map marker icons
-const greenBikeIcon = createCustomIcon('#22c55e', 'bike');
-const blueBikeIcon = createCustomIcon('#3b82f6', 'bike');
-const redBikeIcon = createCustomIcon('#ef4444', 'bike');
-const greenTruckIcon = createCustomIcon('#22c55e', 'truck');
-const blueTruckIcon = createCustomIcon('#3b82f6', 'truck');
-const redTruckIcon = createCustomIcon('#ef4444', 'truck');
-
-// Dummy delivery data generator
-const generateDummyDeliveries = () => {
-  const cities = [
-    { name: 'Douala', center: [4.0511, 9.7679] },
-    { name: 'Yaoundé', center: [3.8480, 11.5021] }
+// Mock data for deliveries
+const generateMockDeliveries = () => {
+  const statuses = ['pending', 'en-route', 'delivered', 'delayed'];
+  const vehicleTypes = ['motorcycle', 'car'];
+  const restaurants = [
+    'Le Palais du Ndolé', 'Pizza Corner', 'Chez Mama', 'FastBurger CM', 'Saveurs d\'Afrique',
+    'Dragon Wok', 'Café Central', 'Grillades du Sud', 'Pâtisserie Royale', 'Chicken Palace'
+  ];
+  const customers = [
+    'Jean Mbarga', 'Marie Fotso', 'Paul Nkomo', 'Grace Biya', 'Michel Ateba',
+    'Sarah Njoya', 'David Mongo', 'Fatima Ali', 'Christian Mvondo', 'Beatrice Talla'
+  ];
+  const drivers = [
+    { id: 1, name: 'Alain Kouam', rating: 4.8, phone: '+237 691 234 567', vehicle: 'motorcycle' },
+    { id: 2, name: 'Berthe Ngono', rating: 4.9, phone: '+237 672 345 678', vehicle: 'car' },
+    { id: 3, name: 'Charles Foko', rating: 4.7, phone: '+237 654 456 789', vehicle: 'motorcycle' },
+    { id: 4, name: 'Diane Amougou', rating: 4.6, phone: '+237 699 567 890', vehicle: 'car' },
+    { id: 5, name: 'Eric Mballa', rating: 4.8, phone: '+237 681 678 901', vehicle: 'motorcycle' }
   ];
 
-  const statuses = ['pending', 'en_route', 'delivered', 'delayed'];
-  const vehicles = ['moto', 'car'];
-  
-  const deliveries = [];
-  const now = new Date();
-  
-  for (let i = 0; i < 25; i++) {
-    const city = cities[Math.floor(Math.random() * cities.length)];
+  return Array.from({ length: 50 }, (_, i) => {
+    const driver = drivers[Math.floor(Math.random() * drivers.length)];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
-    const vehicle = vehicles[Math.floor(Math.random() * vehicles.length)];
-    
-    const latOffset = (Math.random() - 0.5) * 0.05;
-    const lngOffset = (Math.random() - 0.5) * 0.05;
-    
-    const estimatedDeliveryTime = new Date(now.getTime() + Math.floor(Math.random() * 60) * 60000);
-    const progress = status === 'delivered' ? 100 : Math.floor(Math.random() * 90);
-    
-    deliveries.push({
-      id: `DEL-${(1000 + i).toString()}`,
-      orderId: `ORD-${(10000 + i).toString()}`,
-      customerName: `Client ${i + 1}`,
-      customerAddress: `${city.name}, Quartier ${(i % 10) + 1}`,
-      position: [city.center[0] + latOffset, city.center[1] + lngOffset],
-      status,
-      vehicle,
-      estimatedDeliveryTime,
-      progress,
-      restaurantName: `Restaurant ${(i % 8) + 1}`,
-      deliveryFee: Math.floor(Math.random() * 1000) + 500,
-      orderTotal: Math.floor(Math.random() * 10000) + 2000,
-      distance: (Math.random() * 5 + 1).toFixed(1),
-      driverId: `DRV-${(100 + i % 10).toString()}`,
-      driverName: `Livreur ${(i % 10) + 1}`,
-      driverRating: (Math.random() * 2 + 3).toFixed(1),
-      driverPhone: `+237 6${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)} ${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)} ${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
-    });
-  }
-  
-  return deliveries;
-};
-
-// Map controller component
-const MapController = ({ center }) => {
-  const map = useMap();
-  useEffect(() => {
-    if (center) {
-      map.setView(center, map.getZoom());
-    }
-  }, [center, map]);
-  return null;
-};
-
-// Main component
-const AdminDeliveryManagement = ({ i18n }) => {
-  const { t } = useTranslation();
-  const [deliveries, setDeliveries] = useState([]);
-  const [selectedDelivery, setSelectedDelivery] = useState(null);
-  const [mapCenter, setMapCenter] = useState([4.0511, 9.7679]);
-  const [activeTab, setActiveTab] = useState('all');
-  const [filterVehicle, setFilterVehicle] = useState('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [sortBy, setSortBy] = useState('estimatedDeliveryTime');
-  const [expandedSection, setExpandedSection] = useState('map');
-  const [selectedDrivers, setSelectedDrivers] = useState([]);
-  const [isAssigning, setIsAssigning] = useState(false);
-  const [autoDismissEnabled, setAutoDismissEnabled] = useState(true);
-
-  const columns = [
-    { key: 'id', label: t('delivery.deliveryId') },
-    { key: 'orderId', label: t('delivery.orderId') },
-    { key: 'customerName', label: t('delivery.customer') },
-    { key: 'restaurantName', label: t('delivery.restaurant') },
-    { key: 'status', label: t('delivery.status') },
-    { key: 'estimatedDeliveryTime', label: t('delivery.eta') },
-    { key: 'driverName', label: t('delivery.driver') },
-  ];
-
-  useEffect(() => {
-    setDeliveries(generateDummyDeliveries());
-  }, []);
-
-  const filteredDeliveries = deliveries.filter(delivery => {
-    if (activeTab !== 'all' && delivery.status !== activeTab) return false;
-    if (filterVehicle !== 'all' && delivery.vehicle !== filterVehicle) return false;
-    
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return (
-        delivery.id.toLowerCase().includes(query) ||
-        delivery.orderId.toLowerCase().includes(query) ||
-        delivery.customerName.toLowerCase().includes(query) ||
-        delivery.restaurantName.toLowerCase().includes(query) ||
-        delivery.driverName.toLowerCase().includes(query)
-      );
-    }
-    
-    return true;
-  });
-  
-  const sortedDeliveries = [...filteredDeliveries].sort((a, b) => {
-    if (sortBy === 'estimatedDeliveryTime') {
-      return new Date(a.estimatedDeliveryTime) - new Date(b.estimatedDeliveryTime);
-    } else if (sortBy === 'distance') {
-      return parseFloat(a.distance) - parseFloat(b.distance);
-    } else if (sortBy === 'status') {
-      const statusOrder = { pending: 0, en_route: 1, delayed: 2, delivered: 3 };
-      return statusOrder[a.status] - statusOrder[b.status];
-    }
-    return 0;
-  });
-  
-  const handleMarkerClick = (delivery) => {
-    setSelectedDelivery(delivery);
-    setMapCenter(delivery.position);
-  };
-  
-  const handleDeliverySelect = (delivery) => {
-    setSelectedDelivery(delivery);
-    setMapCenter(delivery.position);
-  };
-  
-  const getMarkerIcon = (status, vehicle) => {
-    if (status === 'en_route') {
-      return vehicle === 'moto' ? greenBikeIcon : greenTruckIcon;
-    } else if (status === 'pending') {
-      return vehicle === 'moto' ? blueBikeIcon : blueTruckIcon;
-    } else {
-      return vehicle === 'moto' ? redBikeIcon : redTruckIcon;
-    }
-  };
-  
-  const getStatusColor = (status) => {
-    switch(status) {
-      case 'pending': return 'bg-blue-500';
-      case 'en_route': return 'bg-green-500';
-      case 'delivered': return 'bg-green-700';
-      case 'delayed': return 'bg-red-500';
-      default: return 'bg-gray-500';
-    }
-  };
-  
-  const getStatusText = (status) => {
-    switch(status) {
-      case 'pending': return t('delivery.pending');
-      case 'en_route': return t('delivery.enRoute');
-      case 'delivered': return t('delivery.delivered');
-      case 'delayed': return t('delivery.delayed');
-      default: return status;
-    }
-  };
-  
-  const handleAssignDriver = () => {
-    if (selectedDrivers.length && selectedDelivery) {
-      setIsAssigning(true);
-      
-      setTimeout(() => {
-        const updatedDeliveries = deliveries.map(del => {
-          if (del.id === selectedDelivery.id) {
-            return {
-              ...del,
-              driverId: selectedDrivers[0].id,
-              driverName: selectedDrivers[0].name,
-              driverPhone: selectedDrivers[0].phone,
-              driverRating: selectedDrivers[0].rating,
-              status: 'en_route'
-            };
-          }
-          return del;
-        });
-        
-        setDeliveries(updatedDeliveries);
-        setSelectedDelivery(updatedDeliveries.find(d => d.id === selectedDelivery.id));
-        setSelectedDrivers([]);
-        setIsAssigning(false);
-      }, 1500);
-    }
-  };
-  
-  const availableDrivers = Array(5).fill().map((_, i) => ({
-    id: `DRV-${(200 + i).toString()}`,
-    name: `Livreur ${(20 + i)}`,
-    vehicle: i % 2 === 0 ? 'moto' : 'car',
-    rating: (Math.random() * 2 + 3).toFixed(1),
-    phone: `+237 6${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)} ${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)} ${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
-    distance: (Math.random() * 3 + 0.5).toFixed(1),
-    available: true
-  }));
-  
-  const formatTime = (date) => {
-    return new Date(date).toLocaleTimeString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-  
-  const getAnalyticsData = () => {
-    const totalDeliveries = deliveries.length;
-    const pendingCount = deliveries.filter(d => d.status === 'pending').length;
-    const enRouteCount = deliveries.filter(d => d.status === 'en_route').length;
-    const deliveredCount = deliveries.filter(d => d.status === 'delivered').length;
-    const delayedCount = deliveries.filter(d => d.status === 'delayed').length;
-    
-    const pendingPercent = Math.round((pendingCount / totalDeliveries) * 100);
-    const enRoutePercent = Math.round((enRouteCount / totalDeliveries) * 100);
-    const deliveredPercent = Math.round((deliveredCount / totalDeliveries) * 100);
-    const delayedPercent = Math.round((delayedCount / totalDeliveries) * 100);
+    const orderDate = new Date(Date.now() - Math.random() * 86400000 * 2);
     
     return {
-      totalDeliveries,
-      pending: { count: pendingCount, percent: pendingPercent },
-      enRoute: { count: enRouteCount, percent: enRoutePercent },
-      delivered: { count: deliveredCount, percent: deliveredPercent },
-      delayed: { count: delayedCount, percent: delayedPercent }
+      id: `DEL${(i + 1).toString().padStart(3, '0')}`,
+      orderId: `ORD${(i + 1).toString().padStart(4, '0')}`,
+      customer: {
+        name: customers[Math.floor(Math.random() * customers.length)],
+        phone: `+237 6${Math.floor(Math.random() * 9)}${Math.floor(Math.random() * 9)} ${Math.floor(Math.random() * 999).toString().padStart(3, '0')} ${Math.floor(Math.random() * 999).toString().padStart(3, '0')}`,
+        address: `Quartier ${['Bonapriso', 'Akwa', 'Bonanjo', 'Makepe', 'Deido'][Math.floor(Math.random() * 5)]}, Douala`
+      },
+      restaurant: {
+        name: restaurants[Math.floor(Math.random() * restaurants.length)],
+        address: `Avenue ${['Kennedy', 'Charles de Gaulle', 'Ahmadou Ahidjo', 'Wouri', 'Liberté'][Math.floor(Math.random() * 5)]}, Douala`
+      },
+      coordinates: {
+        lat: 4.0511 + (Math.random() - 0.5) * 0.1,
+        lng: 9.7679 + (Math.random() - 0.5) * 0.1
+      },
+      status,
+      progress: status === 'delivered' ? 100 : status === 'en-route' ? Math.floor(Math.random() * 80) + 20 : Math.floor(Math.random() * 30),
+      vehicleType: driver.vehicle,
+      estimatedTime: Math.floor(Math.random() * 45) + 15,
+      actualTime: status === 'delivered' ? Math.floor(Math.random() * 50) + 20 : null,
+      deliveryFee: Math.floor(Math.random() * 2000) + 1000,
+      orderTotal: Math.floor(Math.random() * 15000) + 5000,
+      distance: Math.floor(Math.random() * 15) + 2,
+      driver,
+      orderDate,
+      items: Math.floor(Math.random() * 5) + 1
     };
+  });
+};
+
+const AdminDeliveryManagement = () => {
+  const { t, i18n } = useTranslation();
+  const [deliveries, setDeliveries] = useState([]);
+  const [filteredDeliveries, setFilteredDeliveries] = useState([]);
+  const [selectedDelivery, setSelectedDelivery] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [vehicleFilter, setVehicleFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState('eta');
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+
+  // Initialize data
+  useEffect(() => {
+    const mockData = generateMockDeliveries();
+    setDeliveries(mockData);
+    setFilteredDeliveries(mockData);
+  }, []);
+
+  // Filter and search logic
+  useEffect(() => {
+    let filtered = deliveries;
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(delivery => delivery.status === statusFilter);
+    }
+
+    // Vehicle filter
+    if (vehicleFilter !== 'all') {
+      filtered = filtered.filter(delivery => delivery.vehicleType === vehicleFilter);
+    }
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(delivery =>
+        delivery.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        delivery.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        delivery.restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        delivery.driver.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Sort
+    filtered.sort((a, b) => {
+      switch (sortBy) {
+        case 'eta':
+          return a.estimatedTime - b.estimatedTime;
+        case 'distance':
+          return a.distance - b.distance;
+        case 'status':
+          return a.status.localeCompare(b.status);
+        case 'date':
+          return new Date(b.orderDate) - new Date(a.orderDate);
+        default:
+          return 0;
+      }
+    });
+
+    setFilteredDeliveries(filtered);
+  }, [deliveries, statusFilter, vehicleFilter, searchTerm, sortBy]);
+
+  // Refresh data
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      const newData = generateMockDeliveries();
+      setDeliveries(newData);
+      setIsRefreshing(false);
+    }, 1000);
   };
-  
-  const analyticsData = getAnalyticsData();
+
+  // Status color mapping
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+      'en-route': 'bg-blue-100 text-blue-800 border-blue-200',
+      delivered: 'bg-green-100 text-green-800 border-green-200',
+      delayed: 'bg-red-100 text-red-800 border-red-200'
+    };
+    return colors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  // Status translation
+  const getStatusText = (status) => {
+    const statusMap = {
+      pending: 'En attente',
+      'en-route': 'En route',
+      delivered: 'Livré',
+      delayed: 'Retardé'
+    };
+    return statusMap[status] || status;
+  };
+
+  // Vehicle icon
+  const getVehicleIcon = (type) => {
+    return type === 'motorcycle' ? '🏍️' : '🚗';
+  };
+
+  // Analytics data
+  const analytics = {
+    total: deliveries.length,
+    pending: deliveries.filter(d => d.status === 'pending').length,
+    enRoute: deliveries.filter(d => d.status === 'en-route').length,
+    delivered: deliveries.filter(d => d.status === 'delivered').length,
+    delayed: deliveries.filter(d => d.status === 'delayed').length,
+    onTimeRate: Math.round((deliveries.filter(d => d.status === 'delivered' && d.actualTime <= d.estimatedTime).length / Math.max(deliveries.filter(d => d.status === 'delivered').length, 1)) * 100),
+    avgDeliveryTime: Math.round(deliveries.filter(d => d.actualTime).reduce((acc, d) => acc + d.actualTime, 0) / Math.max(deliveries.filter(d => d.actualTime).length, 1))
+  };
 
   return (
     <AdminLayout>
-      <div className="flex flex-col h-full animate-fadeIn">
-        {/* Page Header */}
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+        {/* Header */}
         <motion.div 
-          className="mb-6"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
+          className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700 p-6"
         >
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center">
-                <FiTruck className="mr-3 text-green-600 dark:text-yellow-400" size={28} />
-                {t('delivery.managementTitle')}
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white">
+                Gestion des Livraisons
               </h1>
-              <p className="text-gray-600 dark:text-gray-300">
-                {t('delivery.subtitle')}
+              <p className="text-gray-600 dark:text-gray-400 mt-2">
+                Suivi en temps réel et gestion des livraisons EatFast
               </p>
             </div>
             
-            <div className="mt-4 md:mt-0 flex items-center space-x-3">
-              <div className="relative">
-                <input
-                  type="text"
-                  className="form-input pl-10 pr-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white w-full"
-                  placeholder={t('delivery.searchPlaceholder')}
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <FiSearch className="absolute left-3 top-3 text-gray-400" size={18} />
-              </div>
-              
-              <select
-                className="form-select rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                value={filterVehicle}
-                onChange={(e) => setFilterVehicle(e.target.value)}
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200 disabled:opacity-50"
               >
-                <option value="all">{t('delivery.allVehicles')}</option>
-                <option value="moto">{t('delivery.motorcycle')}</option>
-                <option value="car">{t('delivery.car')}</option>
-              </select>
-              
-              <button 
-                className="flex items-center justify-center p-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white rounded-lg transition-colors duration-200"
-                onClick={() => setDeliveries(generateDummyDeliveries())}
-                title={t('delivery.refresh')}
-              >
-                <FiRefreshCw size={20} />
+                <FiRefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+                Actualiser
               </button>
+              
+              <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
+                <FiDownload className="w-4 h-4" />
+                Exporter
+              </button>
+              
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                    viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  Liste
+                </button>
+                <button
+                  onClick={() => setViewMode('map')}
+                  className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                    viewMode === 'map' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-300'
+                  }`}
+                >
+                  Carte
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
-        
-        {/* Status Tabs */}
+
+        {/* Analytics Cards */}
         <motion.div 
-          className="flex flex-nowrap overflow-x-auto mb-6 pb-2"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.1 }}
-        >
-          <button
-            className={`flex items-center px-4 py-2 rounded-lg mr-2 whitespace-nowrap transition-colors duration-200 ${
-              activeTab === 'all' 
-                ? 'bg-green-600 text-white dark:bg-green-800'
-                : 'bg-white dark:bg-gray-800 hover:bg-green-100 dark:hover:bg-green-900 text-gray-700 dark:text-gray-200'
-            }`}
-            onClick={() => setActiveTab('all')}
-          >
-            {t('delivery.allDeliveries')}
-            <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-0.5 text-xs rounded-full">
-              {deliveries.length}
-            </span>
-          </button>
-          
-          <button
-            className={`flex items-center px-4 py-2 rounded-lg mr-2 whitespace-nowrap transition-colors duration-200 ${
-              activeTab === 'pending' 
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-gray-800 hover:bg-blue-100 dark:hover:bg-blue-900 text-gray-700 dark:text-gray-200'
-            }`}
-            onClick={() => setActiveTab('pending')}
-          >
-            {t('delivery.pending')}
-            <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-0.5 text-xs rounded-full">
-              {analyticsData.pending.count}
-            </span>
-          </button>
-          
-          <button
-            className={`flex items-center px-4 py-2 rounded-lg mr-2 whitespace-nowrap transition-colors duration-200 ${
-              activeTab === 'en_route' 
-                ? 'bg-green-600 text-white'
-                : 'bg-white dark:bg-gray-800 hover:bg-green-100 dark:hover:bg-green-900 text-gray-700 dark:text-gray-200'
-            }`}
-            onClick={() => setActiveTab('en_route')}
-          >
-            {t('delivery.enRoute')}
-            <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-0.5 text-xs rounded-full">
-              {analyticsData.enRoute.count}
-            </span>
-          </button>
-          
-          <button
-            className={`flex items-center px-4 py-2 rounded-lg mr-2 whitespace-nowrap transition-colors duration-200 ${
-              activeTab === 'delivered' 
-                ? 'bg-green-800 text-white'
-                : 'bg-white dark:bg-gray-800 hover:bg-green-100 dark:hover:bg-green-900 text-gray-700 dark:text-gray-200'
-            }`}
-            onClick={() => setActiveTab('delivered')}
-          >
-            {t('delivery.delivered')}
-            <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-0.5 text-xs rounded-full">
-              {analyticsData.delivered.count}
-            </span>
-          </button>
-          
-          <button
-            className={`flex items-center px-4 py-2 rounded-lg mr-2 whitespace-nowrap transition-colors duration-200 ${
-              activeTab === 'delayed' 
-                ? 'bg-red-600 text-white'
-                : 'bg-white dark:bg-gray-800 hover:bg-red-100 dark:hover:bg-red-900 text-gray-700 dark:text-gray-200'
-            }`}
-            onClick={() => setActiveTab('delayed')}
-          >
-            {t('delivery.delayed')}
-            <span className="ml-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 px-2 py-0.5 text-xs rounded-full">
-              {analyticsData.delayed.count}
-            </span>
-          </button>
-        </motion.div>
-        
-        {/* Dashboard Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-          {/* Left Column - Map View */}
-          <motion.div 
-            className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden ${expandedSection === 'map' ? 'lg:col-span-2' : 'lg:col-span-1'}`}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: 0.2 }}
-          >
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <h2 className="text-lg font-semibold flex items-center">
-                <HiLocationMarker className="mr-2 text-green-600 dark:text-yellow-400" size={20} />
-                {t('delivery.liveTracking')}
-              </h2>
-              <div className="flex space-x-2">
-                <button
-                  className={`p-2 rounded-md transition-colors duration-200 ${
-                    expandedSection === 'map' 
-                      ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100' 
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
-                  }`}
-                  onClick={() => setExpandedSection(expandedSection === 'map' ? '' : 'map')}
-                  title={expandedSection === 'map' ? t('delivery.collapse') : t('delivery.expand')}
-                >
-                  {expandedSection === 'map' ? 
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="4 14 10 14 10 20"></polyline>
-                      <polyline points="20 10 14 10 14 4"></polyline>
-                      <line x1="14" y1="10" x2="21" y2="3"></line>
-                      <line x1="3" y1="21" x2="10" y2="14"></line>
-                    </svg> :
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="15 3 21 3 21 9"></polyline>
-                      <polyline points="9 21 3 21 3 15"></polyline>
-                      <line x1="21" y1="3" x2="14" y2="10"></line>
-                      <line x1="3" y1="21" x2="10" y2="14"></line>
-                    </svg>
-                  }
-                </button>
-                <button
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-200 text-gray-600 dark:text-gray-300"
-                  onClick={() => {
-                    if (selectedDelivery) {
-                      setMapCenter(selectedDelivery.position);
-                    }
-                  }}
-                  title={t('delivery.centerMap')}
-                  disabled={!selectedDelivery}
-                >
-                  <HiOutlineLocationMarker size={20} />
-                </button>
-              </div>
-            </div>
-            
-            <div className="h-96">
-              <MapContainer 
-                center={mapCenter} 
-                zoom={14} 
-                style={{ height: '100%', width: '100%' }}
-                zoomControl={false}
-              >
-                <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                />
-                <MapController center={mapCenter} />
-                {sortedDeliveries.map((delivery) => (
-                  <Marker
-                    key={delivery.id}
-                    position={delivery.position}
-                    icon={getMarkerIcon(delivery.status, delivery.vehicle)}
-                    eventHandlers={{
-                      click: () => handleMarkerClick(delivery),
-                    }}
-                  >
-                    <Popup>
-                      <div className="text-sm">
-                        <p className="font-semibold">{delivery.id} - {delivery.orderId}</p>
-                        <p><span className="font-medium">{t('delivery.customer')}:</span> {delivery.customerName}</p>
-                        <p><span className="font-medium">{t('delivery.from')}:</span> {delivery.restaurantName}</p>
-                        <p><span className="font-medium">{t('delivery.status')}:</span> {getStatusText(delivery.status)}</p>
-                        <p><span className="font-medium">{t('delivery.driver')}:</span> {delivery.driverName}</p>
-                        <p><span className="font-medium">{t('delivery.eta')}:</span> {formatTime(delivery.estimatedDeliveryTime)}</p>
-                      </div>
-                    </Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
-            </div>
-            
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex flex-wrap items-center space-x-1 md:space-x-4">
-                <div className="flex items-center space-x-1 mb-2">
-                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                  <span className="text-sm">{t('delivery.enRoute')}</span>
-                </div>
-                <div className="flex items-center space-x-1 mb-2">
-                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
-                  <span className="text-sm">{t('delivery.pending')}</span>
-                </div>
-                <div className="flex items-center space-x-1 mb-2">
-                  <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                  <span className="text-sm">{t('delivery.delayed')}</span>
-                </div>
-                <div className="flex items-center space-x-1 mb-2">
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2">
-                    <path d="M19 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5zM5 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5z M21 15v-2a4 4 0 0 0-4-4h-3M3 15v-2a4 4 0 0 1 4-4h5l3 4"></path>
-                  </svg>
-                  <span className="text-sm">{t('delivery.motorcycle')}</span>
-                </div>
-                <div className="flex items-center space-x-1 mb-2">
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2">
-                  <path d="M16 8h-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2h2"></path>
-                  </svg>
-                  <span className="text-sm">{t('delivery.car')}</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-          
-          {/* Right Column - Delivery Details / Analytics */}
-          <motion.div 
-            className={`bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden flex flex-col ${expandedSection === 'details' ? 'lg:col-span-2' : 'lg:col-span-1'}`}
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.3, delay: 0.3 }}
-          >
-            {selectedDelivery ? (
-              <>
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                  <h2 className="text-lg font-semibold flex items-center">
-                    <FiTruck className="mr-2 text-green-600 dark:text-yellow-400" size={20} />
-                    {t('delivery.deliveryDetails')}
-                  </h2>
-                  <div className="flex space-x-2">
-                    <button
-                      className={`p-2 rounded-md transition-colors duration-200 ${
-                        expandedSection === 'details' 
-                          ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100' 
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
-                      }`}
-                      onClick={() => setExpandedSection(expandedSection === 'details' ? '' : 'details')}
-                      title={expandedSection === 'details' ? t('delivery.collapse') : t('delivery.expand')}
-                    >
-                      {expandedSection === 'details' ? 
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="4 14 10 14 10 20"></polyline>
-                          <polyline points="20 10 14 10 14 4"></polyline>
-                          <line x1="14" y1="10" x2="21" y2="3"></line>
-                          <line x1="3" y1="21" x2="10" y2="14"></line>
-                        </svg> :
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="15 3 21 3 21 9"></polyline>
-                          <polyline points="9 21 3 21 3 15"></polyline>
-                          <line x1="21" y1="3" x2="14" y2="10"></line>
-                          <line x1="3" y1="21" x2="10" y2="14"></line>
-                        </svg>
-                      }
-                    </button>
-                    <button
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-200 text-gray-600 dark:text-gray-300"
-                      onClick={() => setSelectedDelivery(null)}
-                      title={t('delivery.close')}
-                    >
-                      <FiXCircle size={20} />
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="p-4 flex-grow overflow-y-auto">
-                  <div className="mb-6">
-                    <div className="flex justify-between items-center mb-2">
-                      <div className="flex items-center">
-                        <span className={`inline-block w-3 h-3 rounded-full mr-2 ${getStatusColor(selectedDelivery.status)}`}></span>
-                        <h3 className="text-lg font-semibold mr-2">{selectedDelivery.id}</h3>
-                        <span className="text-sm bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full">
-                          {selectedDelivery.orderId}
-                        </span>
-                      </div>
-                    </div>
-                    
-                    <div className="mb-4">
-                      <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full ${selectedDelivery.status === 'delayed' ? 'bg-red-500' : 'bg-green-500'}`}
-                          style={{ width: `${selectedDelivery.progress}%` }}
-                        ></div>
-                      </div>
-                      <div className="flex justify-between mt-1 text-xs text-gray-500 dark:text-gray-400">
-                        <span>{t('delivery.orderPlaced')}</span>
-                        <span>{t('delivery.delivery')}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                          {t('delivery.customer')}
-                        </h4>
-                        <p className="font-medium mb-1">{selectedDelivery.customerName}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 flex items-start">
-                          <HiLocationMarker className="mr-1 mt-0.5 flex-shrink-0" />
-                          {selectedDelivery.customerAddress}
-                        </p>
-                      </div>
-                      
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                          {t('delivery.restaurant')}
-                        </h4>
-                        <p className="font-medium mb-1">{selectedDelivery.restaurantName}</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          {t('delivery.distanceKm', { distance: selectedDelivery.distance })}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                          {t('delivery.deliveryFee')}
-                        </h4>
-                        <p className="font-medium">
-                          {new Intl.NumberFormat(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
-                            style: 'currency',
-                            currency: 'XAF',
-                            maximumFractionDigits: 0
-                          }).format(selectedDelivery.deliveryFee)}
-                        </p>
-                      </div>
-                      
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                          {t('delivery.orderTotal')}
-                        </h4>
-                        <p className="font-medium">
-                          {new Intl.NumberFormat(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
-                            style: 'currency',
-                            currency: 'XAF',
-                            maximumFractionDigits: 0
-                          }).format(selectedDelivery.orderTotal)}
-                        </p>
-                      </div>
-                      
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                          {t('delivery.eta')}
-                        </h4>
-                        <p className={`font-medium ${selectedDelivery.status === 'delayed' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
-                          {formatTime(selectedDelivery.estimatedDeliveryTime)}
-                        </p>
-                      </div>
-                    </div>
-                    
-                    {/* Driver Information */}
-                    <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
-                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 flex items-center">
-                        <FiUser className="mr-2" />
-                        {t('delivery.driverInfo')}
-                      </h4>
-                      
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center">
-                          <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-3">
-                            <FiUser className="text-green-600 dark:text-green-400" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{selectedDelivery.driverName}</p>
-                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                              <FiStar className="text-yellow-400 mr-1" size={14} />
-                              {selectedDelivery.driverRating}
-                            </div>
-                          </div>
-                        </div>
-                        
-                        <div className="flex space-x-2">
-                          <button className="p-2 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 rounded-lg transition-colors duration-200">
-                            <FiPhone className="text-green-600 dark:text-green-400" size={16} />
-                          </button>
-                          <button className="p-2 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 rounded-lg transition-colors duration-200">
-                            <FiMessageSquare className="text-blue-600 dark:text-blue-400" size={16} />
-                          </button>
-                        </div>
-                      </div>
-                      
-                      <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
-                        <FiPhone className="mr-2" size={14} />
-                        {selectedDelivery.driverPhone}
-                      </p>
-                    </div>
-                    
-                    {/* Available Drivers for Assignment */}
-                    {selectedDelivery.status === 'pending' && (
-                      <div className="mb-6">
-                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
-                          {t('delivery.availableDrivers')}
-                        </h4>
-                        
-                        <div className="space-y-2 max-h-48 overflow-y-auto">
-                          {availableDrivers.map((driver) => (
-                            <div 
-                              key={driver.id}
-                              className={`p-3 border rounded-lg cursor-pointer transition-colors duration-200 ${
-                                selectedDrivers.find(d => d.id === driver.id)
-                                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20 dark:border-green-400'
-                                  : 'border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500'
-                              }`}
-                              onClick={() => {
-                                if (selectedDrivers.find(d => d.id === driver.id)) {
-                                  setSelectedDrivers(selectedDrivers.filter(d => d.id !== driver.id));
-                                } else {
-                                  setSelectedDrivers([driver]);
-                                }
-                              }}
-                            >
-                              <div className="flex items-center justify-between">
-                                <div className="flex items-center">
-                                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mr-3">
-                                    <FiUser className="text-gray-600 dark:text-gray-300" size={14} />
-                                  </div>
-                                  <div>
-                                    <p className="font-medium text-sm">{driver.name}</p>
-                                    <div className="flex items-center text-xs text-gray-600 dark:text-gray-300">
-                                      <FiStar className="text-yellow-400 mr-1" size={12} />
-                                      {driver.rating}
-                                      <span className="mx-2">•</span>
-                                      {driver.distance}km
-                                    </div>
-                                  </div>
-                                </div>
-                                
-                                <div className="flex items-center text-xs">
-                                  {driver.vehicle === 'moto' ? (
-                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2">
-                                      <path d="M19 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5zM5 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5z M21 15v-2a4 4 0 0 0-4-4h-3M3 15v-2a4 4 0 0 1 4-4h5l3 4"></path>
-                                    </svg>
-                                  ) : (
-                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2">
-                                      <path d="M16 8h-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2h2"></path>
-                                    </svg>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        {selectedDrivers.length > 0 && (
-                          <button
-                            className={`w-full mt-4 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
-                              isAssigning
-                                ? 'bg-gray-400 cursor-not-allowed'
-                                : 'bg-green-600 hover:bg-green-700 text-white'
-                            }`}
-                            onClick={handleAssignDriver}
-                            disabled={isAssigning}
-                          >
-                            {isAssigning ? (
-                              <div className="flex items-center justify-center">
-                                <FiRefreshCw className="mr-2 animate-spin" />
-                                {t('delivery.assigning')}
-                              </div>
-                            ) : (
-                              <div className="flex items-center justify-center">
-                                <FiPlus className="mr-2" />
-                                {t('delivery.assignDriver')}
-                              </div>
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    )}
-                    
-                    {/* Action Buttons */}
-                    <div className="flex flex-col space-y-2">
-                      {selectedDelivery.status === 'en_route' && (
-                        <button className="flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200">
-                          <FiCheckCircle className="mr-2" />
-                          {t('delivery.markDelivered')}
-                        </button>
-                      )}
-                      
-                      {selectedDelivery.status !== 'delivered' && (
-                        <button className="flex items-center justify-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors duration-200">
-                          <FiAlertCircle className="mr-2" />
-                          {t('delivery.reportIssue')}
-                        </button>
-                      )}
-                      
-                      <button className="flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
-                        <FiMessageSquare className="mr-2" />
-                        {t('delivery.contactCustomer')}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            ) : (
-              /* Analytics Dashboard */
-              <>
-                <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-                  <h2 className="text-lg font-semibold flex items-center">
-                    <FiPieChart className="mr-2 text-green-600 dark:text-yellow-400" size={20} />
-                    {t('delivery.analytics')}
-                  </h2>
-                  <button
-                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-200 text-gray-600 dark:text-gray-300"
-                    title={t('delivery.exportData')}
-                  >
-                    <FiDownload size={20} />
-                  </button>
-                </div>
-                
-                <div className="p-4 flex-grow overflow-y-auto">
-                  {/* Quick Stats */}
-                  <div className="grid grid-cols-2 gap-4 mb-6">
-                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-blue-100 text-sm">{t('delivery.totalDeliveries')}</p>
-                          <p className="text-2xl font-bold">{analyticsData.totalDeliveries}</p>
-                        </div>
-                        <FiTruck size={24} className="text-blue-100" />
-                      </div>
-                    </div>
-                    
-                    <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-green-100 text-sm">{t('delivery.completed')}</p>
-                          <p className="text-2xl font-bold">{analyticsData.delivered.count}</p>
-                        </div>
-                        <FiCheckCircle size={24} className="text-green-100" />
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Status Breakdown */}
-                  <div className="mb-6">
-                    <h3 className="text-md font-semibold mb-4">{t('delivery.statusBreakdown')}</h3>
-                    
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-                          <span className="font-medium">{t('delivery.pending')}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-blue-600 dark:text-blue-400">{analyticsData.pending.count}</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-300 ml-2">({analyticsData.pending.percent}%)</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
-                          <span className="font-medium">{t('delivery.enRoute')}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-green-600 dark:text-green-400">{analyticsData.enRoute.count}</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-300 ml-2">({analyticsData.enRoute.percent}%)</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 bg-green-100 dark:bg-green-800/20 rounded-lg">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 bg-green-700 rounded-full mr-3"></div>
-                          <span className="font-medium">{t('delivery.delivered')}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-green-700 dark:text-green-300">{analyticsData.delivered.count}</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-300 ml-2">({analyticsData.delivered.percent}%)</span>
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                        <div className="flex items-center">
-                          <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
-                          <span className="font-medium">{t('delivery.delayed')}</span>
-                        </div>
-                        <div className="text-right">
-                          <span className="font-bold text-red-600 dark:text-red-400">{analyticsData.delayed.count}</span>
-                          <span className="text-sm text-gray-600 dark:text-gray-300 ml-2">({analyticsData.delayed.percent}%)</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Performance Metrics */}
-                  <div className="mb-6">
-                    <h3 className="text-md font-semibold mb-4">{t('delivery.performanceMetrics')}</h3>
-                    
-                    <div className="grid grid-cols-1 gap-4">
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">{t('delivery.onTimeRate')}</span>
-                          <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                            {Math.round(((analyticsData.delivered.count + analyticsData.enRoute.count) / analyticsData.totalDeliveries) * 100)}%
-                          </span>
-                        </div>
-                        <div className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
-                          <div 
-                            className="h-full bg-green-500"
-                            style={{ width: `${Math.round(((analyticsData.delivered.count + analyticsData.enRoute.count) / analyticsData.totalDeliveries) * 100)}%` }}
-                          ></div>
-                        </div>
-                      </div>
-                      
-                      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-sm font-medium">{t('delivery.averageDeliveryTime')}</span>
-                          <span className="text-lg font-bold">28 min</span>
-                        </div>
-                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
-                          <FiClock className="mr-1" />
-                          {t('delivery.within30min')}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Quick Actions */}
-                  <div>
-                    <h3 className="text-md font-semibold mb-4">{t('delivery.quickActions')}</h3>
-                    
-                    <div className="space-y-2">
-                      <button className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
-                        <div className="flex items-center">
-                          <FiCalendar className="mr-3 text-gray-600 dark:text-gray-300" />
-                          <span>{t('delivery.scheduleDelivery')}</span>
-                        </div>
-                        <FiArrowRight className="text-gray-400" />
-                      </button>
-                      
-                      <button className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
-                        <div className="flex items-center">
-                          <FiMail className="mr-3 text-gray-600 dark:text-gray-300" />
-                          <span>{t('delivery.bulkNotifications')}</span>
-                        </div>
-                        <FiArrowRight className="text-gray-400" />
-                      </button>
-                      
-                      <button className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
-                        <div className="flex items-center">
-                          <FiDownload className="mr-3 text-gray-600 dark:text-gray-300" />
-                          <span>{t('delivery.exportReport')}</span>
-                        </div>
-                        <FiArrowRight className="text-gray-400" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-          </motion.div>
-        </div>
-        
-        {/* Delivery List Table */}
-        <motion.div 
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mt-6"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.4 }}
+          className="p-6"
         >
-          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <h2 className="text-lg font-semibold flex items-center">
-              <FiFilter className="mr-2 text-green-600 dark:text-yellow-400" size={20} />
-              {t('delivery.deliveryList')} ({sortedDeliveries.length})
-            </h2>
-            
-            <div className="flex items-center space-x-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4 mb-6">
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{analytics.total}</p>
+                </div>
+                <div className="p-3 bg-purple-100 dark:bg-purple-900 rounded-lg">
+                  <FiPackage className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">En attente</p>
+                  <p className="text-2xl font-bold text-yellow-600">{analytics.pending}</p>
+                </div>
+                <div className="p-3 bg-yellow-100 dark:bg-yellow-900 rounded-lg">
+                  <FiClock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">En route</p>
+                  <p className="text-2xl font-bold text-blue-600">{analytics.enRoute}</p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <FiTruck className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Livrés</p>
+                  <p className="text-2xl font-bold text-green-600">{analytics.delivered}</p>
+                </div>
+                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                  <FiCheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Taux ponctualité</p>
+                  <p className="text-2xl font-bold text-green-600">{analytics.onTimeRate}%</p>
+                </div>
+                <div className="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                  <FiTarget className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              whileHover={{ scale: 1.02, y: -2 }}
+              className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Temps moyen</p>
+                  <p className="text-2xl font-bold text-blue-600">{analytics.avgDeliveryTime}min</p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+                  <FiClock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Filters */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-6"
+          >
+            <div className="flex flex-col lg:flex-row gap-4">
+              {/* Search */}
+              <div className="flex-1">
+                <div className="relative">
+                  <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <input
+                    type="text"
+                    placeholder="Rechercher par ID, client, restaurant..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  />
+                </div>
+              </div>
+
+              {/* Status Filter */}
               <select
-                className="form-select rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[150px]"
+              >
+                <option value="all">Tous statuts</option>
+                <option value="pending">En attente</option>
+                <option value="en-route">En route</option>
+                <option value="delivered">Livrés</option>
+                <option value="delayed">Retardés</option>
+              </select>
+
+              {/* Vehicle Filter */}
+              <select
+                value={vehicleFilter}
+                onChange={(e) => setVehicleFilter(e.target.value)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[150px]"
+              >
+                <option value="all">Tous véhicules</option>
+                <option value="motorcycle">Motos</option>
+                <option value="car">Voitures</option>
+              </select>
+
+              {/* Sort */}
+              <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white min-w-[150px]"
               >
-                <option value="estimatedDeliveryTime">{t('delivery.sortByETA')}</option>
-                <option value="distance">{t('delivery.sortByDistance')}</option>
-                <option value="status">{t('delivery.sortByStatus')}</option>
+                <option value="eta">Trier par ETA</option>
+                <option value="distance">Trier par distance</option>
+                <option value="status">Trier par statut</option>
+                <option value="date">Trier par date</option>
               </select>
             </div>
-          </div>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  {columns.map((column) => (
-                    <th key={column.key} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                      {column.label}
-                    </th>
-                  ))}
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('delivery.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                {sortedDeliveries.slice(0, 10).map((delivery) => (
-                  <tr 
-                    key={delivery.id}
-                    className={`hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-200 ${
-                      selectedDelivery?.id === delivery.id ? 'bg-green-50 dark:bg-green-900/20' : ''
-                    }`}
-                    onClick={() => handleDeliverySelect(delivery)}
-                  >
-                    <td className="px-4 py-3 text-sm font-medium">
-                      {delivery.id}
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {delivery.orderId}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div>
-                        <p className="text-sm font-medium">{delivery.customerName}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{delivery.customerAddress}</p>
+          </motion.div>
+
+          {/* Main Content */}
+          {viewMode === 'list' ? (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden"
+            >
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Livraison
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Client
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Restaurant
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Livreur
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Statut
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        ETA
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-600">
+                    <AnimatePresence>
+                      {filteredDeliveries.map((delivery) => (
+                        <motion.tr
+                          key={delivery.id}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          whileHover={{ backgroundColor: 'rgba(34, 197, 94, 0.02)' }}
+                          className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-r from-green-400 to-blue-500 rounded-lg flex items-center justify-center text-white font-semibold text-sm">
+                                {getVehicleIcon(delivery.vehicleType)}
+                              </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                  {delivery.id}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {delivery.orderId}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {delivery.customer.name}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {delivery.customer.address}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {delivery.restaurant.name}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {delivery.distance} km
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                {delivery.driver.name}
+                              </div>
+                              <div className="ml-2 flex items-center">
+                                <FiStar className="w-4 h-4 text-yellow-400 fill-current" />
+                                <span className="text-sm text-gray-500 dark:text-gray-400 ml-1">
+                                  {delivery.driver.rating}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex flex-col gap-2">
+                              <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${getStatusColor(delivery.status)}`}>
+                                {getStatusText(delivery.status)}
+                              </span>
+                              {delivery.status !== 'delivered' && (
+                                <div className="w-20 bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                  <div
+                                    className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-300"
+                                    style={{ width: `${delivery.progress}%` }}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                            {delivery.status === 'delivered' ? (
+                              <span className="text-green-600 font-medium">
+                                Livré en {delivery.actualTime}min
+                              </span>
+                            ) : (
+                              <div className="flex items-center">
+                                <FiClock className="w-4 h-4 mr-1 text-gray-400" />
+                                {delivery.estimatedTime} min
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div className="flex items-center gap-2">
+                              <button
+                                onClick={() => {
+                                  setSelectedDelivery(delivery);
+                                  setShowDetailsModal(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
+                              >
+                                <FiEye className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setSelectedDelivery(delivery);
+                                  setShowAssignModal(true);
+                                }}
+                                className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300 transition-colors duration-200"
+                              >
+                                <FiUser className="w-4 h-4" />
+                              </button>
+                              <button className="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 transition-colors duration-200">
+                                <FiPhone className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </AnimatePresence>
+                  </tbody>
+                </table>
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6"
+            >
+              <div className="h-96 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <FiMapPin className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Carte Interactive
+                  </h3>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    La vue carte sera disponible avec l'intégration des API de géolocalisation
+                  </p>
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-3 h-3 bg-yellow-400 rounded-full"></div>
+                      <span className="text-gray-600 dark:text-gray-400">En attente</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+                      <span className="text-gray-600 dark:text-gray-400">En route</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+                      <span className="text-gray-600 dark:text-gray-400">Livrés</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-3 h-3 bg-red-400 rounded-full"></div>
+                      <span className="text-gray-600 dark:text-gray-400">Retardés</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Delivery Details Modal */}
+          <AnimatePresence>
+            {showDetailsModal && selectedDelivery && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                onClick={() => setShowDetailsModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+                >
+                  <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                      Détails de la livraison {selectedDelivery.id}
+                    </h2>
+                    <button
+                      onClick={() => setShowDetailsModal(false)}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                    >
+                      <FiXCircle className="w-6 h-6" />
+                    </button>
+                  </div>
+                  
+                  <div className="p-6 space-y-6">
+                    {/* Status and Progress */}
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full border ${getStatusColor(selectedDelivery.status)}`}>
+                          {getStatusText(selectedDelivery.status)}
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {selectedDelivery.progress}% complété
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {delivery.restaurantName}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        delivery.status === 'pending' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
-                        delivery.status === 'en_route' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
-                        delivery.status === 'delivered' ? 'bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-100' :
-                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      }`}>
-                        {getStatusText(delivery.status)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {formatTime(delivery.estimatedDeliveryTime)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mr-2">
-                          <FiUser className="text-gray-600 dark:text-gray-300" size={14} />
+                      {selectedDelivery.status !== 'delivered' && (
+                        <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-3">
+                          <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: `${selectedDelivery.progress}%` }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                            className="bg-gradient-to-r from-green-400 to-blue-500 h-3 rounded-full"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Customer Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                          <FiUser className="w-5 h-5 mr-2 text-blue-600" />
+                          Informations Client
+                        </h3>
+                        <div className="space-y-2">
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Nom:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.customer.name}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Téléphone:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.customer.phone}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Adresse:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.customer.address}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                          <FiTruck className="w-5 h-5 mr-2 text-green-600" />
+                          Informations Livreur
+                        </h3>
+                        <div className="space-y-2">
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Nom:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.driver.name}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Téléphone:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.driver.phone}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Véhicule:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">
+                              {getVehicleIcon(selectedDelivery.vehicleType)} {selectedDelivery.vehicleType === 'motorcycle' ? 'Moto' : 'Voiture'}
+                            </span>
+                          </p>
+                          <p className="text-sm flex items-center">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Note:</span>
+                            <span className="ml-2 flex items-center">
+                              <FiStar className="w-4 h-4 text-yellow-400 fill-current mr-1" />
+                              <span className="text-gray-900 dark:text-white">{selectedDelivery.driver.rating}</span>
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Restaurant and Order Info */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                          <FiPackage className="w-5 h-5 mr-2 text-orange-600" />
+                          Restaurant
+                        </h3>
+                        <div className="space-y-2">
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Nom:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.restaurant.name}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Adresse:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.restaurant.address}</span>
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                          <FiDollarSign className="w-5 h-5 mr-2 text-purple-600" />
+                          Détails Commande
+                        </h3>
+                        <div className="space-y-2">
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">ID Commande:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.orderId}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Articles:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.items} articles</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Total commande:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.orderTotal.toLocaleString()} FCFA</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="font-medium text-gray-700 dark:text-gray-300">Frais livraison:</span>
+                            <span className="ml-2 text-gray-900 dark:text-white">{selectedDelivery.deliveryFee.toLocaleString()} FCFA</span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Timing Info */}
+                    <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center mb-3">
+                        <FiClock className="w-5 h-5 mr-2 text-blue-600" />
+                        Informations Temporelles
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                        <div>
+                          <span className="font-medium text-gray-700 dark:text-gray-300">Date commande:</span>
+                          <p className="text-gray-900 dark:text-white">
+                            {new Date(selectedDelivery.orderDate).toLocaleDateString('fr-FR')}
+                          </p>
+                          <p className="text-gray-600 dark:text-gray-400">
+                            {new Date(selectedDelivery.orderDate).toLocaleTimeString('fr-FR')}
+                          </p>
                         </div>
                         <div>
-                          <p className="text-sm font-medium">{delivery.driverName}</p>
-                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
-                            <FiStar className="text-yellow-400 mr-1" size={12} />
-                            {delivery.driverRating}
-                          </div>
+                          <span className="font-medium text-gray-700 dark:text-gray-300">Temps estimé:</span>
+                          <p className="text-gray-900 dark:text-white">{selectedDelivery.estimatedTime} minutes</p>
+                        </div>
+                        <div>
+                          <span className="font-medium text-gray-700 dark:text-gray-300">Distance:</span>
+                          <p className="text-gray-900 dark:text-white">{selectedDelivery.distance} km</p>
                         </div>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex space-x-2">
-                        <button
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeliverySelect(delivery);
-                          }}
-                          title={t('delivery.viewDetails')}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      {selectedDelivery.status === 'pending' && (
+                        <button className="flex-1 min-w-[150px] bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2">
+                          <FiCheckCircle className="w-4 h-4" />
+                          Assigner Livreur
                         </button>
-                        
-                        <button
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                          title={t('delivery.contactDriver')}
-                        >
-                          <FiPhone size={16} />
+                      )}
+                      
+                      {selectedDelivery.status === 'en-route' && (
+                        <button className="flex-1 min-w-[150px] bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2">
+                          <FiNavigation className="w-4 h-4" />
+                          Suivre en Temps Réel
                         </button>
-                        
-                        <button
-                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                          }}
-                          title={t('delivery.sendMessage')}
-                        >
-                          <FiMessageSquare size={16} />
+                      )}
+
+                      <button className="flex-1 min-w-[150px] bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2">
+                        <FiPhone className="w-4 h-4" />
+                        Contacter Client
+                      </button>
+
+                      <button className="flex-1 min-w-[150px] bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2">
+                        <FiSend className="w-4 h-4" />
+                        Contacter Livreur
+                      </button>
+
+                      {selectedDelivery.status !== 'delivered' && (
+                        <button className="flex-1 min-w-[150px] bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center justify-center gap-2">
+                          <FiAlertTriangle className="w-4 h-4" />
+                          Signaler Problème
                         </button>
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Driver Assignment Modal */}
+          <AnimatePresence>
+            {showAssignModal && selectedDelivery && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+                onClick={() => setShowAssignModal(false)}
+              >
+                <motion.div
+                  initial={{ scale: 0.95, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  exit={{ scale: 0.95, opacity: 0 }}
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full"
+                >
+                  <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                      Assigner un Livreur
+                    </h2>
+                    <button
+                      onClick={() => setShowAssignModal(false)}
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+                    >
+                      <FiXCircle className="w-6 h-6" />
+                    </button>
+                  </div>
+                  
+                  <div className="p-6">
+                    <div className="mb-4">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                        Sélectionnez un livreur disponible pour la commande {selectedDelivery.id}
+                      </p>
+                      
+                      <div className="space-y-3">
+                        {[
+                          { id: 1, name: 'Alain Kouam', rating: 4.8, distance: '0.8 km', vehicle: 'motorcycle', available: true },
+                          { id: 2, name: 'Berthe Ngono', rating: 4.9, distance: '1.2 km', vehicle: 'car', available: true },
+                          { id: 3, name: 'Charles Foko', rating: 4.7, distance: '2.5 km', vehicle: 'motorcycle', available: false },
+                          { id: 4, name: 'Diane Amougou', rating: 4.6, distance: '0.5 km', vehicle: 'car', available: true }
+                        ].map((driver) => (
+                          <motion.div
+                            key={driver.id}
+                            whileHover={{ scale: driver.available ? 1.02 : 1 }}
+                            className={`p-4 border rounded-lg cursor-pointer transition-all duration-200 ${
+                              driver.available 
+                                ? 'border-gray-200 dark:border-gray-600 hover:border-green-400 dark:hover:border-green-400 hover:bg-green-50 dark:hover:bg-green-900/20' 
+                                : 'border-gray-200 dark:border-gray-600 opacity-50 cursor-not-allowed'
+                            }`}
+                            onClick={() => driver.available && console.log('Assign driver:', driver.id)}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <div className="w-12 h-12 bg-gradient-to-r from-green-400 to-blue-500 rounded-full flex items-center justify-center text-white font-semibold">
+                                  {getVehicleIcon(driver.vehicle)}
+                                </div>
+                                <div className="ml-4">
+                                  <h4 className="font-medium text-gray-900 dark:text-white">
+                                    {driver.name}
+                                  </h4>
+                                  <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                                    <FiStar className="w-4 h-4 text-yellow-400 fill-current mr-1" />
+                                    {driver.rating} • {driver.distance}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  driver.available 
+                                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                                    : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                                }`}>
+                                  {driver.available ? 'Disponible' : 'Occupé'}
+                                </div>
+                              </div>
+                            </div>
+                          </motion.div>
+                        ))}
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          {sortedDeliveries.length > 10 && (
-            <div className="p-4 border-t border-gray-200 dark:border-gray-700 text-center">
-              <button className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium text-sm">
-                {t('delivery.loadMore')} ({sortedDeliveries.length - 10} {t('delivery.more')})
-              </button>
-            </div>
-          )}
-        </motion.div>
-      </div>
-    </AdminLayout>
-  );
+                    </div>
+
+                    <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                      <button
+                        onClick={() => setShowAssignModal(false)}
+                        className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                      >
+                        Annuler
+                      </button>
+                      <button className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200">
+                        Confirmer Attribution
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Quick Actions Floating Panel */}
+          <motion.div
+            initial={{ x: 100, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            className="fixed right-6 bottom-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 space-y-3"
+          >
+            <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Actions Rapides</h3>
+            
+            <button className="w-full flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors duration-200">
+              <FiCheckCircle className="w-5 h-5" />
+              <div className="text-left">
+                <div className="font-medium text-sm">Attribution Auto</div>
+                <div className="text-xs opacity-75">Attribuer {analytics.pending} commandes</div>
+              </div>
+            </button>
+
+            <button className="w-full flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors duration-200">
+              <FiNavigation className="w-5 h-5" />
+              <div className="text-left">
+                <div className="font-medium text-sm">Optimiser Routes</div>
+                <div className="text-xs opacity-75">Pour {analytics.enRoute} livraisons</div>
+              </div>
+            </button>
+
+            <button className="w-full flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-lg hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors duration-200">
+              <FiAlertTriangle className="w-5 h-5" />
+              <div className="text-left">
+                <div className="font-medium text-sm">Livraisons Urgentes</div>
+                <div className="text-xs opacity-75">{analytics.delayed} retards à traiter</div>
+              </div>
+            </button>
+          </motion.div>
+
+          </motion.div>
+
+        </div>
+      </AdminLayout>
+    );
 };
 
 export default AdminDeliveryManagement;
