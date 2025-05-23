@@ -18,6 +18,9 @@ import StatisticsPage from './pages/Dashboards/Admin/Statistics/StatisticsPage';
 import AdminSupportPage from './pages/Dashboards/Admin/AdminSupport/AdminSupportPage.js';
 import AdminSettingsPage from './pages/Dashboards/Admin/Settings/AdminSettingsPage.jsx';
 import AdminDeliveryManagement from './pages/Dashboards/Admin/Delivery/delivery_managemnet.jsx';
+//import PromotionManagement from './pages/Dashboards/Admin/Promotion/promotion.jsx';
+
+
 import BecomeAPartner from './pages/LandingPage/BecomeAPartner.jsx';
 import MenuPage from './pages/LandingPage/menus.jsx';
 
