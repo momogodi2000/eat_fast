@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import AdminLayout from '../../../../layouts/admin_layout';
 import { motion } from 'framer-motion';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import 'leaflet/dist/leaflet.css';
-import {
+import L from 'leaflet';
+import { useTranslation } from 'react-i18next';
+
+// Icons from react-icons (using newer version)
+import { 
   FiTruck, 
   FiRefreshCw, 
   FiAlertCircle, 
@@ -24,11 +27,8 @@ import {
   FiStar
 } from 'react-icons/fi';
 import { HiLocationMarker, HiOutlineLocationMarker } from 'react-icons/hi';
-import { useTranslation } from 'react-i18next';
-import L from 'leaflet';
 
 // Custom marker icons for leaflet
-// We need to define these outside the component to avoid recreation on each render
 const createCustomIcon = (color, type) => {
   return L.divIcon({
     className: 'custom-div-icon',
@@ -54,9 +54,8 @@ const greenTruckIcon = createCustomIcon('#22c55e', 'truck');
 const blueTruckIcon = createCustomIcon('#3b82f6', 'truck');
 const redTruckIcon = createCustomIcon('#ef4444', 'truck');
 
-// Dummy delivery data for demo purposes
+// Dummy delivery data generator
 const generateDummyDeliveries = () => {
-  // Centers for Douala and Yaoundé
   const cities = [
     { name: 'Douala', center: [4.0511, 9.7679] },
     { name: 'Yaoundé', center: [3.8480, 11.5021] }
@@ -68,20 +67,15 @@ const generateDummyDeliveries = () => {
   const deliveries = [];
   const now = new Date();
   
-  // Generate 25 random deliveries
   for (let i = 0; i < 25; i++) {
     const city = cities[Math.floor(Math.random() * cities.length)];
     const status = statuses[Math.floor(Math.random() * statuses.length)];
     const vehicle = vehicles[Math.floor(Math.random() * vehicles.length)];
     
-    // Create random offset from city center
     const latOffset = (Math.random() - 0.5) * 0.05;
     const lngOffset = (Math.random() - 0.5) * 0.05;
     
-    // Random delivery time (0-60 minutes from now)
     const estimatedDeliveryTime = new Date(now.getTime() + Math.floor(Math.random() * 60) * 60000);
-    
-    // Progress percentage
     const progress = status === 'delivered' ? 100 : Math.floor(Math.random() * 90);
     
     deliveries.push({
@@ -97,10 +91,10 @@ const generateDummyDeliveries = () => {
       restaurantName: `Restaurant ${(i % 8) + 1}`,
       deliveryFee: Math.floor(Math.random() * 1000) + 500,
       orderTotal: Math.floor(Math.random() * 10000) + 2000,
-      distance: (Math.random() * 5 + 1).toFixed(1), // km
+      distance: (Math.random() * 5 + 1).toFixed(1),
       driverId: `DRV-${(100 + i % 10).toString()}`,
       driverName: `Livreur ${(i % 10) + 1}`,
-      driverRating: (Math.random() * 2 + 3).toFixed(1), // 3-5 stars
+      driverRating: (Math.random() * 2 + 3).toFixed(1),
       driverPhone: `+237 6${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)} ${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)} ${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}${Math.floor(Math.random() * 10)}`,
     });
   }
@@ -108,7 +102,7 @@ const generateDummyDeliveries = () => {
   return deliveries;
 };
 
-// Custom map component to recenter when needed
+// Map controller component
 const MapController = ({ center }) => {
   const map = useMap();
   useEffect(() => {
@@ -119,12 +113,12 @@ const MapController = ({ center }) => {
   return null;
 };
 
-// Main delivery management component
+// Main component
 const AdminDeliveryManagement = ({ i18n }) => {
   const { t } = useTranslation();
   const [deliveries, setDeliveries] = useState([]);
   const [selectedDelivery, setSelectedDelivery] = useState(null);
-  const [mapCenter, setMapCenter] = useState([4.0511, 9.7679]); // Default to Douala
+  const [mapCenter, setMapCenter] = useState([4.0511, 9.7679]);
   const [activeTab, setActiveTab] = useState('all');
   const [filterVehicle, setFilterVehicle] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -134,7 +128,6 @@ const AdminDeliveryManagement = ({ i18n }) => {
   const [isAssigning, setIsAssigning] = useState(false);
   const [autoDismissEnabled, setAutoDismissEnabled] = useState(true);
 
-  // Columns config for the table display
   const columns = [
     { key: 'id', label: t('delivery.deliveryId') },
     { key: 'orderId', label: t('delivery.orderId') },
@@ -145,24 +138,14 @@ const AdminDeliveryManagement = ({ i18n }) => {
     { key: 'driverName', label: t('delivery.driver') },
   ];
 
-  // Load dummy deliveries on component mount
   useEffect(() => {
     setDeliveries(generateDummyDeliveries());
   }, []);
 
-  // Filter deliveries based on active tab, search query, and vehicle filter
   const filteredDeliveries = deliveries.filter(delivery => {
-    // Filter by tab (status)
-    if (activeTab !== 'all' && delivery.status !== activeTab) {
-      return false;
-    }
+    if (activeTab !== 'all' && delivery.status !== activeTab) return false;
+    if (filterVehicle !== 'all' && delivery.vehicle !== filterVehicle) return false;
     
-    // Filter by vehicle type
-    if (filterVehicle !== 'all' && delivery.vehicle !== filterVehicle) {
-      return false;
-    }
-    
-    // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       return (
@@ -177,7 +160,6 @@ const AdminDeliveryManagement = ({ i18n }) => {
     return true;
   });
   
-  // Sort filtered deliveries
   const sortedDeliveries = [...filteredDeliveries].sort((a, b) => {
     if (sortBy === 'estimatedDeliveryTime') {
       return new Date(a.estimatedDeliveryTime) - new Date(b.estimatedDeliveryTime);
@@ -190,19 +172,16 @@ const AdminDeliveryManagement = ({ i18n }) => {
     return 0;
   });
   
-  // Handle marker click on map
   const handleMarkerClick = (delivery) => {
     setSelectedDelivery(delivery);
     setMapCenter(delivery.position);
   };
   
-  // Handle delivery selection from list
   const handleDeliverySelect = (delivery) => {
     setSelectedDelivery(delivery);
     setMapCenter(delivery.position);
   };
   
-  // Get marker icon based on delivery status and vehicle
   const getMarkerIcon = (status, vehicle) => {
     if (status === 'en_route') {
       return vehicle === 'moto' ? greenBikeIcon : greenTruckIcon;
@@ -213,7 +192,6 @@ const AdminDeliveryManagement = ({ i18n }) => {
     }
   };
   
-  // Get status color for UI elements
   const getStatusColor = (status) => {
     switch(status) {
       case 'pending': return 'bg-blue-500';
@@ -224,7 +202,6 @@ const AdminDeliveryManagement = ({ i18n }) => {
     }
   };
   
-  // Get translated status text
   const getStatusText = (status) => {
     switch(status) {
       case 'pending': return t('delivery.pending');
@@ -235,13 +212,10 @@ const AdminDeliveryManagement = ({ i18n }) => {
     }
   };
   
-  // Handle driver assignment
   const handleAssignDriver = () => {
     if (selectedDrivers.length && selectedDelivery) {
-      // In a real app, this would make API calls to update the assignments
       setIsAssigning(true);
       
-      // Simulate API call delay
       setTimeout(() => {
         const updatedDeliveries = deliveries.map(del => {
           if (del.id === selectedDelivery.id) {
@@ -265,7 +239,6 @@ const AdminDeliveryManagement = ({ i18n }) => {
     }
   };
   
-  // Generate dummy available drivers
   const availableDrivers = Array(5).fill().map((_, i) => ({
     id: `DRV-${(200 + i).toString()}`,
     name: `Livreur ${(20 + i)}`,
@@ -276,7 +249,6 @@ const AdminDeliveryManagement = ({ i18n }) => {
     available: true
   }));
   
-  // Format date for display
   const formatTime = (date) => {
     return new Date(date).toLocaleTimeString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', { 
       hour: '2-digit', 
@@ -284,7 +256,6 @@ const AdminDeliveryManagement = ({ i18n }) => {
     });
   };
   
-  // Get analytics data for dashboard
   const getAnalyticsData = () => {
     const totalDeliveries = deliveries.length;
     const pendingCount = deliveries.filter(d => d.status === 'pending').length;
@@ -688,345 +659,307 @@ const AdminDeliveryManagement = ({ i18n }) => {
                         <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
                           {t('delivery.eta')}
                         </h4>
-                        <p className={`font-medium ${selectedDelivery.status === 'delayed' ? 'text-red-600 dark:text-red-400' : ''}`}>
+                        <p className={`font-medium ${selectedDelivery.status === 'delayed' ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                           {formatTime(selectedDelivery.estimatedDeliveryTime)}
                         </p>
                       </div>
                     </div>
                     
-                    {/* Driver Section */}
-                    <div className="mb-4">
-                      <h4 className="font-medium mb-3 flex items-center">
+                    {/* Driver Information */}
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
+                      <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 flex items-center">
                         <FiUser className="mr-2" />
-                        {t('delivery.driverDetails')}
+                        {t('delivery.driverInfo')}
                       </h4>
                       
-                      {selectedDelivery.driverId ? (
-                        <div className="bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
-                          <div className="flex items-center justify-between mb-2">
-                            <div>
-                              <p className="font-medium">{selectedDelivery.driverName}</p>
-                              <div className="flex items-center text-sm text-gray-600 dark:text-gray-300 mt-1">
-                                <span className="flex items-center mr-4">
-                                  <FiStar className="mr-1 text-yellow-500" />
-                                  {selectedDelivery.driverRating}
-                                </span>
-                                <span className="flex items-center">
-                                  {selectedDelivery.vehicle === 'moto' ? (
-                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2" className="mr-1">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center">
+                          <div className="w-10 h-10 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mr-3">
+                            <FiUser className="text-green-600 dark:text-green-400" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{selectedDelivery.driverName}</p>
+                            <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                              <FiStar className="text-yellow-400 mr-1" size={14} />
+                              {selectedDelivery.driverRating}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="flex space-x-2">
+                          <button className="p-2 bg-green-100 dark:bg-green-900 hover:bg-green-200 dark:hover:bg-green-800 rounded-lg transition-colors duration-200">
+                            <FiPhone className="text-green-600 dark:text-green-400" size={16} />
+                          </button>
+                          <button className="p-2 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 rounded-lg transition-colors duration-200">
+                            <FiMessageSquare className="text-blue-600 dark:text-blue-400" size={16} />
+                          </button>
+                        </div>
+                      </div>
+                      
+                      <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
+                        <FiPhone className="mr-2" size={14} />
+                        {selectedDelivery.driverPhone}
+                      </p>
+                    </div>
+                    
+                    {/* Available Drivers for Assignment */}
+                    {selectedDelivery.status === 'pending' && (
+                      <div className="mb-6">
+                        <h4 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+                          {t('delivery.availableDrivers')}
+                        </h4>
+                        
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {availableDrivers.map((driver) => (
+                            <div 
+                              key={driver.id}
+                              className={`p-3 border rounded-lg cursor-pointer transition-colors duration-200 ${
+                                selectedDrivers.find(d => d.id === driver.id)
+                                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20 dark:border-green-400'
+                                  : 'border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500'
+                              }`}
+                              onClick={() => {
+                                if (selectedDrivers.find(d => d.id === driver.id)) {
+                                  setSelectedDrivers(selectedDrivers.filter(d => d.id !== driver.id));
+                                } else {
+                                  setSelectedDrivers([driver]);
+                                }
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center">
+                                  <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mr-3">
+                                    <FiUser className="text-gray-600 dark:text-gray-300" size={14} />
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-sm">{driver.name}</p>
+                                    <div className="flex items-center text-xs text-gray-600 dark:text-gray-300">
+                                      <FiStar className="text-yellow-400 mr-1" size={12} />
+                                      {driver.rating}
+                                      <span className="mx-2">•</span>
+                                      {driver.distance}km
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                <div className="flex items-center text-xs">
+                                  {driver.vehicle === 'moto' ? (
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2">
                                       <path d="M19 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5zM5 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5z M21 15v-2a4 4 0 0 0-4-4h-3M3 15v-2a4 4 0 0 1 4-4h5l3 4"></path>
                                     </svg>
                                   ) : (
-                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2" className="mr-1">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" strokeWidth="2">
                                       <path d="M16 8h-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2h2"></path>
                                     </svg>
                                   )}
-                                  {selectedDelivery.vehicle === 'moto' ? t('delivery.motorcycle') : t('delivery.car')}
-                                </span>
+                                </div>
                               </div>
                             </div>
-                            
-                            <div className="flex space-x-2">
-                              <button 
-                                className="p-2 bg-green-100 hover:bg-green-200 dark:bg-green-900 dark:hover:bg-green-800 text-green-700 dark:text-green-300 rounded-full"
-                                title={t('delivery.call')}
-                              >
-                                <FiPhone size={18} />
-                              </button>
-                              <button 
-                                className="p-2 bg-blue-100 hover:bg-blue-200 dark:bg-blue-900 dark:hover:bg-blue-800 text-blue-700 dark:text-blue-300 rounded-full"
-                                title={t('delivery.message')}
-                              >
-                                <FiMessageSquare size={18} />
-                              </button>
-                            </div>
-                          </div>
-                          
-                          <p className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
-                            <FiPhone className="mr-1 text-gray-400" size={14} />
-                            {selectedDelivery.driverPhone}
-                          </p>
+                          ))}
                         </div>
-                      ) : (
-                        <div className="bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 p-3 rounded-lg">
-                          <p className="text-sm flex items-center">
-                            <FiAlertCircle className="mr-2 text-yellow-500" />
-                            {t('delivery.noDriverAssigned')}
-                          </p>
-                          
+                        
+                        {selectedDrivers.length > 0 && (
                           <button
-                            className="mt-3 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white px-4 py-2 rounded-lg flex items-center text-sm transition-colors duration-200"
-                            onClick={() => setIsAssigning(!isAssigning)}
+                            className={`w-full mt-4 px-4 py-2 rounded-lg font-medium transition-colors duration-200 ${
+                              isAssigning
+                                ? 'bg-gray-400 cursor-not-allowed'
+                                : 'bg-green-600 hover:bg-green-700 text-white'
+                            }`}
+                            onClick={handleAssignDriver}
+                            disabled={isAssigning}
                           >
-                            <FiPlus className="mr-2" />
-                            {t('delivery.assignDriver')}
+                            {isAssigning ? (
+                              <div className="flex items-center justify-center">
+                                <FiRefreshCw className="mr-2 animate-spin" />
+                                {t('delivery.assigning')}
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-center">
+                                <FiPlus className="mr-2" />
+                                {t('delivery.assignDriver')}
+                              </div>
+                            )}
                           </button>
-                          
-                          {isAssigning && (
-                            <div className="mt-3 border-t border-yellow-200 dark:border-yellow-800 pt-3">
-                              <h5 className="font-medium text-sm mb-2">{t('delivery.availableDrivers')}:</h5>
-                              
-                              <div className="space-y-2 max-h-40 overflow-y-auto pr-1">
-                                {availableDrivers.map(driver => (
-                                  <div 
-                                    key={driver.id}
-                                    className={`p-2 rounded-lg border transition-colors duration-200 cursor-pointer ${
-                                      selectedDrivers.some(d => d.id === driver.id)
-                                        ? 'bg-green-100 dark:bg-green-900/50 border-green-300 dark:border-green-700'
-                                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700'
-                                    }`}
-                                    onClick={() => setSelectedDrivers([driver])}
-                                  >
-                                    <div className="flex items-center justify-between">
-                                      <div>
-                                        <p className="font-medium text-sm">{driver.name}</p>
-                                        <div className="flex items-center text-xs text-gray-600 dark:text-gray-300 mt-1">
-                                          <span className="flex items-center mr-4">
-                                            <FiStar className="mr-1 text-yellow-500" />
-                                            {driver.rating}
-                                          </span>
-                                          <span className="flex items-center">
-                                            {driver.vehicle === 'moto' ? (
-                                              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" strokeWidth="2" className="mr-1">
-                                                <path d="M19 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5zM5 14a5 5 0 1 1-5-5 5 5 0 0 1 5 5z M21 15v-2a4 4 0 0 0-4-4h-3M3 15v-2a4 4 0 0 1 4-4h5l3 4"></path>
-                                              </svg>
-                                            ) : (
-                                              <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" fill="none" strokeWidth="2" className="mr-1">
-                                                <path d="M16 8h-2V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-2h2"></path>
-                                              </svg>
-                                            )}
-                                            {driver.vehicle === 'moto' ? t('delivery.motorcycle') : t('delivery.car')}
-                                          </span>
-                                        </div>
-                                      </div>
-                                      <div className="text-xs">
-                                        <span className="bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
-                                          {t('delivery.distanceKm', { distance: driver.distance })}
-                                        </span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                              
-                              <div className="mt-3 flex justify-end space-x-2">
-                                <button
-                                  className="bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded text-sm transition-colors duration-200"
-                                  onClick={() => {
-                                    setIsAssigning(false);
-                                    setSelectedDrivers([]);
-                                  }}
-                                >
-                                  {t('common.cancel')}
-                                </button>
-                                <button
-                                  className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white px-3 py-1 rounded text-sm flex items-center transition-colors duration-200"
-                                  onClick={handleAssignDriver}
-                                  disabled={selectedDrivers.length === 0}
-                                >
-                                  {t('delivery.confirm')}
-                                  <FiArrowRight className="ml-2" />
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    )}
                     
-                    {/* Actions Footer */}
-                    <div className="mt-6 flex flex-wrap justify-end space-x-0 space-y-2 sm:space-x-2 sm:space-y-0">
-                      {selectedDelivery.status === 'pending' && (
-                        <button
-                          className="w-full sm:w-auto bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white px-4 py-2 rounded-lg flex items-center justify-center transition-colors duration-200"
-                        >
-                          <FiTruck className="mr-2" />
-                          {t('delivery.startDelivery')}
-                        </button>
-                      )}
-                      
+                    {/* Action Buttons */}
+                    <div className="flex flex-col space-y-2">
                       {selectedDelivery.status === 'en_route' && (
-                        <button
-                          className="w-full sm:w-auto bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white px-4 py-2 rounded-lg flex items-center justify-center transition-colors duration-200"
-                        >
+                        <button className="flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors duration-200">
                           <FiCheckCircle className="mr-2" />
-                          {t('delivery.markAsDelivered')}
+                          {t('delivery.markDelivered')}
                         </button>
                       )}
                       
                       {selectedDelivery.status !== 'delivered' && (
-                        <button
-                          className="w-full sm:w-auto bg-red-100 hover:bg-red-200 dark:bg-red-900/50 dark:hover:bg-red-900/70 text-red-700 dark:text-red-300 px-4 py-2 rounded-lg flex items-center justify-center transition-colors duration-200"
-                        >
+                        <button className="flex items-center justify-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white rounded-lg transition-colors duration-200">
                           <FiAlertCircle className="mr-2" />
-                          {selectedDelivery.status === 'delayed' ? t('delivery.resolveIssue') : t('delivery.reportIssue')}
+                          {t('delivery.reportIssue')}
                         </button>
                       )}
+                      
+                      <button className="flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200">
+                        <FiMessageSquare className="mr-2" />
+                        {t('delivery.contactCustomer')}
+                      </button>
                     </div>
                   </div>
                 </div>
               </>
             ) : (
+              /* Analytics Dashboard */
               <>
                 <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                   <h2 className="text-lg font-semibold flex items-center">
                     <FiPieChart className="mr-2 text-green-600 dark:text-yellow-400" size={20} />
                     {t('delivery.analytics')}
                   </h2>
-                  <div className="flex space-x-2">
-                    <button
-                      className={`p-2 rounded-md transition-colors duration-200 ${
-                        expandedSection === 'details' 
-                          ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-100' 
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300'
-                      }`}
-                      onClick={() => setExpandedSection(expandedSection === 'details' ? '' : 'details')}
-                      title={expandedSection === 'details' ? t('delivery.collapse') : t('delivery.expand')}
-                    >
-                      {expandedSection === 'details' ? 
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="4 14 10 14 10 20"></polyline>
-                          <polyline points="20 10 14 10 14 4"></polyline>
-                          <line x1="14" y1="10" x2="21" y2="3"></line>
-                          <line x1="3" y1="21" x2="10" y2="14"></line>
-                        </svg> :
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <polyline points="15 3 21 3 21 9"></polyline>
-                          <polyline points="9 21 3 21 3 15"></polyline>
-                          <line x1="21" y1="3" x2="14" y2="10"></line>
-                          <line x1="3" y1="21" x2="10" y2="14"></line>
-                        </svg>
-                      }
-                    </button>
-                    <button
-                      className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-200 text-gray-600 dark:text-gray-300"
-                      title={t('delivery.download')}
-                    >
-                      <FiDownload size={20} />
-                    </button>
-                  </div>
+                  <button
+                    className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-200 text-gray-600 dark:text-gray-300"
+                    title={t('delivery.exportData')}
+                  >
+                    <FiDownload size={20} />
+                  </button>
                 </div>
                 
-                <div className="p-4 flex-grow">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="p-2 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
-                          <FiClock className="text-blue-600 dark:text-blue-400" size={20} />
+                <div className="p-4 flex-grow overflow-y-auto">
+                  {/* Quick Stats */}
+                  <div className="grid grid-cols-2 gap-4 mb-6">
+                    <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-blue-100 text-sm">{t('delivery.totalDeliveries')}</p>
+                          <p className="text-2xl font-bold">{analyticsData.totalDeliveries}</p>
                         </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('delivery.today')}</span>
+                        <FiTruck size={24} className="text-blue-100" />
                       </div>
-                      <h3 className="text-2xl font-bold mb-1">{analyticsData.totalDeliveries}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('delivery.totalDeliveries')}</p>
                     </div>
                     
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="p-2 bg-green-100 dark:bg-green-900/50 rounded-lg">
-                          <FiCheckCircle className="text-green-600 dark:text-green-400" size={20} />
+                    <div className="bg-gradient-to-r from-green-500 to-green-600 text-white p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-green-100 text-sm">{t('delivery.completed')}</p>
+                          <p className="text-2xl font-bold">{analyticsData.delivered.count}</p>
                         </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('delivery.completed')}</span>
+                        <FiCheckCircle size={24} className="text-green-100" />
                       </div>
-                      <h3 className="text-2xl font-bold mb-1">{analyticsData.delivered.count}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('delivery.completedDeliveries')}</p>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="p-2 bg-yellow-100 dark:bg-yellow-900/50 rounded-lg">
-                          <FiTruck className="text-yellow-600 dark:text-yellow-400" size={20} />
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('delivery.ongoing')}</span>
-                      </div>
-                      <h3 className="text-2xl font-bold mb-1">{analyticsData.enRoute.count}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('delivery.ongoingDeliveries')}</p>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="p-2 bg-red-100 dark:bg-red-900/50 rounded-lg">
-                          <FiAlertCircle className="text-red-600 dark:text-red-400" size={20} />
-                        </div>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{t('delivery.issues')}</span>
-                      </div>
-                      <h3 className="text-2xl font-bold mb-1">{analyticsData.delayed.count}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('delivery.delayedDeliveries')}</p>
                     </div>
                   </div>
                   
+                  {/* Status Breakdown */}
                   <div className="mb-6">
-                    <h3 className="text-lg font-semibold mb-4">{t('delivery.deliveryOverview')}</h3>
-                    
-                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-                      <div className="space-y-4">
-                        <div>
-                          <div className="flex justify-between mb-1">
-                            <span className="text-sm">{t('delivery.pending')}</span>
-                            <span className="text-sm font-medium">{analyticsData.pending.percent}%</span>
-                          </div>
-                          <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                            <div className="h-full bg-blue-500 rounded-full" style={{ width: `${analyticsData.pending.percent}%` }}></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between mb-1">
-                            <span className="text-sm">{t('delivery.enRoute')}</span>
-                            <span className="text-sm font-medium">{analyticsData.enRoute.percent}%</span>
-                          </div>
-                          <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                            <div className="h-full bg-green-500 rounded-full" style={{ width: `${analyticsData.enRoute.percent}%` }}></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between mb-1">
-                            <span className="text-sm">{t('delivery.delivered')}</span>
-                            <span className="text-sm font-medium">{analyticsData.delivered.percent}%</span>
-                          </div>
-                          <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                            <div className="h-full bg-green-700 rounded-full" style={{ width: `${analyticsData.delivered.percent}%` }}></div>
-                          </div>
-                        </div>
-                        
-                        <div>
-                          <div className="flex justify-between mb-1">
-                            <span className="text-sm">{t('delivery.delayed')}</span>
-                            <span className="text-sm font-medium">{analyticsData.delayed.percent}%</span>
-                          </div>
-                          <div className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
-                            <div className="h-full bg-red-500 rounded-full" style={{ width: `${analyticsData.delayed.percent}%` }}></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">{t('delivery.recentActivity')}</h3>
+                    <h3 className="text-md font-semibold mb-4">{t('delivery.statusBreakdown')}</h3>
                     
                     <div className="space-y-3">
-                      {sortedDeliveries.slice(0, 5).map(delivery => (
-                        <div 
-                          key={delivery.id}
-                          className="bg-white dark:bg-gray-800 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700 cursor-pointer transition-colors duration-200"
-                          onClick={() => handleDeliverySelect(delivery)}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center">
-                              <span className={`w-2 h-2 rounded-full mr-2 ${getStatusColor(delivery.status)}`}></span>
-                              <span className="font-medium text-sm">{delivery.id}</span>
-                            </div>
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
-                              {formatTime(delivery.estimatedDeliveryTime)}
-                            </span>
-                          </div>
-                          <div className="flex justify-between mt-1 text-sm">
-                            <span className="text-gray-600 dark:text-gray-300">{delivery.customerName}</span>
-                            <span className="text-gray-500 dark:text-gray-400">{delivery.driverName}</span>
-                          </div>
+                      <div className="flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
+                          <span className="font-medium">{t('delivery.pending')}</span>
                         </div>
-                      ))}
+                        <div className="text-right">
+                          <span className="font-bold text-blue-600 dark:text-blue-400">{analyticsData.pending.count}</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-300 ml-2">({analyticsData.pending.percent}%)</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                          <span className="font-medium">{t('delivery.enRoute')}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-green-600 dark:text-green-400">{analyticsData.enRoute.count}</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-300 ml-2">({analyticsData.enRoute.percent}%)</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-green-100 dark:bg-green-800/20 rounded-lg">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-green-700 rounded-full mr-3"></div>
+                          <span className="font-medium">{t('delivery.delivered')}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-green-700 dark:text-green-300">{analyticsData.delivered.count}</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-300 ml-2">({analyticsData.delivered.percent}%)</span>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        <div className="flex items-center">
+                          <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                          <span className="font-medium">{t('delivery.delayed')}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-bold text-red-600 dark:text-red-400">{analyticsData.delayed.count}</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-300 ml-2">({analyticsData.delayed.percent}%)</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Performance Metrics */}
+                  <div className="mb-6">
+                    <h3 className="text-md font-semibold mb-4">{t('delivery.performanceMetrics')}</h3>
+                    
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">{t('delivery.onTimeRate')}</span>
+                          <span className="text-lg font-bold text-green-600 dark:text-green-400">
+                            {Math.round(((analyticsData.delivered.count + analyticsData.enRoute.count) / analyticsData.totalDeliveries) * 100)}%
+                          </span>
+                        </div>
+                        <div className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-green-500"
+                            style={{ width: `${Math.round(((analyticsData.delivered.count + analyticsData.enRoute.count) / analyticsData.totalDeliveries) * 100)}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                      
+                      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">{t('delivery.averageDeliveryTime')}</span>
+                          <span className="text-lg font-bold">28 min</span>
+                        </div>
+                        <div className="flex items-center text-sm text-gray-600 dark:text-gray-300">
+                          <FiClock className="mr-1" />
+                          {t('delivery.within30min')}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Quick Actions */}
+                  <div>
+                    <h3 className="text-md font-semibold mb-4">{t('delivery.quickActions')}</h3>
+                    
+                    <div className="space-y-2">
+                      <button className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                        <div className="flex items-center">
+                          <FiCalendar className="mr-3 text-gray-600 dark:text-gray-300" />
+                          <span>{t('delivery.scheduleDelivery')}</span>
+                        </div>
+                        <FiArrowRight className="text-gray-400" />
+                      </button>
+                      
+                      <button className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                        <div className="flex items-center">
+                          <FiMail className="mr-3 text-gray-600 dark:text-gray-300" />
+                          <span>{t('delivery.bulkNotifications')}</span>
+                        </div>
+                        <FiArrowRight className="text-gray-400" />
+                      </button>
+                      
+                      <button className="w-full flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                        <div className="flex items-center">
+                          <FiDownload className="mr-3 text-gray-600 dark:text-gray-300" />
+                          <span>{t('delivery.exportReport')}</span>
+                        </div>
+                        <FiArrowRight className="text-gray-400" />
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -1035,141 +968,148 @@ const AdminDeliveryManagement = ({ i18n }) => {
           </motion.div>
         </div>
         
-        {/* Delivery List Table (shown when no delivery is selected) */}
-        {!selectedDelivery && (
-          <motion.div 
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-md mt-6 overflow-hidden"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3, delay: 0.4 }}
-          >
-            <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-              <h2 className="text-lg font-semibold">{t('delivery.allDeliveries')}</h2>
-              <div className="flex items-center space-x-2">
-                <div className="flex items-center text-sm">
-                  <span className="mr-2">{t('delivery.sortBy')}:</span>
-                  <select
-                    className="form-select text-sm rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-                    value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
-                  >
-                    <option value="estimatedDeliveryTime">{t('delivery.eta')}</option>
-                    <option value="distance">{t('delivery.distance')}</option>
-                    <option value="status">{t('delivery.status')}</option>
-                  </select>
-                </div>
-                <button 
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-200 text-gray-600 dark:text-gray-300"
-                  title={t('delivery.download')}
-                >
-                  <FiDownload size={18} />
-                </button>
-              </div>
-            </div>
+        {/* Delivery List Table */}
+        <motion.div 
+          className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden mt-6"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.4 }}
+        >
+          <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <h2 className="text-lg font-semibold flex items-center">
+              <FiFilter className="mr-2 text-green-600 dark:text-yellow-400" size={20} />
+              {t('delivery.deliveryList')} ({sortedDeliveries.length})
+            </h2>
             
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-700">
-                  <tr>
-                    {columns.map(column => (
-                      <th 
-                        key={column.key}
-                        scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider"
-                      >
-                        {column.label}
-                      </th>
-                    ))}
-                    <th scope="col" className="relative px-6 py-3">
-                      <span className="sr-only">{t('common.actions')}</span>
+            <div className="flex items-center space-x-3">
+              <select
+                className="form-select rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white text-sm"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="estimatedDeliveryTime">{t('delivery.sortByETA')}</option>
+                <option value="distance">{t('delivery.sortByDistance')}</option>
+                <option value="status">{t('delivery.sortByStatus')}</option>
+              </select>
+            </div>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr>
+                  {columns.map((column) => (
+                    <th key={column.key} className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                      {column.label}
                     </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  {sortedDeliveries.map(delivery => (
-                    <tr 
-                      key={delivery.id}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors duration-150"
-                      onClick={() => handleDeliverySelect(delivery)}
-                    >
-                      {columns.map(column => (
-                        <td key={`${delivery.id}-${column.key}`} className="px-6 py-4 whitespace-nowrap">
-                          {column.key === 'status' ? (
-                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusColor(delivery.status)} text-white`}>
-                              {getStatusText(delivery.status)}
-                            </span>
-                          ) : column.key === 'estimatedDeliveryTime' ? (
-                            <div className="text-sm text-gray-900 dark:text-gray-100">
-                              {formatTime(delivery.estimatedDeliveryTime)}
-                            </div>
-                          ) : (
-                            <div className="text-sm text-gray-900 dark:text-gray-100">
-                              {delivery[column.key]}
-                            </div>
-                          )}
-                        </td>
-                      ))}
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  ))}
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    {t('delivery.actions')}
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {sortedDeliveries.slice(0, 10).map((delivery) => (
+                  <tr 
+                    key={delivery.id}
+                    className={`hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors duration-200 ${
+                      selectedDelivery?.id === delivery.id ? 'bg-green-50 dark:bg-green-900/20' : ''
+                    }`}
+                    onClick={() => handleDeliverySelect(delivery)}
+                  >
+                    <td className="px-4 py-3 text-sm font-medium">
+                      {delivery.id}
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {delivery.orderId}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div>
+                        <p className="text-sm font-medium">{delivery.customerName}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{delivery.customerAddress}</p>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {delivery.restaurantName}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        delivery.status === 'pending' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200' :
+                        delivery.status === 'en_route' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                        delivery.status === 'delivered' ? 'bg-green-200 text-green-900 dark:bg-green-800 dark:text-green-100' :
+                        'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      }`}>
+                        {getStatusText(delivery.status)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      {formatTime(delivery.estimatedDeliveryTime)}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mr-2">
+                          <FiUser className="text-gray-600 dark:text-gray-300" size={14} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">{delivery.driverName}</p>
+                          <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                            <FiStar className="text-yellow-400 mr-1" size={12} />
+                            {delivery.driverRating}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex space-x-2">
                         <button
-                          className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeliverySelect(delivery);
                           }}
+                          title={t('delivery.viewDetails')}
                         >
-                          {t('common.view')}
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
                         </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                        
+                        <button
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          title={t('delivery.contactDriver')}
+                        >
+                          <FiPhone size={16} />
+                        </button>
+                        
+                        <button
+                          className="p-1 hover:bg-gray-100 dark:hover:bg-gray-600 rounded transition-colors duration-200"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                          }}
+                          title={t('delivery.sendMessage')}
+                        >
+                          <FiMessageSquare size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          
+          {sortedDeliveries.length > 10 && (
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 text-center">
+              <button className="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium text-sm">
+                {t('delivery.loadMore')} ({sortedDeliveries.length - 10} {t('delivery.more')})
+              </button>
             </div>
-            
-            <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6">
-              <div className="flex-1 flex justify-between sm:hidden">
-                <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
-                  {t('common.previous')}
-                </button>
-                <button className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700">
-                  {t('common.next')}
-                </button>
-              </div>
-              <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                <div>
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    {t('common.showing')} <span className="font-medium">1</span> {t('common.to')} <span className="font-medium">10</span> {t('common.of')} <span className="font-medium">{sortedDeliveries.length}</span> {t('common.results')}
-                  </p>
-                </div>
-                <div>
-                  <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <span className="sr-only">{t('common.previous')}</span>
-                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                    <button aria-current="page" className="z-10 bg-green-50 dark:bg-green-900/50 border-green-500 dark:border-green-700 text-green-600 dark:text-green-400 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                      1
-                    </button>
-                    <button className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                      2
-                    </button>
-                    <button className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
-                      3
-                    </button>
-                    <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <span className="sr-only">{t('common.next')}</span>
-                      <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-                      </svg>
-                    </button>
-                  </nav>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
+          )}
+        </motion.div>
       </div>
     </AdminLayout>
   );
