@@ -62,6 +62,7 @@ function App() {
           <Route path="/admin/support-services" element={<AdminSupportPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
+          {/* <Route path="/admin/promotion" element={<PromotionManagement />} /> */}
 
 
 

@@ -1,33 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  FiTag, 
-  FiPlus, 
-  FiEdit3, 
-  FiTrash2, 
-  FiEye, 
-  FiCopy, 
-  FiDownload,
-  FiFilter,
-  FiSearch,
-  FiCalendar,
-  FiPercent,
-  FiDollarSign,
-  FiTruck,
-  FiGift,
-  FiUsers,
-  FiShoppingBag,
-  FiClock,
-  FiBarChart3,
-  FiTrendingUp,
-  FiTarget,
-  FiCheckCircle,
-  FiXCircle,
-  FiAlertCircle,
-  FiRefreshCw
+  FiTag, FiPlus, FiEdit3, FiTrash2, FiEye, FiCopy, 
+  FiDownload, FiFilter, FiSearch, FiCalendar, FiPercent,
+  FiDollarSign, FiTruck, FiGift, FiUsers, FiShoppingBag,
+  FiClock, FiBarChart3, FiTrendingUp, FiCheckCircle,
+  FiXCircle, FiAlertCircle, FiRefreshCw
 } from 'react-icons/fi';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import AdminLayout from '../../../../layouts/admin_layout';
-import { useTheme } from '../../../../layouts/admin_layout'; // Import useTheme from your admin layout
+import { useTheme } from '../../../../layouts/admin_layout';
 
 
 // Mock data for promotions
@@ -123,7 +104,8 @@ const usageAnalytics = [
   ];
   
   const PromotionManagement = () => {
-    const { darkMode } = useTheme?.() || { darkMode: false };
+    const theme = useTheme();
+    const darkMode = theme?.darkMode || false;
     const [promotions, setPromotions] = useState(mockPromotions);
     const [selectedPromotion, setSelectedPromotion] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);

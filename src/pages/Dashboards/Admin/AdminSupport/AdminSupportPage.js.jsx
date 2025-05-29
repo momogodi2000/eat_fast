@@ -214,10 +214,13 @@ const AdminSupportPage = () => {
   const [aiEnabled, setAiEnabled] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
   const [showStats, setShowStats] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [activeTab, setActiveTab] = useState('all'); // New tab state
   
   // Refs
   const messagesEndRef = useRef(null);
   const messageInputRef = useRef(null);
+  const emojiPickerRef = useRef(null);
   
   // Check if mobile on mount and resize
   useEffect(() => {
@@ -257,21 +260,28 @@ const AdminSupportPage = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [selectedConversation?.messages]);
   
-  // Keyboard shortcuts
+  // Close emoji picker when clicking outside
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.key === 'k') {
-        e.preventDefault();
-        document.getElementById('search-input')?.focus();
+    const handleClickOutside = (event) => {
+      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+        setShowEmojiPicker(false);
       }
     };
     
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   
-  // Filter conversations
+  // Filter conversations based on active tab and filters
   const filteredConversations = conversations.filter(conv => {
+    // Tab filtering
+    const matchesTab = 
+      activeTab === 'all' ||
+      (activeTab === 'unread' && conv.unreadCount > 0) ||
+      (activeTab === 'active' && conv.status === 'active') ||
+      (activeTab === 'resolved' && conv.status === 'resolved');
+    
+    // Search and filter criteria
     const matchesSearch = conv.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          conv.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          conv.lastMessage.text.toLowerCase().includes(searchTerm.toLowerCase());
@@ -280,11 +290,16 @@ const AdminSupportPage = () => {
     const matchesPriority = priorityFilter === 'all' || conv.priority === priorityFilter;
     const matchesChannel = channelFilter === 'all' || conv.channel.toLowerCase() === channelFilter.toLowerCase();
     
-    return matchesSearch && matchesStatus && matchesPriority && matchesChannel;
+    return matchesTab && matchesSearch && matchesStatus && matchesPriority && matchesChannel;
   });
   
   // Generate AI response
   const generateAIResponse = async (conversationContext) => {
+    setIsTyping(true);
+    
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
     const responses = [
       "Je comprends votre préoccupation. Laissez-moi vérifier cela pour vous.",
       "Merci de nous avoir contactés. Je vais examiner votre demande immédiatement.",
@@ -308,53 +323,54 @@ const AdminSupportPage = () => {
       isAI: false
     };
     
+    // Update conversations list
     setConversations(prev => prev.map(conv => 
       conv.id === selectedConversation.id 
         ? {
             ...conv,
             messages: [...conv.messages, newMessage],
-            lastMessage: { ...newMessage, isFromUser: false }
+            lastMessage: { ...newMessage, isFromUser: false },
+            unreadCount: 0 // Reset unread count when agent responds
           }
         : conv
     ));
     
+    // Update selected conversation
     setSelectedConversation(prev => ({
       ...prev,
-      messages: [...prev.messages, newMessage]
+      messages: [...prev.messages, newMessage],
+      unreadCount: 0
     }));
     
     setMessageText('');
     
     // AI auto-response if enabled
     if (aiEnabled) {
-      setIsTyping(true);
-      setTimeout(async () => {
-        const aiResponse = await generateAIResponse(selectedConversation.messages);
-        const aiMessage = {
-          id: Date.now() + 1,
-          text: aiResponse,
-          timestamp: new Date(),
-          isFromUser: false,
-          isAI: true
-        };
-        
-        setConversations(prev => prev.map(conv => 
-          conv.id === selectedConversation.id 
-            ? {
-                ...conv,
-                messages: [...conv.messages, newMessage, aiMessage],
-                lastMessage: aiMessage
-              }
-            : conv
-        ));
-        
-        setSelectedConversation(prev => ({
-          ...prev,
-          messages: [...prev.messages, aiMessage]
-        }));
-        
-        setIsTyping(false);
-      }, 2000);
+      const aiResponse = await generateAIResponse(selectedConversation.messages);
+      const aiMessage = {
+        id: Date.now() + 1,
+        text: aiResponse,
+        timestamp: new Date(),
+        isFromUser: false,
+        isAI: true
+      };
+      
+      setConversations(prev => prev.map(conv => 
+        conv.id === selectedConversation.id 
+          ? {
+              ...conv,
+              messages: [...conv.messages, newMessage, aiMessage],
+              lastMessage: aiMessage
+            }
+          : conv
+      ));
+      
+      setSelectedConversation(prev => ({
+        ...prev,
+        messages: [...prev.messages, aiMessage]
+      }));
+      
+      setIsTyping(false);
     }
   };
   
@@ -433,7 +449,13 @@ const AdminSupportPage = () => {
 
   // Handle conversation selection (updated for mobile)
   const handleSelectConversation = (conversation) => {
-    setSelectedConversation(conversation);
+    // Mark as read when selected
+    const updatedConversations = conversations.map(c => 
+      c.id === conversation.id ? { ...c, unreadCount: 0 } : c
+    );
+    setConversations(updatedConversations);
+    
+    setSelectedConversation({ ...conversation, unreadCount: 0 });
     if (isMobile) {
       setShowConversationList(false);
       setShowChatView(true);
@@ -447,6 +469,12 @@ const AdminSupportPage = () => {
       setShowConversationList(true);
       setShowChatView(false);
     }
+  };
+
+  // Add emoji to message
+  const addEmoji = (emoji) => {
+    setMessageText(prev => prev + emoji.native);
+    setShowEmojiPicker(false);
   };
 
   return (
@@ -509,6 +537,9 @@ const AdminSupportPage = () => {
               
               <button className={`p-2 rounded-lg ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'} transition-colors`}>
                 <FiBell className="w-5 h-5" />
+                {stats.unread > 0 && (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+                )}
               </button>
             </div>
           </div>
@@ -601,6 +632,55 @@ const AdminSupportPage = () => {
                   />
                 </div>
                 
+                {/* Conversation Tabs */}
+                <div className="flex border-b border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => setActiveTab('all')}
+                    className={`flex-1 py-2 px-1 text-center text-sm font-medium ${
+                      activeTab === 'all'
+                        ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Toutes
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('unread')}
+                    className={`flex-1 py-2 px-1 text-center text-sm font-medium ${
+                      activeTab === 'unread'
+                        ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Non lues
+                    {stats.unread > 0 && (
+                      <span className="ml-1 inline-flex items-center justify-center px-2 py-0.5 rounded-full text-xs bg-red-500 text-white">
+                        {stats.unread}
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('active')}
+                    className={`flex-1 py-2 px-1 text-center text-sm font-medium ${
+                      activeTab === 'active'
+                        ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Actives
+                  </button>
+                  <button
+                    onClick={() => setActiveTab('resolved')}
+                    className={`flex-1 py-2 px-1 text-center text-sm font-medium ${
+                      activeTab === 'resolved'
+                        ? 'border-b-2 border-green-500 text-green-600 dark:text-green-400'
+                        : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+                    }`}
+                  >
+                    Résolues
+                  </button>
+                </div>
+                
                 {/* Filter Buttons */}
                 <div className="flex items-center justify-between">
                   {isMobile && (
@@ -691,11 +771,17 @@ const AdminSupportPage = () => {
                       <div className="flex items-start justify-between">
                         <div className="flex items-start space-x-3 flex-1">
                           {/* Avatar */}
-                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 flex items-center justify-center text-white font-medium text-sm">
-                            {conversation.user.avatar ? (
-                              <img src={conversation.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                            ) : (
-                              conversation.user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                          <div className="relative">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 flex items-center justify-center text-white font-medium text-sm">
+                              {conversation.user.avatar ? (
+                                <img src={conversation.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                              ) : (
+                                conversation.user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                              )}
+                            </div>
+                            {/* Online status indicator */}
+                            {conversation.user.lastSeen === 'now' && (
+                              <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
                             )}
                           </div>
                           
@@ -775,25 +861,49 @@ const AdminSupportPage = () => {
                   <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 sm:px-6 py-4`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3 sm:space-x-4">
+                        {/* Back button for mobile */}
+                        {isMobile && (
+                          <button 
+                            onClick={handleBackToList}
+                            className="p-1 mr-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700"
+                          >
+                            <FiChevronLeft className="w-5 h-5" />
+                          </button>
+                        )}
+                        
                         {/* User Avatar */}
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 flex items-center justify-center text-white font-medium">
-                          {selectedConversation.user.avatar ? (
-                            <img src={selectedConversation.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                          ) : (
-                            selectedConversation.user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                        <div className="relative">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 flex items-center justify-center text-white font-medium">
+                            {selectedConversation.user.avatar ? (
+                              <img src={selectedConversation.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                            ) : (
+                              selectedConversation.user.name.split(' ').map(n => n[0]).join('').toUpperCase()
+                            )}
+                          </div>
+                          {/* Online status indicator */}
+                          {selectedConversation.user.lastSeen === 'now' && (
+                            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
                           )}
                         </div>
                         
                         <div className="overflow-hidden">
-                          <h2 className="text-sm sm:text-lg font-semibold truncate">{selectedConversation.user.name}</h2>
+                          <div className="flex items-center space-x-2">
+                            <h2 className="text-sm sm:text-lg font-semibold truncate">{selectedConversation.user.name}</h2>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white ${getStatusColor(selectedConversation.status)}`}>
+                              {selectedConversation.status === 'active' && 'Active'}
+                              {selectedConversation.status === 'pending' && 'En attente'}
+                              {selectedConversation.status === 'resolved' && 'Résolue'}
+                              {selectedConversation.status === 'escalated' && 'Escaladée'}
+                            </span>
+                          </div>
                           <div className="flex items-center space-x-2 sm:space-x-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
+                            <span className="flex items-center truncate">
+                              {getChannelIcon(selectedConversation.channel)}
+                              <span className="ml-1 truncate">{selectedConversation.channel}</span>
+                            </span>
                             <span className="flex items-center truncate">
                               <FiMail className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                               <span className="truncate">{selectedConversation.user.email}</span>
-                            </span>
-                            <span className="hidden sm:flex items-center">
-                              <FiPhone className="w-4 h-4 mr-1" />
-                              {selectedConversation.user.phone}
                             </span>
                             <span className="hidden sm:flex items-center">
                               <FiClock className="w-4 h-4 mr-1" />
@@ -856,18 +966,23 @@ const AdminSupportPage = () => {
                             </div>
                           )}
                           <p className="text-xs sm:text-sm whitespace-pre-wrap">{message.text}</p>
-                          <p className={`text-xs mt-1 ${
-                            message.isFromUser 
-                              ? 'text-green-100' 
-                              : message.isAI 
-                              ? 'text-blue-600 dark:text-blue-300' 
-                              : 'text-gray-500 dark:text-gray-400'
-                          }`}>
-                            {message.timestamp.toLocaleTimeString('fr-FR', { 
-                              hour: '2-digit', 
-                              minute: '2-digit' 
-                            })}
-                          </p>
+                          <div className="flex items-center justify-end mt-1 space-x-1">
+                            <p className={`text-xs ${
+                              message.isFromUser 
+                                ? 'text-green-100' 
+                                : message.isAI 
+                                ? 'text-blue-600 dark:text-blue-300' 
+                                : 'text-gray-500 dark:text-gray-400'
+                            }`}>
+                              {message.timestamp.toLocaleTimeString('fr-FR', { 
+                                hour: '2-digit', 
+                                minute: '2-digit' 
+                              })}
+                            </p>
+                            {message.isFromUser && (
+                              <FiCheck className="w-3 h-3 text-green-100" />
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -913,13 +1028,38 @@ const AdminSupportPage = () => {
                           />
                           
                           {/* Emoji Button */}
-                          <button
-                            className={`absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 ${
-                              darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'
-                            } transition-colors`}
-                          >
-                            <FiSmile className="w-4 h-4 sm:w-5 sm:h-5" />
-                          </button>
+                          <div className="relative">
+                            <button
+                              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                              className={`absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 ${
+                                darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-600'
+                              } transition-colors`}
+                            >
+                              <FiSmile className="w-4 h-4 sm:w-5 sm:h-5" />
+                            </button>
+                            
+                            {showEmojiPicker && (
+                              <div 
+                                ref={emojiPickerRef}
+                                className="absolute bottom-10 right-0 z-10"
+                              >
+                                {/* Emoji picker would be implemented here */}
+                                <div className={`p-2 rounded-lg shadow-lg ${darkMode ? 'bg-gray-700' : 'bg-white'} border ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}>
+                                  <div className="grid grid-cols-6 gap-1">
+                                    {['😀', '😂', '😍', '👍', '👋', '🙏'].map(emoji => (
+                                      <button
+                                        key={emoji}
+                                        onClick={() => addEmoji({ native: emoji })}
+                                        className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
+                                      >
+                                        {emoji}
+                                      </button>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
                         
                         {/* Quick Actions */}
@@ -929,7 +1069,13 @@ const AdminSupportPage = () => {
                               <FiPaperclip className="w-4 h-4" />
                             </button>
                             
-                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                            <span className={`text-xs ${
+                              messageText.length > 900 
+                                ? 'text-red-500' 
+                                : darkMode 
+                                  ? 'text-gray-400' 
+                                  : 'text-gray-500'
+                            }`}>
                               {messageText.length}/1000 caractères
                             </span>
                           </div>
@@ -962,13 +1108,16 @@ const AdminSupportPage = () => {
                 /* No Conversation Selected (only shown on desktop) */
                 !isMobile && (
                   <div className="flex-1 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400">
-                    <FiMessageSquare className="w-24 h-24 mb-6 opacity-50" />
+                    <div className="relative w-32 h-32 mb-6">
+                      <div className="absolute inset-0 bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 rounded-full opacity-10"></div>
+                      <FiMessageSquare className="absolute inset-0 m-auto w-16 h-16 opacity-50" />
+                    </div>
                     <h3 className="text-xl font-medium mb-2">Sélectionnez une conversation</h3>
-                    <p className="text-center max-w-md">
+                    <p className="text-center max-w-md px-4">
                       Choisissez une conversation dans la liste de gauche pour commencer à répondre aux clients.
                     </p>
                     <div className="mt-8 grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                         <div className="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center">
                           <FiZap className="w-4 h-4 text-green-600 dark:text-green-400" />
                         </div>
@@ -977,7 +1126,7 @@ const AdminSupportPage = () => {
                           <p className="text-xs text-gray-400">Réponses automatiques intelligentes</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 p-3 rounded-lg border border-gray-200 dark:border-gray-700">
                         <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
                           <FiTrendingUp className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         </div>
