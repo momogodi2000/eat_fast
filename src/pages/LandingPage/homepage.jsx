@@ -20,13 +20,14 @@ import momo from '../../assets/avartar/avatar3.png';
 import yvan from '../../assets/avartar/avartar.jpeg';
 import logo from '../../assets/logo/eat_fast.png';
 
-
 const HomePage = () => {
   const { t, i18n } = useTranslation();
   const [darkMode, setDarkMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('tous');
   const [isScrolled, setIsScrolled] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showPopup, setShowPopup] = useState(false);
 
   // Refs for scroll animations
   const howItWorksRef = useRef(null);
@@ -47,6 +48,23 @@ const HomePage = () => {
   useEffect(() => {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     setDarkMode(isDarkMode);
+  }, []);
+
+  // Popup notification every 3 minutes
+  useEffect(() => {
+    const showNotification = () => {
+      setShowPopup(true);
+      setTimeout(() => setShowPopup(false), 5000); // Hide after 5 seconds
+    };
+
+    // Show immediately after 10 seconds, then every 3 minutes
+    const initialTimeout = setTimeout(showNotification, 10000);
+    const interval = setInterval(showNotification, 180000); // 3 minutes
+
+    return () => {
+      clearTimeout(initialTimeout);
+      clearInterval(interval);
+    };
   }, []);
 
   // Listen for scroll to add shadow to navbar and trigger animations
@@ -95,30 +113,36 @@ const HomePage = () => {
     localStorage.setItem('selectedLanguage', newLanguage);
   };
 
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // Handle search functionality
+    console.log('Recherche:', searchQuery);
+  };
+
   // Traditional Cameroonian foods
   const traditionalFoods = [
     {
       id: 1,
       name: 'Ndolé',
-      description: 'A rich stew of bitter leaves, nuts, and fish or beef, considered Cameroons national dish.',
+      description: 'Un ragoût riche de feuilles amères, de noix et de poisson ou de bœuf, considéré comme le plat national du Cameroun.',
       image: ndole,
     },
     {
       id: 2,
       name: 'Eru',
-      description: 'Forest vine leaves cooked with waterleaf, palm oil, and smoked fish or meat, often served with water fufu.',
+      description: 'Feuilles de vigne forestière cuites avec des feuilles d\'eau, de l\'huile de palme et du poisson fumé ou de la viande, souvent servies avec du foufou d\'eau.',
       image: eru,
     },
     {
       id: 3, 
       name: 'Koki',
-      description: 'A savory pudding made from ground beans, palm oil, and spices, wrapped in banana leaves.',
+      description: 'Un pudding savoureux à base de haricots moulus, d\'huile de palme et d\'épices, enveloppé dans des feuilles de bananier.',
       image: koki,
     },
     {
       id: 4,
       name: 'Achu',
-      description: 'Pounded cocoyam served with a yellow soup made from limestone, palm oil, and various spices.',
+      description: 'Igname pilée servie avec une soupe jaune à base de calcaire, d\'huile de palme et de diverses épices.',
       image: achue,
     }
   ];
@@ -221,6 +245,32 @@ const HomePage = () => {
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
+      {/* Popup Notification */}
+      <AnimatePresence>
+        {showPopup && (
+          <motion.div
+            initial={{ opacity: 0, y: -100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -100 }}
+            transition={{ duration: 0.5 }}
+            className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-black bg-opacity-70 backdrop-blur-sm text-white px-6 py-4 rounded-lg shadow-xl border border-white border-opacity-20"
+          >
+            <div className="flex items-center space-x-3">
+              <Clock className="text-green-400" size={20} />
+              <p className="text-sm font-medium">
+                Chers clients, nous sommes ouverts de 7h30 à 22h00 chaque jour
+              </p>
+              <button 
+                onClick={() => setShowPopup(false)}
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Navigation */}
       <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'py-2 shadow-lg backdrop-blur-md bg-opacity-90' : 'py-4'} ${darkMode ? 'bg-gray-800 bg-opacity-90' : 'bg-white bg-opacity-90'}`}>
         <div className="container mx-auto px-4 flex justify-between items-center">
@@ -229,10 +279,11 @@ const HomePage = () => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex items-center"
+            className="flex items-center space-x-3"
           >
+            <img src={logo} alt="EatFast Logo" className="w-10 h-10 rounded-full" />
             <span className="text-2xl font-bold bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
-              Eat-Fast
+              EatFast
             </span>
           </motion.div>
 
@@ -378,150 +429,238 @@ const HomePage = () => {
         )}
       </AnimatePresence>
 
-      {/* Hero Section */}
-      <section className="pt-24 md:pt-32 pb-20 relative overflow-hidden">
-        <motion.div style={{ y: backgroundY }} className="absolute -top-20 -right-20 w-96 h-96 bg-green-500 opacity-10 rounded-full blur-3xl"></motion.div>
-        <motion.div style={{ y: backgroundY }} className="absolute -bottom-20 -left-20 w-96 h-96 bg-yellow-500 opacity-10 rounded-full blur-3xl"></motion.div>
-        <motion.div style={{ y: backgroundY }} className="absolute top-40 left-1/4 w-64 h-64 bg-red-500 opacity-10 rounded-full blur-3xl"></motion.div>
+      {/* Hero Section - Completely Redesigned */}
+      <section className="pt-24 md:pt-32 pb-16 relative overflow-hidden bg-gradient-to-br from-green-50 via-yellow-50 to-orange-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
+        {/* Animated background elements */}
+        <motion.div 
+          style={{ y: backgroundY }} 
+          className="absolute -top-20 -right-20 w-96 h-96 bg-gradient-to-r from-green-400 to-yellow-400 opacity-10 rounded-full blur-3xl"
+        ></motion.div>
+        <motion.div 
+          style={{ y: backgroundY }} 
+          className="absolute -bottom-20 -left-20 w-96 h-96 bg-gradient-to-r from-red-400 to-orange-400 opacity-10 rounded-full blur-3xl"
+        ></motion.div>
         
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center">
-            <motion.div 
-              initial={{ opacity: 0, x: -50 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.7 }}
-              className="w-full md:w-1/2 mb-12 md:mb-0"
+          <div className="max-w-4xl mx-auto text-center">
+            {/* Main Heading */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="mb-8"
             >
-              <h1 className="text-4xl md:text-6xl font-bold mb-4">
-                {t('hero.title')} <span className="bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">Eat-Fast</span>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-4 leading-tight">
+                <span className="block text-gray-800 dark:text-white mb-2">
+                  Une petite faim ?
+                </span>
+                <span className="bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 bg-clip-text text-transparent">
+                  Commandez avec EatFast
+                </span>
               </h1>
+              
               <motion.p 
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.5 }}
-                className="text-lg md:text-xl mb-6 dark:text-gray-300"
+                transition={{ delay: 0.3, duration: 0.6 }}
+                className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8"
               >
-                <span className="font-bold italic">Fast Food, Fast Delivery, Feel Good!</span> - {t('hero.subtitle')}
+                Découvrez les saveurs authentiques du Cameroun et du monde entier. 
+                Livraison rapide, traçable et garantie dans toutes les grandes villes du pays.
               </motion.p>
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.5 }}
-                className="relative mb-8 max-w-md"
-              >
-                <input 
-                  type="text" 
-                  placeholder={t('hero.searchPlaceholder')}
-                  className={`w-full py-3 px-4 pr-12 rounded-full border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg`}
-                />
-                <Search className="absolute right-4 top-3 text-gray-500" size={20} />
-              </motion.div>
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.5 }}
-                className="flex flex-wrap gap-4"
-              >
-                  <Link to="/menu">
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full font-medium flex items-center space-x-2 shadow-lg"
-                  >
-                    <span>{t('hero.orderButton')}</span>
-                    <ChevronDown size={16} />
-                  </motion.button>
-                </Link>
-
-
-                <Link to="/become" className="block">
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-full font-medium flex items-center space-x-2 shadow-lg"
-                  >
-                    <span>{t('hero.becomePartner')}</span>
-                    <ChevronDown size={16} />
-                  </motion.button>
-                </Link>
-
-
-              </motion.div>
             </motion.div>
-            
-            <motion.div 
-              style={{ y: heroImageY }}
-              className="w-full md:w-1/2 relative"
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
-                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-                transition={{ 
-                  duration: 0.8, 
-                  delay: 0.4,
-                  type: "spring",
-                  stiffness: 100
-                }}
-                className="relative"
-              >
-                <div className="relative rounded-2xl overflow-hidden transform perspective-1000 rotateY-3 shadow-2xl">
-                  <img 
-                    src= {logo} 
-                    alt="Eat-Fast Food Delivery" 
-                    className="w-full h-auto rounded-2xl"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-tr from-black/40 to-transparent rounded-2xl"></div>
-                </div>
-                
-                <motion.div 
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8, duration: 0.5 }}
-                  className="absolute -bottom-6 -left-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-xl flex items-center gap-3"
-                >
-                  <div className="bg-green-100 dark:bg-green-900 p-2 rounded-full">
-                    <Clock className="text-green-500" size={20} />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{t('hero.delivery')}</p>
-                    <p className="text-green-500 font-bold">25 {t('hero.minutes')}</p>
-                  </div>
-                </motion.div>
-                
-                <motion.div 
-                  initial={{ opacity: 0, y: -20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1, duration: 0.5 }}
-                  className="absolute -top-6 -right-6 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-xl flex items-center gap-3"
-                >
-                  <div className="bg-red-100 dark:bg-red-900 p-2 rounded-full">
-                    <MapPin className="text-red-500" size={20} />
-                  </div>
-                  <div>
-                    <p className="font-medium text-sm">{t('hero.location')}</p>
-                    <p className="text-gray-600 dark:text-gray-300 font-medium">Yaoundé, Cameroun</p>
-                  </div>
-                </motion.div>
 
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 1.2, duration: 0.5 }}
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-3 rounded-full shadow-xl z-10"
-                >
-                  <div className="bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 text-white p-2 rounded-full">
-                    <motion.div
-                      animate={{ rotateZ: [0, 10, -10, 10, 0] }}
-                      transition={{ repeat: Infinity, duration: 2, repeatDelay: 5 }}
-                    >
-                      <ThumbsUp size={24} />
-                    </motion.div>
+            {/* Search Bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.6 }}
+              className="mb-10"
+            >
+              <form onSubmit={handleSearch} className="max-w-2xl mx-auto">
+                <div className={`relative flex items-center ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-full shadow-xl border-2 border-transparent focus-within:border-green-500 transition-all duration-300`}>
+                  <div className="absolute left-6">
+                    <Search className="text-gray-400" size={24} />
                   </div>
-                </motion.div>
-              </motion.div>
+                  <input
+                    type="text"
+                    placeholder="Recherchez vos plats préférés (Ndolé, Pizza, Burger...)"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className={`w-full py-4 pl-16 pr-32 rounded-full text-lg focus:outline-none ${darkMode ? 'bg-gray-800 text-white placeholder-gray-400' : 'bg-white text-gray-900 placeholder-gray-500'}`}
+                  />
+                  <motion.button
+                    type="submit"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="absolute right-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all"
+                  >
+                    Rechercher
+                  </motion.button>
+                </div>
+              </form>
+            </motion.div>
+
+            {/* Quick Stats */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.7, duration: 0.6 }}
+              className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10"
+            >
+              <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800 bg-opacity-50' : 'bg-white bg-opacity-70'} backdrop-blur-sm shadow-lg`}>
+                <div className="text-2xl md:text-3xl font-bold text-green-600 mb-1">500+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Restaurants</div>
+              </div>
+              <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800 bg-opacity-50' : 'bg-white bg-opacity-70'} backdrop-blur-sm shadow-lg`}>
+                <div className="text-2xl md:text-3xl font-bold text-yellow-600 mb-1">25min</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Livraison moy.</div>
+              </div>
+              <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800 bg-opacity-50' : 'bg-white bg-opacity-70'} backdrop-blur-sm shadow-lg`}>
+                <div className="text-2xl md:text-3xl font-bold text-red-600 mb-1">10k+</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Clients satisfaits</div>
+              </div>
+              <div className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800 bg-opacity-50' : 'bg-white bg-opacity-70'} backdrop-blur-sm shadow-lg`}>
+                <div className="text-2xl md:text-3xl font-bold text-blue-600 mb-1">5</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Villes</div>
+              </div>
+            </motion.div>
+
+            {/* CTA Buttons */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9, duration: 0.6 }}
+              className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
+            >
+              <Link to="/become">
+                <motion.button 
+                  whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}
+                  whileTap={{ scale: 0.95 }}
+                  className="w-full sm:w-auto bg-gradient-to-r from-green-600 to-green-700 text-white px-10 py-4 rounded-full font-bold text-lg flex items-center justify-center space-x-2 shadow-2xl"
+                >
+                  <span>Devenir partenaire</span>
+                  <ChevronDown size={20} className="rotate-270" />
+                </motion.button>
+              </Link>
+              
+              <Link to="/menu">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`w-full sm:w-auto px-10 py-4 rounded-full font-bold text-lg flex items-center justify-center space-x-2 shadow-xl transition-all ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-white hover:bg-gray-50 text-gray-900'} border-2 border-gray-200 dark:border-gray-600`}
+                >
+                  <span>Nos Menu</span>
+                </motion.button>
+              </Link>
+            </motion.div>
+
+            {/* Trust Indicators */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.1, duration: 0.6 }}
+              className="flex flex-col md:flex-row items-center justify-center gap-6 text-sm text-gray-600 dark:text-gray-300"
+            >
+              <div className="flex items-center">
+                <div className="flex -space-x-2 mr-3">
+                  <img src={alain} className="w-10 h-10 rounded-full border-3 border-white dark:border-gray-800 shadow-lg" alt="Client" />
+                  <img src={momo} className="w-10 h-10 rounded-full border-3 border-white dark:border-gray-800 shadow-lg" alt="Client" />
+                  <img src={yvan} className="w-10 h-10 rounded-full border-3 border-white dark:border-gray-800 shadow-lg" alt="Client" />
+                </div>
+                <span className="font-medium">Plus de 10 000 clients nous font confiance</span>
+              </div>
+              <div className="hidden md:block w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+              <div className="flex items-center">
+                <div className="flex mr-2">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="text-yellow-500 w-4 h-4" fill="currentColor" />
+                  ))}
+                </div>
+                <span className="font-medium">4.9/5 étoiles (2 500 avis)</span>
+              </div>
+              <div className="hidden md:block w-px h-6 bg-gray-300 dark:bg-gray-600"></div>
+              <div className="flex items-center">
+                <Award className="text-green-500 mr-2" size={16} />
+                <span className="font-medium">Service certifié qualité</span>
+              </div>
             </motion.div>
           </div>
         </div>
+
+        {/* Floating Elements */}
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1.3, duration: 0.8 }}
+          className="hidden lg:block absolute left-10 top-1/2 transform -translate-y-1/2"
+        >
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-4 rounded-xl shadow-xl flex items-center gap-3`}>
+            <div className="bg-green-100 dark:bg-green-900 p-3 rounded-full">
+              <Clock className="text-green-600 dark:text-green-400" size={24} />
+            </div>
+          <div>
+            <p className="font-medium text-sm">Livraison express</p>
+            <p className="text-green-600 dark:text-green-400 font-bold">En moins d'une heure</p>
+            <p className="text-xs text-gray-600 dark:text-gray-300">À partir de 1000 FCFA</p>
+          </div>
+
+          </div>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 1.5, duration: 0.8 }}
+          className="hidden lg:block absolute right-10 top-1/2 transform -translate-y-1/2"
+        >
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-4 rounded-xl shadow-xl flex items-center gap-3`}>
+            <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-full">
+              <ThumbsUp className="text-yellow-600 dark:text-yellow-400" size={24} />
+            </div>
+            <div>
+              <p className="font-medium text-sm">Satisfaction garantie</p>
+              <p className="text-yellow-600 dark:text-yellow-400 font-bold">Ou remboursé</p>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Hero Image */}
+        <motion.div
+          style={{ y: heroImageY }}
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.8, duration: 0.8 }}
+          className="mt-16 mx-auto max-w-6xl px-4"
+        >
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl">
+            <div className="aspect-w-16 aspect-h-9">
+              <img 
+                src={resto} 
+                alt="Food delivery" 
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className={`absolute inset-0 bg-gradient-to-t ${darkMode ? 'from-gray-900' : 'from-white'} via-transparent to-transparent`}></div>
+            
+            <div className="absolute bottom-8 left-8 right-8">
+              <div className="flex justify-between items-end">
+                <div>
+                  <h3 className="text-2xl font-bold text-white">Au Gouts D'afrique</h3>
+                  <p className="text-white opacity-90">Yaoundé, TKC</p>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="bg-white text-green-600 px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
+                >
+                  <Gift size={18} />
+                  <span>10% de réduction</span>
+                </motion.button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* Traditional Cameroonian Foods */}
@@ -535,7 +674,7 @@ const HomePage = () => {
             viewport={{ once: true }}
             className="text-center mb-10"
           >
-            <h2 className="text-3xl font-bold mb-4">Découvrez nos Plats Camerounais</h2>
+            <h2 className="text-3xl font-bold mb-4">Découvrez les saveurs authentiques du Cameroun et du monde entier</h2>
             <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Explorez les saveurs authentiques du Cameroun, disponibles pour livraison chez vous en quelques clics.
             </p>
