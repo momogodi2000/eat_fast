@@ -19,10 +19,18 @@ import AdminSupportPage from './pages/Dashboards/Admin/AdminSupport/AdminSupport
 import AdminSettingsPage from './pages/Dashboards/Admin/Settings/AdminSettingsPage.jsx';
 import AdminDeliveryManagement from './pages/Dashboards/Admin/Delivery/delivery_managemnet.jsx';
 //import PromotionManagement from './pages/Dashboards/Admin/Promotion/promotion.jsx';
-
-
 import BecomeAPartner from './pages/LandingPage/BecomeAPartner.jsx';
 import MenuPage from './pages/LandingPage/menus.jsx';
+
+
+
+
+// resturant dashboard
+import RestaurantDashboard from './pages/Dashboards/Restaurants/restaurant_dashboard.jsx';
+import RestaurantCommand from './pages/Dashboards/Restaurants/command/restaurant_command.jsx';
+import MenuPlatsPage from './pages/Dashboards/Restaurants/manager_menu/restuarantMenu.jsx';
+import RestaurantStatsPage from './pages/Dashboards/Restaurants/statistic/RestaurantStats.jsx';
+import RestaurantReviews from './pages/Dashboards/Restaurants/Review/restaurantreview.jsx';
 
 
 
@@ -37,6 +45,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="app">
         <Routes>
+          {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -46,13 +55,10 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/become" element={<BecomeAPartner />} />
           <Route path="/menu" element={<MenuPage />} />
+          <Route path="/test" element={<DashboardRedirect />} />
 
+          {/* Admin Router */}
 
-
-
-        <Route path="/test" element={<DashboardRedirect />} />
-
-          
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/user" element={<UserListPage />} />
           <Route path="/admin/restaurants" element={<RestaurantManagement />} />
@@ -63,6 +69,18 @@ function App() {
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
           {/* <Route path="/admin/promotion" element={<PromotionManagement />} /> */}
+
+
+
+          {/* Restaurant Router */}
+          
+          <Route path="/restaurants_manager" element={<RestaurantDashboard />} />
+          <Route path="/restaurant/orders" element={<RestaurantCommand />} />
+          <Route path="/restaurant/menu" element={<MenuPlatsPage />} />
+          <Route path="/restaurant/stats" element={<RestaurantStatsPage />} />
+          <Route path="/restaurant/reviews" element={<RestaurantReviews />} />
+
+
 
 
 

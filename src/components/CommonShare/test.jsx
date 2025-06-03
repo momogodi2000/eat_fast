@@ -42,7 +42,7 @@ export default function DashboardRedirect() {
       icon: <Coffee className="w-10 h-10 text-red-600" />,
       color: "from-red-500 to-red-700",
       hoverColor: "hover:from-red-600 hover:to-red-800",
-      path: "/restaurant"
+      path: "/restaurants_manager"
     }
   ];
 

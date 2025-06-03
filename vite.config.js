@@ -1,18 +1,24 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import tailwindcss from '@tailwindcss/vite'
-
+import tailwindcss from '@tailwindcss/vite';
+import { lingui } from '@lingui/vite-plugin';
 
 export default defineConfig({
-  plugins: [react(),
+  plugins: [
+    react({
+      babel: {
+        plugins: ['macros'],
+      },
+    }),
     tailwindcss(),
+    lingui(),
   ],
   server: {
     host: true,
     allowedHosts: [
       'localhost',
-      '1dba-154-72-163-28.ngrok-free.app'  // Add your current Ngrok domain here
-    ]
+      '3ae2-154-72-161-177.ngrok-free.app', // Replace with your current Ngrok domain
+    ],
   },
   resolve: {
     alias: {

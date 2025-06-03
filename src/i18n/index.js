@@ -1,10 +1,14 @@
 // i18n.js
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
+import { restaurantTranslations } from './restaurant_i18n_translations';
+
 
 const resources = {
   en: {
     translation: {
+            ...restaurantTranslations.en,
+
       // Navigation
       nav: {
         home: 'Home',
@@ -538,6 +542,7 @@ const resources = {
   },
   fr: {
     translation: {
+      ...restaurantTranslations.fr,
       // Navigation
       nav: {
         home: 'Accueil',
