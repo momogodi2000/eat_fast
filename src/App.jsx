@@ -23,8 +23,6 @@ import BecomeAPartner from './pages/LandingPage/BecomeAPartner.jsx';
 import MenuPage from './pages/LandingPage/menus.jsx';
 
 
-
-
 // resturant dashboard
 import RestaurantDashboard from './pages/Dashboards/Restaurants/restaurant_dashboard.jsx';
 import RestaurantCommand from './pages/Dashboards/Restaurants/command/restaurant_command.jsx';
@@ -32,6 +30,10 @@ import MenuPlatsPage from './pages/Dashboards/Restaurants/manager_menu/restuaran
 import RestaurantStatsPage from './pages/Dashboards/Restaurants/statistic/RestaurantStats.jsx';
 import RestaurantReviews from './pages/Dashboards/Restaurants/Review/restaurantreview.jsx';
 
+// delivery dashboard
+import DeliveryDashboard from './pages/Dashboards/Delivery/delivery_dashboad.jsx';
+import MissionsPage from './pages/Dashboards/Delivery/mission/delivey_mission.jsx';
+import CameroonDeliveryMap from './pages/Dashboards/Delivery/map_deliveries/delivery_live_map.jsx';
 
 
 import DashboardRedirect from './components/CommonShare/test';
@@ -80,15 +82,14 @@ function App() {
           <Route path="/restaurant/stats" element={<RestaurantStatsPage />} />
           <Route path="/restaurant/reviews" element={<RestaurantReviews />} />
 
+        {/* Delivery Router */}
+
+         <Route path="/delivery" element={<DeliveryDashboard />} />
+         <Route path="/missions" element={<MissionsPage />} />
+         <Route path="/live-map" element={<CameroonDeliveryMap />} />
 
 
 
-
-
-
-
-
-          
 
 
 

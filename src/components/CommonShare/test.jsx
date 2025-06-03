@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, Settings, Users, Truck, Coffee } from "lucide-react";
+import { ArrowRight, Settings, Users, Truck, Coffee, Headset } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function DashboardRedirect() {
@@ -43,6 +43,14 @@ export default function DashboardRedirect() {
       color: "from-red-500 to-red-700",
       hoverColor: "hover:from-red-600 hover:to-red-800",
       path: "/restaurants_manager"
+    },
+    {
+      title: "Agents Support",
+      description: "Customer support and issue resolution",
+      icon: <Headset className="w-10 h-10 text-purple-600" />,
+      color: "from-purple-500 to-purple-700",
+      hoverColor: "hover:from-purple-600 hover:to-purple-800",
+      path: "/support"
     }
   ];
 
@@ -62,7 +70,7 @@ export default function DashboardRedirect() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6 max-w-7xl mx-auto">
           {dashboards.map((dashboard, index) => (
             <div 
               key={index}
