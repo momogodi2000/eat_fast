@@ -33,7 +33,17 @@ import RestaurantReviews from './pages/Dashboards/Restaurants/Review/restaurantr
 // delivery dashboard
 import DeliveryDashboard from './pages/Dashboards/Delivery/delivery_dashboad.jsx';
 import MissionsPage from './pages/Dashboards/Delivery/mission/delivey_mission.jsx';
-import CameroonDeliveryMap from './pages/Dashboards/Delivery/map_deliveries/delivery_live_map.jsx';
+//import CameroonDeliveryMap from './pages/Dashboards/Delivery/map_deliveries/delivery_live_map.jsx';
+
+import RestaurantDeliverCommand from './pages/Dashboards/Delivery/map_deliveries/restaurant_command.jsx';
+
+
+
+
+import DeliveryEarningsPage from './pages/Dashboards/Delivery/earnings/delivery_earnings.jsx';
+import DeliveryHistoryPage from './pages/Dashboards/Delivery/History/delivery_history.jsx';
+import DeliverySupport from './pages/Dashboards/Delivery/support/delivery_support.jsx';
+
 
 
 import DashboardRedirect from './components/CommonShare/test';
@@ -86,7 +96,16 @@ function App() {
 
          <Route path="/delivery" element={<DeliveryDashboard />} />
          <Route path="/missions" element={<MissionsPage />} />
-         <Route path="/live-map" element={<CameroonDeliveryMap />} />
+         {/*<Route path="/live-map" element={<CameroonDeliveryMap />} />*/}
+
+         <Route path="/live-map" element={<RestaurantDeliverCommand />} />
+
+         <Route path="/earnings" element={<DeliveryEarningsPage />} />
+         <Route path="/history" element={<DeliveryHistoryPage />} />
+         <Route path="/support" element={<DeliverySupport />} />
+
+
+
 
 
 

@@ -124,10 +124,27 @@ const GlobalDeliveryMap = () => {
 
   const [activeDelivery, setActiveDelivery] = useState(null);
   const [deliveryPhoto, setDeliveryPhoto] = useState(null);
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  // Check if mobile view
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobileView(window.innerWidth < 1024);
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
 
   // Initialize map and location services
   useEffect(() => {
-    requestLocationPermission();
+    if (!isMobileView) {
+      requestLocationPermission();
+    }
     loadLeafletMap();
     
     // Check online status
@@ -139,7 +156,7 @@ const GlobalDeliveryMap = () => {
       window.removeEventListener('online', handleOnlineStatus);
       window.removeEventListener('offline', handleOnlineStatus);
     };
-  }, []);
+  }, [isMobileView]);
 
   // OpenStreetMap Nominatim Geocoding API
   const searchLocation = async (query) => {
@@ -162,6 +179,8 @@ const GlobalDeliveryMap = () => {
 
   // Load Leaflet map with global coverage
   const loadLeafletMap = () => {
+    if (isMobileView) return;
+
     // Load Leaflet CSS
     if (!document.getElementById('leaflet-css')) {
       const cssLink = document.createElement('link');
@@ -215,6 +234,8 @@ const GlobalDeliveryMap = () => {
 
   // Initialize the Leaflet map with global coverage
   const initializeMap = () => {
+    if (isMobileView) return;
+    
     if (mapRef.current && window.L && !leafletMapRef.current) {
       // Create map with global view
       const map = window.L.map(mapRef.current, {
@@ -350,6 +371,8 @@ const GlobalDeliveryMap = () => {
 
   // Update map when location changes
   useEffect(() => {
+    if (isMobileView) return;
+    
     if (leafletMapRef.current && currentLocation) {
       const map = leafletMapRef.current;
       
@@ -381,7 +404,7 @@ const GlobalDeliveryMap = () => {
         }).addTo(map);
       }
     }
-  }, [currentLocation]);
+  }, [currentLocation, isMobileView]);
 
   // Auto-refresh missions every 30 seconds
   useEffect(() => {
@@ -394,6 +417,8 @@ const GlobalDeliveryMap = () => {
 
   // Request location permission with better error handling
   const requestLocationPermission = async () => {
+    if (isMobileView) return;
+    
     if (!navigator.geolocation) {
       setLocationPermission('not_supported');
       return;
@@ -450,6 +475,8 @@ const GlobalDeliveryMap = () => {
   };
 
   const recenterMap = () => {
+    if (isMobileView) return;
+    
     if (leafletMapRef.current && currentLocation) {
       leafletMapRef.current.setView([currentLocation.lat, currentLocation.lng], 15);
     }
@@ -712,7 +739,7 @@ const GlobalDeliveryMap = () => {
                   <p className="text-sm text-gray-500">Trafic: {route.traffic}</p>
                 </div>
               </div>
-                            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-1">
                   <Clock size={16} className="text-gray-500" />
                   <span className="font-medium">{route.time}</span>
@@ -786,28 +813,32 @@ const GlobalDeliveryMap = () => {
     </div>
   );
 
-  const MapControls = () => (
-    <div className="absolute right-4 bottom-4 z-10 flex flex-col space-y-3">
-      <button
-        onClick={recenterMap}
-        className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
-      >
-        <Target size={20} />
-      </button>
-      <button
-        onClick={() => setVoiceEnabled(!voiceEnabled)}
-        className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
-      >
-        {voiceEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
-      </button>
-      <button
-        onClick={() => setIsFullscreen(!isFullscreen)}
-        className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
-      >
-        {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-      </button>
-    </div>
-  );
+  const MapControls = () => {
+    if (isMobileView) return null;
+    
+    return (
+      <div className="absolute right-4 bottom-4 z-10 flex flex-col space-y-3">
+        <button
+          onClick={recenterMap}
+          className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
+        >
+          <Target size={20} />
+        </button>
+        <button
+          onClick={() => setVoiceEnabled(!voiceEnabled)}
+          className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
+        >
+          {voiceEnabled ? <Volume2 size={20} /> : <VolumeX size={20} />}
+        </button>
+        <button
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-300 hover:scale-110"
+        >
+          {isFullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+        </button>
+      </div>
+    );
+  };
 
   return (
     <DeliveryLayout>
@@ -826,20 +857,22 @@ const GlobalDeliveryMap = () => {
 
         {/* Main Content */}
         <div className="flex flex-col lg:flex-row h-[calc(100%-64px)] lg:h-full">
-          {/* Left Panel - Map */}
-          <div className={`${isMobileMenuOpen ? 'hidden' : 'flex'} lg:flex flex-1 relative`}>
-            <div
-              ref={mapRef}
-              className="w-full h-full bg-gray-200 dark:bg-gray-900"
-            >
-              {!mapLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
-                </div>
-              )}
+          {/* Left Panel - Map (hidden on mobile) */}
+          {!isMobileView && (
+            <div className={`${isMobileMenuOpen ? 'hidden' : 'flex'} lg:flex flex-1 relative`}>
+              <div
+                ref={mapRef}
+                className="w-full h-full bg-gray-200 dark:bg-gray-900"
+              >
+                {!mapLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-yellow-500"></div>
+                  </div>
+                )}
+              </div>
+              <MapControls />
             </div>
-            <MapControls />
-          </div>
+          )}
 
           {/* Right Panel - Content */}
           <div className={`${isMobileMenuOpen ? 'flex' : 'hidden'} lg:flex flex-col w-full lg:w-96 bg-gray-100 dark:bg-gray-900 overflow-y-auto p-4 space-y-4`}>
@@ -937,7 +970,7 @@ const GlobalDeliveryMap = () => {
         )}
 
         {/* Location Permission Warning */}
-        {locationPermission === 'denied' && (
+        {locationPermission === 'denied' && !isMobileView && (
           <div className="fixed bottom-4 left-4 bg-yellow-500 text-white px-4 py-2 rounded-full shadow-lg flex items-center space-x-2 z-50">
             <AlertTriangle size={16} />
             <span>Localisation désactivée</span>

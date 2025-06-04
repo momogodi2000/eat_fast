@@ -113,7 +113,7 @@ const DeliveryLayout = ({ children }) => {
             <div className="flex flex-col h-full">
               {/* Logo */}
               <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                <Link to="/dashboard" className="flex items-center space-x-3">
+                <Link to="/delivery" className="flex items-center space-x-3">
                   <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-red-500 rounded-xl flex items-center justify-center text-white font-bold text-lg transform hover:scale-110 transition-transform duration-200">
                     E
                   </div>
@@ -162,12 +162,12 @@ const DeliveryLayout = ({ children }) => {
                   path="/earnings" 
                   isActive={location.pathname === '/earnings'}
                 />
-                <NavItem 
+               {/* <NavItem 
                   icon={<User size={20} className="text-current" />}
                   label={t('profile')} 
                   path="/profile" 
                   isActive={location.pathname === '/profile'}
-                />
+                />  */}
                 <NavItem 
                   icon={<FileText size={20} className="text-current" />}
                   label={t('delivery_history')} 

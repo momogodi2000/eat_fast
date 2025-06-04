@@ -451,62 +451,116 @@ const ContactPage = () => {
       </section>
 
       {/* FAQ Section */}
-      <section className={`py-12 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl font-bold mb-4">Frequently Asked Questions</h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Find answers to common questions about EatFast
-            </p>
-          </motion.div>
+     {/* FAQ Section */}
+<section className={`py-12 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+  <div className="container mx-auto px-4">
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      className="text-center mb-12"
+    >
+      <h2 className="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
+      <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">
+        Find answers to common questions about EatFast
+      </p>
+    </motion.div>
+    
+    <div className="max-w-4xl mx-auto">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.98 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
+        className={`rounded-2xl overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-xl`}
+      >
+        {[
+          {
+            question: "How do I place an order?",
+            answer: "Simply browse restaurants, select your items, and proceed to checkout. You can pay online or choose cash on delivery."
+          },
+          {
+            question: "What areas do you serve?",
+            answer: "We currently serve Yaoundé and will be expanding to other cities soon."
+          },
+          {
+            question: "How long does delivery take?",
+            answer: "We guarantee delivery within 30 minutes for most orders in our service areas."
+          },
+          {
+            question: "Can I become a delivery partner?",
+            answer: "Yes! We're always looking for new delivery partners. Please contact us for more information."
+          },
+          {
+            question: "How do I partner my restaurant with EatFast?",
+            answer: "We'd love to have you! Please contact our partnerships team through the contact form."
+          }
+        ].map((item, index) => {
+          const [isOpen, setIsOpen] = useState(index === 0); // First item open by default
           
-          <div className="max-w-3xl mx-auto">
-            <div className={`rounded-xl overflow-hidden ${darkMode ? 'bg-gray-700' : 'bg-white'} shadow-lg`}>
-              {[
-                {
-                  question: "How do I place an order?",
-                  answer: "Simply browse restaurants, select your items, and proceed to checkout. You can pay online or choose cash on delivery."
-                },
-                {
-                  question: "What areas do you serve?",
-                  answer: "We currently serve Yaoundé and will be expanding to other cities soon."
-                },
-                {
-                  question: "How long does delivery take?",
-                  answer: "We guarantee delivery within 30 minutes for most orders in our service areas."
-                },
-                {
-                  question: "Can I become a delivery partner?",
-                  answer: "Yes! We're always looking for new delivery partners. Please contact us for more information."
-                },
-                {
-                  question: "How do I partner my restaurant with EatFast?",
-                  answer: "We'd love to have you! Please contact our partnerships team through the contact form."
-                }
-              ].map((item, index) => (
+          return (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}
+            >
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className={`w-full px-6 py-4 text-left flex justify-between items-center transition-colors ${isOpen ? (darkMode ? 'bg-gray-600' : 'bg-gray-50') : ''}`}
+              >
+                <h3 className="text-lg md:text-xl font-semibold">{item.question}</h3>
                 <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  className={`border-b ${darkMode ? 'border-gray-600' : 'border-gray-200'}`}
+                  animate={{ rotate: isOpen ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
                 >
-                  <div className="p-6">
-                    <h3 className="text-lg font-bold mb-2">{item.question}</h3>
-                    <p className="text-gray-600 dark:text-gray-400">{item.answer}</p>
-                  </div>
+                  <ChevronDown size={24} className="text-green-500" />
                 </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+              </button>
+              
+              <AnimatePresence>
+                {isOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="px-6 pb-6 pt-2">
+                      <p className="text-gray-600 dark:text-gray-300">{item.answer}</p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          );
+        })}
+      </motion.div>
+      
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5, delay: 0.5 }}
+        className="mt-8 text-center"
+      >
+        <p className="mb-4 text-gray-600 dark:text-gray-400">
+          Still have questions? We're happy to help!
+        </p>
+        <Link 
+          to="/contact" 
+          className="inline-block bg-green-500 hover:bg-green-600 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+        >
+          Contact Support
+        </Link>
+      </motion.div>
+    </div>
+  </div>
+</section>
 
       {/* Footer (same as home page) */}
       <footer className={`py-12 ${darkMode ? 'bg-gray-900 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
