@@ -337,17 +337,19 @@ const AdminLayout = ({ children }) => {
         {/* Main Content */}
         <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
           <div className="py-6 px-4 sm:px-6 lg:px-8 animate-fadeIn">
-            {children || (
-              <div className="rounded-lg bg-white dark:bg-gray-800 shadow-md p-6 transition-all duration-300">
-                <h2 className="text-xl md:text-2xl font-semibold mb-4">Welcome to the Admin Dashboard</h2>
-                <p className="text-gray-600 dark:text-gray-300">Select an option from the sidebar to get started.</p>
-              </div>
+            {typeof children === 'function' ? children({ darkMode }) : (
+              children ?? (
+                <div className="rounded-lg bg-white dark:bg-gray-800 shadow-md p-6 transition-all duration-300">
+                  <h2 className="text-xl md:text-2xl font-semibold mb-4">Welcome to the Admin Dashboard</h2>
+                  <p className="text-gray-600 dark:text-gray-300">Select an option from the sidebar to get started.</p>
+                </div>
+              )
             )}
           </div>
         </main>
       </div>
-      
-      <style jsx global>{`
+
+      <style>{`
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(10px); }
           to { opacity: 1; transform: translateY(0); }
@@ -357,7 +359,6 @@ const AdminLayout = ({ children }) => {
           animation: fadeIn 0.3s ease-out forwards;
         }
         
-        /* For WebKit browsers */
         ::-webkit-scrollbar {
           width: 6px;
         }

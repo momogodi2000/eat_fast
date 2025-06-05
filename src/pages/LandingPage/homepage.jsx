@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useAnimation, useScroll, useTransform } from 'framer-motion';
 import { Sun, Moon, Search, MapPin, Clock, Star, ChevronDown, User, ShoppingBag, Menu, X, Award, ThumbsUp, Gift } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { initFlowbite } from 'flowbite'; // Ajoutez cet import
 
 // Importation des images (simulations)
 import ndole from '../../assets/images/ndoles.jpeg';
@@ -20,6 +21,11 @@ import momo from '../../assets/avartar/avatar3.png';
 import yvan from '../../assets/avartar/avartar.jpeg';
 import logo from '../../assets/logo/eat_fast.png';
 
+// Images pour le NOUVEAU carrousel du Hero (ajoutées)
+import carroussel_1 from '../../assets/images/carroussel_1.png';
+import carroussel_2 from '../../assets/images/carroussel_2.png';
+import carroussel_3 from '../../assets/images/carroussel_3.png';
+
 const HomePage = () => {
   const { t, i18n } = useTranslation();
   const [darkMode, setDarkMode] = useState(false);
@@ -28,6 +34,14 @@ const HomePage = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showPopup, setShowPopup] = useState(false);
+
+  // State pour le nouveau Hero Carrousel (ajouté)
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const heroCarouselSlides = [
+    { id: 0, image: carroussel_1, alt: t('hero.carousel.alt1', 'Délicieux plat africain en arrière-plan'), title: '', location: '' },
+    { id: 1, image: carroussel_2, alt: t('hero.carousel.alt2', 'Burger appétissant en arrière-plan'), title: 'Fast Food Premium', location: 'Yaoundé, Centre-ville' },
+    { id: 2, image: carroussel_3, alt: t('hero.carousel.alt3', 'Pizza savoureuse en arrière-plan'), title: 'Tchop et Yamo', location: 'Yaoundé, Mvog-Mbi' }
+  ];
 
   // Refs for scroll animations
   const howItWorksRef = useRef(null);
@@ -54,18 +68,37 @@ const HomePage = () => {
   useEffect(() => {
     const showNotification = () => {
       setShowPopup(true);
-      setTimeout(() => setShowPopup(false), 5000); // Hide after 5 seconds
     };
 
-    // Show immediately after 10 seconds, then every 3 minutes
-    const initialTimeout = setTimeout(showNotification, 10000);
-    const interval = setInterval(showNotification, 180000); // 3 minutes
+    // Show after 2 seconds
+    const initialTimeout = setTimeout(showNotification, 2000);
 
     return () => {
       clearTimeout(initialTimeout);
-      clearInterval(interval);
     };
   }, []);
+
+  // initFlowbite (ajouté)
+  useEffect(() => {
+    initFlowbite();
+    console.log("Flowbite initialisé depuis HomePage");
+  }, []);
+
+  // useEffect pour le changement automatique des slides du NOUVEAU carrousel Hero (ajouté)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev === heroCarouselSlides.length - 1 ? 0 : prev + 1));
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [heroCarouselSlides.length]);
+
+  // useEffect pour le préchargement des images du NOUVEAU carrousel Hero (ajouté)
+  useEffect(() => {
+    heroCarouselSlides.forEach(slide => {
+      const img = new Image();
+      img.src = slide.image;
+    });
+  }, [heroCarouselSlides]);
 
   // Listen for scroll to add shadow to navbar and trigger animations
   useEffect(() => {
@@ -249,11 +282,11 @@ const HomePage = () => {
       <AnimatePresence>
         {showPopup && (
           <motion.div
-            initial={{ opacity: 0, y: -100 }}
+            initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -100 }}
+            exit={{ opacity: 0, y: 50 }}
             transition={{ duration: 0.5 }}
-            className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-black bg-opacity-70 backdrop-blur-sm text-white px-6 py-4 rounded-lg shadow-xl border border-white border-opacity-20"
+            className="fixed bottom-4 right-4 z-50 bg-black bg-opacity-70 backdrop-blur-sm text-white px-6 py-4 rounded-lg shadow-xl border border-white border-opacity-20"
           >
             <div className="flex items-center space-x-3">
               <Clock className="text-green-400" size={20} />
@@ -625,7 +658,7 @@ const HomePage = () => {
           </div>
         </motion.div>
 
-        {/* Hero Image */}
+        {/* Hero Image with Carousel */}
         <motion.div
           style={{ y: heroImageY }}
           initial={{ opacity: 0, scale: 0.9 }}
@@ -633,21 +666,40 @@ const HomePage = () => {
           transition={{ delay: 0.8, duration: 0.8 }}
           className="mt-16 mx-auto max-w-6xl px-4"
         >
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-            <div className="aspect-w-16 aspect-h-9">
-              <img 
-                src={resto} 
-                alt="Food delivery" 
-                className="w-full h-full object-cover"
-              />
+          <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[500px]"> {/* Ajout d'une hauteur fixe */}
+            {/* Carousel container */}
+            <div className="absolute inset-0 w-full h-full">
+              <AnimatePresence mode="wait"> {/* Ajout du mode="wait" */}
+                {heroCarouselSlides.map((slide, index) => (
+                  currentSlide === index && (
+                    <motion.div
+                      key={slide.id}
+                      className="absolute inset-0 w-full h-full"
+                      initial={{ opacity: 0, scale: 1.05 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 1.05 }}
+                      transition={{ duration: 1.2, ease: "easeInOut" }}
+                    >
+                      <img
+                        src={slide.image}
+                        alt={slide.alt}
+                        className="w-full h-full object-cover"
+                      />
+                    </motion.div>
+                  )
+                ))}
+              </AnimatePresence>
             </div>
-            <div className={`absolute inset-0 bg-gradient-to-t ${darkMode ? 'from-gray-900' : 'from-white'} via-transparent to-transparent`}></div>
+
+            {/* Gradient overlay */}
+            <div className={`absolute inset-0 bg-gradient-to-t ${darkMode ? 'from-gray-900' : 'from-gray-800'} via-transparent to-transparent opacity-60`}></div>
             
+            {/* Content */}
             <div className="absolute bottom-8 left-8 right-8">
               <div className="flex justify-between items-end">
                 <div>
-                  <h3 className="text-2xl font-bold text-white">Au Gouts D'afrique</h3>
-                  <p className="text-white opacity-90">Yaoundé, TKC</p>
+                  <h3 className="text-2xl font-bold text-white">{heroCarouselSlides[currentSlide].title}</h3>
+                  <p className="text-white opacity-90">{heroCarouselSlides[currentSlide].location}</p>
                 </div>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
@@ -972,7 +1024,9 @@ const HomePage = () => {
                     </svg>
                   </span>
                   <div className="flex flex-col">
-                    <span className="text-xs">{t('app.downloadOn')}</span>
+                    <span className="text-xs">
+                      {t('app.downloadOn')}
+                    </span>
                     <span className="font-medium">App Store</span>
                   </div>
                 </motion.button>
@@ -988,7 +1042,9 @@ const HomePage = () => {
                     </svg>
                   </span>
                   <div className="flex flex-col">
-                    <span className="text-xs">{t('app.getItOn')}</span>
+                    <span className="text-xs">
+                      {t('app.getItOn')}
+                    </span>
                     <span className="font-medium">Google Play</span>
                   </div>
                 </motion.button>
