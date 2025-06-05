@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useAnimation, useScroll, useTransform } from 'framer-motion';
 import { Sun, Moon, Search, MapPin, Clock, Star, ChevronDown, User, ShoppingBag, Menu, X, Award, ThumbsUp, Gift } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 // Importation des images (simulations)
 import ndole from '../../assets/images/ndoles.jpeg';
@@ -19,6 +20,10 @@ import alain from '../../assets/avartar/avatar2.jpg';
 import momo from '../../assets/avartar/avatar3.png';
 import yvan from '../../assets/avartar/avartar.jpeg';
 import logo from '../../assets/logo/eat_fast.png';
+import TKC from '../../assets/images/TKC.jpg';
+import TKC2 from '../../assets/images/TKC2.jpg';
+
+
 
 const HomePage = () => {
   const { t, i18n } = useTranslation();
@@ -28,6 +33,8 @@ const HomePage = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showPopup, setShowPopup] = useState(false);
+  // Add these state variables and useEffect hooks inside your component
+  const [currentSlide, setCurrentSlide] = useState(0);
 
   // Refs for scroll animations
   const howItWorksRef = useRef(null);
@@ -243,6 +250,56 @@ const HomePage = () => {
     }
   };
 
+  // Carousel images data
+const carouselImages = [
+  {
+    src: resto, // your existing image
+    alt: "Au Gouts D'afrique",
+    title: "Au Gouts D'afrique",
+    subtitle: "Yaoundé, TKC",
+    offer: "10% de réduction"
+  },
+  {
+    src: resto, // replace with your second image
+    alt: "Restaurant Saveur",
+    title: "Restaurant Saveur",
+    subtitle: "Douala, Akwa",
+    offer: "15% de réduction"
+  },
+  {
+    src: resto, // replace with your third image
+    alt: "Chez Mama",
+    title: "Chez Mama",
+    subtitle: "Bafoussam, Centre",
+    offer: "20% de réduction"
+  },
+  {
+    src: resto, // replace with your fourth image
+    alt: "Le Palais du Goût",
+    title: "Le Palais du Goût",
+    subtitle: "Garoua, Nord",
+    offer: "Livraison gratuite"
+  }
+];
+
+// Auto-slide effect (30 seconds)
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+  }, 30000); // 30 seconds
+
+  return () => clearInterval(interval);
+}, []);
+
+// Navigation functions
+const nextSlide = () => {
+  setCurrentSlide((prev) => (prev + 1) % carouselImages.length);
+};
+
+const prevSlide = () => {
+  setCurrentSlide((prev) => (prev - 1 + carouselImages.length) % carouselImages.length);
+};
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Popup Notification */}
@@ -430,6 +487,7 @@ const HomePage = () => {
       </AnimatePresence>
 
       {/* Hero Section - Completely Redesigned */}
+ {/* Hero Section - Completely Redesigned */}
       <section className="pt-24 md:pt-32 pb-16 relative overflow-hidden bg-gradient-to-br from-green-50 via-yellow-50 to-orange-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
         {/* Animated background elements */}
         <motion.div 
@@ -625,7 +683,7 @@ const HomePage = () => {
           </div>
         </motion.div>
 
-        {/* Hero Image */}
+        {/* Hero Image Carousel */}
         <motion.div
           style={{ y: heroImageY }}
           initial={{ opacity: 0, scale: 0.9 }}
@@ -634,29 +692,70 @@ const HomePage = () => {
           className="mt-16 mx-auto max-w-6xl px-4"
         >
           <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-            <div className="aspect-w-16 aspect-h-9">
-              <img 
-                src={resto} 
-                alt="Food delivery" 
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className={`absolute inset-0 bg-gradient-to-t ${darkMode ? 'from-gray-900' : 'from-white'} via-transparent to-transparent`}></div>
-            
-            <div className="absolute bottom-8 left-8 right-8">
-              <div className="flex justify-between items-end">
-                <div>
-                  <h3 className="text-2xl font-bold text-white">Au Gouts D'afrique</h3>
-                  <p className="text-white opacity-90">Yaoundé, TKC</p>
+            {/* Carousel Container */}
+            <div className="relative">
+              <div className="aspect-w-16 aspect-h-9 overflow-hidden relative">
+                {/* Carousel Images */}
+                <div className="flex transition-transform duration-500 ease-in-out" 
+                     style={{ transform: `translateX(-${currentSlide * 100}%)` }}>
+                  {carouselImages.map((image, index) => (
+                    <div key={index} className="w-full flex-shrink-0 relative">
+                      <img 
+                        src={image.src} 
+                        alt={image.alt}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className={`absolute inset-0 bg-gradient-to-t ${darkMode ? 'from-gray-900' : 'from-white'} via-transparent to-transparent`}></div>
+                      
+                      <div className="absolute bottom-8 left-8 right-8">
+                        <div className="flex justify-between items-end">
+                          <div>
+                            <h3 className="text-2xl font-bold text-white">{image.title}</h3>
+                            <p className="text-white opacity-90">{image.subtitle}</p>
+                          </div>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-white text-green-600 px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
+                          >
+                            <Gift size={18} />
+                            <span>{image.offer}</span>
+                          </motion.button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-white text-green-600 px-6 py-3 rounded-full font-bold shadow-lg flex items-center gap-2"
-                >
-                  <Gift size={18} />
-                  <span>10% de réduction</span>
-                </motion.button>
+              </div>
+
+              {/* Navigation Arrows */}
+              <button
+                onClick={prevSlide}
+                className={`absolute left-4 top-1/2 transform -translate-y-1/2 ${darkMode ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 hover:bg-opacity-100 p-3 rounded-full shadow-lg transition-all duration-300 z-10`}
+              >
+                <ChevronLeft className="text-gray-600 dark:text-gray-300" size={24} />
+              </button>
+              
+              <button
+                onClick={nextSlide}
+                className={`absolute right-4 top-1/2 transform -translate-y-1/2 ${darkMode ? 'bg-gray-800' : 'bg-white'} bg-opacity-80 hover:bg-opacity-100 p-3 rounded-full shadow-lg transition-all duration-300 z-10`}
+              >
+                <ChevronRight className="text-gray-600 dark:text-gray-300" size={24} />
+              </button>
+
+              {/* Dot Indicators */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-10">
+                {carouselImages.map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentSlide(index)}
+                    className={`w-3 h-3 rounded-full transition-all duration-300 ${
+                      index === currentSlide 
+                        ? 'bg-white shadow-lg' 
+                        : 'bg-white bg-opacity-50 hover:bg-opacity-75'
+                    }`}
+                  />
+                ))}
               </div>
             </div>
           </div>

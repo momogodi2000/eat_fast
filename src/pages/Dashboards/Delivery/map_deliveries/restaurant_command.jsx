@@ -45,10 +45,6 @@ import {
 } from 'lucide-react';
 import DeliveryLayout from '../../../../layouts/delivery_layout';
 
-/**
- * Enhanced Global Delivery Map & Navigation Component
- * Professional delivery interface for Est Fast Cameroon
- */
 const RestaurantDeliverCommand = () => {
   // Core state management
   const [currentLocation, setCurrentLocation] = useState({
@@ -62,7 +58,7 @@ const RestaurantDeliverCommand = () => {
   const [locationPermission, setLocationPermission] = useState('prompt');
   const [isNavigating, setIsNavigating] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState('fastest');
-  const [deliveryPhase, setDeliveryPhase] = useState('waiting'); // waiting, heading_pickup, at_restaurant, heading_customer, at_customer, completed
+  const [deliveryPhase, setDeliveryPhase] = useState('waiting');
   
   // Search and routing
   const [searchQuery, setSearchQuery] = useState('');
@@ -94,9 +90,10 @@ const RestaurantDeliverCommand = () => {
   const [notifications, setNotifications] = useState([]);
   
   const mapRef = useRef(null);
-  const leafletMapRef = useRef(null);
+  const yandexMapRef = useRef(null);
+  const yandexRouteRef = useRef(null);
   
-  // Realistic Yaoundé delivery data
+  // Delivery data
   const [assignedDeliveries, setAssignedDeliveries] = useState([
     {
       id: 'DEL-YDE-001',
@@ -125,33 +122,6 @@ const RestaurantDeliverCommand = () => {
       paymentMethod: 'mobile_money',
       estimatedTime: '15 min',
       preparationTime: '10 min'
-    },
-    {
-      id: 'DEL-YDE-002',
-      status: 'preparing',
-      priority: 'normal',
-      requestTime: new Date(Date.now() - 300000),
-      customer: {
-        name: 'Paul Etoa',
-        phone: '+237 699 876 543',
-        address: 'Quartier Melen, près du Carrefour Total, Yaoundé',
-        landmark: 'Immeuble bleu à côté de la pharmacie',
-        coordinates: { lat: 3.8280, lng: 11.4889 }
-      },
-      restaurant: {
-        name: 'Le Palais du Goût',
-        address: 'Mfoundi, Rue de Nachtigal, Yaoundé',
-        phone: '+237 655 432 109',
-        coordinates: { lat: 3.8590, lng: 11.5123 }
-      },
-      items: [
-        { name: 'Poulet DG', quantity: 1, price: 3500 },
-        { name: 'Riz sauté', quantity: 1, price: 1500 }
-      ],
-      totalValue: 5000,
-      paymentMethod: 'cash',
-      estimatedTime: '12 min',
-      preparationTime: '5 min'
     }
   ]);
 
@@ -176,14 +146,14 @@ const RestaurantDeliverCommand = () => {
   useEffect(() => {
     if (!isMobileView) {
       requestLocationPermission();
-      loadLeafletMap();
+      loadYandexMap();
     }
     
     const handleOnlineStatus = () => setIsOffline(!navigator.onLine);
     window.addEventListener('online', handleOnlineStatus);
     window.addEventListener('offline', handleOnlineStatus);
     
-    // Simulate incoming delivery request after 3 seconds
+    // Simulate incoming delivery request
     setTimeout(() => {
       if (assignedDeliveries.length > 0 && !activeDelivery) {
         setShowDeliveryRequest(true);
@@ -197,139 +167,85 @@ const RestaurantDeliverCommand = () => {
     };
   }, [isMobileView]);
 
-  // Load Leaflet map
-  const loadLeafletMap = () => {
+  // Load Yandex Map
+  const loadYandexMap = () => {
     if (isMobileView) return;
 
-    if (!document.getElementById('leaflet-css')) {
-      const cssLink = document.createElement('link');
-      cssLink.id = 'leaflet-css';
-      cssLink.rel = 'stylesheet';
-      cssLink.href = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css';
-      document.head.appendChild(cssLink);
-      
-      const styleSheet = document.createElement('style');
-      styleSheet.textContent = `
-        @keyframes pulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.1); opacity: 0.7; }
-          100% { transform: scale(1); opacity: 1; }
-        }
-        .pulse-marker { animation: pulse 2s infinite; }
-        .fade-in { animation: fadeIn 0.5s ease-in; }
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .slide-up { animation: slideUp 0.3s ease-out; }
-        @keyframes slideUp {
-          from { transform: translateY(100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        .bounce-in { animation: bounceIn 0.6s ease-out; }
-        @keyframes bounceIn {
-          0% { transform: scale(0.3); opacity: 0; }
-          50% { transform: scale(1.05); }
-          70% { transform: scale(0.9); }
-          100% { transform: scale(1); opacity: 1; }
-        }
-      `;
-      document.head.appendChild(styleSheet);
-    }
-
-    if (!window.L) {
+    if (!window.ymaps) {
       const script = document.createElement('script');
-      script.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js';
+      script.src = 'https://api-maps.yandex.ru/2.1/?apikey=YOUR_YANDEX_API_KEY&lang=fr_FR';
       script.onload = () => {
-        setMapLoaded(true);
-        initializeMap();
+        window.ymaps.ready(() => {
+          setMapLoaded(true);
+          initializeYandexMap();
+        });
       };
       document.head.appendChild(script);
     } else {
-      setMapLoaded(true);
-      initializeMap();
+      window.ymaps.ready(() => {
+        setMapLoaded(true);
+        initializeYandexMap();
+      });
     }
   };
 
-  // Initialize map
-  const initializeMap = () => {
-    if (isMobileView || !mapRef.current || !window.L || leafletMapRef.current) return;
+  // Initialize Yandex Map
+  const initializeYandexMap = () => {
+    if (isMobileView || !mapRef.current || yandexMapRef.current) return;
     
-    const map = window.L.map(mapRef.current, {
+    const map = new window.ymaps.Map(mapRef.current, {
       center: [currentLocation.lat, currentLocation.lng],
       zoom: 13,
-      zoomControl: false,
-      attributionControl: true
+      controls: ['zoomControl', 'typeSelector', 'fullscreenControl']
     });
-    
-    // OpenStreetMap tiles
-    window.L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-      maxZoom: 19,
-      minZoom: 10
-    }).addTo(map);
 
-    // Controls
-    window.L.control.zoom({ position: 'bottomright' }).addTo(map);
-    window.L.control.scale({ position: 'bottomleft' }).addTo(map);
-
-    // Custom icons
-    const createCustomIcon = (color, emoji, size = 25) => {
-      return window.L.divIcon({
-        html: `<div style="
-          background: ${color}; 
-          width: ${size}px; 
-          height: ${size}px; 
-          border-radius: 50%; 
-          border: 3px solid white; 
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-          display: flex; 
-          align-items: center; 
-          justify-content: center; 
-          color: white; 
-          font-weight: bold; 
-          font-size: ${Math.floor(size * 0.4)}px;
-        " class="pulse-marker">${emoji}</div>`,
-        iconSize: [size, size],
-        className: 'custom-div-icon'
-      });
-    };
-
-    // Add current location
-    window.L.marker([currentLocation.lat, currentLocation.lng], { 
-      icon: createCustomIcon('#10B981', '🚗', 20) 
-    }).addTo(map).bindPopup(`
-      <div style="padding: 8px;">
-        <h3 style="margin: 0; color: #10B981;">Ma Position</h3>
-        <p style="margin: 4px 0 0 0; font-size: 12px;">
-          Précision: ${currentLocation.accuracy}m
-        </p>
-      </div>
-    `);
+    // Add current location marker
+    const currentLocationPlacemark = new window.ymaps.Placemark(
+      [currentLocation.lat, currentLocation.lng],
+      {
+        hintContent: 'Ma Position',
+        balloonContent: `Précision: ${currentLocation.accuracy}m`
+      },
+      {
+        iconLayout: 'default#image',
+        iconImageHref: 'https://cdn-icons-png.flaticon.com/512/447/447031.png',
+        iconImageSize: [30, 30],
+        iconImageOffset: [-15, -15]
+      }
+    );
+    map.geoObjects.add(currentLocationPlacemark);
 
     // Add delivery markers
     assignedDeliveries.forEach(delivery => {
       // Restaurant marker
       if (delivery.restaurant.coordinates) {
-        window.L.marker([
-          delivery.restaurant.coordinates.lat, 
-          delivery.restaurant.coordinates.lng
-        ], { 
-          icon: createCustomIcon('#F59E0B', '🍽️') 
-        }).addTo(map).bindPopup(`
-          <div style="padding: 8px; min-width: 200px;">
-            <h3 style="margin: 0 0 8px 0; color: #F59E0B;">
-              ${delivery.restaurant.name}
-            </h3>
-            <p style="margin: 0; font-size: 14px;">${delivery.restaurant.address}</p>
-            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-              <div style="display: flex; justify-content: space-between;">
-                <span>Préparation:</span>
-                <span style="font-weight: bold;">${delivery.preparationTime}</span>
+        const restaurantPlacemark = new window.ymaps.Placemark(
+          [delivery.restaurant.coordinates.lat, delivery.restaurant.coordinates.lng],
+          {
+            hintContent: delivery.restaurant.name,
+            balloonContent: `
+              <div style="padding: 8px; min-width: 200px;">
+                <h3 style="margin: 0 0 8px 0; color: #F59E0B;">
+                  ${delivery.restaurant.name}
+                </h3>
+                <p style="margin: 0; font-size: 14px;">${delivery.restaurant.address}</p>
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span>Préparation:</span>
+                    <span style="font-weight: bold;">${delivery.preparationTime}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        `);
+            `
+          },
+          {
+            iconLayout: 'default#image',
+            iconImageHref: 'https://cdn-icons-png.flaticon.com/512/1865/1865269.png',
+            iconImageSize: [30, 30],
+            iconImageOffset: [-15, -15]
+          }
+        );
+        map.geoObjects.add(restaurantPlacemark);
       }
 
       // Customer marker
@@ -337,38 +253,46 @@ const RestaurantDeliverCommand = () => {
         const statusColor = delivery.status === 'completed' ? '#EF4444' : 
                           delivery.status === 'en_route' ? '#10B981' : '#F59E0B';
         
-        window.L.marker([
-          delivery.customer.coordinates.lat, 
-          delivery.customer.coordinates.lng
-        ], { 
-          icon: createCustomIcon(statusColor, '🏠') 
-        }).addTo(map).bindPopup(`
-          <div style="padding: 8px; min-width: 250px;">
-            <h3 style="margin: 0 0 8px 0; color: ${statusColor};">
-              ${delivery.customer.name}
-            </h3>
-            <p style="margin: 0 0 4px 0; font-size: 14px;">
-              ${delivery.customer.address}
-            </p>
-            <p style="margin: 0 0 8px 0; font-size: 12px; color: #F59E0B;">
-              ${delivery.customer.landmark}
-            </p>
-            <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-              <div style="display: flex; justify-content: space-between;">
-                <span style="font-weight: bold; color: #059669;">
-                  ${delivery.totalValue.toLocaleString()} FCFA
-                </span>
-                <span style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
-                  ${getStatusText(delivery.status)}
-                </span>
+        const customerPlacemark = new window.ymaps.Placemark(
+          [delivery.customer.coordinates.lat, delivery.customer.coordinates.lng],
+          {
+            hintContent: delivery.customer.name,
+            balloonContent: `
+              <div style="padding: 8px; min-width: 250px;">
+                <h3 style="margin: 0 0 8px 0; color: ${statusColor};">
+                  ${delivery.customer.name}
+                </h3>
+                <p style="margin: 0 0 4px 0; font-size: 14px;">
+                  ${delivery.customer.address}
+                </p>
+                <p style="margin: 0 0 8px 0; font-size: 12px; color: #F59E0B;">
+                  ${delivery.customer.landmark}
+                </p>
+                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="font-weight: bold; color: #059669;">
+                      ${delivery.totalValue.toLocaleString()} FCFA
+                    </span>
+                    <span style="background: ${statusColor}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
+                      ${getStatusText(delivery.status)}
+                    </span>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        `);
+            `
+          },
+          {
+            iconLayout: 'default#image',
+            iconImageHref: 'https://cdn-icons-png.flaticon.com/512/447/447035.png',
+            iconImageSize: [30, 30],
+            iconImageOffset: [-15, -15]
+          }
+        );
+        map.geoObjects.add(customerPlacemark);
       }
     });
 
-    leafletMapRef.current = map;
+    yandexMapRef.current = map;
   };
 
   // Location services
@@ -396,6 +320,11 @@ const RestaurantDeliverCommand = () => {
       });
       setLocationPermission('granted');
       
+      // Update Yandex map center
+      if (yandexMapRef.current) {
+        yandexMapRef.current.setCenter([position.coords.latitude, position.coords.longitude]);
+      }
+      
       // Watch position
       navigator.geolocation.watchPosition(
         (pos) => {
@@ -407,6 +336,12 @@ const RestaurantDeliverCommand = () => {
             speed: (pos.coords.speed || 0) * 3.6,
             accuracy: pos.coords.accuracy
           }));
+          
+          // Update Yandex map center
+          if (yandexMapRef.current) {
+            yandexMapRef.current.setCenter([pos.coords.latitude, pos.coords.longitude]);
+          }
+          
           updateETA();
         },
         (error) => console.error('Location error:', error),
@@ -418,17 +353,27 @@ const RestaurantDeliverCommand = () => {
     }
   };
 
-  // Search functionality
+  // Search functionality using Yandex Geocoder
   const searchLocation = async (query) => {
     if (!query.trim()) return;
     
     setIsSearching(true);
     try {
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query + ', Yaoundé, Cameroon')}&limit=5&addressdetails=1`
-      );
-      const results = await response.json();
-      setSearchResults(results);
+      if (window.ymaps) {
+        window.ymaps.geocode(query + ', Yaoundé, Cameroon', {
+          results: 5
+        }).then((res) => {
+          const results = res.geoObjects.toArray().map(item => {
+            return {
+              display_name: item.properties.get('name'),
+              lat: item.geometry.getCoordinates()[0],
+              lon: item.geometry.getCoordinates()[1],
+              address: item.properties.get('text')
+            };
+          });
+          setSearchResults(results);
+        });
+      }
     } catch (error) {
       console.error('Search error:', error);
       setSearchResults([]);
@@ -505,32 +450,51 @@ const RestaurantDeliverCommand = () => {
     }
   };
 
-  // Route calculation
+  // Route calculation with Yandex Maps
   const calculateRoute = (destination) => {
-    if (!destination) return;
+    if (!destination || !window.ymaps || !yandexMapRef.current) return;
     
-    // Simulate route calculation
-    const distance = calculateDistance(currentLocation, destination);
-    const time = Math.ceil(distance * 2.5); // Rough estimate
+    // Remove any existing route
+    if (yandexRouteRef.current) {
+      yandexMapRef.current.geoObjects.remove(yandexRouteRef.current);
+    }
     
-    setRouteData({
-      distance: distance.toFixed(1),
-      duration: time,
-      destination
+    // Calculate route using Yandex Maps routing
+    const multiRoute = new window.ymaps.multiRouter.MultiRoute({
+      referencePoints: [
+        [currentLocation.lat, currentLocation.lng],
+        [destination.lat, destination.lng]
+      ],
+      params: {
+        routingMode: 'auto'
+      }
+    }, {
+      boundsAutoApply: true,
+      wayPointStartIconColor: '#3b82f6',
+      wayPointFinishIconColor: '#10b981',
+      routeStrokeColor: '#3b82f6',
+      routeActiveStrokeColor: '#1d4ed8'
     });
     
-    updateETA();
-  };
-
-  const calculateDistance = (point1, point2) => {
-    const R = 6371; // Earth's radius in km
-    const dLat = (point2.lat - point1.lat) * Math.PI / 180;
-    const dLon = (point2.lng - point1.lng) * Math.PI / 180;
-    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-              Math.cos(point1.lat * Math.PI / 180) * Math.cos(point2.lat * Math.PI / 180) *
-              Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
+    yandexMapRef.current.geoObjects.add(multiRoute);
+    yandexRouteRef.current = multiRoute;
+    
+    // Get route information
+    multiRoute.model.events.add('requestsuccess', () => {
+      const activeRoute = multiRoute.getActiveRoute();
+      if (activeRoute) {
+        const distance = activeRoute.properties.get('distance').value / 1000; // Convert to km
+        const time = activeRoute.properties.get('duration').value / 60; // Convert to minutes
+        
+        setRouteData({
+          distance: distance.toFixed(1),
+          duration: Math.ceil(time),
+          destination
+        });
+        
+        updateETA();
+      }
+    });
   };
 
   const updateETA = () => {
