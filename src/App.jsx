@@ -18,7 +18,13 @@ import StatisticsPage from './pages/Dashboards/Admin/Statistics/StatisticsPage';
 import AdminSupportPage from './pages/Dashboards/Admin/AdminSupport/AdminSupportPage.js';
 import AdminSettingsPage from './pages/Dashboards/Admin/Settings/AdminSettingsPage.jsx';
 import AdminDeliveryManagement from './pages/Dashboards/Admin/Delivery/delivery_managemnet.jsx';
+<<<<<<< HEAD
 //import PromotionManagement from './pages/Dashboards/Admin/Promotion/promotion.jsx';
+=======
+import PromotionManagement from './pages/Dashboards/Admin/Promotion/promotion.jsx';
+
+
+>>>>>>> origin/feat/ui-ux-improvements
 import BecomeAPartner from './pages/LandingPage/BecomeAPartner.jsx';
 import MenuPage from './pages/LandingPage/menus.jsx';
 
@@ -52,7 +58,6 @@ import DashboardRedirect from './components/CommonShare/test';
 const queryClient = new QueryClient();
 
 function App() {
-  console.log('App component is rendering');
   return (
     <QueryClientProvider client={queryClient}>
       <div className="app">
@@ -80,10 +85,11 @@ function App() {
           <Route path="/admin/support-services" element={<AdminSupportPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
-          {/* <Route path="/admin/promotion" element={<PromotionManagement />} /> */}
+          <Route path="/admin/promotion" element={<PromotionManagement />} />
 
 
 
+<<<<<<< HEAD
           {/* Restaurant Router */}
           
           <Route path="/restaurants_manager" element={<RestaurantDashboard />} />
@@ -108,6 +114,8 @@ function App() {
 
 
 
+=======
+>>>>>>> origin/feat/ui-ux-improvements
 
 
 
