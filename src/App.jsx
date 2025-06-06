@@ -1,5 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+// Public router link
+
 import HomePage from './pages/LandingPage/homepage';
 import AboutPage from './pages/LandingPage/about_us';
 import ContactPage from './pages/LandingPage/contact_us';
@@ -8,6 +10,7 @@ import Login from './pages/Authentication/login';
 import Register from './pages/Authentication/register';
 import ForgotPassword from './pages/Authentication/forgot_password';
 
+// Admin router link 
 
 import AdminDashboard from './pages/Dashboards/Admin/admin_dashboard';
 import UserListPage from './pages/Dashboards/Admin/Utilisateurs/UserList';
@@ -24,32 +27,37 @@ import BecomeAPartner from './pages/LandingPage/BecomeAPartner.jsx';
 import MenuPage from './pages/LandingPage/menus.jsx';
 
 
-// resturant dashboard
+// resturant dashboard link
+
 import RestaurantDashboard from './pages/Dashboards/Restaurants/restaurant_dashboard.jsx';
 import RestaurantCommand from './pages/Dashboards/Restaurants/command/restaurant_command.jsx';
 import MenuPlatsPage from './pages/Dashboards/Restaurants/manager_menu/restuarantMenu.jsx';
 import RestaurantStatsPage from './pages/Dashboards/Restaurants/statistic/RestaurantStats.jsx';
 import RestaurantReviews from './pages/Dashboards/Restaurants/Review/restaurantreview.jsx';
 
-// delivery dashboard
+// delivery dashboard link
+
 import DeliveryDashboard from './pages/Dashboards/Delivery/delivery_dashboad.jsx';
 import MissionsPage from './pages/Dashboards/Delivery/mission/delivey_mission.jsx';
 //import CameroonDeliveryMap from './pages/Dashboards/Delivery/map_deliveries/delivery_live_map.jsx';
-
 import RestaurantDeliverCommand from './pages/Dashboards/Delivery/map_deliveries/restaurant_command.jsx';
-
-
-
-
 import DeliveryEarningsPage from './pages/Dashboards/Delivery/earnings/delivery_earnings.jsx';
 import DeliveryHistoryPage from './pages/Dashboards/Delivery/History/delivery_history.jsx';
 import DeliverySupport from './pages/Dashboards/Delivery/support/delivery_support.jsx';
 
 
-
-import DashboardRedirect from './components/CommonShare/test';
+// Agents support link
 import SupportTicketsPage from "@/pages/Dashboards/Agent/Tickets/ticketsPage.jsx";
 import SupportDisputesPage from "@/pages/Dashboards/Agent/Disputes/DisputesPage.jsx";
+
+// Clients dashabord link
+import ClientDashboard from './pages/Dashboards/Clients/clients_dashboards.jsx';
+import ClientMenus from './pages/Dashboards/Clients/Restaurants/clients_restaurants.jsx';
+
+
+
+// Common share component for testing
+import DashboardRedirect from './components/CommonShare/test';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -59,7 +67,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="app">
         <Routes>
-          {/* Public Routes */}
+   {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -71,7 +79,7 @@ function App() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/test" element={<DashboardRedirect />} />
 
-          {/* Admin Router */}
+  {/* Admin Router */}
 
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/user" element={<UserListPage />} />
@@ -85,12 +93,13 @@ function App() {
           <Route path="/admin/promotion" element={<PromotionManagement />} />
           {/* <Route path="/admin/promotion" element={<PromotionManagement />} /> */}
 
+  {/* Agents Support Router */}
 
           <Route path="/agent/tickets" element={<SupportTicketsPage />} />
           <Route path="/agent/disputes" element={<SupportDisputesPage />} />
 
 
-          {/* Restaurant Router */}
+  {/* Restaurant Router */}
           
           <Route path="/restaurants_manager" element={<RestaurantDashboard />} />
           <Route path="/restaurant/orders" element={<RestaurantCommand />} />
@@ -98,18 +107,22 @@ function App() {
           <Route path="/restaurant/stats" element={<RestaurantStatsPage />} />
           <Route path="/restaurant/reviews" element={<RestaurantReviews />} />
 
-        {/* Delivery Router */}
+  {/* Delivery Router */}
 
          <Route path="/delivery" element={<DeliveryDashboard />} />
          <Route path="/missions" element={<MissionsPage />} />
          {/*<Route path="/live-map" element={<CameroonDeliveryMap />} />*/}
-
          <Route path="/live-map" element={<RestaurantDeliverCommand />} />
-
          <Route path="/earnings" element={<DeliveryEarningsPage />} />
          <Route path="/history" element={<DeliveryHistoryPage />} />
          <Route path="/support" element={<DeliverySupport />} />
 
+  {/* Clients Router */}
+          <Route path="/clients" element={<ClientDashboard />} />
+          <Route path="/clients/restaurant" element={<ClientMenus />} />
+
+          
+         
 
 
 
