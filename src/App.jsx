@@ -53,6 +53,8 @@ import DeliverySupport from './pages/Dashboards/Delivery/support/delivery_suppor
 
 
 import DashboardRedirect from './components/CommonShare/test';
+import SupportTicketsPage from "@/pages/Dashboards/Agent/Tickets/ticketsPage.jsx";
+import SupportDisputesPage from "@/pages/Dashboards/Agent/Disputes/DisputesPage.jsx";
 
 // Create a client
 const queryClient = new QueryClient();
@@ -85,7 +87,17 @@ function App() {
           <Route path="/admin/support-services" element={<AdminSupportPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
+<<<<<<< HEAD
           <Route path="/admin/promotion" element={<PromotionManagement />} />
+=======
+          {/* <Route path="/admin/promotion" element={<PromotionManagement />} /> */}
+
+
+          <Route path="/agent/tickets" element={<SupportTicketsPage />} />
+          <Route path="/agent/disputes" element={<SupportDisputesPage />} />
+
+
+>>>>>>> origin/line
 
 
 
