@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-<<<<<<< HEAD
-import { ArrowRight, Settings, Users, Truck, Coffee, Headset } from "lucide-react";
-=======
-import {ArrowRight, Settings, Users, Truck, Coffee, Headphones} from "lucide-react";
->>>>>>> origin/line
+import { ArrowRight, Settings, Users, Truck, Coffee, Headset, Headphones } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function DashboardRedirect() {
@@ -56,14 +52,6 @@ export default function DashboardRedirect() {
       hoverColor: "hover:from-red-600 hover:to-red-800",
       path: "/restaurants_manager"
     },
-    {
-      title: "Agents Support",
-      description: "Customer support and issue resolution",
-      icon: <Headset className="w-10 h-10 text-purple-600" />,
-      color: "from-purple-500 to-purple-700",
-      hoverColor: "hover:from-purple-600 hover:to-purple-800",
-      path: "/support"
-    }
   ];
 
   const handleNavigation = (path) => {

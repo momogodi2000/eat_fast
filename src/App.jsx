@@ -18,13 +18,8 @@ import StatisticsPage from './pages/Dashboards/Admin/Statistics/StatisticsPage';
 import AdminSupportPage from './pages/Dashboards/Admin/AdminSupport/AdminSupportPage.js';
 import AdminSettingsPage from './pages/Dashboards/Admin/Settings/AdminSettingsPage.jsx';
 import AdminDeliveryManagement from './pages/Dashboards/Admin/Delivery/delivery_managemnet.jsx';
-<<<<<<< HEAD
 //import PromotionManagement from './pages/Dashboards/Admin/Promotion/promotion.jsx';
-=======
 import PromotionManagement from './pages/Dashboards/Admin/Promotion/promotion.jsx';
-
-
->>>>>>> origin/feat/ui-ux-improvements
 import BecomeAPartner from './pages/LandingPage/BecomeAPartner.jsx';
 import MenuPage from './pages/LandingPage/menus.jsx';
 
@@ -87,9 +82,7 @@ function App() {
           <Route path="/admin/support-services" element={<AdminSupportPage />} />
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
-<<<<<<< HEAD
           <Route path="/admin/promotion" element={<PromotionManagement />} />
-=======
           {/* <Route path="/admin/promotion" element={<PromotionManagement />} /> */}
 
 
@@ -97,11 +90,6 @@ function App() {
           <Route path="/agent/disputes" element={<SupportDisputesPage />} />
 
 
->>>>>>> origin/line
-
-
-
-<<<<<<< HEAD
           {/* Restaurant Router */}
           
           <Route path="/restaurants_manager" element={<RestaurantDashboard />} />
@@ -121,13 +109,6 @@ function App() {
          <Route path="/earnings" element={<DeliveryEarningsPage />} />
          <Route path="/history" element={<DeliveryHistoryPage />} />
          <Route path="/support" element={<DeliverySupport />} />
-
-
-
-
-
-=======
->>>>>>> origin/feat/ui-ux-improvements
 
 
 

@@ -3,11 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence, useAnimation, useScroll, useTransform } from 'framer-motion';
 import { Sun, Moon, Search, MapPin, Clock, Star, ChevronDown, User, ShoppingBag, Menu, X, Award, ThumbsUp, Gift } from 'lucide-react';
 import { Link } from 'react-router-dom';
-<<<<<<< HEAD
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-=======
 import { initFlowbite } from 'flowbite'; // Ajoutez cet import
->>>>>>> origin/feat/ui-ux-improvements
 
 // Importation des images (simulations)
 import ndole from '../../assets/images/ndoles.jpeg';
@@ -42,10 +39,7 @@ const HomePage = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showPopup, setShowPopup] = useState(false);
-  // Add these state variables and useEffect hooks inside your component
-  const [currentSlide, setCurrentSlide] = useState(0);
-
-  // State pour le nouveau Hero Carrousel (ajouté)
+  // State pour le carrousel
   const [currentSlide, setCurrentSlide] = useState(0);
   const heroCarouselSlides = [
     { id: 0, image: carroussel_1, alt: t('hero.carousel.alt1', 'Délicieux plat africain en arrière-plan'), title: '', location: '' },
@@ -78,7 +72,7 @@ const HomePage = () => {
   useEffect(() => {
     const showNotification = () => {
       setShowPopup(true);
-    };
+    }
 
     // Show after 2 seconds
     const initialTimeout = setTimeout(showNotification, 2000);
@@ -719,11 +713,8 @@ const prevSlide = () => {
           </div>
         </motion.div>
 
-<<<<<<< HEAD
         {/* Hero Image Carousel */}
-=======
         {/* Hero Image with Carousel */}
->>>>>>> origin/feat/ui-ux-improvements
         <motion.div
           style={{ y: heroImageY }}
           initial={{ opacity: 0, scale: 0.9 }}
@@ -731,10 +722,9 @@ const prevSlide = () => {
           transition={{ delay: 0.8, duration: 0.8 }}
           className="mt-16 mx-auto max-w-6xl px-4"
         >
-<<<<<<< HEAD
           <div className="relative rounded-3xl overflow-hidden shadow-2xl">
             {/* Carousel Container */}
-            <div className="relative">
+          <div className="relative">
               <div className="aspect-w-16 aspect-h-9 overflow-hidden relative">
                 {/* Carousel Images */}
                 <div className="flex transition-transform duration-500 ease-in-out" 
@@ -766,10 +756,11 @@ const prevSlide = () => {
                       </div>
                     </div>
                   ))}
-=======
-          <div className="relative rounded-3xl overflow-hidden shadow-2xl h-[500px]"> {/* Ajout d'une hauteur fixe */}
-            {/* Carousel container */}
-            <div className="absolute inset-0 w-full h-full">
+                </div>
+              </div>
+            </div>
+          {/* Carousel container */}
+          <div className="absolute inset-0 w-full h-full">
               <AnimatePresence mode="wait"> {/* Ajout du mode="wait" */}
                 {heroCarouselSlides.map((slide, index) => (
                   currentSlide === index && (
@@ -801,7 +792,6 @@ const prevSlide = () => {
                 <div>
                   <h3 className="text-2xl font-bold text-white">{heroCarouselSlides[currentSlide].title}</h3>
                   <p className="text-white opacity-90">{heroCarouselSlides[currentSlide].location}</p>
->>>>>>> origin/feat/ui-ux-improvements
                 </div>
               </div>
 
