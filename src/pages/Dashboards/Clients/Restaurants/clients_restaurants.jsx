@@ -35,7 +35,7 @@ const ClientMenus = () => {
   //const { user, cartItems, addToCart, updateCartQuantity } = useAppContext();
   // { isDark } = useAppContext();
 
-  console.log(useContext(AppContext));
+  console.log(useContext(AppContext)); // ici Test Pour Voir si AppContext fonctionne
  
   const [userLocation, setUserLocation] = useState(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
