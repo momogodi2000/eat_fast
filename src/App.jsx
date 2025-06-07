@@ -58,6 +58,7 @@ import ClientMenus from './pages/Dashboards/Clients/Restaurants/clients_restaura
 
 // Common share component for testing
 import DashboardRedirect from './components/CommonShare/test';
+import ClientsLayout from './layouts/clients_layout.jsx';
 
 // Create a client
 const queryClient = new QueryClient();

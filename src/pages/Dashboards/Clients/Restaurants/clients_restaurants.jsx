@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import ClientsLayout, { useAppContext } from '../../../../layouts/clients_layout';
+import React, { useState, useEffect, useRef, useContext } from 'react';
+import ClientsLayout, { useAppContext, AppContext } from '../../../../layouts/clients_layout';
 import { 
   MapPin, 
   Clock, 
@@ -32,7 +32,11 @@ import mbongo from '../../../../assets/images/mbongo.jpeg';
 import kondre from '../../../../assets/images/kondre.jpg';
 
 const ClientMenus = () => {
-  const { user, cartItems, addToCart, updateCartQuantity } = useAppContext();
+  //const { user, cartItems, addToCart, updateCartQuantity } = useAppContext();
+  // { isDark } = useAppContext();
+
+  console.log(useContext(AppContext));
+ 
   const [userLocation, setUserLocation] = useState(null);
   const [showLocationModal, setShowLocationModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -300,6 +304,7 @@ const ClientMenus = () => {
   if (isLoading) {
     return (
       <ClientsLayout>
+      
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-orange-500 mx-auto mb-4"></div>
@@ -311,7 +316,9 @@ const ClientMenus = () => {
   }
 
   return (
+   
     <ClientsLayout>
+   
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
         {/* Location Modal */}
         {showLocationModal && (
@@ -639,6 +646,7 @@ const ClientMenus = () => {
           </div>
         )}
       </div>
+   
     </ClientsLayout>
   );
 };
