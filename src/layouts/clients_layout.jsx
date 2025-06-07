@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Sun, Moon, Globe, User, Bell, MessageCircle, MapPin, Clock, Star, TrendingUp, Package, CreditCard, ShoppingCart, History, Settings, LogOut } from 'lucide-react';
-import ClientMenus from '../pages/Dashboards/Clients/Restaurants/clients_restaurants';
+
 
 // Context for theme and language
  export const AppContext = createContext();
@@ -350,7 +350,7 @@ const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
           </main>
         </div>
       </div>
-      <ClientMenus/>
+      {/* <ClientMenus/> */}
     </AppContext.Provider>
   );
 };
