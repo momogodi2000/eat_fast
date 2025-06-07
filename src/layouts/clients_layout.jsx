@@ -1,11 +1,13 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Sun, Moon, Globe, User, Bell, MessageCircle, MapPin, Clock, Star, TrendingUp, Package, CreditCard, ShoppingCart, History, Settings, LogOut } from 'lucide-react';
+import ClientMenus from '../pages/Dashboards/Clients/Restaurants/clients_restaurants';
 
 // Context for theme and language
-const AppContext = createContext();
+ export const AppContext = createContext();
 
 export const useAppContext = () => {
   const context = useContext(AppContext);
+
   if (!context) {
     throw new Error('useAppContext must be used within AppProvider');
   }
@@ -76,7 +78,7 @@ const translations = {
   }
 };
 
-const ClientsLayout = ({ children, currentPage = 'dashboard' }) => {
+const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
   const [isDark, setIsDark] = useState(false);
   const [language, setLanguage] = useState('fr');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -193,7 +195,9 @@ const ClientsLayout = ({ children, currentPage = 'dashboard' }) => {
   };
 
   return (
+   
     <AppContext.Provider value={contextValue}>
+
       <div className={`min-h-screen transition-all duration-300 ${isDark ? 'dark bg-gray-900' : 'bg-gradient-to-br from-green-50 via-yellow-50 to-red-50'}`}>
         {/* Header */}
         <header className="sticky top-0 z-50 backdrop-blur-lg bg-white/80 dark:bg-gray-800/80 border-b border-green-200 dark:border-gray-700 shadow-lg">
@@ -346,6 +350,7 @@ const ClientsLayout = ({ children, currentPage = 'dashboard' }) => {
           </main>
         </div>
       </div>
+      <ClientMenus/>
     </AppContext.Provider>
   );
 };
