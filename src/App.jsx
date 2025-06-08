@@ -53,6 +53,10 @@ import SupportDisputesPage from "@/pages/Dashboards/Agent/Disputes/DisputesPage.
 // Clients dashabord link
 import ClientDashboard from './pages/Dashboards/Clients/clients_dashboards.jsx';
 import ClientMenus from './pages/Dashboards/Clients/Restaurants/clients_restaurants.jsx';
+import ClientsCommande from './pages/Dashboards/Clients/Commandes/clients_commandes.jsx';
+import ClientsCommandeHistory from './pages/Dashboards/Clients//Historique/clients_history.jsx';
+import ClientsChatSupport from './pages/Dashboards/Clients/Contact_support/clients_contact.jsx';
+import ClientsProfilePage from './pages/Dashboards/Clients/Profil/clients_profile.jsx';
 
 
 
@@ -121,6 +125,15 @@ function App() {
   {/* Clients Router */}
           <Route path="/clients" element={<ClientDashboard />} />
           <Route path="/clients/restaurant" element={<ClientMenus />} />
+          <Route path="/clients/orders" element={<ClientsCommande />} />
+          <Route path="/clients/order-history" element={<ClientsCommandeHistory />} />
+          <Route path="/clients/support/chat" element={<ClientsChatSupport />} />
+          <Route path="/clients/profile" element={<ClientsProfilePage />} />
+
+
+          
+
+
 
           
          

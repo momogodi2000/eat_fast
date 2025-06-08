@@ -44,7 +44,8 @@ const translations = {
     contactSupport: 'Contacter le support',
     restaurants: 'Restaurants',
     cart: 'Panier',
-    payment: 'Paiement'
+    chatSupport: "Discussion avec le support"
+
   },
   en: {
     dashboard: 'Dashboard',
@@ -74,8 +75,8 @@ const translations = {
     contactSupport: 'Contact Support',
     restaurants: 'Restaurants',
     cart: 'Cart',
-    payment: 'Payment'
-  }
+    chatSupport: "Chat with Support"
+ }
 };
 
 const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
@@ -134,45 +135,31 @@ const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
     { 
       icon: Package, 
       label: t.orders, 
-      path: '/orders',
+      path: '/clients/orders',
       active: activePage === 'orders',
       badge: 2 // Active orders count
     },
     { 
       icon: History, 
       label: t.orderHistory, 
-      path: '/order-history',
+      path: '/clients/order-history',
       active: activePage === 'order-history',
-      badge: null
-    },
-    { 
-      icon: CreditCard, 
-      label: t.payment, 
-      path: '/payment',
-      active: activePage === 'payment',
       badge: null
     },
     { 
       icon: User, 
       label: t.profile, 
-      path: '/profile',
+      path: '/clients/profile',
       active: activePage === 'profile',
       badge: null
     },
-    { 
-      icon: Bell, 
-      label: t.notifications, 
-      path: '/notifications',
-      active: activePage === 'notifications',
-      badge: 3 // Unread notifications
-    },
-    { 
-      icon: Settings, 
-      label: t.settings, 
-      path: '/settings',
-      active: activePage === 'settings',
-      badge: null
-    }
+ //   { 
+ //     icon: Settings, 
+  //    label: t.settings, 
+  //    path: '/settings',
+  //    active: activePage === 'settings',
+  //    badge: null
+  //  }
   ];
 
   const handleNavigation = (item) => {
@@ -315,7 +302,7 @@ const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
               <div className="p-6 space-y-3">
                 {/* Support Button */}
                 <button 
-                  onClick={() => handleNavigation({ path: '/support' })}
+                  onClick={() => handleNavigation({ path: '/clients/support/chat' })}
                   className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
                   <MessageCircle size={20} />
