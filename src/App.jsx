@@ -109,6 +109,7 @@ function App() {
             </ClientsLayout>
           } />
 
+<<<<<<< HEAD
           {/* Delivery Routes with Layout */}
           <Route path="/delivery/*" element={
             <DeliveryLayout>
@@ -122,6 +123,96 @@ function App() {
               </Routes>
             </DeliveryLayout>
           } />
+=======
+  {/* Restaurant Router */}
+          
+          <Route path="/restaurants_manager" element={
+            <RestaurantLayoutWithProviders>
+            <RestaurantDashboard />
+            </RestaurantLayoutWithProviders>} />
+          <Route path="/restaurant/orders" element={
+            <RestaurantLayoutWithProviders>
+            <RestaurantCommand />
+            </RestaurantLayoutWithProviders>} />
+          <Route path="/restaurant/menu" element={
+            <RestaurantLayoutWithProviders>
+            <MenuPlatsPage />
+            </RestaurantLayoutWithProviders>} />
+          <Route path="/restaurant/stats" element={
+            <RestaurantLayoutWithProviders>
+            <RestaurantStatsPage />
+            </RestaurantLayoutWithProviders>} />
+          <Route path="/restaurant/reviews" element={
+            <RestaurantLayoutWithProviders>            
+            <RestaurantReviews />
+            </RestaurantLayoutWithProviders>} />
+
+  {/* Delivery Router */}
+
+         <Route path="/delivery" element={
+          <DeliveryLayout>
+          <DeliveryDashboard />
+          </DeliveryLayout>} />
+         <Route path="/missions" element={
+          <DeliveryLayout>
+          <MissionsPage />
+          </DeliveryLayout>} />
+         {/*<Route path="/live-map" element={<CameroonDeliveryMap />} />*/}
+         <Route path="/live-map" element={
+          <DeliveryLayout>
+          <RestaurantDeliverCommand />
+          </DeliveryLayout>} />
+         <Route path="/earnings" element={
+          <DeliveryLayout>
+          <DeliveryEarningsPage />
+          </DeliveryLayout>} />
+         <Route path="/history" element={
+          <DeliveryLayout>
+          <DeliveryHistoryPage />
+          </DeliveryLayout>} />
+         <Route path="/support" element={
+          <DeliveryLayout>
+          <DeliverySupport />
+          </DeliveryLayout>} />
+
+  {/* Clients Router */}
+          <Route path="/clients" element={
+            <ClientsLayout>       
+            <ClientDashboard />
+            </ClientsLayout>
+            } />
+          <Route path="/clients/restaurant" element={
+              <ClientsLayout>
+            <ClientMenus />
+            </ClientsLayout>} />
+          <Route path="/clients/orders" element={    
+            <ClientsLayout>
+            <ClientsCommande />
+            </ClientsLayout>} />
+          <Route path="/clients/order-history" element={
+            <ClientsLayout>
+            <ClientsCommandeHistory />
+            </ClientsLayout>} />
+            
+          <Route path="/clients/support/chat" element={
+            <ClientsLayout>
+            <ClientsChatSupport />
+            </ClientsLayout>} />
+          <Route path="/clients/profile" element={
+            <ClientsLayout>
+            <ClientsProfilePage />
+            </ClientsLayout>} />
+
+
+          
+
+
+
+          
+         
+
+
+>>>>>>> Mise-A-Jour-Divinson
 
           {/* Restaurant Routes with Layout */}
           <Route path="/restaurants_manager/*" element={
