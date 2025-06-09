@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import ClientsLayout, { useAppContext, AppContext } from '../../../../layouts/clients_layout';
 import { 
   MessageCircle, 
@@ -28,7 +28,10 @@ import {
 } from 'lucide-react';
 
 const ClientsChatSupport = () => {
-  const { user } = useAppContext();
+  const user= useContext(AppContext);
+
+
+
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -228,7 +231,8 @@ const ClientsChatSupport = () => {
   };
 
   return (
-    <ClientsLayout>
+    // <ClientsLayout>
+    <>
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-red-50">
         {/* Header */}
         <div className="bg-white shadow-lg border-b-4 border-green-600">
@@ -582,7 +586,8 @@ const ClientsChatSupport = () => {
           </div>
         )}
       </div>
-    </ClientsLayout>
+      </>
+    //</ClientsLayout>
   );
 };
 

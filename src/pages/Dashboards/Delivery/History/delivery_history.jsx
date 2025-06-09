@@ -336,7 +336,8 @@ const DeliveryHistoryPage = () => {
   };
 
   return (
-    <DeliveryLayout>
+    // <DeliveryLayout>
+    <>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         {/* Header Section */}
         <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
@@ -895,7 +896,8 @@ const DeliveryHistoryPage = () => {
         </div>
       )}
       </div>
-    </DeliveryLayout>
+      </>
+    // {/* </DeliveryLayout> */}
   );
 };
 

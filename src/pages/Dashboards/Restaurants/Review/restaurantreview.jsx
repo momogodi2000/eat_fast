@@ -310,7 +310,8 @@ const RestaurantReviews = () => {
 
   if (loading) {
     return (
-      <RestaurantLayout>
+      // <RestaurantLayout>
+      <>
         <div className="p-6 max-w-7xl mx-auto">
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
@@ -322,12 +323,14 @@ const RestaurantReviews = () => {
             <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
           </div>
         </div>
-      </RestaurantLayout>
+        </>
+      // </RestaurantLayout>
     );
   }
 
   return (
-    <RestaurantLayout>
+    // <RestaurantLayout>
+    <>
       <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -923,7 +926,8 @@ const RestaurantReviews = () => {
           </div>
         </div>
       </div>
-    </RestaurantLayout>
+      </>
+    // </RestaurantLayout>
   );
 };
 

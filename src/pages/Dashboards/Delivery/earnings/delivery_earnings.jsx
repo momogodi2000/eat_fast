@@ -299,7 +299,8 @@ const DeliveryEarningsPage = () => {
   };
 
   return (
-    <DeliveryLayout>
+    // <DeliveryLayout>
+    <>
       <div className={`min-h-screen p-6 ${animationClass}`}>
         {/* Header */}
         <div className="mb-8">
@@ -548,7 +549,8 @@ const DeliveryEarningsPage = () => {
           </div>
         </div>
       </div>
-    </DeliveryLayout>
+      </>
+    // </DeliveryLayout>
   );
 };
 

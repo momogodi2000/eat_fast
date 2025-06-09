@@ -180,7 +180,8 @@ const RestaurantStatsPage = () => {
   };
 
   return (
-    <RestaurantLayout>
+    // <RestaurantLayout>
+    <>
       <div className="p-6 space-y-6 bg-gray-50 dark:bg-gray-900 min-h-screen">
         {/* Header Section */}
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -699,7 +700,8 @@ const RestaurantStatsPage = () => {
           </div>
         </div>
       </div>
-    </RestaurantLayout>
+      </>
+    // </RestaurantLayout>
   );
 };
 

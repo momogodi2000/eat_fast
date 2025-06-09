@@ -1,6 +1,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Sun, Moon, Globe, User, Bell, MessageCircle, MapPin, Clock, Star, TrendingUp, Package, CreditCard, ShoppingCart, History, Settings, LogOut } from 'lucide-react';
-
+import { translations } from './const';
+import { useNavigate } from 'react-router-dom';
 
 // Context for theme and language
  export const AppContext = createContext();
@@ -14,76 +15,13 @@ export const useAppContext = () => {
   return context;
 };
 
-// Translations
-const translations = {
-  fr: {
-    dashboard: 'Tableau de bord',
-    welcome: 'Bienvenue',
-    orders: 'Commandes',
-    profile: 'Profil',
-    support: 'Support',
-    notifications: 'Notifications',
-    settings: 'Paramètres',
-    logout: 'Déconnexion',
-    darkMode: 'Mode sombre',
-    lightMode: 'Mode clair',
-    french: 'Français',
-    english: 'Anglais',
-    myOrders: 'Mes Commandes',
-    trackOrder: 'Suivre ma commande',
-    orderHistory: 'Historique',
-    totalOrders: 'Total Commandes',
-    avgDelivery: 'Livraison Moy.',
-    satisfaction: 'Satisfaction',
-    lastOrder: 'Dernière commande',
-    activeOrder: 'Commande active',
-    recentActivity: 'Activité récente',
-    quickActions: 'Actions rapides',
-    orderNow: 'Commander maintenant',
-    viewMenu: 'Voir le menu',
-    contactSupport: 'Contacter le support',
-    restaurants: 'Restaurants',
-    cart: 'Panier',
-    chatSupport: "Discussion avec le support"
-
-  },
-  en: {
-    dashboard: 'Dashboard',
-    welcome: 'Welcome',
-    orders: 'Orders',
-    profile: 'Profile',
-    support: 'Support',
-    notifications: 'Notifications',
-    settings: 'Settings',
-    logout: 'Logout',
-    darkMode: 'Dark Mode',
-    lightMode: 'Light Mode',
-    french: 'French',
-    english: 'English',
-    myOrders: 'My Orders',
-    trackOrder: 'Track Order',
-    orderHistory: 'Order History',
-    totalOrders: 'Total Orders',
-    avgDelivery: 'Avg Delivery',
-    satisfaction: 'Satisfaction',
-    lastOrder: 'Last Order',
-    activeOrder: 'Active Order',
-    recentActivity: 'Recent Activity',
-    quickActions: 'Quick Actions',
-    orderNow: 'Order Now',
-    viewMenu: 'View Menu',
-    contactSupport: 'Contact Support',
-    restaurants: 'Restaurants',
-    cart: 'Cart',
-    chatSupport: "Chat with Support"
- }
-};
 
 const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
   const [isDark, setIsDark] = useState(false);
   const [language, setLanguage] = useState('fr');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState(currentPage);
+  const navigate = useNavigate();
 
   // Load settings from memory (no localStorage in artifacts)
   useEffect(() => {
@@ -174,6 +112,12 @@ const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
       window.history.pushState({}, '', item.path);
     }
   };
+
+  // ICI Ca fonctionne pour changer de page 
+
+  const handleNavigation1 = (item1) => {
+   navigate(item1.path.substring(1));
+  }
 
   const handleLogout = () => {
     // Logout logic here
@@ -272,7 +216,7 @@ const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
                   {sidebarItems.map((item, index) => (
                     <li key={index}>
                       <button 
-                        onClick={() => handleNavigation(item)}
+                        onClick={() => handleNavigation1(item)}
                         className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${
                           item.active 
                             ? 'bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 text-white shadow-lg transform scale-105' 
@@ -302,7 +246,7 @@ const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
               <div className="p-6 space-y-3">
                 {/* Support Button */}
                 <button 
-                  onClick={() => handleNavigation({ path: '/clients/support/chat' })}
+                  onClick={() => handleNavigation1({ path: '/clients/support/chat' })}
                   className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
                   <MessageCircle size={20} />

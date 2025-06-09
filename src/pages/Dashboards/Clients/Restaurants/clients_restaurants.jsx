@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { 
   MapPin, 
   Clock, 
@@ -32,6 +32,7 @@ import {
   MapIcon,
   Zap
 } from 'lucide-react';
+import { AppContext } from '../../../../layouts/clients_layout';
 
 // ClientsLayout component (simulated)
 const ClientsLayout = ({ children }) => (
@@ -53,6 +54,8 @@ const sampleImages = {
 };
 
 const ClientMenus = () => {
+
+ 
   // State management
   const [cartItems, setCartItems] = useState([]);
   const [showCart, setShowCart] = useState(false);
@@ -381,19 +384,22 @@ const ClientMenus = () => {
 
   if (isLoading) {
     return (
-      <ClientsLayout>
+      <>
+      {/* // <ClientsLayout> */}
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-yellow-50 to-red-50">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-4 border-green-600 mx-auto mb-4"></div>
             <p className="text-gray-700 text-lg font-medium">Localisation en cours...</p>
           </div>
         </div>
-      </ClientsLayout>
+        </>
+      // {/* </ClientsLayout> */}
     );
   }
 
   return (
-    <ClientsLayout>
+    // <ClientsLayout>
+    <>
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-red-50 relative">
         {/* Mobile Menu Overlay */}
         {showMobileMenu && (
@@ -1224,7 +1230,8 @@ const ClientMenus = () => {
          </div>
        )}
      </div>
-   </ClientsLayout>
+     </>
+  //  </ClientsLayout>
  );
 };
 

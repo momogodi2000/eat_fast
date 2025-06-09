@@ -1112,7 +1112,8 @@ const RestaurantDeliverCommand = () => {
   );
 
   return (
-    <DeliveryLayout>
+    // <DeliveryLayout>
+    <>
       <div className={`flex flex-col h-screen bg-gray-50 dark:bg-gray-900 ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}>
         {/* Notification system */}
         <NotificationBar />
@@ -1203,7 +1204,8 @@ const RestaurantDeliverCommand = () => {
           </div>
         </div>
       </div>
-    </DeliveryLayout>
+      </>
+    // {/* </DeliveryLayout> */}
   );
 };
 

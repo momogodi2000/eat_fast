@@ -25,7 +25,7 @@ import { HiOutlineMoon, HiOutlineSun } from 'react-icons/hi';
 
 // Contexts
 const ThemeContext = createContext();
-const RestaurantContext = createContext();
+export const RestaurantContext = createContext();
 
 // Custom hooks
 export const useTheme = () => {

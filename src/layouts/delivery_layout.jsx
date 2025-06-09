@@ -4,7 +4,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Globe, Sun, Moon, Bell, User, Settings, LogOut, Menu, X, Map, Clock, Award, FileText, HelpCircle } from 'lucide-react';
 
 // Create context for theme and language
-const DeliveryContext = createContext();
+export const DeliveryContext = createContext();
 
 export const useDeliveryContext = () => {
   const context = useContext(DeliveryContext);

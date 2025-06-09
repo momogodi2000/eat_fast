@@ -841,7 +841,8 @@ const GlobalDeliveryMap = () => {
   };
 
   return (
-    <DeliveryLayout>
+    // <DeliveryLayout>
+    <>
       <div className="relative h-full w-full overflow-hidden">
         {/* Mobile Header */}
         <div className="lg:hidden bg-white dark:bg-gray-800 shadow-md p-4 flex items-center justify-between">
@@ -977,7 +978,8 @@ const GlobalDeliveryMap = () => {
           </div>
         )}
       </div>
-    </DeliveryLayout>
+      </>
+    // </DeliveryLayout>
   );
 };
 

@@ -56,9 +56,11 @@ const useClientContext = () => ({
 
 const ClientDashboard = () => {
   return (
-    <ClientsLayout>
+    // <ClientsLayout>
+    <>
       <DashboardContent />
-    </ClientsLayout>
+    </>
+    // </ClientsLayout>
   );
 };
 

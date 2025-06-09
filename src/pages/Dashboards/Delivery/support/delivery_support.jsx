@@ -301,7 +301,8 @@ const DeliverySupport = () => {
   );
 
   return (
-    <DeliveryLayout>
+    // <DeliveryLayout>
+    <>
       <div className="p-4 md:p-6 max-w-7xl mx-auto">
         {/* Header */}
         <motion.div 
@@ -1218,7 +1219,8 @@ const DeliverySupport = () => {
           )}
         </AnimatePresence>
       </div>
-    </DeliveryLayout>
+    {/* // </DeliveryLayout> */}
+    </>
   );
 };
 
