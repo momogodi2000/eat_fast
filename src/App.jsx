@@ -67,7 +67,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="app">
         <Routes>
-          {/* Public Routes */}
+ {/* Public Routes */}
+ 
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -79,7 +80,7 @@ function App() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/test" element={<DashboardRedirect />} />
 
-          {/* Admin Routes */}
+{/* Admin Routes */}
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/user" element={<UserListPage />} />
           <Route path="/admin/restaurants" element={<RestaurantManagement />} />
@@ -91,11 +92,15 @@ function App() {
           <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
           <Route path="/admin/promotion" element={<PromotionManagement />} />
 
-          {/* Agent Support Routes */}
+ {/* Agent Support Routes */}
+
+
           <Route path="/agent/tickets" element={<SupportTicketsPage />} />
           <Route path="/agent/disputes" element={<SupportDisputesPage />} />
 
-          {/* Client Routes with Layout */}
+{/* Client Routes with Layout */}
+
+
           <Route path="/clients/*" element={
             <ClientsLayout>
               <Routes>
@@ -109,8 +114,9 @@ function App() {
             </ClientsLayout>
           } />
 
-<<<<<<< HEAD
-          {/* Delivery Routes with Layout */}
+  {/* Delivery Routes with Layout */}
+
+
           <Route path="/delivery/*" element={
             <DeliveryLayout>
               <Routes>
@@ -123,7 +129,6 @@ function App() {
               </Routes>
             </DeliveryLayout>
           } />
-=======
   {/* Restaurant Router */}
           
           <Route path="/restaurants_manager" element={
@@ -176,6 +181,7 @@ function App() {
           </DeliveryLayout>} />
 
   {/* Clients Router */}
+
           <Route path="/clients" element={
             <ClientsLayout>       
             <ClientDashboard />
@@ -204,17 +210,7 @@ function App() {
             </ClientsLayout>} />
 
 
-          
-
-
-
-          
-         
-
-
->>>>>>> Mise-A-Jour-Divinson
-
-          {/* Restaurant Routes with Layout */}
+   {/* Restaurant Routes with Layout */}
           <Route path="/restaurants_manager/*" element={
             <RestaurantLayoutWithProviders>
               <Routes>
@@ -227,6 +223,9 @@ function App() {
             </RestaurantLayoutWithProviders>
           } />
         </Routes>
+
+
+
       </div>
     </QueryClientProvider>
   );
