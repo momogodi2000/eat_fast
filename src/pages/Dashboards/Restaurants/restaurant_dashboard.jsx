@@ -132,9 +132,7 @@ const RestaurantDashboard = () => {
   const [orderStatusData, setOrderStatusData] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
 
-  const test = useContext(commandContext);
-
-  console.log(test);
+ 
 
   useEffect(() => {
     // Simulate data fetching

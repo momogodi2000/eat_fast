@@ -17,7 +17,7 @@ export default defineConfig({
     host: true,
     allowedHosts: [
       'localhost',
-      '6e3d-102-244-54-237.ngrok-free.app', // Replace with your current Ngrok domain
+      'fa42-70-51-31-56.ngrok-free.app', // Replace with your current Ngrok domain
     ],
   },
   resolve: {

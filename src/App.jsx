@@ -73,44 +73,6 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="app">
-
-        
-  {/* Clients Router */}
-  <ClientsLayout>
-    <Routes>
-          <Route path="/clients" element={<ClientDashboard />  } />
-          <Route path="/clients/restaurant" element={<ClientMenus />} />
-          <Route path="/clients/orders" element={<ClientsCommande />} />
-          <Route path="/clients/order-history" element={<ClientsCommandeHistory />} />
-          <Route path="/clients/support/chat" element={<ClientsChatSupport />} />
-          <Route path="/clients/profile" element={<ClientsProfilePage />} />
-          </Routes>
-  </ClientsLayout>
-
-
-   {/* Delivery Router */}
-  <DeliveryLayout>
-      <Routes>
-         <Route path="/delivery" element={<DeliveryDashboard />} />
-         <Route path="/missions" element={<MissionsPage />} />
-         {/*<Route path="/live-map" element={<CameroonDeliveryMap />} />*/}
-         <Route path="/live-map" element={<RestaurantDeliverCommand />} />
-         <Route path="/earnings" element={<DeliveryEarningsPage />} />
-         <Route path="/history" element={<DeliveryHistoryPage />} />
-         <Route path="/support" element={<DeliverySupport />} />
-         </Routes>
-  </DeliveryLayout>
-
-    <RestaurantLayoutWithProviders>
-          <Routes>
-          <Route path="/restaurants_manager" element={<RestaurantDashboard />} />
-          <Route path="/restaurant/orders" element={<RestaurantCommand />} />
-          <Route path="/restaurant/menu" element={<MenuPlatsPage />} />
-          <Route path="/restaurant/stats" element={<RestaurantStatsPage />} />
-          <Route path="/restaurant/reviews" element={<RestaurantReviews />} />
-          </Routes>
-  </RestaurantLayoutWithProviders>
-
         <Routes>
    {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
@@ -145,10 +107,83 @@ function App() {
 
 
   {/* Restaurant Router */}
+          
+          <Route path="/restaurants_manager" element={
+            <RestaurantLayoutWithProviders>
+            <RestaurantDashboard />
+            </RestaurantLayoutWithProviders>} />
+          <Route path="/restaurant/orders" element={
+            <RestaurantLayoutWithProviders>
+            <RestaurantCommand />
+            </RestaurantLayoutWithProviders>} />
+          <Route path="/restaurant/menu" element={
+            <RestaurantLayoutWithProviders>
+            <MenuPlatsPage />
+            </RestaurantLayoutWithProviders>} />
+          <Route path="/restaurant/stats" element={
+            <RestaurantLayoutWithProviders>
+            <RestaurantStatsPage />
+            </RestaurantLayoutWithProviders>} />
+          <Route path="/restaurant/reviews" element={
+            <RestaurantLayoutWithProviders>            
+            <RestaurantReviews />
+            </RestaurantLayoutWithProviders>} />
 
+  {/* Delivery Router */}
 
- 
+         <Route path="/delivery" element={
+          <DeliveryLayout>
+          <DeliveryDashboard />
+          </DeliveryLayout>} />
+         <Route path="/missions" element={
+          <DeliveryLayout>
+          <MissionsPage />
+          </DeliveryLayout>} />
+         {/*<Route path="/live-map" element={<CameroonDeliveryMap />} />*/}
+         <Route path="/live-map" element={
+          <DeliveryLayout>
+          <RestaurantDeliverCommand />
+          </DeliveryLayout>} />
+         <Route path="/earnings" element={
+          <DeliveryLayout>
+          <DeliveryEarningsPage />
+          </DeliveryLayout>} />
+         <Route path="/history" element={
+          <DeliveryLayout>
+          <DeliveryHistoryPage />
+          </DeliveryLayout>} />
+         <Route path="/support" element={
+          <DeliveryLayout>
+          <DeliverySupport />
+          </DeliveryLayout>} />
 
+  {/* Clients Router */}
+          <Route path="/clients" element={
+            <ClientsLayout>       
+            <ClientDashboard />
+            </ClientsLayout>
+            } />
+          <Route path="/clients/restaurant" element={
+              <ClientsLayout>
+            <ClientMenus />
+            </ClientsLayout>} />
+          <Route path="/clients/orders" element={    
+            <ClientsLayout>
+            <ClientsCommande />
+            </ClientsLayout>} />
+          <Route path="/clients/order-history" element={
+            <ClientsLayout>
+            <ClientsCommandeHistory />
+            </ClientsLayout>} />
+            
+          <Route path="/clients/support/chat" element={
+            <ClientsLayout>
+            <ClientsChatSupport />
+            </ClientsLayout>} />
+          <Route path="/clients/profile" element={
+            <ClientsLayout>
+            <ClientsProfilePage />
+            </ClientsLayout>} />
 
 
           

@@ -101,23 +101,24 @@ const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
   ];
 
   const handleNavigation = (item) => {
-    setActivePage(item.path.substring(1)); // Remove leading slash
+    //setActivePage(item.path.substring(1)); // Remove leading slash
     setSidebarOpen(false); // Close mobile sidebar
     
     // In a real React Router setup, you would use navigate(item.path)
     console.log(`Navigating to: ${item.path}`);
+
+    navigate(item.path);
+
+    
     
     // Simulate page change for demo
     if (typeof window !== 'undefined') {
       window.history.pushState({}, '', item.path);
     }
+
+    
   };
 
-  // ICI Ca fonctionne pour changer de page 
-
-  const handleNavigation1 = (item1) => {
-   navigate(item1.path.substring(1));
-  }
 
   const handleLogout = () => {
     // Logout logic here
@@ -216,7 +217,7 @@ const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
                   {sidebarItems.map((item, index) => (
                     <li key={index}>
                       <button 
-                        onClick={() => handleNavigation1(item)}
+                        onClick={() => handleNavigation(item)}
                         className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-200 group ${
                           item.active 
                             ? 'bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 text-white shadow-lg transform scale-105' 
@@ -246,7 +247,7 @@ const ClientsLayout = ({ children , currentPage = 'dashboard' }) => {
               <div className="p-6 space-y-3">
                 {/* Support Button */}
                 <button 
-                  onClick={() => handleNavigation1({ path: '/clients/support/chat' })}
+                  onClick={() => handleNavigation({ path: '/clients/support/chat' })}
                   className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >
                   <MessageCircle size={20} />
