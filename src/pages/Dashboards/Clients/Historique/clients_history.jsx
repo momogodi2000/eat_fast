@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 
 const ClientsCommandeHistory = () => {
-  const { user } = useAppContext();
+  // const { user } = useAppContext();
   const [orders, setOrders] = useState([]);
   const [filteredOrders, setFilteredOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -258,7 +258,8 @@ const ClientsCommandeHistory = () => {
 
   if (loading) {
     return (
-      <ClientsLayout>
+      // <ClientsLayout>
+      <>
         <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-red-50 p-6">
           <div className="max-w-7xl mx-auto">
             <div className="flex justify-center items-center h-96">
@@ -270,12 +271,14 @@ const ClientsCommandeHistory = () => {
             </div>
           </div>
         </div>
-      </ClientsLayout>
+        </>
+      // </ClientsLayout>
     );
   }
 
   return (
-    <ClientsLayout>
+    // <ClientsLayout>
+    <>
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-red-50 p-6">
         <div className="max-w-7xl mx-auto space-y-6">
           
@@ -701,7 +704,8 @@ const ClientsCommandeHistory = () => {
          </div>
        )}
      </div>
-   </ClientsLayout>
+     </>
+  //  {/* </ClientsLayout> */}
  );
 };
 

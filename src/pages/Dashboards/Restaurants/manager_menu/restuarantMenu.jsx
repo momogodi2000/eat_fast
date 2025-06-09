@@ -335,7 +335,8 @@ const MenuPlatsPage = () => {
   };
 
   return (
-    <RestaurantLayout>
+    // <RestaurantLayout>
+    <>
       <div className="p-6 max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
@@ -931,7 +932,8 @@ const MenuPlatsPage = () => {
           </div>
         )}
       </div>
-    </RestaurantLayout>
+      </>
+    // {/* </RestaurantLayout> */}
   );
 };
 

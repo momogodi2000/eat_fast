@@ -54,9 +54,11 @@ const useDeliveryContext = () => ({
 
 const DeliveryDashboard = () => {
   return (
-    <DeliveryLayout>
+    <>
+    {/* // <DeliveryLayout> */}
       <DashboardContent />
-    </DeliveryLayout>
+    </>
+    // {/* // </DeliveryLayout> */}
   );
 };
 

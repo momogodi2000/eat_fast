@@ -63,6 +63,8 @@ import ClientsProfilePage from './pages/Dashboards/Clients/Profil/clients_profil
 // Common share component for testing
 import DashboardRedirect from './components/CommonShare/test';
 import ClientsLayout from './layouts/clients_layout.jsx';
+import DeliveryLayout from './layouts/delivery_layout.jsx';
+import RestaurantLayoutWithProviders from './layouts/restaurants_layout.jsx';
 
 // Create a client
 const queryClient = new QueryClient();
@@ -71,6 +73,44 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="app">
+
+        
+  {/* Clients Router */}
+  <ClientsLayout>
+    <Routes>
+          <Route path="/clients" element={<ClientDashboard />  } />
+          <Route path="/clients/restaurant" element={<ClientMenus />} />
+          <Route path="/clients/orders" element={<ClientsCommande />} />
+          <Route path="/clients/order-history" element={<ClientsCommandeHistory />} />
+          <Route path="/clients/support/chat" element={<ClientsChatSupport />} />
+          <Route path="/clients/profile" element={<ClientsProfilePage />} />
+          </Routes>
+  </ClientsLayout>
+
+
+   {/* Delivery Router */}
+  <DeliveryLayout>
+      <Routes>
+         <Route path="/delivery" element={<DeliveryDashboard />} />
+         <Route path="/missions" element={<MissionsPage />} />
+         {/*<Route path="/live-map" element={<CameroonDeliveryMap />} />*/}
+         <Route path="/live-map" element={<RestaurantDeliverCommand />} />
+         <Route path="/earnings" element={<DeliveryEarningsPage />} />
+         <Route path="/history" element={<DeliveryHistoryPage />} />
+         <Route path="/support" element={<DeliverySupport />} />
+         </Routes>
+  </DeliveryLayout>
+
+    <RestaurantLayoutWithProviders>
+          <Routes>
+          <Route path="/restaurants_manager" element={<RestaurantDashboard />} />
+          <Route path="/restaurant/orders" element={<RestaurantCommand />} />
+          <Route path="/restaurant/menu" element={<MenuPlatsPage />} />
+          <Route path="/restaurant/stats" element={<RestaurantStatsPage />} />
+          <Route path="/restaurant/reviews" element={<RestaurantReviews />} />
+          </Routes>
+  </RestaurantLayoutWithProviders>
+
         <Routes>
    {/* Public Routes */}
           <Route path="/" element={<HomePage />} />
@@ -105,30 +145,10 @@ function App() {
 
 
   {/* Restaurant Router */}
-          
-          <Route path="/restaurants_manager" element={<RestaurantDashboard />} />
-          <Route path="/restaurant/orders" element={<RestaurantCommand />} />
-          <Route path="/restaurant/menu" element={<MenuPlatsPage />} />
-          <Route path="/restaurant/stats" element={<RestaurantStatsPage />} />
-          <Route path="/restaurant/reviews" element={<RestaurantReviews />} />
 
-  {/* Delivery Router */}
 
-         <Route path="/delivery" element={<DeliveryDashboard />} />
-         <Route path="/missions" element={<MissionsPage />} />
-         {/*<Route path="/live-map" element={<CameroonDeliveryMap />} />*/}
-         <Route path="/live-map" element={<RestaurantDeliverCommand />} />
-         <Route path="/earnings" element={<DeliveryEarningsPage />} />
-         <Route path="/history" element={<DeliveryHistoryPage />} />
-         <Route path="/support" element={<DeliverySupport />} />
+ 
 
-  {/* Clients Router */}
-          <Route path="/clients" element={<ClientDashboard />} />
-          <Route path="/clients/restaurant" element={<ClientMenus />} />
-          <Route path="/clients/orders" element={<ClientsCommande />} />
-          <Route path="/clients/order-history" element={<ClientsCommandeHistory />} />
-          <Route path="/clients/support/chat" element={<ClientsChatSupport />} />
-          <Route path="/clients/profile" element={<ClientsProfilePage />} />
 
 
           

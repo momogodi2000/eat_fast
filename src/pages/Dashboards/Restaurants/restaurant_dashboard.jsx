@@ -15,6 +15,8 @@ import {
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import RestaurantLayout from '../../../layouts/restaurants_layout';
+import { useContext } from 'react';
+
 
 // Sample data
 const generateSalesData = () => [
@@ -130,6 +132,10 @@ const RestaurantDashboard = () => {
   const [orderStatusData, setOrderStatusData] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
 
+  const test = useContext(commandContext);
+
+  console.log(test);
+
   useEffect(() => {
     // Simulate data fetching
     const timer = setTimeout(() => {
@@ -145,16 +151,19 @@ const RestaurantDashboard = () => {
 
   if (isLoading) {
     return (
-      <RestaurantLayout>
+      // <RestaurantLayout>
+      <>
         <div className="flex items-center justify-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
         </div>
-      </RestaurantLayout>
+        </>
+      // {/* </RestaurantLayout> */}
     );
   }
 
   return (
-    <RestaurantLayout>
+    // <RestaurantLayout>
+    <>
       <div className="space-y-6 p-4 sm:p-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -438,7 +447,8 @@ const RestaurantDashboard = () => {
           </div>
         </div>
       </div>
-    </RestaurantLayout>
+      </>
+    // </RestaurantLayout>
   );
 };
 

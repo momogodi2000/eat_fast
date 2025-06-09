@@ -31,6 +31,9 @@ import {
  * @component
  * @returns {JSX.Element} Page de gestion des commandes
  */
+
+export let ordersContext ;
+
 const RestaurantCommand = () => {
   const { t } = useTranslation();
   
@@ -208,6 +211,10 @@ const RestaurantCommand = () => {
 
     setFilteredOrders(filtered);
   }, [orders, searchTerm, statusFilter, dateFilter]);
+
+
+  // Les Orders pour le context 
+
 
   // Calcul des métriques
   const metrics = {
@@ -461,7 +468,8 @@ const RestaurantCommand = () => {
   };
 
   return (
-    <RestaurantLayout>
+    // <RestaurantLayout>
+    <>
       <div className="p-6 space-y-6">
         {/* En-tête avec métriques */}
         <div>
@@ -866,7 +874,8 @@ const RestaurantCommand = () => {
           <FiRefreshCw size={24} />
         </button>
       </div>
-    </RestaurantLayout>
+      </>
+    // {/* </RestaurantLayout> */}
   );
 };
 

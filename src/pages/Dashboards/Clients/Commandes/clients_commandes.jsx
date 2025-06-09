@@ -320,19 +320,23 @@ const ClientsCommande = () => {
 
   if (loading) {
     return (
-      <ClientsLayout>
+      // <ClientsLayout>
+      <>
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-yellow-50 flex items-center justify-center">
           <div className="text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
             <p className="text-gray-600 text-lg">Chargement de vos commandes...</p>
           </div>
         </div>
-      </ClientsLayout>
+
+      </>
+      // </ClientsLayout>
     );
   }
 
   return (
-    <ClientsLayout>
+    // <ClientsLayout>
+    <>
       <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-red-50">
         {/* Header */}
         <div className="bg-white shadow-lg border-b-4 border-green-500">
@@ -722,7 +726,8 @@ const ClientsCommande = () => {
           </div>
         </div>
       )}
-    </ClientsLayout>
+      </>
+    // </ClientsLayout> 
   );
 };
 
