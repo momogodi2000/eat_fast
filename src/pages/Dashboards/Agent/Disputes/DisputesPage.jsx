@@ -10,11 +10,23 @@ import {
     FiCheck,
     FiX,
     FiClock,
-    FiChevronDown, FiUser, FiEdit3, FiHeadphones
+    FiChevronDown, 
+    FiUser, 
+    FiEdit3, 
+    FiHeadphones,
+    FiPhone,
+    FiMessageSquare,
+    FiArrowUp,
+    FiEye,
+    FiSend,
+    FiUserCheck,
+    FiShield,
+    FiZap
 } from 'react-icons/fi';
 import SupportAgentLayout from "@/layouts/agent_support_layout.jsx";
-import {FileX2Icon, Trash2} from "lucide-react";
+import {FileX2Icon, Trash2, AlertTriangle, CheckCircle, Clock, Users} from "lucide-react";
 import {HiOutlineMoon, HiOutlineSun} from "react-icons/hi";
+
 
 // Disputes Page Component
 const SupportDisputesPage = () => {
@@ -24,9 +36,11 @@ const SupportDisputesPage = () => {
     const [statusFilter, setStatusFilter] = useState('tous');
     const [currentTime, setCurrentTime] = useState(new Date());
     const [priorityFilter, setPriorityFilter] = useState('toutes');
+    const [selectedDispute, setSelectedDispute] = useState(null);
+    const [showResolutionModal, setShowResolutionModal] = useState(false);
 
     // Sample disputes data
-    const [disputes] = useState([
+    const [disputes, setDisputes] = useState([
         {
             id: 'LIT-2024-001',
             type: 'Commande non reçue',
@@ -41,7 +55,9 @@ const SupportDisputesPage = () => {
             priorite: 'Haute',
             dateCreation: '2024-06-05',
             montant: '15,500 FCFA',
-            description: 'Client affirme ne pas avoir reçu sa commande malgré statut "livré"'
+            description: 'Client affirme ne pas avoir reçu sa commande malgré statut "livré"',
+            lastUpdate: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 heures
+            escalated: false
         },
         {
             id: 'LIT-2024-002',
@@ -57,7 +73,9 @@ const SupportDisputesPage = () => {
             priorite: 'Moyenne',
             dateCreation: '2024-06-04',
             montant: '8,200 FCFA',
-            description: 'Demande de remboursement pour commande annulée après paiement'
+            description: 'Demande de remboursement pour commande annulée après paiement',
+            lastUpdate: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 heures
+            escalated: false
         },
         {
             id: 'LIT-2024-003',
@@ -73,7 +91,9 @@ const SupportDisputesPage = () => {
             priorite: 'Basse',
             dateCreation: '2024-06-03',
             montant: '12,000 FCFA',
-            description: 'Nourriture froide à la livraison, client mécontent'
+            description: 'Nourriture froide à la livraison, client mécontent',
+            lastUpdate: new Date(Date.now() - 6 * 60 * 60 * 1000), // 6 heures
+            escalated: false
         },
         {
             id: 'LIT-2024-004',
@@ -89,7 +109,9 @@ const SupportDisputesPage = () => {
             priorite: 'Haute',
             dateCreation: '2024-06-02',
             montant: '25,800 FCFA',
-            description: 'Livreur introuvable après avoir pris la commande'
+            description: 'Livreur introuvable après avoir pris la commande',
+            lastUpdate: new Date(Date.now() - 8 * 60 * 60 * 1000), // 8 heures
+            escalated: true
         },
         {
             id: 'LIT-2024-005',
@@ -105,7 +127,9 @@ const SupportDisputesPage = () => {
             priorite: 'Moyenne',
             dateCreation: '2024-06-01',
             montant: '7,500 FCFA',
-            description: 'Facturé deux fois pour la même commande'
+            description: 'Facturé deux fois pour la même commande',
+            lastUpdate: new Date(Date.now() - 10 * 60 * 60 * 1000), // 10 heures
+            escalated: false
         }
     ]);
 
@@ -187,6 +211,21 @@ const SupportDisputesPage = () => {
         }
     };
 
+    const handleResolveLitigation = (resolutionData) => {
+        setDisputes(prevDisputes => 
+            prevDisputes.map(dispute => 
+                dispute.id === resolutionData.disputeId 
+                    ? { 
+                        ...dispute, 
+                        statut: resolutionData.escalated ? 'Escaladé' : 'Résolu',
+                        resolution: resolutionData,
+                        lastUpdate: new Date()
+                    }
+                    : dispute
+            )
+        );
+    };
+
     const filteredDisputes = disputes.filter(dispute => {
         const matchesSearch = dispute.customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             dispute.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -202,14 +241,15 @@ const SupportDisputesPage = () => {
         total: disputes.length,
         nouveau: disputes.filter(d => d.statut === 'Nouveau').length,
         enCours: disputes.filter(d => d.statut === 'En cours').length,
-        resolu: disputes.filter(d => d.statut === 'Résolu').length
+        resolu: disputes.filter(d => d.statut === 'Résolu').length,
+        escale: disputes.filter(d => d.escalated).length
     };
 
     if (isLoading) {
         return (
             <SupportAgentLayout>
                 <div className="flex justify-center items-center h-64">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gradient-to-r from-green-500 via-yellow-500 to-red-500"></div>
                 </div>
             </SupportAgentLayout>
         );
@@ -219,22 +259,29 @@ const SupportDisputesPage = () => {
         <SupportAgentLayout>
             <div className="container mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-7xl">
                 {/* Header */}
-                <div
-                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
                     <div className="flex items-center">
-                        <FiAlertCircle className="mr-2 text-green-600 dark:text-yellow-400" size={24}/>
-                        <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 bg-clip-text text-transparent">
-                            Gestion des Litiges
-                        </h1>
+                        <div className="w-12 h-12 bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 rounded-full flex items-center justify-center mr-4 transform hover:scale-110 transition-transform duration-300 shadow-lg">
+                            <FiAlertCircle className="text-white animate-pulse" size={24}/>
+                        </div>
+                        <div>
+                            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 bg-clip-text text-transparent">
+                                Gestion des Litiges
+                            </h1>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                                Résolution professionnelle des réclamations clients
+                            </p>
+                        </div>
                     </div>
 
                     <div className="flex items-center space-x-2 sm:space-x-4">
-                        <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-                            {currentTime.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}
-                        </span>
+                        <div className="hidden sm:flex items-center space-x-2 text-xs sm:text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg shadow-md">
+                            <Clock size={16} className="text-green-500" />
+                            <span>{currentTime.toLocaleTimeString('fr-FR', {hour: '2-digit', minute: '2-digit'})}</span>
+                        </div>
                         <button
                             onClick={toggleTheme}
-                            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200"
+                            className="p-3 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-all duration-300 transform hover:scale-110 shadow-md bg-white dark:bg-gray-800"
                         >
                             {darkMode ? (
                                 <HiOutlineSun className="text-yellow-400" size={20}/>
@@ -244,94 +291,103 @@ const SupportDisputesPage = () => {
                         </button>
                     </div>
                 </div>
+
                 {/* Statistics Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-green-500 p-6 rounded-lg text-white">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+                    <div className="bg-gradient-to-br from-green-500 to-green-600 p-4 sm:p-6 rounded-2xl text-white shadow-lg transform hover:scale-105 transition-all duration-300">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-green-100">Total Litiges</p>
-                                <p className="text-3xl font-bold">{stats.total}</p>
+                                <p className="text-green-100 text-sm">Total Litiges</p>
+                                <p className="text-2xl sm:text-3xl font-bold">{stats.total}</p>
                             </div>
-                            <div
-                                className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                                <FiAlertCircle size={24}/>
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center transform hover:rotate-12 transition-transform duration-300">
+                                <FiAlertCircle size={20} className="sm:text-2xl" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-red-500 p-6 rounded-lg text-white">
+                    <div className="bg-gradient-to-br from-red-500 to-red-600 p-4 sm:p-6 rounded-2xl text-white shadow-lg transform hover:scale-105 transition-all duration-300">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-red-100">Nouveaux</p>
-                                <p className="text-3xl font-bold">{stats.nouveau}</p>
+                                <p className="text-red-100 text-sm">Nouveaux</p>
+                                <p className="text-2xl sm:text-3xl font-bold">{stats.nouveau}</p>
                             </div>
-                            <div
-                                className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                                <FiClock size={24}/>
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center transform hover:rotate-12 transition-transform duration-300">
+                                <FiClock size={20} className="sm:text-2xl animate-pulse" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-yellow-500 p-6 rounded-lg text-white">
+                    <div className="bg-gradient-to-br from-yellow-500 to-yellow-600 p-4 sm:p-6 rounded-2xl text-white shadow-lg transform hover:scale-105 transition-all duration-300">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-yellow-100">En Cours</p>
-                                <p className="text-3xl font-bold">{stats.enCours}</p>
+                                <p className="text-yellow-100 text-sm">En Cours</p>
+                                <p className="text-2xl sm:text-3xl font-bold">{stats.enCours}</p>
                             </div>
-                            <div
-                                className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                                <FiEdit size={24}/>
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center transform hover:rotate-12 transition-transform duration-300">
+                                <FiEdit size={20} className="sm:text-2xl" />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-green-600 p-6 rounded-lg text-white">
+                    <div className="bg-gradient-to-br from-green-600 to-green-700 p-4 sm:p-6 rounded-2xl text-white shadow-lg transform hover:scale-105 transition-all duration-300">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-green-100">Résolus</p>
-                                <p className="text-3xl font-bold">{stats.resolu}</p>
+                                <p className="text-green-100 text-sm">Résolus</p>
+                                <p className="text-2xl sm:text-3xl font-bold">{stats.resolu}</p>
                             </div>
-                            <div
-                                className="w-12 h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                                <FiCheck size={24}/>
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center transform hover:rotate-12 transition-transform duration-300">
+                                <FiCheck size={20} className="sm:text-2xl" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-500 to-purple-600 p-4 sm:p-6 rounded-2xl text-white shadow-lg transform hover:scale-105 transition-all duration-300">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-purple-100 text-sm">Escaladés</p>
+                                <p className="text-2xl sm:text-3xl font-bold">{stats.escale}</p>
+                            </div>
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white bg-opacity-20 rounded-full flex items-center justify-center transform hover:rotate-12 transition-transform duration-300">
+                                <FiArrowUp size={20} className="sm:text-2xl" />
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* Filters and Search */}
-                <div className={`rounded-lg shadow-md p-6`}>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-8 border border-gray-100 dark:border-gray-700">
                     <div className="flex flex-col lg:flex-row gap-4">
                         <div className="flex-1">
                             <div className="relative">
-                                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+                                <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 transition-colors duration-200"
                                           size={20}/>
                                 <input
                                     type="text"
-                                    placeholder="Rechercher un litige..."
-                                    className={`w-full pl-10 pr-4 py-3 rounded-lg border focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200`}
+                                    placeholder="Rechercher un litige par ID, client ou type..."
+                                    className="w-full pl-12 pr-4 py-4 rounded-xl border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-300 transform hover:scale-105"
                                     value={searchTerm}
                                     onChange={(e) => setSearchTerm(e.target.value)}
                                 />
-                            </div>
+                                </div>
                         </div>
-
-                        <div className="flex gap-4">
+                        
+                        <div className="flex flex-col sm:flex-row gap-4">
                             <select
-                                className={`px-4 py-3 rounded-lg border focus:ring-2 focus:ring-green-500 transition-all duration-200`}
                                 value={statusFilter}
                                 onChange={(e) => setStatusFilter(e.target.value)}
+                                className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                             >
                                 <option value="tous">Tous les statuts</option>
                                 <option value="nouveau">Nouveau</option>
                                 <option value="en cours">En cours</option>
                                 <option value="résolu">Résolu</option>
                             </select>
-
+                            
                             <select
-                                className={`px-4 py-3 rounded-lg border focus:ring-2 focus:ring-green-500 transition-all duration-200`}
                                 value={priorityFilter}
                                 onChange={(e) => setPriorityFilter(e.target.value)}
+                                className="px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
                             >
                                 <option value="toutes">Toutes priorités</option>
                                 <option value="haute">Haute</option>
@@ -342,317 +398,325 @@ const SupportDisputesPage = () => {
                     </div>
                 </div>
 
-                {/* Disputes Table */}
-                <div className={`rounded-lg shadow-md overflow-hidden`}>
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead className={``}>
-                            <tr>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Litige
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Client
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Statut
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Priorité
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Date
-                                </th>
-                                <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                                    Actions
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {filteredDisputes.map((dispute, index) => (
-                                <tr key={dispute.id} className={`hover: transition-colors duration-200`}>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div>
-                                            <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                                {dispute.id}
+                {/* Disputes List */}
+                <div className="space-y-4">
+                    {filteredDisputes.length === 0 ? (
+                        <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-2xl shadow-lg">
+                            <FileX2Icon size={64} className="mx-auto text-gray-400 mb-4" />
+                            <h3 className="text-xl font-medium text-gray-900 dark:text-white mb-2">
+                                Aucun litige trouvé
+                            </h3>
+                            <p className="text-gray-500 dark:text-gray-400">
+                                Essayez de modifier vos critères de recherche
+                            </p>
+                        </div>
+                    ) : (
+                        filteredDisputes.map((dispute) => (
+                            <div
+                                key={dispute.id}
+                                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] overflow-hidden"
+                            >
+                                <div className="p-6">
+                                    <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-4">
+                                        <div className="flex items-center space-x-4 mb-4 lg:mb-0">
+                                            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
+                                                dispute.priorite === 'Haute' ? 'bg-red-100 dark:bg-red-900' :
+                                                dispute.priorite === 'Moyenne' ? 'bg-yellow-100 dark:bg-yellow-900' :
+                                                'bg-green-100 dark:bg-green-900'
+                                            }`}>
+                                                <FiAlertCircle size={24} className={
+                                                    dispute.priorite === 'Haute' ? 'text-red-600 dark:text-red-400' :
+                                                    dispute.priorite === 'Moyenne' ? 'text-yellow-600 dark:text-yellow-400' :
+                                                    'text-green-600 dark:text-green-400'
+                                                } />
                                             </div>
-                                            <div className="text-sm text-gray-500 dark:text-gray-400">
-                                                {dispute.type}
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="flex items-center">
-                                            <div
-                                                className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 flex items-center justify-center flex-shrink-0">
-                                                <span className="text-white font-medium text-sm">
-                                                    <FiUser className="text-white" size={14}/>
-                                                </span>
-                                            </div>
-                                            <div className="ml-2 md:ml-3 min-w-0 flex-1">
-                                                <div
-                                                    className="text-xs md:text-sm font-medium text-gray-900 dark:text-white truncate">
-                                                    {dispute.customer.name}
-                                                </div>
-                                                <div
-                                                    className="text-[11px] md:text-xs text-gray-500 dark:text-gray-400 truncate">
-                                                    {dispute.customer.email}
-                                                </div>
+                                            <div>
+                                                <h3 className="text-lg font-bold text-gray-900 dark:text-white">
+                                                    {dispute.id}
+                                                    {dispute.escalated && (
+                                                        <span className="ml-2 px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200 text-xs rounded-full">
+                                                            Escaladé
+                                                        </span>
+                                                    )}
+                                                </h3>
+                                                <p className="text-sm text-gray-600 dark:text-gray-400">
+                                                    {dispute.type} • {formatTimeAgo(dispute.lastUpdate)}
+                                                </p>
                                             </div>
                                         </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(dispute.statut)}`}>
-                                                {dispute.statut}
-                                            </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                            <span
-                                                className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(dispute.priorite)}`}>
+
+                                        <div className="flex items-center space-x-3">
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getPriorityColor(dispute.priorite)}`}>
                                                 {dispute.priorite}
                                             </span>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                        {new Date(dispute.dateCreation).toLocaleDateString('fr-FR')}
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <div className="flex space-x-2">
-                                            <button
-                                                className="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200">
-                                                <FiEdit3 size={18}/>
-                                            </button>
-                                            <button
-                                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors duration-200">
-                                                <Trash2 size={18}/>
-                                            </button>
+                                            <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(dispute.statut)}`}>
+                                                {dispute.statut}
+                                            </span>
                                         </div>
-                                    </td>
-                                </tr>
-                            ))}
-                            </tbody>
-                        </table>
-                    </div>
+                                    </div>
 
-                    {/* Pagination */}
-                    <div
-                        className="px-6 py-4 flex items-center justify-between border-t border-gray-200 dark:border-gray-700">
-                        <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
-                            <span>Affichage de {filteredDisputes.length} sur {disputes.length} litiges</span>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <button
-                                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                                Précédent
-                            </button>
-                            <button
-                                className="px-3 py-1 text-sm bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors duration-200">
-                                1
-                            </button>
-                            <button
-                                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                                2
-                            </button>
-                            <button
-                                className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
-                                Suivant
-                            </button>
-                        </div>
-                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Client</p>
+                                            <p className="font-medium text-gray-900 dark:text-white">{dispute.customer.name}</p>
+                                            <p className="text-xs text-gray-600 dark:text-gray-400">{dispute.customer.email}</p>
+                                        </div>
+                                        
+                                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Restaurant</p>
+                                            <p className="font-medium text-gray-900 dark:text-white">{dispute.restaurant}</p>
+                                        </div>
+                                        
+                                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Livreur</p>
+                                            <p className="font-medium text-gray-900 dark:text-white">{dispute.livreur}</p>
+                                        </div>
+                                        
+                                        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-xl">
+                                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">Montant</p>
+                                            <p className="font-medium text-gray-900 dark:text-white">{dispute.montant}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl mb-4">
+                                        <p className="text-sm text-gray-700 dark:text-gray-300">
+                                            <span className="font-medium">Description: </span>
+                                            {dispute.description}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <button
+                                            onClick={() => {
+                                                setSelectedDispute(dispute);
+                                                setShowResolutionModal(true);
+                                            }}
+                                            className="flex-1 bg-gradient-to-r from-green-600 via-yellow-600 to-red-600 text-white px-4 py-3 rounded-xl hover:from-green-700 hover:via-yellow-700 hover:to-red-700 transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2 shadow-lg"
+                                        >
+                                            <FiShield size={18} />
+                                            <span>Résoudre</span>
+                                        </button>
+                                        
+                                        <button className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center space-x-2">
+                                            <FiPhone size={18} />
+                                            <span>Appeler</span>
+                                        </button>
+                                        
+                                        <button className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center space-x-2">
+                                            <FiMail size={18} />
+                                            <span>Email</span>
+                                        </button>
+                                        
+                                        <button className="px-4 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 flex items-center justify-center space-x-2">
+                                            <FiEye size={18} />
+                                            <span>Détails</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
                 </div>
 
-                {/* Quick Actions Panel */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    {/* Recent Activity */}
-                    <div className={`rounded-lg shadow-md p-6`}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold">Activité Récente</h3>
-                            <button
-                                className="text-green-600 hover:text-green-800 dark:text-green-400 dark:hover:text-green-300">
-                                <FiMoreVertical size={20}/>
-                            </button>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="flex items-start space-x-3">
-                                <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium">Litige LIT-2024-001 résolu</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Il y a 2 heures</p>
-                                </div>
+                {/* Resolution Modal */}
+                <LitigationResolutionModal
+                    isOpen={showResolutionModal}
+                    onClose={() => {
+                        setShowResolutionModal(false);
+                        setSelectedDispute(null);
+                    }}
+                    dispute={selectedDispute}
+                    onResolve={handleResolveLitigation}
+                />
+            </div>
+        </SupportAgentLayout>
+    );
+};
+
+// Modal de résolution de litige
+const LitigationResolutionModal = ({ isOpen, onClose, dispute, onResolve }) => {
+    const [resolutionType, setResolutionType] = useState('');
+    const [resolutionNotes, setResolutionNotes] = useState('');
+    const [escalate, setEscalate] = useState(false);
+    const [refundAmount, setRefundAmount] = useState('');
+    const [isProcessing, setIsProcessing] = useState(false);
+
+    const resolutionOptions = [
+        { id: 'refund_full', label: 'Remboursement complet', icon: '💰', color: 'text-green-600' },
+        { id: 'refund_partial', label: 'Remboursement partiel', icon: '💳', color: 'text-yellow-600' },
+        { id: 'redelivery', label: 'Nouvelle livraison', icon: '🚀', color: 'text-blue-600' },
+        { id: 'voucher', label: 'Bon de réduction', icon: '🎟️', color: 'text-purple-600' },
+        { id: 'contact_restaurant', label: 'Contacter le restaurant', icon: '🏪', color: 'text-orange-600' },
+        { id: 'escalate', label: 'Escalader au superviseur', icon: '⬆️', color: 'text-red-600' }
+    ];
+
+    const handleResolve = async () => {
+        setIsProcessing(true);
+        // Simuler le traitement
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        onResolve({
+            disputeId: dispute.id,
+            type: resolutionType,
+            notes: resolutionNotes,
+            escalated: escalate,
+            refundAmount: refundAmount
+        });
+        
+        setIsProcessing(false);
+        onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl transform transition-all duration-300 scale-100">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                    <div className="flex items-center justify-between">
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center">
+                            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-red-500 via-yellow-500 rounded-full flex items-center justify-center mr-3 transform hover:scale-110 transition-transform duration-300">
+                                <FiShield className="text-white" size={20} />
                             </div>
-                            <div className="flex items-start space-x-3">
-                                <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium">Nouveau litige assigné</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Il y a 4 heures</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start space-x-3">
-                                <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium">Mise à jour statut LIT-2024-003</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Il y a 6 heures</p>
-                                </div>
-                            </div>
-                            <div className="flex items-start space-x-3">
-                                <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
-                                <div className="flex-1">
-                                    <p className="text-sm font-medium">Litige haute priorité créé</p>
-                                    <p className="text-xs text-gray-500 dark:text-gray-400">Il y a 8 heures</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Quick Actions */}
-                    <div className={`rounded-lg shadow-md p-6`}>
-                        <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold">Actions Rapides</h3>
-                        </div>
-                        <div className="space-y-3">
-                            <button
-                                className="w-full flex items-center justify-between p-3 bg-green-50 dark:bg-green-900 rounded-lg hover:bg-green-100 dark:hover:bg-green-800 transition-colors duration-200">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                                        <FiCheck className="text-white" size={16}/>
-                                    </div>
-                                    <span
-                                        className="font-medium text-green-700 dark:text-green-300">Résoudre un litige</span>
-                                </div>
-                                <FiChevronDown className="text-green-600 dark:text-green-400" size={16}/>
-                            </button>
-
-                            <button
-                                className="w-full flex items-center justify-between p-3 bg-blue-50 dark:bg-blue-900 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors duration-200">
-                                <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                                        <FiMail className="text-white" size={16}/>
-                                    </div>
-                                    <span
-                                        className="font-medium text-blue-700 dark:text-blue-300">Contacter client</span>
-                                </div>
-                                <FiChevronDown className="text-blue-600 dark:text-blue-400" size={16}/>
-                            </button>
-
-                            <button
-                                className="w-full flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg hover:bg-yellow-100 dark:hover:bg-yellow-800 transition-colors duration-200">
-                                <div className="flex items-center space-x-3">
-                                    <div
-                                        className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center">
-                                        <FiEdit className="text-white" size={16}/>
-                                    </div>
-                                    <span className="font-medium text-yellow-700 dark:text-yellow-300">Mettre à jour statut</span>
-                                </div>
-                                <FiChevronDown className="text-yellow-600 dark:text-yellow-400" size={16}/>
-                            </button>
-
-                            <button
-                                className="w-full flex items-center justify-between p-3 bg-purple-50 dark:bg-purple-900 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-800 transition-colors duration-200">
-                                <div className="flex items-center space-x-3">
-                                    <div
-                                        className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                                        <FiFileText className="text-white" size={16}/>
-                                    </div>
-                                    <span
-                                        className="font-medium text-purple-700 dark:text-purple-300">Générer rapport</span>
-                                </div>
-                                <FiChevronDown className="text-purple-600 dark:text-purple-400" size={16}/>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Performance Metrics */}
-                <div className={`rounded-lg shadow-md p-6`}>
-                    <div className="flex items-center justify-between mb-6">
-                        <h3 className="text-lg font-semibold">Métriques de Performance</h3>
-                        <select
-                            className={`px-3 py-2 rounded-md border focus:ring-2 focus:ring-green-500 transition-all duration-200`}>
-                            <option>7 derniers jours</option>
-                            <option>30 derniers jours</option>
-                            <option>3 derniers mois</option>
-                        </select>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="text-center">
-                            <div className="text-3xl font-bold text-green-600 dark:text-green-400">94%</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Taux de résolution</div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-                                <div className="bg-green-600 h-2 rounded-full" style={{width: '94%'}}></div>
-                            </div>
-                        </div>
-
-                        <div className="text-center">
-                            <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">2.4h</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Temps moyen résolution</div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-                                <div className="bg-blue-600 h-2 rounded-full" style={{width: '75%'}}></div>
-                            </div>
-                        </div>
-
-                        <div className="text-center">
-                            <div className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">4.8</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Note satisfaction</div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-                                <div className="bg-yellow-600 h-2 rounded-full" style={{width: '96%'}}></div>
-                            </div>
-                        </div>
-
-                        <div className="text-center">
-                            <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">28</div>
-                            <div className="text-sm text-gray-500 dark:text-gray-400">Litiges cette semaine</div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mt-2">
-                                <div className="bg-purple-600 h-2 rounded-full" style={{width: '70%'}}></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Priority Alerts */}
-                <div className={`rounded-lg shadow-md p-6`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold flex items-center">
-                            <FiAlertCircle className="text-red-500 mr-2" size={20}/>
-                            Alertes Prioritaires
+                            Résolution du Litige {dispute?.id}
                         </h3>
-                        <span
-                            className="px-2 py-1 bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200 rounded-full text-xs font-medium">
-                            2 alertes
-                        </span>
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors duration-200"
+                        >
+                            <FiX size={20} />
+                        </button>
                     </div>
-                    <div className="space-y-3">
-                        <div
-                            className="flex items-center p-3 bg-red-50 dark:bg-red-900 rounded-lg border-l-4 border-red-500">
-                            <div className="flex-1">
-                                <p className="font-medium text-red-800 dark:text-red-200">Litige LIT-2024-001 - Délai
-                                    dépassé</p>
-                                <p className="text-sm text-red-600 dark:text-red-300">Ce litige n'a pas été traité
-                                    depuis plus de 24h</p>
-                            </div>
-                            <button
-                                className="px-3 py-1 bg-red-600 text-white rounded-md text-sm hover:bg-red-700 transition-colors duration-200">
-                                Traiter
-                            </button>
-                        </div>
+                </div>
 
-                        <div
-                            className="flex items-center p-3 bg-yellow-50 dark:bg-yellow-900 rounded-lg border-l-4 border-yellow-500">
-                            <div className="flex-1">
-                                <p className="font-medium text-yellow-800 dark:text-yellow-200">Litige LIT-2024-004 -
-                                    Priorité haute</p>
-                                <p className="text-sm text-yellow-600 dark:text-yellow-300">Client VIP avec problème
-                                    urgent nécessitant attention immédiate</p>
+                <div className="p-6 space-y-6">
+                    {/* Informations du litige */}
+                    <div className="bg-gradient-to-r from-green-50 to-red-50 via-yellow-50 dark:from-green-900 dark:to-red-900 dark:via-yellow-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-2">Détails du Litige</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <span className="text-gray-600 dark:text-gray-400">Type:</span>
+                                <span className="ml-2 font-medium">{dispute?.type}</span>
                             </div>
-                            <button
-                                className="px-3 py-1 bg-yellow-600 text-white rounded-md text-sm hover:bg-yellow-700 transition-colors duration-200">
-                                Voir
-                            </button>
+                            <div>
+                                <span className="text-gray-600 dark:text-gray-400">Client:</span>
+                                <span className="ml-2 font-medium">{dispute?.customer?.name}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-600 dark:text-gray-400">Montant:</span>
+                                <span className="ml-2 font-medium">{dispute?.montant}</span>
+                            </div>
+                            <div>
+                                <span className="text-gray-600 dark:text-gray-400">Restaurant:</span>
+                                <span className="ml-2 font-medium">{dispute?.restaurant}</span>
+                            </div>
                         </div>
+                        <div className="mt-3">
+                            <span className="text-gray-600 dark:text-gray-400">Description:</span>
+                            <p className="mt-1 text-gray-800 dark:text-gray-200">{dispute?.description}</p>
+                        </div>
+                    </div>
+
+                    {/* Options de résolution */}
+                    <div>
+                        <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-4">Type de Résolution</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {resolutionOptions.map((option) => (
+                                <button
+                                    key={option.id}
+                                    onClick={() => setResolutionType(option.id)}
+                                    className={`p-4 rounded-xl border-2 transition-all duration-300 transform hover:scale-105 text-left ${
+                                        resolutionType === option.id
+                                            ? 'border-green-500 bg-green-50 dark:bg-green-900 shadow-lg'
+                                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                                    }`}
+                                >
+                                    <div className="flex items-center space-x-3">
+                                        <span className="text-2xl transform hover:scale-110 transition-transform duration-200">
+                                            {option.icon}
+                                        </span>
+                                        <div>
+                                            <p className={`font-medium ${option.color}`}>{option.label}</p>
+                                        </div>
+                                    </div>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Montant de remboursement */}
+                    {(resolutionType === 'refund_full' || resolutionType === 'refund_partial') && (
+                        <div className="animate-slideIn">
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Montant du remboursement (FCFA)
+                            </label>
+                            <input
+                                type="number"
+                                value={refundAmount}
+                                onChange={(e) => setRefundAmount(e.target.value)}
+                                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                                placeholder="Entrez le montant"
+                            />
+                        </div>
+                    )}
+
+                    {/* Notes de résolution */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Notes de résolution
+                        </label>
+                        <textarea
+                            value={resolutionNotes}
+                            onChange={(e) => setResolutionNotes(e.target.value)}
+                            rows={4}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200"
+                            placeholder="Décrivez les actions prises et la résolution..."
+                        />
+                    </div>
+
+                    {/* Option d'escalade */}
+                    <div className="flex items-center space-x-3 p-4 bg-yellow-50 dark:bg-yellow-900 rounded-xl border border-yellow-200 dark:border-yellow-700">
+                        <input
+                            type="checkbox"
+                            id="escalate"
+                            checked={escalate}
+                            onChange={(e) => setEscalate(e.target.checked)}
+                            className="w-4 h-4 text-yellow-600 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500 focus:ring-2"
+                        />
+                        <label htmlFor="escalate" className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                            Escalader ce litige vers un superviseur pour validation
+                        </label>
+                    </div>
+
+                    {/* Boutons d'action */}
+                    <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                        <button
+                            onClick={onClose}
+                            className="flex-1 px-6 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 transform hover:scale-105"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            onClick={handleResolve}
+                            disabled={!resolutionType || isProcessing}
+                            className="flex-1 px-6 py-3 bg-gradient-to-r from-green-600 to-red-600 via-yellow-600 text-white rounded-xl hover:from-green-700 hover:to-red-700 hover:via-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-105 flex items-center justify-center space-x-2"
+                        >
+                            {isProcessing ? (
+                                <>
+                                    <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-b-2 border-white"></div>
+                                    <span>Traitement...</span>
+                                </>
+                            ) : (
+                                <>
+                                    <FiCheck size={20} />
+                                    <span>Résoudre le Litige</span>
+                                </>
+                            )}
+                        </button>
                     </div>
                 </div>
             </div>
-        </SupportAgentLayout>
+        </div>
     );
 };
 

@@ -182,7 +182,7 @@ const SupportAgentLayout = ({ children }) => {
         { name: t('knowledge_base'), icon: <FiBookOpen size={20} />, path: '/agent/knowledge-base' },
         { name: t('contact_users'), icon: <FiMessageSquare size={20} />, path: '/agent/contact-users' },
         { name: t('escalations'), icon: <FiTrendingUp size={20} />, path: '/agent/escalations' },
-        { name: t('reports'), icon: <FiFileText size={20} />, path: '/agent/reports' },
+       // { name: t('reports'), icon: <FiFileText size={20} />, path: '/agent/reports' },
     ];
 
     // Close sidebar when clicking outside on mobile

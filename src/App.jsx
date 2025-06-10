@@ -42,6 +42,10 @@ import DeliverySupport from './pages/Dashboards/Delivery/support/delivery_suppor
 // Agent support pages
 import SupportTicketsPage from "@/pages/Dashboards/Agent/Tickets/ticketsPage.jsx";
 import SupportDisputesPage from "@/pages/Dashboards/Agent/Disputes/DisputesPage.jsx";
+import SupportUserCommunication from "@/pages/Dashboards/Agent/User_communication/support_user_contact.jsx";
+import SupportKnowledge from "@/pages/Dashboards/Agent/knowledge/agents_knowledge.jsx";
+import SupportEscalation from "@/pages/Dashboards/Agent/Escalation/agents_escalation.jsx";
+import SupportAgentMainDashboard from "@/pages/Dashboards/Agent/agent_dashboard.jsx";
 
 // Client pages
 import ClientDashboard from './pages/Dashboards/Clients/clients_dashboards.jsx';
@@ -68,7 +72,7 @@ function App() {
       <div className="app">
         <Routes>
  {/* Public Routes */}
- 
+
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -94,9 +98,15 @@ function App() {
 
  {/* Agent Support Routes */}
 
-
+          <Route path="/agent/dashboard" element={<SupportAgentMainDashboard />} />
           <Route path="/agent/tickets" element={<SupportTicketsPage />} />
           <Route path="/agent/disputes" element={<SupportDisputesPage />} />
+          <Route path="/agent/contact-users" element={<SupportUserCommunication />} />
+          <Route path="/agent/knowledge-base" element={<SupportKnowledge />} />
+          <Route path="/agent/escalations" element={<SupportEscalation />} />
+
+
+
 
 {/* Client Routes with Layout */}
 
