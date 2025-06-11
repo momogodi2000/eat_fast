@@ -13,10 +13,12 @@ import {
     FiSearch,
     FiEye,
     FiEdit3,
-    FiTrash2
+    FiTrash2,
+    FiPlus
 } from 'react-icons/fi';
 import { HiOutlineMoon, HiOutlineSun } from 'react-icons/hi';
-import SupportAgentLayout from '../../../../layouts/agent_support_layout.jsx';
+import { motion } from 'framer-motion';
+import SupportAgentLayout from '@/layouts/agent_support_layout.jsx';
 
 const SupportTicketsPage = () => {
     const [darkMode, setDarkMode] = useState(false);
@@ -26,6 +28,17 @@ const SupportTicketsPage = () => {
     const [filterStatus, setFilterStatus] = useState('all');
     const [searchTerm, setSearchTerm] = useState('');
     const [showModal, setShowModal] = useState(false);
+    const [newTicket, setNewTicket] = useState({
+        subject: '',
+        category: 'delivery',
+        priority: 'medium',
+        description: '',
+        customer: {
+            name: '',
+            email: '',
+            phone: ''
+        }
+    });
 
     // Sample tickets data
     const [tickets, setTickets] = useState([
@@ -203,6 +216,16 @@ const SupportTicketsPage = () => {
         }
     };
 
+    const getCategoryIcon = (category) => {
+        switch (category) {
+            case 'delivery': return '🚚';
+            case 'payment': return '💳';
+            case 'account': return '👤';
+            case 'technical': return '🛠️';
+            default: return '📌';
+        }
+    };
+
     const filteredTickets = tickets.filter(ticket => {
         const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus;
         const matchesSearch = ticket.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -234,6 +257,47 @@ const SupportTicketsPage = () => {
         }
     };
 
+    const handleCreateTicket = () => {
+        const newId = Math.max(...tickets.map(t => t.id)) + 1;
+        const today = new Date();
+        
+        // Auto-assign priority based on category
+        let priority = 'medium';
+        if (newTicket.category === 'delivery' || newTicket.category === 'technical') {
+            priority = 'high';
+        } else if (newTicket.category === 'account') {
+            priority = 'low';
+        }
+        
+        const ticket = {
+            id: newId,
+            ticketNumber: `TICK-${today.getFullYear()}-${String(newId).padStart(3, '0')}`,
+            subject: newTicket.subject,
+            customer: newTicket.customer,
+            status: 'open',
+            priority: priority,
+            category: newTicket.category,
+            createdAt: today,
+            lastUpdate: today,
+            description: newTicket.description,
+            messages: []
+        };
+        
+        setTickets([...tickets, ticket]);
+        setNewTicket({
+            subject: '',
+            category: 'delivery',
+            priority: 'medium',
+            description: '',
+            customer: {
+                name: '',
+                email: '',
+                phone: ''
+            }
+        });
+        setShowModal(false);
+    };
+
     if (isLoading) {
         return (
             <SupportAgentLayout>
@@ -248,10 +312,14 @@ const SupportTicketsPage = () => {
         <SupportAgentLayout>
             <div className="container mx-auto px-2 sm:px-4 lg:px-6 py-4 sm:py-6 max-w-7xl">
                 {/* Header */}
-                <div
-                    className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 space-y-4 sm:space-y-0">
                     <div className="flex items-center">
-                        <FiHeadphones className="mr-2 text-green-600 dark:text-yellow-400" size={24}/>
+                        <motion.div
+                            animate={{ rotate: [0, 10, -10, 0] }}
+                            transition={{ duration: 1, repeat: Infinity, repeatType: "reverse" }}
+                        >
+                            <FiHeadphones className="mr-2 text-green-600 dark:text-yellow-400" size={24}/>
+                        </motion.div>
                         <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 bg-clip-text text-transparent">
                             Gestion des Tickets
                         </h1>
@@ -273,10 +341,13 @@ const SupportTicketsPage = () => {
                         </button>
                     </div>
                 </div>
+
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-                    <div
-                        className="bg-gradient-to-r from-green-600 to-green-500 rounded-xl shadow-lg p-3 sm:p-4 lg:p-6 text-white">
+                    <motion.div
+                        whileHover={{ scale: 1.03 }}
+                        className="bg-gradient-to-r from-green-600 to-green-500 rounded-xl shadow-lg p-3 sm:p-4 lg:p-6 text-white"
+                    >
                         <div className="flex justify-between items-center">
                             <div>
                                 <p className="text-xs sm:text-sm font-medium opacity-90">Total Tickets</p>
@@ -286,10 +357,12 @@ const SupportTicketsPage = () => {
                                 <FiHeadphones size={16} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6"/>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div
-                        className="bg-gradient-to-r from-red-600 to-red-500 rounded-xl shadow-lg p-3 sm:p-4 lg:p-6 text-white">
+                    <motion.div
+                        whileHover={{ scale: 1.03 }}
+                        className="bg-gradient-to-r from-red-600 to-red-500 rounded-xl shadow-lg p-3 sm:p-4 lg:p-6 text-white"
+                    >
                         <div className="flex justify-between items-center">
                             <div>
                                 <p className="text-xs sm:text-sm font-medium opacity-90">Tickets Ouverts</p>
@@ -299,10 +372,12 @@ const SupportTicketsPage = () => {
                                 <FiAlertCircle size={16} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6"/>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div
-                        className="bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl shadow-lg p-3 sm:p-4 lg:p-6 text-white">
+                    <motion.div
+                        whileHover={{ scale: 1.03 }}
+                        className="bg-gradient-to-r from-yellow-500 to-yellow-400 rounded-xl shadow-lg p-3 sm:p-4 lg:p-6 text-white"
+                    >
                         <div className="flex justify-between items-center">
                             <div>
                                 <p className="text-xs sm:text-sm font-medium opacity-90">En Cours</p>
@@ -312,10 +387,12 @@ const SupportTicketsPage = () => {
                                 <FiClock size={16} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6"/>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
-                    <div
-                        className="bg-gradient-to-r from-green-600 to-green-500 rounded-xl shadow-lg p-3 sm:p-4 lg:p-6 text-white col-span-2 lg:col-span-1">
+                    <motion.div
+                        whileHover={{ scale: 1.03 }}
+                        className="bg-gradient-to-r from-green-600 to-green-500 rounded-xl shadow-lg p-3 sm:p-4 lg:p-6 text-white col-span-2 lg:col-span-1"
+                    >
                         <div className="flex justify-between items-center">
                             <div>
                                 <p className="text-xs sm:text-sm font-medium opacity-90">Résolus Aujourd'hui</p>
@@ -325,17 +402,15 @@ const SupportTicketsPage = () => {
                                 <FiCheckCircle size={16} className="sm:w-5 sm:h-5 lg:w-6 lg:h-6"/>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* Filters and Search */}
-                <div
-                    className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border border-gray-200 dark:border-gray-700">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8 border border-gray-200 dark:border-gray-700">
                     <div className="flex flex-col sm:flex-row gap-4">
                         <div className="flex-1">
                             <div className="relative">
-                                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                                          size={20}/>
+                                <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20}/>
                                 <input
                                     type="text"
                                     placeholder="Rechercher un ticket..."
@@ -357,12 +432,20 @@ const SupportTicketsPage = () => {
                                 <option value="in_progress">En cours</option>
                                 <option value="resolved">Résolus</option>
                             </select>
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => setShowModal(true)}
+                                className="flex items-center gap-2 px-4 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg hover:from-green-700 hover:to-green-600 transition-all duration-200"
+                            >
+                                <FiPlus size={18} />
+                                <span className="hidden sm:inline">Nouveau Ticket</span>
+                            </motion.button>
                         </div>
                     </div>
                 </div>
 
-
-                {/* Tickets Table - Optimisé pour toutes résolutions et moins encombrant */}
+                {/* Tickets Table */}
                 <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-200 dark:border-gray-700">
                     <div className="overflow-x-auto">
                         <table className="w-full min-w-[600px] md:min-w-[700px] lg:min-w-[800px]">
@@ -390,7 +473,11 @@ const SupportTicketsPage = () => {
                             </thead>
                             <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                             {filteredTickets.map((ticket) => (
-                                <tr key={ticket.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200">
+                                <motion.tr 
+                                    key={ticket.id} 
+                                    whileHover={{ scale: 1.005 }}
+                                    className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                                >
                                     <td className="px-2 md:px-4 lg:px-6 py-2 md:py-4 whitespace-nowrap">
                                         <div>
                                             <div className="text-xs md:text-sm font-medium text-gray-900 dark:text-white">
@@ -399,8 +486,11 @@ const SupportTicketsPage = () => {
                                             <div className="text-[11px] md:text-xs text-gray-500 dark:text-gray-400 truncate max-w-[160px] md:max-w-xs">
                                                 {ticket.subject}
                                             </div>
-                                            <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
-                                                {getCategoryText(ticket.category)}
+                                            <div className="flex items-center mt-1">
+                                                <span className="text-[10px] mr-1">{getCategoryIcon(ticket.category)}</span>
+                                                <span className="text-[10px] text-gray-400 dark:text-gray-500">
+                                                    {getCategoryText(ticket.category)}
+                                                </span>
                                             </div>
                                         </div>
                                     </td>
@@ -420,59 +510,230 @@ const SupportTicketsPage = () => {
                                         </div>
                                     </td>
                                     <td className="px-2 md:px-4 lg:px-6 py-2 md:py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-0.5 text-[11px] md:text-xs font-semibold rounded-full ${getStatusColor(ticket.status)}`}>
-                            {getStatusText(ticket.status)}
-                        </span>
+                                        <span className={`inline-flex px-2 py-0.5 text-[11px] md:text-xs font-semibold rounded-full ${getStatusColor(ticket.status)}`}>
+                                            {getStatusText(ticket.status)}
+                                        </span>
                                     </td>
                                     <td className="px-2 md:px-4 lg:px-6 py-2 md:py-4 whitespace-nowrap">
-                        <span className={`inline-flex px-2 py-0.5 text-[11px] md:text-xs font-semibold rounded-full ${getPriorityColor(ticket.priority)}`}>
-                            {getPriorityText(ticket.priority)}
-                        </span>
+                                        <span className={`inline-flex px-2 py-0.5 text-[11px] md:text-xs font-semibold rounded-full ${getPriorityColor(ticket.priority)}`}>
+                                            {getPriorityText(ticket.priority)}
+                                        </span>
                                     </td>
                                     <td className="px-2 md:px-4 lg:px-6 py-2 md:py-4 whitespace-nowrap text-[11px] md:text-xs text-gray-500 dark:text-gray-400">
                                         {formatTimeAgo(ticket.lastUpdate)}
                                     </td>
                                     <td className="px-2 md:px-4 lg:px-6 py-2 md:py-4 whitespace-nowrap text-xs font-medium">
                                         <div className="flex space-x-1 md:space-x-2">
-                                            <button
+                                            <motion.button
+                                                whileHover={{ scale: 1.2 }}
+                                                whileTap={{ scale: 0.9 }}
                                                 onClick={() => setSelectedTicket(ticket)}
                                                 className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-1"
                                                 title="Voir détails"
                                             >
                                                 <FiEye size={16}/>
-                                            </button>
-                                            <button
+                                            </motion.button>
+                                            <motion.button
+                                                whileHover={{ scale: 1.2 }}
+                                                whileTap={{ scale: 0.9 }}
                                                 onClick={() => updateTicketStatus(ticket.id, 'in_progress')}
                                                 className="text-yellow-600 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 transition-colors p-1"
                                                 disabled={ticket.status === 'resolved'}
                                                 title="Prendre en charge"
                                             >
                                                 <FiEdit3 size={16}/>
-                                            </button>
-                                            <button
+                                            </motion.button>
+                                            <motion.button
+                                                whileHover={{ scale: 1.2 }}
+                                                whileTap={{ scale: 0.9 }}
                                                 onClick={() => updateTicketStatus(ticket.id, 'resolved')}
                                                 className="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors p-1"
                                                 disabled={ticket.status === 'resolved'}
                                                 title="Marquer résolu"
                                             >
                                                 <FiCheckCircle size={16}/>
-                                            </button>
+                                            </motion.button>
                                         </div>
                                     </td>
-                                </tr>
+                                </motion.tr>
                             ))}
                             </tbody>
                         </table>
                     </div>
                 </div>
 
+                {/* Create Ticket Modal */}
+                {showModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-2xl dark:bg-gray-800"
+                        >
+                            {/* Header */}
+                            <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-gray-700">
+                                <h2 className="text-xl font-bold dark:text-white">
+                                    Créer un Nouveau Ticket
+                                </h2>
+                                <button
+                                    onClick={() => setShowModal(false)}
+                                    className="text-gray-500 transition hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                >
+                                    <FiX size={24} />
+                                </button>
+                            </div>
 
+                            {/* Body */}
+                            <div className="p-6 space-y-6">
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            Sujet du Ticket
+                                        </label>
+                                        <input
+                                            type="text"
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                            value={newTicket.subject}
+                                            onChange={(e) => setNewTicket({...newTicket, subject: e.target.value})}
+                                            placeholder="Décrivez brièvement le problème"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                Catégorie
+                                            </label>
+                                            <select
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                                value={newTicket.category}
+                                                onChange={(e) => setNewTicket({...newTicket, category: e.target.value})}
+                                            >
+                                                <option value="delivery">Livraison</option>
+                                                <option value="payment">Paiement</option>
+                                                <option value="account">Compte</option>
+                                                <option value="technical">Technique</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                Priorité (auto-déterminée)
+                                            </label>
+                                            <input
+                                                type="text"
+                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 dark:bg-gray-700 dark:text-white dark:border-gray-600 cursor-not-allowed"
+                                                value={
+                                                    newTicket.category === 'delivery' || newTicket.category === 'technical' 
+                                                    ? 'Élevée' 
+                                                    : newTicket.category === 'account' 
+                                                    ? 'Faible' 
+                                                    : 'Moyenne'
+                                                }
+                                                readOnly
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                            Description
+                                        </label>
+                                        <textarea
+                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                            rows="4"
+                                            value={newTicket.description}
+                                            onChange={(e) => setNewTicket({...newTicket, description: e.target.value})}
+                                            placeholder="Décrivez en détail le problème rencontré..."
+                                        ></textarea>
+                                    </div>
+
+                                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                                        <h3 className="text-lg font-semibold dark:text-white mb-4">Informations Client</h3>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    Nom Complet
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                                    value={newTicket.customer.name}
+                                                    onChange={(e) => setNewTicket({
+                                                        ...newTicket,
+                                                        customer: {...newTicket.customer, name: e.target.value}
+                                                    })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    Email
+                                                </label>
+                                                <input
+                                                    type="email"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                                    value={newTicket.customer.email}
+                                                    onChange={(e) => setNewTicket({
+                                                        ...newTicket,
+                                                        customer: {...newTicket.customer, email: e.target.value}
+                                                    })}
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                                    Téléphone
+                                                </label>
+                                                <input
+                                                    type="tel"
+                                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                                    value={newTicket.customer.phone}
+                                                    onChange={(e) => setNewTicket({
+                                                        ...newTicket,
+                                                        customer: {...newTicket.customer, phone: e.target.value}
+                                                    })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex justify-end space-x-3 pt-4">
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setShowModal(false)}
+                                        className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    >
+                                        Annuler
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={handleCreateTicket}
+                                        disabled={!newTicket.subject || !newTicket.description}
+                                        className={`px-4 py-2 rounded-lg text-white transition-colors ${
+                                            !newTicket.subject || !newTicket.description
+                                                ? 'bg-gray-400 cursor-not-allowed'
+                                                : 'bg-gradient-to-r from-green-600 to-green-500 hover:from-green-700 hover:to-green-600'
+                                        }`}
+                                    >
+                                        Créer Ticket
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
 
                 {/* Ticket Detail Modal */}
                 {selectedTicket && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-                        <div className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-2xl dark:bg-gray-800">
-
+                        <motion.div 
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl bg-white shadow-2xl dark:bg-gray-800"
+                        >
                             {/* Header */}
                             <div className="flex items-center justify-between border-b border-gray-200 p-6 dark:border-gray-700">
                                 <h2 className="text-xl font-bold dark:text-white">
@@ -488,10 +749,8 @@ const SupportTicketsPage = () => {
 
                             {/* Body */}
                             <div className="p-6 space-y-6">
-
                                 {/* Info Section */}
                                 <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-
                                     {/* Customer Info */}
                                     <div>
                                         <h3 className="mb-4 text-lg font-semibold dark:text-white">Informations Client</h3>
@@ -518,18 +777,22 @@ const SupportTicketsPage = () => {
                                             <div>
                                                 <span className="font-medium">Statut : </span>
                                                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(selectedTicket.status)}`}>
-                  {getStatusText(selectedTicket.status)}
-                </span>
+                                                    {getStatusText(selectedTicket.status)}
+                                                </span>
                                             </div>
                                             <div>
                                                 <span className="font-medium">Priorité : </span>
                                                 <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getPriorityColor(selectedTicket.priority)}`}>
-                  {getPriorityText(selectedTicket.priority)}
-                </span>
+                                                    {getPriorityText(selectedTicket.priority)}
+                                                </span>
                                             </div>
                                             <div>
                                                 <span className="font-medium">Catégorie : </span>
                                                 <span>{getCategoryText(selectedTicket.category)}</span>
+                                            </div>
+                                            <div>
+                                                <span className="font-medium">Créé le : </span>
+                                                <span>{selectedTicket.createdAt.toLocaleDateString('fr-FR')}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -549,8 +812,10 @@ const SupportTicketsPage = () => {
                                         <h3 className="mb-3 text-lg font-semibold dark:text-white">Conversation</h3>
                                         <div className="max-h-60 space-y-3 overflow-y-auto">
                                             {selectedTicket.messages.map((message) => (
-                                                <div
+                                                <motion.div
                                                     key={message.id}
+                                                    initial={{ opacity: 0, y: 10 }}
+                                                    animate={{ opacity: 1, y: 0 }}
                                                     className={`rounded-lg p-3 text-sm ${
                                                         message.sender === 'customer'
                                                             ? 'bg-blue-100 dark:bg-blue-900 mr-12'
@@ -558,30 +823,53 @@ const SupportTicketsPage = () => {
                                                     }`}
                                                 >
                                                     <div className="mb-1 flex items-start justify-between">
-                    <span className="font-medium">
-                      {message.sender === 'customer' ? 'Client' : 'Support'}
-                    </span>
+                                                        <span className="font-medium">
+                                                            {message.sender === 'customer' ? 'Client' : 'Support'}
+                                                        </span>
                                                         <span className="text-xs text-gray-500">
-                      {message.timestamp.toLocaleTimeString('fr-FR')}
-                    </span>
+                                                            {message.timestamp.toLocaleTimeString('fr-FR')}
+                                                        </span>
                                                     </div>
                                                     <p>{message.message}</p>
-                                                </div>
+                                                </motion.div>
                                             ))}
                                         </div>
                                     </div>
                                 )}
 
+                                {/* New Message */}
+                                <div>
+                                    <h3 className="mb-3 text-lg font-semibold dark:text-white">Ajouter une réponse</h3>
+                                    <textarea
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                                        rows="3"
+                                        placeholder="Écrivez votre réponse ici..."
+                                    ></textarea>
+                                    <div className="mt-2 flex justify-end">
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-500 text-white rounded-lg hover:from-green-700 hover:to-green-600 transition-colors"
+                                        >
+                                            Envoyer
+                                        </motion.button>
+                                    </div>
+                                </div>
+
                                 {/* Action Buttons */}
-                                <div className="flex justify-end space-x-3">
-                                    <button
+                                <div className="flex justify-end space-x-3 pt-4">
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                         onClick={() => updateTicketStatus(selectedTicket.id, 'in_progress')}
                                         className="rounded-lg bg-yellow-500 px-4 py-2 text-white transition hover:bg-yellow-600 disabled:opacity-50"
                                         disabled={selectedTicket.status === 'resolved'}
                                     >
                                         Prendre en charge
-                                    </button>
-                                    <button
+                                    </motion.button>
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
                                         onClick={() => {
                                             updateTicketStatus(selectedTicket.id, 'resolved');
                                             setSelectedTicket(null);
@@ -590,13 +878,12 @@ const SupportTicketsPage = () => {
                                         disabled={selectedTicket.status === 'resolved'}
                                     >
                                         Marquer comme résolu
-                                    </button>
+                                    </motion.button>
                                 </div>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
                 )}
-
             </div>
         </SupportAgentLayout>
     );

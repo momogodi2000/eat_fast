@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-// Public router link
 
+// Public pages
 import HomePage from './pages/LandingPage/homepage';
 import AboutPage from './pages/LandingPage/about_us';
 import ContactPage from './pages/LandingPage/contact_us';
@@ -9,9 +9,10 @@ import RestaurantsPage from './pages/LandingPage/Restaurants';
 import Login from './pages/Authentication/login';
 import Register from './pages/Authentication/register';
 import ForgotPassword from './pages/Authentication/forgot_password';
+import BecomeAPartner from './pages/LandingPage/BecomeAPartner.jsx';
+import MenuPage from './pages/LandingPage/menus.jsx';
 
-// Admin router link 
-
+// Admin pages
 import AdminDashboard from './pages/Dashboards/Admin/admin_dashboard';
 import UserListPage from './pages/Dashboards/Admin/Utilisateurs/UserList';
 import RestaurantManagement, { AdminRestaurantProvider } from './pages/Dashboards/Admin/Restaurants/RestaurantsList';
@@ -21,36 +22,32 @@ import StatisticsPage from './pages/Dashboards/Admin/Statistics/StatisticsPage';
 import AdminSupportPage from './pages/Dashboards/Admin/AdminSupport/AdminSupportPage.js';
 import AdminSettingsPage from './pages/Dashboards/Admin/Settings/AdminSettingsPage.jsx';
 import AdminDeliveryManagement from './pages/Dashboards/Admin/Delivery/delivery_managemnet.jsx';
-//import PromotionManagement from './pages/Dashboards/Admin/Promotion/promotion.jsx';
 import PromotionManagement from './pages/Dashboards/Admin/Promotion/promotion.jsx';
-import BecomeAPartner from './pages/LandingPage/BecomeAPartner.jsx';
-import MenuPage from './pages/LandingPage/menus.jsx';
 
-
-// resturant dashboard link
-
+// Restaurant pages
 import RestaurantDashboard from './pages/Dashboards/Restaurants/restaurant_dashboard.jsx';
 import RestaurantCommand from './pages/Dashboards/Restaurants/command/restaurant_command.jsx';
 import MenuPlatsPage from './pages/Dashboards/Restaurants/manager_menu/restuarantMenu.jsx';
 import RestaurantStatsPage from './pages/Dashboards/Restaurants/statistic/RestaurantStats.jsx';
 import RestaurantReviews from './pages/Dashboards/Restaurants/Review/restaurantreview.jsx';
 
-// delivery dashboard link
-
+// Delivery pages
 import DeliveryDashboard from './pages/Dashboards/Delivery/delivery_dashboad.jsx';
 import MissionsPage from './pages/Dashboards/Delivery/mission/delivey_mission.jsx';
-//import CameroonDeliveryMap from './pages/Dashboards/Delivery/map_deliveries/delivery_live_map.jsx';
 import RestaurantDeliverCommand from './pages/Dashboards/Delivery/map_deliveries/restaurant_command.jsx';
 import DeliveryEarningsPage from './pages/Dashboards/Delivery/earnings/delivery_earnings.jsx';
 import DeliveryHistoryPage from './pages/Dashboards/Delivery/History/delivery_history.jsx';
 import DeliverySupport from './pages/Dashboards/Delivery/support/delivery_support.jsx';
 
-
-// Agents support link
+// Agent support pages
 import SupportTicketsPage from "@/pages/Dashboards/Agent/Tickets/ticketsPage.jsx";
 import SupportDisputesPage from "@/pages/Dashboards/Agent/Disputes/DisputesPage.jsx";
+import SupportUserCommunication from "@/pages/Dashboards/Agent/User_communication/support_user_contact.jsx";
+import SupportKnowledge from "@/pages/Dashboards/Agent/knowledge/agents_knowledge.jsx";
+import SupportEscalation from "@/pages/Dashboards/Agent/Escalation/agents_escalation.jsx";
+import SupportAgentMainDashboard from "@/pages/Dashboards/Agent/agent_dashboard.jsx";
 
-// Clients dashabord link
+// Client pages
 import ClientDashboard from './pages/Dashboards/Clients/clients_dashboards.jsx';
 import ClientMenus from './pages/Dashboards/Clients/Restaurants/clients_restaurants.jsx';
 import ClientsCommande from './pages/Dashboards/Clients/Commandes/clients_commandes.jsx';
@@ -58,15 +55,15 @@ import ClientsCommandeHistory from './pages/Dashboards/Clients//Historique/clien
 import ClientsChatSupport from './pages/Dashboards/Clients/Contact_support/clients_contact.jsx';
 import ClientsProfilePage from './pages/Dashboards/Clients/Profil/clients_profile.jsx';
 
-
-
-// Common share component for testing
-import DashboardRedirect from './components/CommonShare/test';
+// Layouts
 import ClientsLayout from './layouts/clients_layout.jsx';
 import DeliveryLayout from './layouts/delivery_layout.jsx';
 import RestaurantLayoutWithProviders from './layouts/restaurants_layout.jsx';
 
-// Create a client
+// Common components
+import DashboardRedirect from './components/CommonShare/test';
+
+// Create QueryClient
 const queryClient = new QueryClient();
 
 function App() {
@@ -74,7 +71,8 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <div className="app">
         <Routes>
-   {/* Public Routes */}
+ {/* Public Routes */}
+
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
@@ -86,8 +84,12 @@ function App() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/test" element={<DashboardRedirect />} />
 
+<<<<<<< HEAD
   {/* Admin Router */}
 
+=======
+{/* Admin Routes */}
+>>>>>>> f3a9d05f7d2dbe093e27c501d4441b35f492852b
           <Route path="/admin" element={
             <AdminRestaurantProvider>
             <AdminDashboard />
@@ -102,14 +104,50 @@ function App() {
           <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
           <Route path="/admin/promotion" element={<PromotionManagement />} />
-          {/* <Route path="/admin/promotion" element={<PromotionManagement />} /> */}
 
-  {/* Agents Support Router */}
+ {/* Agent Support Routes */}
 
+          <Route path="/agent/dashboard" element={<SupportAgentMainDashboard />} />
           <Route path="/agent/tickets" element={<SupportTicketsPage />} />
           <Route path="/agent/disputes" element={<SupportDisputesPage />} />
+          <Route path="/agent/contact-users" element={<SupportUserCommunication />} />
+          <Route path="/agent/knowledge-base" element={<SupportKnowledge />} />
+          <Route path="/agent/escalations" element={<SupportEscalation />} />
 
 
+
+
+{/* Client Routes with Layout */}
+
+
+          {/* <Route path="/clients/*" element={
+            <ClientsLayout>
+              <Routes>
+                <Route path="/" element={<ClientDashboard />} />
+                <Route path="/restaurant" element={<ClientMenus />} />
+                <Route path="/orders" element={<ClientsCommande />} />
+                <Route path="/order-history" element={<ClientsCommandeHistory />} />
+                <Route path="/support/chat" element={<ClientsChatSupport />} />
+                <Route path="/profile" element={<ClientsProfilePage />} />
+              </Routes>
+            </ClientsLayout>
+          } /> */}
+
+  {/* Delivery Routes with Layout */}
+
+{/* 
+          <Route path="/delivery/*" element={
+            <DeliveryLayout>
+              <Routes>
+                <Route path="/" element={<DeliveryDashboard />} />
+                <Route path="/missions" element={<MissionsPage />} />
+                <Route path="/live-map" element={<RestaurantDeliverCommand />} />
+                <Route path="/earnings" element={<DeliveryEarningsPage />} />
+                <Route path="/history" element={<DeliveryHistoryPage />} />
+                <Route path="/support" element={<DeliverySupport />} />
+              </Routes>
+            </DeliveryLayout>
+          } /> */}
   {/* Restaurant Router */}
           
           <Route path="/restaurants_manager" element={
@@ -162,6 +200,7 @@ function App() {
           </DeliveryLayout>} />
 
   {/* Clients Router */}
+
           <Route path="/clients" element={
             <ClientsLayout>       
             <ClientDashboard />
@@ -190,16 +229,22 @@ function App() {
             </ClientsLayout>} />
 
 
-          
-
-
-
-          
-         
-
-
-
+   {/* Restaurant Routes with Layout */}
+          {/* <Route path="/restaurants_manager/*" element={
+            <RestaurantLayoutWithProviders>
+              <Routes>
+                <Route path="/" element={<RestaurantDashboard />} />
+                <Route path="/orders" element={<RestaurantCommand />} />
+                <Route path="/menu" element={<MenuPlatsPage />} />
+                <Route path="/stats" element={<RestaurantStatsPage />} />
+                <Route path="/reviews" element={<RestaurantReviews />} />
+              </Routes>
+            </RestaurantLayoutWithProviders>
+          } /> */}
         </Routes>
+
+
+
       </div>
     </QueryClientProvider>
   );

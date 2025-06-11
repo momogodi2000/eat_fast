@@ -320,341 +320,334 @@ const ClientsCommande = () => {
 
   if (loading) {
     return (
-      // <ClientsLayout>
-      <>
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-yellow-50 flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
-            <p className="text-gray-600 text-lg">Chargement de vos commandes...</p>
-          </div>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-yellow-50 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-green-500 border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-600 text-lg">Chargement de vos commandes...</p>
         </div>
-
-      </>
-      // </ClientsLayout>
+      </div>
     );
   }
 
   return (
-    // <ClientsLayout>
-    <>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-red-50">
-        {/* Header */}
-        <div className="bg-white shadow-lg border-b-4 border-green-500">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-              <div className="flex items-center space-x-4 mb-4 lg:mb-0">
-                <div className="bg-gradient-to-r from-green-500 to-yellow-500 p-3 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
-                  <ShoppingBag className="w-8 h-8 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900">Mes Commandes</h1>
-                  <p className="text-gray-600">Gérez et suivez toutes vos commandes Eat Fast</p>
-                </div>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-yellow-50 to-red-50">
+      {/* Header */}
+      <div className="bg-white shadow-lg border-b-4 border-green-500 sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center space-x-3 mb-3 md:mb-0">
+              <div className="bg-gradient-to-r from-green-500 to-yellow-500 p-2 rounded-xl shadow-lg">
+                <ShoppingBag className="w-6 h-6 text-white" />
               </div>
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900">Mes Commandes</h1>
+                <p className="text-xs md:text-sm text-gray-600">Gérez et suivez toutes vos commandes Eat Fast</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={() => setShowFilters(!showFilters)}
+                className="flex items-center space-x-1 bg-green-500 hover:bg-green-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg transition-colors duration-200 text-sm"
+              >
+                <Filter className="w-3 h-3 md:w-4 md:h-4" />
+                <span>Filtres</span>
+                {showFilters ? <ChevronUp className="w-3 h-3 md:w-4 md:h-4" /> : <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />}
+              </button>
               
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-                >
-                  <Filter className="w-4 h-4" />
-                  <span>Filtres</span>
-                  {showFilters ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                </button>
-                
-                <button className="flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
-                  <Download className="w-4 h-4" />
-                  <span>Exporter</span>
-                </button>
+              <button className="flex items-center space-x-1 bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 md:px-4 md:py-2 rounded-lg transition-colors duration-200 text-sm">
+                <Download className="w-3 h-3 md:w-4 md:h-4" />
+                <span className="hidden sm:inline">Exporter</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      {showFilters && (
+        <div className="bg-white shadow-lg border-l-4 border-yellow-500 mx-2 md:mx-4 lg:mx-8 mt-4 rounded-xl p-4 animate-fadeIn">
+          <div className="grid grid-cols-1 gap-4">
+            {/* Search */}
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Rechercher</label>
+              <div className="relative">
+                <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Restaurant, plat, numéro de commande..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+                />
+              </div>
+            </div>
+
+            {/* Date Range */}
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Période</label>
+              <select
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+              >
+                <option value="all">Toutes les périodes</option>
+                <option value="today">Aujourd'hui</option>
+                <option value="week">Cette semaine</option>
+                <option value="month">Ce mois</option>
+              </select>
+            </div>
+
+            {/* Status Filters */}
+            <div>
+              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1">Statut</label>
+              <div className="flex flex-wrap gap-1">
+                {filterOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => setActiveFilter(option.value)}
+                    className={`px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
+                      activeFilter === option.value
+                        ? 'bg-green-500 text-white shadow-lg transform scale-105'
+                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
+                  >
+                    {option.label} ({option.count})
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         </div>
+      )}
 
-        {/* Filters */}
-        {showFilters && (
-          <div className="bg-white shadow-lg border-l-4 border-yellow-500 mx-4 lg:mx-8 mt-6 rounded-xl p-6 transform animate-fadeIn">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Search */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Rechercher</label>
-                <div className="relative">
-                  <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                  <input
-                    type="text"
-                    placeholder="Restaurant, plat, numéro de commande..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              {/* Date Range */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Période</label>
-                <select
-                  value={dateRange}
-                  onChange={(e) => setDateRange(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                >
-                  <option value="all">Toutes les périodes</option>
-                  <option value="today">Aujourd'hui</option>
-                  <option value="week">Cette semaine</option>
-                  <option value="month">Ce mois</option>
-                </select>
-              </div>
-
-              {/* Status Filters */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-                <div className="flex flex-wrap gap-2">
-                  {filterOptions.map((option) => (
-                    <button
-                      key={option.value}
-                      onClick={() => setActiveFilter(option.value)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 ${
-                        activeFilter === option.value
-                          ? 'bg-green-500 text-white shadow-lg transform scale-105'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {option.label} ({option.count})
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+      {/* Orders List */}
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 md:py-6">
+        {filteredOrders.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-lg p-6 md:p-12 text-center">
+            <Package className="w-12 h-12 md:w-16 md:h-16 text-gray-300 mx-auto mb-3 md:mb-4" />
+            <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">Aucune commande trouvée</h3>
+            <p className="text-gray-600 text-sm md:text-base mb-4 md:mb-6">
+              {activeFilter === 'all' 
+                ? "Vous n'avez pas encore passé de commande"
+                : "Aucune commande ne correspond aux filtres sélectionnés"
+              }
+            </p>
+            <button className="bg-gradient-to-r from-green-500 to-yellow-500 text-white px-4 py-2 md:px-6 md:py-3 rounded-lg hover:shadow-lg transition-all duration-200 text-sm md:text-base">
+              Commander maintenant
+            </button>
           </div>
-        )}
-
-        {/* Orders List */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {filteredOrders.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-              <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Aucune commande trouvée</h3>
-              <p className="text-gray-600 mb-6">
-                {activeFilter === 'all' 
-                  ? "Vous n'avez pas encore passé de commande"
-                  : "Aucune commande ne correspond aux filtres sélectionnés"
-                }
-              </p>
-              <button className="bg-gradient-to-r from-green-500 to-yellow-500 text-white px-6 py-3 rounded-lg hover:shadow-lg transition-all duration-200">
-                Commander maintenant
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {filteredOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-green-500 overflow-hidden"
-                >
-                  {/* Order Header */}
-                  <div className="p-6">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                      <div className="flex items-center space-x-4 mb-4 lg:mb-0">
-                        <img
-                          src={order.restaurant.image}
-                          alt={order.restaurant.name}
-                          className="w-16 h-16 rounded-xl object-cover shadow-md"
-                        />
-                        <div>
-                          <h3 className="text-xl font-bold text-gray-900">{order.restaurant.name}</h3>
-                          <p className="text-gray-600">{order.restaurant.cuisine}</p>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <span className="text-sm font-medium text-gray-500">#{order.id}</span>
-                            <div className="flex items-center space-x-1">
-                              <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                              <span className="text-sm text-gray-600">{order.restaurant.rating}</span>
-                            </div>
+        ) : (
+          <div className="space-y-4 md:space-y-6">
+            {filteredOrders.map((order) => (
+              <div
+                key={order.id}
+                className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border-l-4 border-green-500 overflow-hidden"
+              >
+                {/* Order Header */}
+                <div className="p-4 md:p-6">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+                    <div className="flex items-center space-x-3 mb-3 md:mb-0">
+                      <img
+                        src={order.restaurant.image}
+                        alt={order.restaurant.name}
+                        className="w-12 h-12 md:w-16 md:h-16 rounded-xl object-cover shadow-md"
+                      />
+                      <div>
+                        <h3 className="text-base md:text-lg font-bold text-gray-900">{order.restaurant.name}</h3>
+                        <p className="text-gray-600 text-xs md:text-sm">{order.restaurant.cuisine}</p>
+                        <div className="flex items-center space-x-1 mt-1">
+                          <span className="text-xs text-gray-500">#{order.id}</span>
+                          <div className="flex items-center space-x-1">
+                            <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-400 fill-current" />
+                            <span className="text-xs md:text-sm text-gray-600">{order.restaurant.rating}</span>
                           </div>
                         </div>
                       </div>
-
-                      <div className="flex flex-col lg:items-end space-y-2">
-                        <div className={`flex items-center space-x-2 px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(order.status)}`}>
-                          {getStatusIcon(order.status)}
-                          <span>{getStatusText(order.status)}</span>
-                        </div>
-                        <p className="text-2xl font-bold text-gray-900">{formatCurrency(order.totalAmount)}</p>
-                        <p className="text-sm text-gray-500">{formatDate(order.orderDate)}</p>
-                      </div>
                     </div>
 
-                    {/* Order Info */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 p-4 bg-gray-50 rounded-lg">
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-700 truncate">{order.deliveryAddress}</span>
+                    <div className="flex flex-col md:items-end space-y-1 md:space-y-2">
+                      <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                        {getStatusIcon(order.status)}
+                        <span>{getStatusText(order.status)}</span>
                       </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Clock className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-700">
-                          {order.status === 'delivered' ? `Livré en ${order.deliveryTime}min` : `Est. ${order.estimatedTime}min`}
-                        </span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <CreditCard className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-700">{order.paymentMethod}</span>
-                      </div>
-                      
-                      <div className="flex items-center space-x-2">
-                        <Package className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm text-gray-700">{order.items.length} article(s)</span>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap gap-3 mt-6">
-                      <button
-                        onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
-                        className="flex items-center space-x-2 bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-                      >
-                        <Eye className="w-4 h-4" />
-                        <span>Détails</span>
-                        {expandedOrder === order.id ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                      </button>
-
-                      {(order.status === 'in_transit' || order.status === 'preparing') && (
-                        <button
-                          onClick={() => handleTrackOrder(order)}
-                          className="flex items-center space-x-2 bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-                        >
-                          <Truck className="w-4 h-4" />
-                          <span>Suivre</span>
-                        </button>
-                      )}
-
-                      {order.status === 'delivered' && (
-                        <button
-                          onClick={() => handleReorder(order)}
-                          className="flex items-center space-x-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-                        >
-                          <RefreshCw className="w-4 h-4" />
-                          <span>Recommander</span>
-                        </button>
-                      )}
-
-                      {order.driver && (order.status === 'in_transit' || order.status === 'preparing') && (
-                        <button
-                          onClick={() => handleContactDriver(order.driver)}
-                          className="flex items-center space-x-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-200"
-                        >
-                          <Phone className="w-4 h-4" />
-                          <span>Contacter</span>
-                        </button>
-                      )}
-
-                      <button className="flex items-center space-x-2 bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-200">
-                        <Heart className="w-4 h-4" />
-                        <span>Favoris</span>
-                      </button>
+                      <p className="text-lg md:text-xl font-bold text-gray-900">{formatCurrency(order.totalAmount)}</p>
+                      <p className="text-xs md:text-sm text-gray-500">{formatDate(order.orderDate)}</p>
                     </div>
                   </div>
 
-                  {/* Expanded Details */}
-                  {expandedOrder === order.id && (
-                    <div className="border-t border-gray-200 bg-gray-50 p-6 animate-fadeIn">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        {/* Order Items */}
-                        <div>
-                          <h4 className="text-lg font-semibold text-gray-900 mb-4">Articles commandés</h4>
-                          <div className="space-y-3">
-                            {order.items.map((item, index) => (
-                              <div key={index} className="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm">
-                                <div>
-                                  <p className="font-medium text-gray-900">{item.name}</p>
-                                  <p className="text-sm text-gray-600">Quantité: {item.quantity}</p>
-                                </div>
-                                <p className="font-semibold text-green-600">{formatCurrency(item.price)}</p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+                  {/* Order Info */}
+                  <div className="grid grid-cols-2 gap-2 md:grid-cols-4 md:gap-4 mt-4 p-2 md:p-4 bg-gray-50 rounded-lg text-xs md:text-sm">
+                    <div className="flex items-center space-x-1">
+                      <MapPin className="w-3 h-3 md:w-4 md:h-4 text-gray-500" />
+                      <span className="text-gray-700 truncate">{order.deliveryAddress}</span>
+                    </div>
+                    
+                    {order.status !== 'cancelled' && (
+                      <div className="flex items-center space-x-1">
+                        <Clock className="w-3 h-3 md:w-4 md:h-4 text-gray-500" />
+                        <span className="text-gray-700">
+                          {order.status === 'delivered' ? `Livré en ${order.deliveryTime}min` : `Est. ${order.estimatedTime}min`}
+                        </span>
+                      </div>
+                    )}
+                    
+                    <div className="flex items-center space-x-1">
+                      <CreditCard className="w-3 h-3 md:w-4 md:h-4 text-gray-500" />
+                      <span className="text-gray-700 truncate">{order.paymentMethod}</span>
+                    </div>
+                    
+                    <div className="flex items-center space-x-1">
+                      <Package className="w-3 h-3 md:w-4 md:h-4 text-gray-500" />
+                      <span className="text-gray-700">{order.items.length} article(s)</span>
+                    </div>
+                  </div>
 
-                        {/* Order Timeline & Driver Info */}
-                        <div>
-                          {order.driver && (
-                            <div className="mb-6">
-                              <h4 className="text-lg font-semibold text-gray-900 mb-4">Informations du livreur</h4>
-                              <div className="bg-white p-4 rounded-lg shadow-sm">
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="font-medium text-gray-900">{order.driver.name}</p>
-                                    <p className="text-sm text-gray-600 mt-1">{order.driver.vehicle}</p>
-                                    <div className="flex items-center space-x-1 mt-1">
-                                      <Star className="w-4 h-4 text-yellow-400 fill-current" />
-                                      <span className="text-sm text-gray-600">{order.driver.rating}</span>
-                                    </div>
-                                  </div>
-                                  <button
-                                    onClick={() => handleContactDriver(order.driver)}
-                                    className="bg-green-500 hover:bg-green-600 text-white p-2 rounded-full transition-colors duration-200"
-                                  >
-                                    <MessageCircle className="w-4 h-4" />
-                                  </button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
+                  {/* Action Buttons */}
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    <button
+                      onClick={() => setExpandedOrder(expandedOrder === order.id ? null : order.id)}
+                      className="flex items-center space-x-1 bg-green-500 hover:bg-green-600 text-white px-2 py-1 md:px-3 md:py-2 rounded-lg transition-colors duration-200 text-xs md:text-sm"
+                    >
+                      <Eye className="w-3 h-3 md:w-4 md:h-4" />
+                      <span>Détails</span>
+                      {expandedOrder === order.id ? <ChevronUp className="w-3 h-3 md:w-4 md:h-4" /> : <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />}
+                    </button>
 
-                          {order.status === 'cancelled' && order.cancelReason && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                              <h4 className="text-lg font-semibold text-red-800 mb-2">Raison de l'annulation</h4>
-                              <p className="text-red-700">{order.cancelReason}</p>
+                    {(order.status === 'in_transit' || order.status === 'preparing') && (
+                      <button
+                        onClick={() => handleTrackOrder(order)}
+                        className="flex items-center space-x-1 bg-yellow-500 hover:bg-yellow-600 text-white px-2 py-1 md:px-3 md:py-2 rounded-lg transition-colors duration-200 text-xs md:text-sm"
+                      >
+                        <Truck className="w-3 h-3 md:w-4 md:h-4" />
+                        <span>Suivre</span>
+                      </button>
+                    )}
+
+                    {order.status === 'delivered' && (
+                      <button
+                        onClick={() => handleReorder(order)}
+                        className="flex items-center space-x-1 bg-red-500 hover:bg-red-600 text-white px-2 py-1 md:px-3 md:py-2 rounded-lg transition-colors duration-200 text-xs md:text-sm"
+                      >
+                        <RefreshCw className="w-3 h-3 md:w-4 md:h-4" />
+                        <span>Recommander</span>
+                      </button>
+                    )}
+
+                    {order.driver && (order.status === 'in_transit' || order.status === 'preparing') && (
+                      <button
+                        onClick={() => handleContactDriver(order.driver)}
+                        className="flex items-center space-x-1 bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 md:px-3 md:py-2 rounded-lg transition-colors duration-200 text-xs md:text-sm"
+                      >
+                        <Phone className="w-3 h-3 md:w-4 md:h-4" />
+                        <span>Contacter</span>
+                      </button>
+                    )}
+
+                    <button className="flex items-center space-x-1 bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 md:px-3 md:py-2 rounded-lg transition-colors duration-200 text-xs md:text-sm">
+                      <Heart className="w-3 h-3 md:w-4 md:h-4" />
+                      <span>Favoris</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Expanded Details */}
+                {expandedOrder === order.id && (
+                  <div className="border-t border-gray-200 bg-gray-50 p-4 md:p-6 animate-fadeIn">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+                      {/* Order Items */}
+                      <div>
+                        <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2 md:mb-3">Articles commandés</h4>
+                        <div className="space-y-2">
+                          {order.items.map((item, index) => (
+                            <div key={index} className="flex justify-between items-center p-2 bg-white rounded-lg shadow-sm text-sm">
+                              <div>
+                                <p className="font-medium text-gray-900">{item.name}</p>
+                                <p className="text-gray-600">Quantité: {item.quantity}</p>
+                              </div>
+                              <p className="font-semibold text-green-600">{formatCurrency(item.price)}</p>
                             </div>
-                          )}
+                          ))}
                         </div>
                       </div>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
 
-          {/* Load More Button */}
-          {filteredOrders.length > 0 && (
-            <div className="text-center mt-8">
-              <button className="bg-gradient-to-r from-green-500 to-yellow-500 text-white px-8 py-3 rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105">
-                Charger plus de commandes
-              </button>
-            </div>
-          )}
-        </div>
+                      {/* Order Timeline & Driver Info */}
+                      <div>
+                        {order.driver && (
+                          <div className="mb-4 md:mb-6">
+                            <h4 className="text-base md:text-lg font-semibold text-gray-900 mb-2 md:mb-3">Informations du livreur</h4>
+                            <div className="bg-white p-3 rounded-lg shadow-sm">
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium text-gray-900">{order.driver.name}</p>
+                                  <p className="text-gray-600 text-xs md:text-sm mt-1">{order.driver.vehicle}</p>
+                                  <div className="flex items-center space-x-1 mt-1">
+                                    <Star className="w-3 h-3 md:w-4 md:h-4 text-yellow-400 fill-current" />
+                                    <span className="text-xs md:text-sm text-gray-600">{order.driver.rating}</span>
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleContactDriver(order.driver)}
+                                  className="bg-green-500 hover:bg-green-600 text-white p-1 md:p-2 rounded-full transition-colors duration-200"
+                                >
+                                  <MessageCircle className="w-3 h-3 md:w-4 md:h-4" />
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {order.status === 'cancelled' && order.cancelReason && (
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm">
+                            <h4 className="font-semibold text-red-800 mb-1">Raison de l'annulation</h4>
+                            <p className="text-red-700">{order.cancelReason}</p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Load More Button */}
+        {filteredOrders.length > 0 && (
+          <div className="text-center mt-6">
+            <button className="bg-gradient-to-r from-green-500 to-yellow-500 text-white px-6 py-2 md:px-8 md:py-3 rounded-lg hover:shadow-lg transition-all duration-200 transform hover:scale-105 text-sm md:text-base">
+              Charger plus de commandes
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Tracking Modal */}
       {trackingOrder && (
-        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
-            <div className="flex justify-between items-center border-b border-gray-200 p-4">
-              <h3 className="text-xl font-bold text-gray-900 flex items-center">
-                <Truck className="w-6 h-6 text-yellow-500 mr-2" />
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-2">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-gray-200 p-3">
+              <h3 className="text-lg md:text-xl font-bold text-gray-900 flex items-center">
+                <Truck className="w-5 h-5 md:w-6 md:h-6 text-yellow-500 mr-2" />
                 Suivi de la commande #{trackingOrder}
               </h3>
               <button 
                 onClick={closeTrackingModal}
                 className="text-gray-500 hover:text-gray-700"
               >
-                <XCircle className="w-6 h-6" />
+                <XCircle className="w-5 h-5 md:w-6 md:h-6" />
               </button>
             </div>
             
-            <div className="p-4">
+            <div className="p-3">
               {mapLoaded ? (
-                <div className="h-96 w-full relative">
+                <div className="h-64 md:h-96 w-full relative">
                   <div id="yandex-map" className="h-full w-full rounded-lg overflow-hidden border border-gray-200">
-                    {/* Yandex Map will be rendered here */}
                     <div className="flex items-center justify-center h-full bg-gray-100">
-                      <div className="text-center">
-                        <Map className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                        <p className="text-gray-600">Carte de suivi en temps réel</p>
-                        <p className="text-sm text-gray-500 mt-2">
+                      <div className="text-center p-4">
+                        <Map className="w-8 h-8 md:w-12 md:h-12 text-gray-400 mx-auto mb-2" />
+                        <p className="text-gray-600 text-sm md:text-base">Carte de suivi en temps réel</p>
+                        <p className="text-xs md:text-sm text-gray-500 mt-1">
                           Position actuelle du livreur: 
                           {driverPosition ? (
                             <span className="font-medium">
@@ -668,66 +661,65 @@ const ClientsCommande = () => {
                     </div>
                   </div>
                   
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-blue-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-blue-800 mb-2">Restaurant</h4>
-                      <p className="text-sm text-gray-700">
+                  <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div className="bg-blue-50 p-3 rounded-lg text-sm">
+                      <h4 className="font-semibold text-blue-800 mb-1">Restaurant</h4>
+                      <p className="text-gray-700">
                         {orders.find(o => o.id === trackingOrder)?.restaurant.name}
                       </p>
                     </div>
                     
-                    <div className="bg-green-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-green-800 mb-2">Livreur</h4>
-                      <p className="text-sm text-gray-700">
+                    <div className="bg-green-50 p-3 rounded-lg text-sm">
+                      <h4 className="font-semibold text-green-800 mb-1">Livreur</h4>
+                      <p className="text-gray-700">
                         {orders.find(o => o.id === trackingOrder)?.driver?.name || 'Non assigné'}
                       </p>
                       {orders.find(o => o.id === trackingOrder)?.driver?.phone && (
-                        <p className="text-sm text-gray-700 mt-1">
+                        <p className="text-gray-700 mt-1">
                           {orders.find(o => o.id === trackingOrder)?.driver?.phone}
                         </p>
                       )}
                     </div>
                     
-                    <div className="bg-yellow-50 p-4 rounded-lg">
-                      <h4 className="font-semibold text-yellow-800 mb-2">Temps estimé</h4>
-                      <p className="text-sm text-gray-700">
+                    <div className="bg-yellow-50 p-3 rounded-lg text-sm">
+                      <h4 className="font-semibold text-yellow-800 mb-1">Temps estimé</h4>
+                      <p className="text-gray-700">
                         {orders.find(o => o.id === trackingOrder)?.estimatedTime} minutes
                       </p>
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="h-96 flex items-center justify-center">
+                <div className="h-64 md:h-96 flex items-center justify-center">
                   <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-                    <p className="text-gray-600">Chargement de la carte...</p>
+                    <div className="animate-spin rounded-full h-8 h-8 md:h-12 md:w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-3"></div>
+                    <p className="text-gray-600 text-sm md:text-base">Chargement de la carte...</p>
                   </div>
                 </div>
               )}
             </div>
             
-            <div className="bg-gray-50 px-4 py-3 flex justify-end space-x-3">
+            <div className="bg-gray-50 px-3 py-2 flex justify-end space-x-2">
               <button
                 onClick={closeTrackingModal}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+                className="px-3 py-1 md:px-4 md:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors duration-200 text-sm md:text-base"
               >
                 Fermer
               </button>
               {orders.find(o => o.id === trackingOrder)?.driver?.phone && (
                 <button
                   onClick={() => handleContactDriver(orders.find(o => o.id === trackingOrder).driver)}
-                  className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center"
+                  className="px-3 py-1 md:px-4 md:py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center text-sm md:text-base"
                 >
-                  <Phone className="w-4 h-4 mr-2" />
-                  Contacter le livreur
+                  <Phone className="w-3 h-3 md:w-4 md:h-4 mr-1" />
+                  Contacter
                 </button>
               )}
             </div>
           </div>
         </div>
       )}
-      </>
-    // </ClientsLayout> 
+    </div>
   );
 };
 
