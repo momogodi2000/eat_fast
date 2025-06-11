@@ -14,7 +14,7 @@ import ForgotPassword from './pages/Authentication/forgot_password';
 
 import AdminDashboard from './pages/Dashboards/Admin/admin_dashboard';
 import UserListPage from './pages/Dashboards/Admin/Utilisateurs/UserList';
-import RestaurantManagement from './pages/Dashboards/Admin/Restaurants/RestaurantsList';
+import RestaurantManagement, { AdminRestaurantProvider } from './pages/Dashboards/Admin/Restaurants/RestaurantsList';
 import ContactMessagesAdmin from './pages/Dashboards/Admin/ContactMessages/Contact';
 import AdminOrdersPage from './pages/Dashboards/Admin/Orders/orders';
 import StatisticsPage from './pages/Dashboards/Admin/Statistics/StatisticsPage';
@@ -88,7 +88,11 @@ function App() {
 
   {/* Admin Router */}
 
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={
+            <AdminRestaurantProvider>
+            <AdminDashboard />
+            </AdminRestaurantProvider>
+            } />
           <Route path="/admin/user" element={<UserListPage />} />
           <Route path="/admin/restaurants" element={<RestaurantManagement />} />
           <Route path="/admin/contact-messages" element={<ContactMessagesAdmin />} />

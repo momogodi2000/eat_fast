@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, createContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { 
@@ -29,6 +29,10 @@ import {
 import { HiOutlineSpeakerphone } from 'react-icons/hi';
 import AdminLayout from '../../../../layouts/admin_layout';
 import { Tooltip, Badge, Modal, Progress } from '../../../../components/ui/ui-components';
+import { OrderProvider } from '../../Restaurants/command/restaurant_command';
+
+
+export const adminRestaurantContext = createContext();
 
 // Mock data for restaurants
 const mockRestaurants = [
@@ -47,6 +51,8 @@ const mockRestaurants = [
     createdAt: "2024-12-01",
     contactPhone: "+237 698765432",
     contactEmail: "contact@chezpierre.cm",
+    categorie  : "African",
+    avgDeliveryTime : 20
   },
   {
     id: 2,
@@ -63,6 +69,8 @@ const mockRestaurants = [
     createdAt: "2025-01-15",
     contactPhone: "+237 699876543",
     contactEmail: "info@legourmet.cm",
+    categorie: "Asian",
+    avgDeliveryTime : 17
   },
   {
     id: 3,
@@ -79,6 +87,8 @@ const mockRestaurants = [
     createdAt: "2024-11-20",
     contactPhone: "+237 697654321",
     contactEmail: "mamaafrica@gmail.com",
+    categorie : "African",
+    avgDeliveryTime : 25
   },
   {
     id: 4,
@@ -95,6 +105,8 @@ const mockRestaurants = [
     createdAt: "2025-02-05",
     contactPhone: "+237 696543210",
     contactEmail: "contact@freshtaste.cm",
+    categorie : "Others",
+    avgDeliveryTime : 12
   },
   {
     id: 5,
@@ -111,6 +123,8 @@ const mockRestaurants = [
     createdAt: "2024-09-30",
     contactPhone: "+237 695432109",
     contactEmail: "delices@express.cm",
+    categorie : "Others",
+    avgDeliveryTime : 30
   },
   {
     id: 6,
@@ -127,6 +141,8 @@ const mockRestaurants = [
     createdAt: "2025-03-10",
     contactPhone: "+237 694321098",
     contactEmail: "contact@bistrotchic.cm",
+    categorie: "European",
+    avgDeliveryTime : 20
   }
 ];
 
@@ -1086,3 +1102,16 @@ const RestaurantManagement = () => {
 };
 
 export default RestaurantManagement;
+
+
+export const AdminRestaurantProvider = ({children}) => {
+
+  return(
+    <adminRestaurantContext.Provider value={mockRestaurants}>
+      <OrderProvider>
+      {children}
+      </OrderProvider>
+    </adminRestaurantContext.Provider>
+
+  )
+} 

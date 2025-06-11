@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { FiUser, FiClock, FiDollarSign, FiShoppingCart, FiUsers, FiTruck, FiStar } from 'react-icons/fi';
 import { HiOutlineMoon, HiOutlineSun } from 'react-icons/hi';
 import AdminLayout from '../../../layouts/admin_layout';
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, LineChart, Line } from 'recharts';
 import { useTranslation } from 'react-i18next';
+import { adminRestaurantContext } from './Restaurants/RestaurantsList';
+import { number } from 'framer-motion';
+import { OrderContext } from '../Restaurants/command/restaurant_command';
 
 const AdminDashboard = () => {
   // Use the translation hook instead of a simple function
@@ -11,6 +14,111 @@ const AdminDashboard = () => {
   const [darkMode, setDarkMode] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
+
+  const listOfRestaurants = useContext(adminRestaurantContext);
+
+  const listOfOrders = useContext(OrderContext);
+
+  
+  const listOfRestaurant = listOfRestaurants.filter(restaurant => restaurant.status === "active"
+
+    && restaurant.verificationStatus === "verified"
+  )
+
+
+  //  data from the restaurantList so as to calculate the number of order we have
+
+  const statsTotalOrdersRestaurant =  () => {
+    const  listOfOrders = listOfRestaurant.map(restaurant => restaurant.orders);
+    const statTotalOrders = listOfOrders.reduce((acc,order) => acc+order , 0); 
+    return statTotalOrders;
+  }
+
+  // to calculate the number of restaurant we have
+
+  const statsNumberOfRestaurant = () => {
+    return listOfRestaurant.length;
+
+  }
+
+  // to calculate the total revenue from the restaurant 
+
+  const statsTotalRevenueRestaurant =  () => {
+    const  listOfRevenue = listOfRestaurant.map(restaurant => restaurant.revenue);
+    const statTotalRevenue = listOfRevenue.reduce((acc,revenue) => acc+revenue , 0); 
+    return statTotalRevenue;
+  }
+
+  // to classify each restaurant in African , European , Asian or other food 
+
+  const statsRestaurantsCategorie = () => {
+
+    const listOfAfricanRestaurant =  listOfRestaurant.filter(restaurant => restaurant.categorie === "African" );
+    const listOfEuropeanRestaurant =  listOfRestaurant.filter(restaurant => restaurant.categorie === "European" );
+    const listOfAsianRestaurant =  listOfRestaurant.filter(restaurant => restaurant.categorie === "Asian" );
+    const listOfOtherRestaurant =  listOfRestaurant.filter(restaurant => restaurant.categorie === "Others" );
+    const listOfFastFoodRestaurant =  listOfRestaurant.filter(restaurant => restaurant.categorie === "Fast Food" );
+
+
+    return [
+    { name: t('African'), value: listOfAfricanRestaurant.length },
+    { name: t('Fast Food'), value: listOfFastFoodRestaurant.length },
+    { name: t('Asian'), value: listOfAsianRestaurant.length },
+    { name: t('European'), value: listOfEuropeanRestaurant.length },
+    { name: t('Others'), value: listOfOtherRestaurant.length},
+  ];
+
+  }
+
+
+  // TO calculate the average delivery Time 
+
+  const statsDeliveryTime = () => {
+
+    const listOfDeliveryTime = listOfRestaurant.map(restaurant => restaurant.avgDeliveryTime);
+
+    const avgDeliveryTime = listOfDeliveryTime.reduce((acc,deliveryTime) => acc+deliveryTime ,0 );
+
+    return (avgDeliveryTime/listOfRestaurant.length).toFixed(2);
+  }
+
+  // To calculate the pending deliveries 
+
+  const statsPendingDeliveries = () => {
+
+    const listOfPendingDelivery = listOfOrders.filter(order => order.status === "ready");
+
+    return listOfPendingDelivery.length;
+  }
+
+  // To calculate the Time Ago 
+
+  function timeAgo(createdAt) {
+    const now = new Date();
+    const seconds = Math.floor((now - createdAt) / 1000);
+    const minutes = Math.floor(seconds / 60);
+
+    return minutes;
+}
+
+
+  // To calculate how many order has been recently order 
+
+
+  const newOrderActivity = () => {
+
+    const listOfNewOrder = listOfOrders.filter(order => order.status === "new");
+
+    const listWithType = listOfNewOrder.map(order => ({...order, 
+      type : "order",
+      time :  timeAgo(order.createdAt) 
+    }));
+
+    return listWithType;
+
+
+  }
+
 
   // Sample data for the dashboard
   const stats = {
@@ -213,7 +321,7 @@ const AdminDashboard = () => {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm font-medium">{t('total_orders')}</p>
-                <p className="text-3xl font-bold">{stats.totalOrders}</p>
+                <p className="text-3xl font-bold">{/*stats.totalOrders*/statsTotalOrdersRestaurant()}</p>
               </div>
               <div className="p-3 rounded-full bg-white bg-opacity-20">
                 <FiShoppingCart size={24} />
@@ -228,7 +336,7 @@ const AdminDashboard = () => {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm font-medium">{t('active_restaurants')}</p>
-                <p className="text-3xl font-bold">{stats.activeRestaurants}</p>
+                <p className="text-3xl font-bold">{/*stats.activeRestaurants*/ statsNumberOfRestaurant()}</p>
               </div>
               <div className="p-3 rounded-full bg-white bg-opacity-20">
                 <FiShoppingCart size={24} />
@@ -243,7 +351,7 @@ const AdminDashboard = () => {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm font-medium">{t('revenue')}</p>
-                <p className="text-3xl font-bold">{formatCurrency(stats.revenue)}</p>
+                <p className="text-3xl font-bold">{formatCurrency(/*stats.revenue*/ statsTotalRevenueRestaurant())}</p>
               </div>
               <div className="p-3 rounded-full bg-white bg-opacity-20">
                 <FiDollarSign size={24} />
@@ -273,7 +381,7 @@ const AdminDashboard = () => {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm font-medium">{t('avg_delivery_time')}</p>
-                <p className="text-3xl font-bold">{stats.avgDeliveryTime} min</p>
+                <p className="text-3xl font-bold">{/*stats.avgDeliveryTime*/statsDeliveryTime()} min</p>
               </div>
               <div className="p-3 rounded-full bg-white bg-opacity-20">
                 <FiClock size={24} />
@@ -288,7 +396,7 @@ const AdminDashboard = () => {
             <div className="flex justify-between items-center">
               <div>
                 <p className="text-sm font-medium">{t('pending_deliveries')}</p>
-                <p className="text-3xl font-bold">{stats.pendingDeliveries}</p>
+                <p className="text-3xl font-bold">{/*stats.pendingDeliveries*/statsPendingDeliveries()}</p>
               </div>
               <div className="p-3 rounded-full bg-white bg-opacity-20">
                 <FiTruck size={24} />
@@ -333,7 +441,7 @@ const AdminDashboard = () => {
               <ResponsiveContainer width="100%" height="85%">
                 <PieChart>
                   <Pie
-                    data={restaurantCategoriesData}
+                    data={/*restaurantCategoriesData*/ statsRestaurantsCategorie()}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -342,7 +450,7 @@ const AdminDashboard = () => {
                     dataKey="value"
                     label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                   >
-                    {restaurantCategoriesData.map((entry, index) => (
+                    {/*restaurantCategoriesData*/statsRestaurantsCategorie().map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
@@ -350,7 +458,7 @@ const AdminDashboard = () => {
                 </PieChart>
               </ResponsiveContainer>
               <div className="flex justify-center space-x-4 mt-2">
-                {restaurantCategoriesData.map((entry, index) => (
+                {/*restaurantCategoriesData*/statsRestaurantsCategorie().map((entry, index) => (
                   <div key={`legend-${index}`} className="flex items-center">
                     <div
                       className="w-3 h-3 mr-1 rounded-full"
@@ -418,7 +526,7 @@ const AdminDashboard = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4 dark:text-white">{t('recent_activity')}</h3>
           <div className="space-y-4">
-            {recentActivity.map((activity) => (
+            {/*recentActivity*/newOrderActivity().map((activity) => (
               <div key={activity.id} className="flex items-start p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-white mr-3
                   ${activity.type === 'order' ? 'bg-gradient-to-r from-green-600 to-yellow-500' : 
@@ -431,14 +539,14 @@ const AdminDashboard = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium text-gray-900 dark:text-white">
                     {activity.type === 'order' ? 
-                      `${t('new_order')} #${activity.orderNumber}` : 
+                      `${t('new_order')} #${activity.id /* orderNumber */}` : 
                       activity.type === 'restaurant' ? 
                       `${t('new_restaurant')} ${activity.name}` : 
                       `${t('new_user')} ${activity.name}`}
                   </p>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {activity.type === 'order' ? 
-                      `${activity.restaurant} - ${t('delivery_to')} ${activity.customer}` : 
+                      `${activity.restaurant} - ${t('delivery_to')} ${activity.customerName}` : 
                       activity.type === 'restaurant' ? 
                       `${t('restaurant_added')}` : 
                       `${t('user_registered')}`}

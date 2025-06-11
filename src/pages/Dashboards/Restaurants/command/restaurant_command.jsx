@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, createContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import RestaurantLayout from '../../../../layouts/restaurants_layout';
 import {
@@ -31,25 +31,7 @@ import {
  * @component
  * @returns {JSX.Element} Page de gestion des commandes
  */
-
-export let ordersContext ;
-
-const RestaurantCommand = () => {
-  const { t } = useTranslation();
-  
-  // États principaux
-  const [orders, setOrders] = useState([]);
-  const [filteredOrders, setFilteredOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [dateFilter, setDateFilter] = useState('today');
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [showOrderDetails, setShowOrderDetails] = useState(false);
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-
-  // Données de démonstration (à remplacer par des appels API réels)
-  const mockOrders = [
+ const mockOrders = [
     {
       id: 'CMD001',
       customerName: 'Marie Ngono',
@@ -65,7 +47,9 @@ const RestaurantCommand = () => {
       createdAt: new Date(Date.now() - 15 * 60 * 1000), // 15 minutes ago
       estimatedDelivery: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes from now
       specialInstructions: 'Livrer au bureau, étage 2',
-      deliveryPerson: null
+      deliveryPerson: null,
+      restaurant: "Chez Pierre"
+
     },
     {
       id: 'CMD002',
@@ -83,7 +67,8 @@ const RestaurantCommand = () => {
       createdAt: new Date(Date.now() - 45 * 60 * 1000), // 45 minutes ago
       estimatedDelivery: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes from now
       specialInstructions: '',
-      deliveryPerson: 'Jean Kamga'
+      deliveryPerson: 'Jean Kamga',
+      restaurant: "Chez Pierre"
     },
     {
       id: 'CMD003',
@@ -100,7 +85,8 @@ const RestaurantCommand = () => {
       createdAt: new Date(Date.now() - 75 * 60 * 1000), // 1h15 ago
       estimatedDelivery: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago (en retard)
       specialInstructions: 'Appeler avant de livrer',
-      deliveryPerson: 'Amadou Diallo'
+      deliveryPerson: 'Amadou Diallo',
+      restaurant: "Chez Pierre"
     },
     {
       id: 'CMD004',
@@ -116,9 +102,27 @@ const RestaurantCommand = () => {
       createdAt: new Date(Date.now() - 120 * 60 * 1000), // 2h ago
       estimatedDelivery: new Date(Date.now() - 90 * 60 * 1000), // 1h30 ago
       specialInstructions: '',
-      deliveryPerson: 'Michel Essomba'
+      deliveryPerson: 'Michel Essomba',
+      restaurant: "African"
     }
   ];
+
+const RestaurantCommand = () => {
+  const { t } = useTranslation();
+  
+  // États principaux
+  const [orders, setOrders] = useState([]);
+  const [filteredOrders, setFilteredOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('today');
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [showOrderDetails, setShowOrderDetails] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+
+  // Données de démonstration (à remplacer par des appels API réels)
+ 
 
   // Statuts des commandes avec leurs configurations
   const orderStatuses = {
@@ -880,3 +884,15 @@ const RestaurantCommand = () => {
 };
 
 export default RestaurantCommand;
+
+export const  OrderContext = createContext();
+
+export const OrderProvider = ({children}) => {
+
+  return(
+    <OrderContext.Provider value={mockOrders}>
+    {children}
+    </OrderContext.Provider>
+  )
+
+}
