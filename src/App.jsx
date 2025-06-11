@@ -15,7 +15,7 @@ import MenuPage from './pages/LandingPage/menus.jsx';
 // Admin pages
 import AdminDashboard from './pages/Dashboards/Admin/admin_dashboard';
 import UserListPage from './pages/Dashboards/Admin/Utilisateurs/UserList';
-import RestaurantManagement from './pages/Dashboards/Admin/Restaurants/RestaurantsList';
+import RestaurantManagement, { AdminRestaurantProvider } from './pages/Dashboards/Admin/Restaurants/RestaurantsList';
 import ContactMessagesAdmin from './pages/Dashboards/Admin/ContactMessages/Contact';
 import AdminOrdersPage from './pages/Dashboards/Admin/Orders/orders';
 import StatisticsPage from './pages/Dashboards/Admin/Statistics/StatisticsPage';
@@ -85,7 +85,11 @@ function App() {
           <Route path="/test" element={<DashboardRedirect />} />
 
 {/* Admin Routes */}
-          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin" element={
+            <AdminRestaurantProvider>
+            <AdminDashboard />
+            </AdminRestaurantProvider>
+            } />
           <Route path="/admin/user" element={<UserListPage />} />
           <Route path="/admin/restaurants" element={<RestaurantManagement />} />
           <Route path="/admin/contact-messages" element={<ContactMessagesAdmin />} />
@@ -111,7 +115,7 @@ function App() {
 {/* Client Routes with Layout */}
 
 
-          <Route path="/clients/*" element={
+          {/* <Route path="/clients/*" element={
             <ClientsLayout>
               <Routes>
                 <Route path="/" element={<ClientDashboard />} />
@@ -122,11 +126,11 @@ function App() {
                 <Route path="/profile" element={<ClientsProfilePage />} />
               </Routes>
             </ClientsLayout>
-          } />
+          } /> */}
 
   {/* Delivery Routes with Layout */}
 
-
+{/* 
           <Route path="/delivery/*" element={
             <DeliveryLayout>
               <Routes>
@@ -138,7 +142,7 @@ function App() {
                 <Route path="/support" element={<DeliverySupport />} />
               </Routes>
             </DeliveryLayout>
-          } />
+          } /> */}
   {/* Restaurant Router */}
           
           <Route path="/restaurants_manager" element={
@@ -221,7 +225,7 @@ function App() {
 
 
    {/* Restaurant Routes with Layout */}
-          <Route path="/restaurants_manager/*" element={
+          {/* <Route path="/restaurants_manager/*" element={
             <RestaurantLayoutWithProviders>
               <Routes>
                 <Route path="/" element={<RestaurantDashboard />} />
@@ -231,7 +235,7 @@ function App() {
                 <Route path="/reviews" element={<RestaurantReviews />} />
               </Routes>
             </RestaurantLayoutWithProviders>
-          } />
+          } /> */}
         </Routes>
 
 
