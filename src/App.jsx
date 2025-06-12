@@ -84,12 +84,9 @@ function App() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/test" element={<DashboardRedirect />} />
 
-<<<<<<< HEAD
   {/* Admin Router */}
 
-=======
 {/* Admin Routes */}
->>>>>>> f3a9d05f7d2dbe093e27c501d4441b35f492852b
           <Route path="/admin" element={
             <AdminRestaurantProvider>
             <AdminDashboard />
@@ -116,38 +113,6 @@ function App() {
 
 
 
-
-{/* Client Routes with Layout */}
-
-
-          {/* <Route path="/clients/*" element={
-            <ClientsLayout>
-              <Routes>
-                <Route path="/" element={<ClientDashboard />} />
-                <Route path="/restaurant" element={<ClientMenus />} />
-                <Route path="/orders" element={<ClientsCommande />} />
-                <Route path="/order-history" element={<ClientsCommandeHistory />} />
-                <Route path="/support/chat" element={<ClientsChatSupport />} />
-                <Route path="/profile" element={<ClientsProfilePage />} />
-              </Routes>
-            </ClientsLayout>
-          } /> */}
-
-  {/* Delivery Routes with Layout */}
-
-{/* 
-          <Route path="/delivery/*" element={
-            <DeliveryLayout>
-              <Routes>
-                <Route path="/" element={<DeliveryDashboard />} />
-                <Route path="/missions" element={<MissionsPage />} />
-                <Route path="/live-map" element={<RestaurantDeliverCommand />} />
-                <Route path="/earnings" element={<DeliveryEarningsPage />} />
-                <Route path="/history" element={<DeliveryHistoryPage />} />
-                <Route path="/support" element={<DeliverySupport />} />
-              </Routes>
-            </DeliveryLayout>
-          } /> */}
   {/* Restaurant Router */}
           
           <Route path="/restaurants_manager" element={
@@ -229,18 +194,6 @@ function App() {
             </ClientsLayout>} />
 
 
-   {/* Restaurant Routes with Layout */}
-          {/* <Route path="/restaurants_manager/*" element={
-            <RestaurantLayoutWithProviders>
-              <Routes>
-                <Route path="/" element={<RestaurantDashboard />} />
-                <Route path="/orders" element={<RestaurantCommand />} />
-                <Route path="/menu" element={<MenuPlatsPage />} />
-                <Route path="/stats" element={<RestaurantStatsPage />} />
-                <Route path="/reviews" element={<RestaurantReviews />} />
-              </Routes>
-            </RestaurantLayoutWithProviders>
-          } /> */}
         </Routes>
 
 
