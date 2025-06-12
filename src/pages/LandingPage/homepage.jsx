@@ -347,19 +347,37 @@ const HomePage = () => {
             </span>
           </motion.div>
 
-          {/* Desktop Navigation */}
+{/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <nav className="flex items-center gap-6">
-              {['nav.home', 'nav.restaurants', 'nav.about', 'nav.contact'].map((item) => (
-                <a 
-                  key={item}
-                  href="#" 
-                  className="font-medium hover:text-emerald-500 transition-colors relative group"
-                >
-                  {t(item)}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
-                </a>
-              ))}
+              <Link 
+                to="/"
+                className="font-medium hover:text-emerald-500 transition-colors relative group"
+              >
+                {t('nav.home')}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
+              </Link>
+              <Link 
+                to="/restaurants"
+                className="font-medium hover:text-emerald-500 transition-colors relative group"
+              >
+                {t('nav.restaurants')}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
+              </Link>
+              <Link 
+                to="/about"
+                className="font-medium hover:text-emerald-500 transition-colors relative group"
+              >
+                {t('nav.about')}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
+              </Link>
+              <Link 
+                to="/contact"
+                className="font-medium hover:text-emerald-500 transition-colors relative group"
+              >
+                {t('nav.contact')}
+                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
+              </Link>
             </nav>
             
             <div className="flex items-center gap-3">
@@ -423,15 +441,30 @@ const HomePage = () => {
             className={`fixed top-20 left-0 right-0 z-40 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-xl border-t`}
           >
             <nav className="container mx-auto px-4 py-6 space-y-4">
-              {['nav.home', 'nav.restaurants', 'nav.about', 'nav.contact'].map((item) => (
-                <a 
-                  key={item}
-                  href="#" 
-                  className="block py-2 font-medium hover:text-emerald-500 transition-colors"
-                >
-                  {t(item)}
-                </a>
-              ))}
+              <Link 
+                to="/"
+                className="block py-2 font-medium hover:text-emerald-500 transition-colors"
+              >
+                {t('nav.home')}
+              </Link>
+              <Link 
+                to="/restaurants"
+                className="block py-2 font-medium hover:text-emerald-500 transition-colors"
+              >
+                {t('nav.restaurants')}
+              </Link>
+              <Link 
+                to="/about"
+                className="block py-2 font-medium hover:text-emerald-500 transition-colors"
+              >
+                {t('nav.about')}
+              </Link>
+              <Link 
+                to="/contact"
+                className="block py-2 font-medium hover:text-emerald-500 transition-colors"
+              >
+                {t('nav.contact')}
+              </Link>
               <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
                 <button onClick={changeLanguage} className="flex items-center gap-2 py-2">
                   <span>{i18n.language === 'en' ? 'Français' : 'English'}</span>
@@ -558,22 +591,28 @@ const HomePage = () => {
                   transition={{ delay: 0.8 }}
                   className="flex flex-col sm:flex-row gap-4"
                 >
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl transition-all"
-                  >
-                    <span>Explorer les menus</span>
-                    <ChevronDown size={20} className="rotate-270" />
-                  </motion.button>
-                  
-                  <motion.button 
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className={`px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl transition-all ${darkMode ? 'bg-gray-800 hover:bg-gray-700 text-white border-gray-700' : 'bg-white hover:bg-gray-50 text-gray-900 border-gray-200'} border-2`}
-                  >
-                    <span>Devenir partenaire</span>
-                  </motion.button>
+<Link to="/menu">
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl transition-all"
+  >
+    <span>Explorer les menus</span>
+    <ChevronDown size={20} className="rotate-270" />
+  </motion.button>
+</Link>
+
+<Link to="/become">
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.98 }}
+    className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl transition-all"
+  >
+    <span>Devenir partenaire</span>
+    <ChevronDown size={20} className="rotate-270" />
+  </motion.button>
+</Link>
+
                 </motion.div>
               </motion.div>
 
@@ -688,7 +727,165 @@ const HomePage = () => {
         </div>
       </section>
 
-    
+      {/* Traditional Foods */}
+      <section className="py-16 relative">
+        <div className="container mx-auto px-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+              Saveurs Authentiques du Cameroun
+            </h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Découvrez la richesse culinaire camerounaise avec nos plats traditionnels 
+              préparés selon les recettes ancestrales
+            </p>
+          </motion.div>
+
+          <motion.div 
+            variants={staggerChildren}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+          >
+            {traditionalFoods.map((food, index) => (
+              <motion.div
+                key={food.id}
+                variants={fadeInUp}
+                whileHover={{ y: -10, transition: { duration: 0.2 } }}
+                className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={food.image} 
+                    alt={food.name} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-4 left-4 right-4">
+                    <h3 className="text-white font-bold text-xl mb-1">{food.name}</h3>
+                    <p className="text-emerald-400 font-semibold">{food.price}</p>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                    {food.description}
+                  </p>
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="w-full mt-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all"
+                  >
+                    Commander
+                  </motion.button>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="py-8">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-bold mb-6">{t('sections.categories')}</h2>
+          <div className="flex overflow-x-auto pb-4 scrollbar-hide">
+            <div className="flex gap-4">
+              {categories.map((category) => (
+                <motion.button
+                  key={category.id}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setActiveCategory(category.id)}
+                  className={`px-6 py-3 rounded-full whitespace-nowrap font-medium transition-all ${
+                    activeCategory === category.id 
+                      ? 'bg-emerald-500 text-white shadow-lg' 
+                      : darkMode 
+                        ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
+                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
+                  }`}
+                >
+                  {category.name}
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Restaurants */}
+      <section className="py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-3xl font-bold">{t('sections.featuredRestaurants')}</h2>
+            <button className="text-emerald-600 hover:text-emerald-700 font-medium">
+              Voir tout →
+            </button>
+          </div>
+          
+          <motion.div 
+            variants={staggerChildren}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {filteredRestaurants.map((restaurant, index) => (
+              <motion.div
+                key={restaurant.id}
+                variants={fadeInUp}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={restaurant.image} 
+                    alt={restaurant.name} 
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
+                    <Star className="text-yellow-500" size={16} fill="currentColor" />
+                    <span className="font-semibold text-sm">{restaurant.rating}</span>
+                  </div>
+                  <div className="absolute bottom-4 left-4">
+                    <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                      {restaurant.specialty}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  <h3 className="font-bold text-xl mb-2">{restaurant.name}</h3>
+                  <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm mb-4">
+                    <MapPin size={16} className="mr-2" />
+                    <span>{restaurant.address}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Clock size={16} className="text-emerald-500" />
+                      <span className="text-gray-700 dark:text-gray-300">
+                        {restaurant.deliveryTime} {t('restaurants.minutes')}
+                      </span>
+                    </div>
+                    <motion.button
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-md"
+                    >
+                      {t('restaurants.order')}
+                    </motion.button>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
 
       {/* How It Works */}
       <section ref={howItWorksRef} className={`py-16 ${darkMode ? 'bg-gray-800/50' : 'bg-emerald-50'}`}>
