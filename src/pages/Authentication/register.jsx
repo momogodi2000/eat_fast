@@ -1,7 +1,4 @@
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { Link } from 'react-router-dom';
-// eslint-disable-next-line no-unused-vars
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sun, 
@@ -16,18 +13,157 @@ import {
   ShoppingBag, 
   Star,
   Sparkles,
-  Camera,
   Shield,
-  UserPlus
+  UserPlus,
+  CheckCircle,
+  AlertCircle,
+  Globe,
+  Heart,
+  Award,
+  Clock,
+  Zap,
+  Users,
+  Smartphone,
+  CreditCard,
+  Gift,
+  TrendingUp,
+  Camera
 } from 'lucide-react';
 
+// Constants
+const CAMEROON_COLORS = {
+  green: '#009639',
+  red: '#CE1126',
+  yellow: '#FCDD09'
+};
+
+const FLOATING_PARTICLES_COUNT = 20;
+const STATS_ANIMATION_DELAY = 100;
+
+// Enhanced translations with more content
+const translations = {
+  en: {
+    title: 'Create Your Account',
+    subtitle: 'Join thousands of food lovers across Cameroon',
+    firstName: 'First Name',
+    firstNamePlaceholder: 'Enter your first name',
+    lastName: 'Last Name', 
+    lastNamePlaceholder: 'Enter your last name',
+    email: 'Email Address',
+    emailPlaceholder: 'Enter your email address',
+    phone: 'Phone Number',
+    phonePlaceholder: '+237 6XX XXX XXX',
+    password: 'Password',
+    passwordPlaceholder: 'Create a strong password',
+    confirmPassword: 'Confirm Password',
+    confirmPasswordPlaceholder: 'Re-enter your password',
+    acceptTerms: 'I agree to the',
+    termsLink: 'Terms and Conditions',
+    privacyLink: 'Privacy Policy',
+    submitButton: 'Create Account',
+    creating: 'Creating your account...',
+    alreadyHaveAccount: 'Already have an account?',
+    loginLink: 'Sign in here',
+    welcomeTitle: 'Join EatFast Today!',
+    welcomeSubtitle: 'Discover authentic Cameroonian flavors and join our growing community',
+    validation: {
+      required: 'This field is required',
+      invalidEmail: 'Please enter a valid email address',
+      passwordLength: 'Password must be at least 8 characters',
+      passwordMatch: 'Passwords do not match',
+      invalidPhone: 'Please enter a valid Cameroonian phone number'
+    },
+    features: {
+      feature1: 'Fast delivery to your doorstep',
+      feature2: 'Exclusive deals and discounts',
+      feature3: 'Wide variety of local restaurants',
+      feature4: 'Secure mobile money payments'
+    },
+    benefits: {
+      benefit1: '30-minute delivery guarantee',
+      benefit2: 'MTN & Orange Money support',
+      benefit3: '1,200+ restaurant partners',
+      benefit4: '24/7 customer support'
+    },
+    success: 'Account created successfully! Please check your email to verify your account.',
+    error: 'Something went wrong. Please try again.',
+    or: 'Or'
+  },
+  fr: {
+    title: 'Créez votre compte',
+    subtitle: 'Rejoignez des milliers d\'amateurs de cuisine à travers le Cameroun',
+    firstName: 'Prénom',
+    firstNamePlaceholder: 'Entrez votre prénom',
+    lastName: 'Nom',
+    lastNamePlaceholder: 'Entrez votre nom',
+    email: 'Adresse email',
+    emailPlaceholder: 'Entrez votre adresse email',
+    phone: 'Numéro de téléphone',
+    phonePlaceholder: '+237 6XX XXX XXX',
+    password: 'Mot de passe',
+    passwordPlaceholder: 'Créez un mot de passe fort',
+    confirmPassword: 'Confirmez le mot de passe',
+    confirmPasswordPlaceholder: 'Entrez à nouveau votre mot de passe',
+    acceptTerms: 'J\'accepte les',
+    termsLink: 'Conditions d\'utilisation',
+    privacyLink: 'Politique de confidentialité',
+    submitButton: 'Créer un compte',
+    creating: 'Création de votre compte...',
+    alreadyHaveAccount: 'Vous avez déjà un compte?',
+    loginLink: 'Connectez-vous ici',
+    welcomeTitle: 'Rejoignez EatFast dès aujourd\'hui!',
+    welcomeSubtitle: 'Découvrez les saveurs authentiques du Cameroun et rejoignez notre communauté grandissante',
+    validation: {
+      required: 'Ce champ est requis',
+      invalidEmail: 'Veuillez entrer une adresse email valide',
+      passwordLength: 'Le mot de passe doit contenir au moins 8 caractères',
+      passwordMatch: 'Les mots de passe ne correspondent pas',
+      invalidPhone: 'Veuillez entrer un numéro de téléphone camerounais valide'
+    },
+    features: {
+      feature1: 'Livraison rapide à votre porte',
+      feature2: 'Offres exclusives et remises',
+      feature3: 'Grande variété de restaurants locaux',
+      feature4: 'Paiements mobile money sécurisés'
+    },
+    benefits: {
+      benefit1: 'Garantie de livraison en 30 minutes',
+      benefit2: 'Support MTN & Orange Money',
+      benefit3: '1,200+ partenaires restaurants',
+      benefit4: 'Support client 24h/7j'
+    },
+    success: 'Compte créé avec succès! Veuillez vérifier votre email pour activer votre compte.',
+    error: 'Une erreur s\'est produite. Veuillez réessayer.',
+    or: 'Ou'
+  }
+};
+
+// Feature data for welcome section
+const FEATURES_DATA = [
+  { icon: Clock, key: 'feature1', color: 'text-emerald-500' },
+  { icon: Gift, key: 'feature2', color: 'text-red-500' },
+  { icon: Users, key: 'feature3', color: 'text-yellow-500' },
+  { icon: Shield, key: 'feature4', color: 'text-emerald-500' }
+];
+
+// Benefits data for stats
+const BENEFITS_DATA = [
+  { icon: Zap, key: 'benefit1', color: 'emerald' },
+  { icon: Smartphone, key: 'benefit2', color: 'yellow' },
+  { icon: Award, key: 'benefit3', color: 'red' },
+  { icon: Heart, key: 'benefit4', color: 'emerald' }
+];
+
 const Register = () => {
-  const { t } = useTranslation();
-  const [darkMode, setDarkMode] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  // State management
+  const [uiState, setUiState] = useState({
+    darkMode: false,
+    isScrolled: false,
+    language: 'fr',
+    focusedField: '',
+    mousePosition: { x: 0, y: 0 }
+  });
+
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -37,14 +173,24 @@ const Register = () => {
     confirmPassword: '',
     acceptTerms: false
   });
-  const [formErrors, setFormErrors] = useState({});
-  const [focusedField, setFocusedField] = useState('');
 
-  // Floating particles animation
+  const [formState, setFormState] = useState({
+    showPassword: false,
+    showConfirmPassword: false,
+    isLoading: false,
+    errors: {},
+    success: false,
+    apiError: ''
+  });
+
   const [particles, setParticles] = useState([]);
 
+  // Memoized translations
+  const t = useMemo(() => translations[uiState.language], [uiState.language]);
+
+  // Initialize particles
   useEffect(() => {
-    const newParticles = Array.from({ length: 20 }, (_, i) => ({
+    const newParticles = Array.from({ length: FLOATING_PARTICLES_COUNT }, (_, i) => ({
       id: i,
       x: Math.random() * 100,
       y: Math.random() * 100,
@@ -55,101 +201,213 @@ const Register = () => {
     setParticles(newParticles);
   }, []);
 
-  // Check system preference for dark mode
+  // Initialize dark mode from system preference
   useEffect(() => {
     const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setDarkMode(darkModeQuery.matches);
+    setUiState(prev => ({ ...prev, darkMode: darkModeQuery.matches }));
     
-    const handleChange = (e) => setDarkMode(e.matches);
+    const handleChange = (e) => {
+      setUiState(prev => ({ ...prev, darkMode: e.matches }));
+    };
+    
     darkModeQuery.addEventListener('change', handleChange);
-    
     return () => darkModeQuery.removeEventListener('change', handleChange);
   }, []);
 
-  // Listen for scroll to add shadow to navbar
+  // Mouse tracking for 3D effects
+  useEffect(() => {
+    let timeoutId;
+    const handleMouseMove = (e) => {
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        setUiState(prev => ({
+          ...prev,
+          mousePosition: {
+            x: (e.clientX / window.innerWidth - 0.5) * 2,
+            y: (e.clientY / window.innerHeight - 0.5) * 2
+          }
+        }));
+      }, 16); // ~60fps
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, []);
+
+  // Scroll listener
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      setUiState(prev => ({ 
+        ...prev, 
+        isScrolled: window.scrollY > 20 
+      }));
     };
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
-  };
+  // Event handlers
+  const toggleDarkMode = useCallback(() => {
+    setUiState(prev => ({ ...prev, darkMode: !prev.darkMode }));
+  }, []);
 
-  const validateField = (name, value) => {
-    const errors = { ...formErrors };
+  const toggleLanguage = useCallback(() => {
+    setUiState(prev => ({ 
+      ...prev, 
+      language: prev.language === 'en' ? 'fr' : 'en' 
+    }));
+  }, []);
+
+  const validateField = useCallback((name, value) => {
+    const errors = { ...formState.errors };
     
     switch (name) {
+      case 'firstName':
+      case 'lastName':
+        if (!value.trim()) {
+          errors[name] = t.validation.required;
+        } else if (value.length < 2) {
+          errors[name] = 'Must be at least 2 characters';
+        } else {
+          delete errors[name];
+        }
+        break;
       case 'email':
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(value)) {
-          errors.email = 'Format d\'email invalide';
+        if (!value.trim()) {
+          errors.email = t.validation.required;
+        } else if (!emailRegex.test(value)) {
+          errors.email = t.validation.invalidEmail;
         } else {
           delete errors.email;
         }
         break;
+      case 'phone':
+        const phoneRegex = /^(\+237)?[6-9]\d{8}$/;
+        if (!value.trim()) {
+          errors.phone = t.validation.required;
+        } else if (!phoneRegex.test(value.replace(/\s/g, ''))) {
+          errors.phone = t.validation.invalidPhone;
+        } else {
+          delete errors.phone;
+        }
+        break;
       case 'password':
-        if (value.length < 8) {
-          errors.password = 'Le mot de passe doit contenir au moins 8 caractères';
+        if (!value) {
+          errors.password = t.validation.required;
+        } else if (value.length < 8) {
+          errors.password = t.validation.passwordLength;
+        } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
+          errors.password = 'Password must contain uppercase, lowercase, and numbers';
         } else {
           delete errors.password;
         }
         break;
       case 'confirmPassword':
-        if (value !== formData.password) {
-          errors.confirmPassword = 'Les mots de passe ne correspondent pas';
+        if (!value) {
+          errors.confirmPassword = t.validation.required;
+        } else if (value !== formData.password) {
+          errors.confirmPassword = t.validation.passwordMatch;
         } else {
           delete errors.confirmPassword;
         }
         break;
-      case 'phone':
-        const phoneRegex = /^[+]?[\d\s-()]+$/;
-        if (!phoneRegex.test(value)) {
-          errors.phone = 'Format de téléphone invalide';
-        } else {
-          delete errors.phone;
-        }
-        break;
       default:
-        if (!value.trim()) {
-          errors[name] = 'Ce champ est requis';
-        } else {
-          delete errors[name];
-        }
+        break;
     }
     
-    setFormErrors(errors);
-  };
+    setFormState(prev => ({ ...prev, errors }));
+  }, [formState.errors, formData.password, t.validation]);
 
-  const handleChange = (e) => {
+  const handleChange = useCallback((e) => {
     const { name, value, type, checked } = e.target;
     const newValue = type === 'checkbox' ? checked : value;
     
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [name]: newValue
-    });
+    }));
 
     if (type !== 'checkbox') {
       validateField(name, newValue);
     }
-  };
+  }, [validateField]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    console.log('Form submitted:', formData);
-    setIsLoading(false);
-  };
+  const handleFocus = useCallback((fieldName) => {
+    setUiState(prev => ({ ...prev, focusedField: fieldName }));
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    setUiState(prev => ({ ...prev, focusedField: '' }));
+  }, []);
+
+  const validateForm = useCallback(() => {
+    const errors = {};
+    Object.keys(formData).forEach(key => {
+      if (key !== 'acceptTerms') {
+        validateField(key, formData[key]);
+      }
+    });
+
+    if (!formData.acceptTerms) {
+      errors.acceptTerms = 'You must accept the terms and conditions';
+    }
+
+    return Object.keys(formState.errors).length === 0 && Object.keys(errors).length === 0;
+  }, [formData, formState.errors, validateField]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    setFormState(prev => ({ 
+      ...prev, 
+      isLoading: true, 
+      apiError: '',
+      success: false 
+    }));
+
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2500));
+      
+      setFormState(prev => ({ 
+        ...prev, 
+        isLoading: false, 
+        success: true 
+      }));
+      
+      // Reset form after success
+      setTimeout(() => {
+        setFormData({
+          firstName: '',
+          lastName: '',
+          email: '',
+          phone: '',
+          password: '',
+          confirmPassword: '',
+          acceptTerms: false
+        });
+        setFormState(prev => ({ ...prev, success: false }));
+      }, 3000);
+      
+    } catch (error) {
+      setFormState(prev => ({
+        ...prev,
+        isLoading: false,
+        apiError: t.error
+      }));
+    }
+  }, [validateForm, t.error]);
+
+  const handleLogoClick = useCallback(() => {
+    window.location.href = '/';
+  }, []);
 
   // Animation variants
   const containerVariants = {
@@ -191,51 +449,47 @@ const Register = () => {
   const inputFocusVariants = {
     focus: {
       scale: 1.02,
-      boxShadow: "0 0 20px rgba(46, 125, 50, 0.3)",
+      boxShadow: `0 0 20px ${CAMEROON_COLORS.green}40`,
       transition: { duration: 0.2 }
     },
     blur: {
       scale: 1,
-      boxShadow: "0 0 0px rgba(46, 125, 50, 0)",
+      boxShadow: "0 0 0px rgba(0,0,0,0)",
       transition: { duration: 0.2 }
     }
   };
 
   return (
-    <div className={`min-h-screen relative overflow-hidden ${darkMode ? 'dark bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white' : 'bg-gradient-to-br from-green-50 via-yellow-50 to-red-50 text-gray-900'}`}>
-      {/* Animated Background */}
+    <div className={`min-h-screen relative overflow-hidden transition-all duration-500 ${
+      uiState.darkMode 
+        ? 'bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-900 text-white' 
+        : 'bg-gradient-to-br from-emerald-50 via-yellow-50 to-red-50 text-gray-900'
+    }`}>
+      
+      {/* Enhanced Animated Background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Geometric shapes */}
+        {/* Primary gradient orbs */}
         <motion.div
-          className="absolute top-20 left-10 w-32 h-32 rounded-full bg-gradient-to-r from-green-500/20 to-yellow-500/20 blur-xl"
+          className="absolute top-20 left-10 w-96 h-96 rounded-full bg-gradient-to-r from-emerald-500/20 to-yellow-500/20 blur-3xl"
           animate={{
             scale: [1, 1.2, 1],
             rotate: [0, 180, 360],
+            x: [0, 50, 0],
+            y: [0, -30, 0]
           }}
           transition={{
-            duration: 15,
+            duration: 20,
             repeat: Infinity,
-            ease: "linear"
+            ease: "easeInOut"
           }}
         />
         <motion.div
-          className="absolute top-40 right-20 w-24 h-24 rounded-full bg-gradient-to-r from-yellow-500/20 to-red-500/20 blur-xl"
+          className="absolute top-40 right-20 w-80 h-80 rounded-full bg-gradient-to-r from-yellow-500/20 to-red-500/20 blur-3xl"
           animate={{
             scale: [1.2, 1, 1.2],
             rotate: [360, 180, 0],
-          }}
-          transition={{
-            duration: 12,
-            repeat: Infinity,
-            ease: "linear"
-          }}
-        />
-        <motion.div
-          className="absolute bottom-20 left-20 w-40 h-40 rounded-full bg-gradient-to-r from-red-500/20 to-green-500/20 blur-xl"
-          animate={{
-            scale: [1, 1.3, 1],
-            x: [0, 50, 0],
-            y: [0, -30, 0],
+            x: [0, -40, 0],
+            y: [0, 40, 0]
           }}
           transition={{
             duration: 18,
@@ -243,12 +497,25 @@ const Register = () => {
             ease: "easeInOut"
           }}
         />
+        <motion.div
+          className="absolute bottom-20 left-20 w-72 h-72 rounded-full bg-gradient-to-r from-red-500/20 to-emerald-500/20 blur-3xl"
+          animate={{
+            scale: [1, 1.3, 1],
+            x: [0, 60, 0],
+            y: [0, -50, 0],
+          }}
+          transition={{
+            duration: 22,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
 
-        {/* Floating particles */}
+        {/* Enhanced floating particles */}
         {particles.map((particle) => (
           <motion.div
             key={particle.id}
-            className="absolute rounded-full bg-gradient-to-r from-green-400 to-yellow-400 opacity-30"
+            className="absolute rounded-full bg-gradient-to-r from-emerald-400 to-yellow-400 opacity-30"
             style={{
               left: `${particle.x}%`,
               top: `${particle.y}%`,
@@ -259,6 +526,7 @@ const Register = () => {
               y: [0, -100, 0],
               opacity: [0, 1, 0],
               scale: [0, 1, 0],
+              rotate: [0, 360, 0]
             }}
             transition={{
               duration: particle.duration,
@@ -269,64 +537,79 @@ const Register = () => {
           />
         ))}
 
-        {/* Grid pattern */}
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%2334D399%22%20fill-opacity%3D%220.05%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-20" />
+        {/* Grid pattern overlay */}
+        <div className="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2260%22%20height%3D%2260%22%20viewBox%3D%220%200%2060%2060%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%3Cg%20fill%3D%22none%22%20fill-rule%3D%22evenodd%22%3E%3Cg%20fill%3D%22%2310B981%22%20fill-opacity%3D%220.03%22%3E%3Ccircle%20cx%3D%2230%22%20cy%3D%2230%22%20r%3D%222%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E')] opacity-40" />
       </div>
 
-      {/* Navigation */}
+      {/* Enhanced Navigation */}
       <motion.header 
         className={`fixed w-full z-50 transition-all duration-500 backdrop-blur-xl ${
-          isScrolled 
-            ? 'py-2 shadow-2xl bg-opacity-80' 
+          uiState.isScrolled 
+            ? 'py-2 shadow-2xl bg-opacity-90' 
             : 'py-4'
         } ${
-          darkMode 
-            ? 'bg-gray-900/80 shadow-green-500/10' 
-            : 'bg-white/80 shadow-green-500/10'
+          uiState.darkMode 
+            ? 'bg-gray-900/90 shadow-emerald-500/10 border-b border-gray-700' 
+            : 'bg-white/90 shadow-emerald-500/10 border-b border-gray-200'
         }`}
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8, ease: "easeOut" }}
       >
         <div className="container mx-auto px-4 flex justify-between items-center">
-          {/* Logo */}
-          <Link to="/">
+          {/* Enhanced Logo */}
+          <motion.div
+            onClick={handleLogoClick}
+            className="flex items-center space-x-2 cursor-pointer group"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
             <motion.div
-              className="flex items-center space-x-2 cursor-pointer"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              className="relative"
+              variants={floatingVariants}
+              animate="animate"
             >
+              <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
+                <Sparkles className="w-6 h-6 text-white" />
+              </div>
               <motion.div
-                className="relative"
-                variants={floatingVariants}
-                animate="animate"
-              >
-                <div className="w-10 h-10 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-xl flex items-center justify-center shadow-lg">
-                  <Sparkles className="w-6 h-6 text-white" />
-                </div>
-                <motion.div
-                  className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full"
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    opacity: [1, 0.7, 1]
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity
-                  }}
-                />
-              </motion.div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-green-600 via-yellow-600 to-red-600 bg-clip-text text-transparent">
-                Eat-Fast
-              </span>
+                className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full"
+                animate={{
+                  scale: [1, 1.2, 1],
+                  opacity: [1, 0.7, 1]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity
+                }}
+              />
             </motion.div>
-          </Link>
+            <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 via-yellow-600 to-red-600 bg-clip-text text-transparent">
+              EatFast
+            </span>
+          </motion.div>
 
+          {/* Navigation Controls */}
           <div className="flex items-center space-x-3">
+            {/* Language Toggle */}
+            <motion.button 
+              onClick={toggleLanguage}
+              className={`p-3 rounded-xl transition-all duration-300 ${
+                uiState.darkMode 
+                  ? 'hover:bg-gray-700 bg-gray-800 shadow-lg' 
+                  : 'hover:bg-gray-100 bg-white shadow-lg'
+              }`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <Globe size={20} className="text-emerald-600" />
+            </motion.button>
+
+            {/* Dark Mode Toggle */}
             <motion.button 
               onClick={toggleDarkMode} 
               className={`p-3 rounded-xl transition-all duration-300 ${
-                darkMode 
+                uiState.darkMode 
                   ? 'hover:bg-gray-700 bg-gray-800 shadow-lg' 
                   : 'hover:bg-gray-100 bg-white shadow-lg'
               }`}
@@ -334,7 +617,7 @@ const Register = () => {
               whileTap={{ scale: 0.9 }}
             >
               <AnimatePresence mode="wait">
-                {darkMode ? (
+                {uiState.darkMode ? (
                   <motion.div
                     key="sun"
                     initial={{ rotate: -180, opacity: 0 }}
@@ -358,23 +641,24 @@ const Register = () => {
               </AnimatePresence>
             </motion.button>
             
-            <Link to="/login">
-              <motion.div
-                className={`p-3 rounded-xl transition-all duration-300 ${
-                  darkMode 
-                    ? 'hover:bg-gray-700 bg-gray-800 shadow-lg' 
-                    : 'hover:bg-gray-100 bg-white shadow-lg'
-                }`}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                <User size={20} className="text-green-600" />
-              </motion.div>
-            </Link>
+            {/* Login Link */}
+            <motion.button
+              onClick={() => window.location.href = '/login'}
+              className={`p-3 rounded-xl transition-all duration-300 ${
+                uiState.darkMode 
+                  ? 'hover:bg-gray-700 bg-gray-800 shadow-lg' 
+                  : 'hover:bg-gray-100 bg-white shadow-lg'
+              }`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <User size={20} className="text-emerald-600" />
+            </motion.button>
             
+            {/* Shopping Bag */}
             <motion.button 
               className={`relative p-3 rounded-xl transition-all duration-300 ${
-                darkMode 
+                uiState.darkMode 
                   ? 'hover:bg-gray-700 bg-gray-800 shadow-lg' 
                   : 'hover:bg-gray-100 bg-white shadow-lg'
               }`}
@@ -408,42 +692,101 @@ const Register = () => {
             animate="visible"
             variants={containerVariants}
           >
-            {/* Welcome Section */}
+            
+            {/* Enhanced Welcome Section */}
             <motion.div 
-              className="hidden lg:block flex-1 max-w-md"
+              className="hidden lg:block flex-1 max-w-lg"
               variants={itemVariants}
             >
               <motion.div
-                className="text-center space-y-6"
+                className="text-center space-y-8"
                 variants={floatingVariants}
                 animate="animate"
+                style={{
+                  transform: `perspective(1000px) rotateY(${uiState.mousePosition.x * 2}deg) rotateX(${uiState.mousePosition.y * -2}deg)`
+                }}
               >
+                {/* Hero Icon */}
                 <motion.div
                   className="relative mx-auto w-32 h-32 mb-8"
                   whileHover={{ scale: 1.1, rotate: 5 }}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-3xl blur-lg opacity-50" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500 rounded-3xl blur-lg opacity-50" />
                   <div className="relative bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 h-full flex items-center justify-center">
-                    <UserPlus size={48} className="text-green-600" />
+                    <motion.div
+                      animate={{ rotate: [0, 360] }}
+                      transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                    >
+                      <UserPlus size={48} className="text-emerald-600" />
+                    </motion.div>
                   </div>
                 </motion.div>
                 
+                {/* Welcome Text */}
                 <motion.h2 
-                  className="text-4xl font-bold bg-gradient-to-r from-green-600 via-yellow-600 to-red-600 bg-clip-text text-transparent"
+                  className="text-4xl font-bold bg-gradient-to-r from-emerald-600 via-yellow-600 to-red-600 bg-clip-text text-transparent"
                   variants={itemVariants}
                 >
-                  Bienvenue chez EatFast
+                  {t.welcomeTitle}
                 </motion.h2>
                 
                 <motion.p 
-                  className={`text-lg ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}
+                  className={`text-lg leading-relaxed ${uiState.darkMode ? 'text-gray-300' : 'text-gray-600'}`}
                   variants={itemVariants}
                 >
-                  Découvrez les saveurs authentiques du Cameroun et rejoignez notre communauté gourmande
+                  {t.welcomeSubtitle}
                 </motion.p>
 
+                {/* Features Grid */}
                 <motion.div 
-                  className="flex justify-center space-x-4"
+                  className="grid grid-cols-2 gap-4 mb-8"
+                  variants={containerVariants}
+                >
+                  {FEATURES_DATA.map((feature, index) => (
+                    <motion.div
+                      key={feature.key}
+                      variants={itemVariants}
+                      className={`p-4 rounded-xl ${
+                        uiState.darkMode ? 'bg-gray-800/50' : 'bg-white/50'
+                      } backdrop-blur-sm border ${
+                        uiState.darkMode ? 'border-gray-700' : 'border-gray-200'
+                      } hover:shadow-lg transition-all duration-300`}
+                      whileHover={{ scale: 1.05, y: -5 }}
+                    >
+                      <feature.icon size={24} className={`${feature.color} mb-2 mx-auto`} />
+                      <p className="text-sm font-medium">{t.features[feature.key]}</p>
+                    </motion.div>
+                  ))}
+                </motion.div>
+
+                {/* Benefits */}
+                <motion.div 
+                  className="space-y-3"
+                  variants={containerVariants}
+                >
+                  {BENEFITS_DATA.map((benefit, index) => (
+                    <motion.div
+                      key={benefit.key}
+                      variants={itemVariants}
+                      className={`flex items-center p-3 rounded-lg ${
+                        uiState.darkMode ? 'bg-gray-800/30' : 'bg-white/30'
+                      } backdrop-blur-sm border ${
+                        uiState.darkMode ? 'border-gray-700/50' : 'border-gray-200/50'
+                      }`}
+                      whileHover={{ scale: 1.02, x: 5 }}
+                    >
+                      <benefit.icon 
+                        size={20} 
+                        className={`mr-3 text-${benefit.color}-500`} 
+                      />
+                      <span className="text-sm font-medium">{t.benefits[benefit.key]}</span>
+                    </motion.div>
+                  ))}
+                </motion.div>
+
+                {/* Animated Stars */}
+                <motion.div 
+                  className="flex justify-center space-x-2"
                   variants={itemVariants}
                 >
                   {[...Array(5)].map((_, i) => (
@@ -467,14 +810,14 @@ const Register = () => {
               </motion.div>
             </motion.div>
 
-            {/* Register Form */}
+            {/* Enhanced Register Form */}
             <motion.div 
-              className={`w-full max-w-md relative`}
+              className="w-full max-w-md relative"
               variants={itemVariants}
             >
-              {/* 3D Card Effect */}
+              {/* 3D Card Effect Background */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-3xl blur-xl opacity-20"
+                className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500 rounded-3xl blur-xl opacity-20"
                 animate={{
                   scale: [1, 1.05, 1],
                   rotate: [0, 1, -1, 0]
@@ -488,16 +831,15 @@ const Register = () => {
               
               <motion.div 
                 className={`relative p-8 rounded-3xl shadow-2xl backdrop-blur-xl border ${
-                  darkMode 
-                    ? 'bg-gray-800/80 border-gray-700/50' 
-                    : 'bg-white/80 border-white/50'
+                  uiState.darkMode 
+                    ? 'bg-gray-800/90 border-gray-700/50' 
+                    : 'bg-white/90 border-white/50'
                 } transform-gpu`}
                 style={{
                   transformStyle: 'preserve-3d',
+                  transform: `perspective(1000px) rotateY(${uiState.mousePosition.x * -1}deg) rotateX(${uiState.mousePosition.y * 1}deg)`
                 }}
                 whileHover={{
-                  rotateX: 2,
-                  rotateY: 2,
                   scale: 1.02,
                   transition: { duration: 0.3 }
                 }}
@@ -508,92 +850,134 @@ const Register = () => {
                     className="inline-flex items-center space-x-2 mb-4"
                     whileHover={{ scale: 1.05 }}
                   >
-                    <Shield className="w-8 h-8 text-green-600" />
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 via-yellow-600 to-red-600 bg-clip-text text-transparent">
-                      Inscription
+                    <Shield className="w-8 h-8 text-emerald-600" />
+                    <h1 className="text-3xl font-bold bg-gradient-to-r from-emerald-600 via-yellow-600 to-red-600 bg-clip-text text-transparent">
+                      {t.title}
                     </h1>
                   </motion.div>
-                  <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    Créez votre compte et savourez l'authenticité camerounaise
+                  <p className={`${uiState.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                    {t.subtitle}
                   </p>
                 </motion.div>
 
-                {/* Register Form */}
-                <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Status Messages */}
+                <AnimatePresence>
+                  {formState.success && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="mb-6 p-4 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 rounded-xl flex items-center"
+                    >
+                      <CheckCircle size={20} className="mr-3 flex-shrink-0" />
+                      <span className="font-medium text-sm">{t.success}</span>
+                    </motion.div>
+                  )}
+                  
+                  {formState.apiError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="mb-6 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200 rounded-xl flex items-center"
+                    >
+                      <AlertCircle size={20} className="mr-3 flex-shrink-0" />
+                      <span className="font-medium text-sm">{formState.apiError}</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Registration Form */}
+                <div className="space-y-6">
                   {/* Name inputs */}
                   <motion.div className="grid grid-cols-2 gap-4" variants={itemVariants}>
+                    {/* First Name */}
                     <div>
-                      <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        Prénom
+                      <label className={`block text-sm font-semibold mb-2 ${uiState.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {t.firstName}
                       </label>
                       <motion.div 
                         className="relative"
                         variants={inputFocusVariants}
-                        animate={focusedField === 'firstName' ? 'focus' : 'blur'}
+                        animate={uiState.focusedField === 'firstName' ? 'focus' : 'blur'}
                       >
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <User size={18} className={`${focusedField === 'firstName' ? 'text-green-500' : darkMode ? 'text-gray-400' : 'text-gray-500'} transition-colors`} />
+                          <User size={18} className={`${
+                            uiState.focusedField === 'firstName' 
+                              ? 'text-emerald-500' 
+                              : uiState.darkMode ? 'text-gray-400' : 'text-gray-500'
+                          } transition-colors`} />
                         </div>
                         <input
                           type="text"
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleChange}
-                          onFocus={() => setFocusedField('firstName')}
-                          onBlur={() => setFocusedField('')}
+                          onFocus={() => handleFocus('firstName')}
+                          onBlur={handleBlur}
                           className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                            darkMode 
-                              ? 'bg-gray-700/50 text-white focus:ring-green-500 placeholder-gray-400' 
-                              : 'bg-gray-50/50 text-gray-900 focus:ring-green-500 placeholder-gray-500'
-                          } ${formErrors.firstName ? 'ring-2 ring-red-500' : ''}`}
-                          placeholder="Jean"
+                            uiState.darkMode 
+                              ? 'bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400' 
+                              : 'bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500'
+                          } ${formState.errors.firstName ? 'ring-2 ring-red-500' : ''}`}
+                          placeholder={t.firstNamePlaceholder}
+                          disabled={formState.isLoading}
                           required
                         />
-                        {formErrors.firstName && (
+                        {formState.errors.firstName && (
                           <motion.p 
-                            className="text-red-500 text-xs mt-1"
+                            className="text-red-500 text-xs mt-1 flex items-center"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                           >
-                            {formErrors.firstName}
+                            <AlertCircle size={12} className="mr-1" />
+                            {formState.errors.firstName}
                           </motion.p>
                         )}
                       </motion.div>
                     </div>
+
+                    {/* Last Name */}
                     <div>
-                      <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                        Nom
+                      <label className={`block text-sm font-semibold mb-2 ${uiState.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                        {t.lastName}
                       </label>
                       <motion.div 
                         className="relative"
                         variants={inputFocusVariants}
-                        animate={focusedField === 'lastName' ? 'focus' : 'blur'}
+                        animate={uiState.focusedField === 'lastName' ? 'focus' : 'blur'}
                       >
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <User size={18} className={`${focusedField === 'lastName' ? 'text-green-500' : darkMode ? 'text-gray-400' : 'text-gray-500'} transition-colors`} />
+                          <User size={18} className={`${
+                            uiState.focusedField === 'lastName' 
+                              ? 'text-emerald-500' 
+                              : uiState.darkMode ? 'text-gray-400' : 'text-gray-500'
+                          } transition-colors`} />
                         </div>
                         <input
                           type="text"
                           name="lastName"
                           value={formData.lastName}
                           onChange={handleChange}
-                          onFocus={() => setFocusedField('lastName')}
-                          onBlur={() => setFocusedField('')}
+                          onFocus={() => handleFocus('lastName')}
+                          onBlur={handleBlur}
                           className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                            darkMode 
-                              ? 'bg-gray-700/50 text-white focus:ring-green-500 placeholder-gray-400' 
-                              : 'bg-gray-50/50 text-gray-900 focus:ring-green-500 placeholder-gray-500'
-                          } ${formErrors.lastName ? 'ring-2 ring-red-500' : ''}`}
-                          placeholder="Mbakwe"
+                            uiState.darkMode 
+                              ? 'bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400' 
+                              : 'bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500'
+                          } ${formState.errors.lastName ? 'ring-2 ring-red-500' : ''}`}
+                          placeholder={t.lastNamePlaceholder}
+                          disabled={formState.isLoading}
                           required
                         />
-                        {formErrors.lastName && (
+                        {formState.errors.lastName && (
                           <motion.p 
-                            className="text-red-500 text-xs mt-1"
+                            className="text-red-500 text-xs mt-1 flex items-center"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                           >
-                            {formErrors.lastName}
+                            <AlertCircle size={12} className="mr-1" />
+                            {formState.errors.lastName}
                           </motion.p>
                         )}
                       </motion.div>
@@ -602,39 +986,45 @@ const Register = () => {
 
                   {/* Email input */}
                   <motion.div variants={itemVariants}>
-                    <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Email
+                    <label className={`block text-sm font-semibold mb-2 ${uiState.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t.email}
                     </label>
                     <motion.div 
                       className="relative"
                       variants={inputFocusVariants}
-                      animate={focusedField === 'email' ? 'focus' : 'blur'}
+                      animate={uiState.focusedField === 'email' ? 'focus' : 'blur'}
                     >
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Mail size={18} className={`${focusedField === 'email' ? 'text-green-500' : darkMode ? 'text-gray-400' : 'text-gray-500'} transition-colors`} />
+                        <Mail size={18} className={`${
+                          uiState.focusedField === 'email' 
+                            ? 'text-emerald-500' 
+                            : uiState.darkMode ? 'text-gray-400' : 'text-gray-500'
+                        } transition-colors`} />
                       </div>
                       <input
                         type="email"
                         name="email"
                         value={formData.email}
                         onChange={handleChange}
-                        onFocus={() => setFocusedField('email')}
-                        onBlur={() => setFocusedField('')}
+                        onFocus={() => handleFocus('email')}
+                        onBlur={handleBlur}
                         className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                          darkMode 
-                            ? 'bg-gray-700/50 text-white focus:ring-green-500 placeholder-gray-400' 
-                            : 'bg-gray-50/50 text-gray-900 focus:ring-green-500 placeholder-gray-500'
-                        } ${formErrors.email ? 'ring-2 ring-red-500' : ''}`}
-                        placeholder="jean@example.com"
+                          uiState.darkMode 
+                            ? 'bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400' 
+                            : 'bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500'
+                        } ${formState.errors.email ? 'ring-2 ring-red-500' : ''}`}
+                        placeholder={t.emailPlaceholder}
+                        disabled={formState.isLoading}
                         required
                       />
-                      {formErrors.email && (
+                      {formState.errors.email && (
                         <motion.p 
-                          className="text-red-500 text-xs mt-1"
+                          className="text-red-500 text-xs mt-1 flex items-center"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                         >
-                          {formErrors.email}
+                          <AlertCircle size={12} className="mr-1" />
+                          {formState.errors.email}
                         </motion.p>
                       )}
                     </motion.div>
@@ -642,39 +1032,45 @@ const Register = () => {
 
                   {/* Phone input */}
                   <motion.div variants={itemVariants}>
-                    <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Téléphone
+                    <label className={`block text-sm font-semibold mb-2 ${uiState.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t.phone}
                     </label>
                     <motion.div 
                       className="relative"
                       variants={inputFocusVariants}
-                      animate={focusedField === 'phone' ? 'focus' : 'blur'}
+                      animate={uiState.focusedField === 'phone' ? 'focus' : 'blur'}
                     >
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Phone size={18} className={`${focusedField === 'phone' ? 'text-green-500' : darkMode ? 'text-gray-400' : 'text-gray-500'} transition-colors`} />
+                        <Phone size={18} className={`${
+                          uiState.focusedField === 'phone' 
+                            ? 'text-emerald-500' 
+                            : uiState.darkMode ? 'text-gray-400' : 'text-gray-500'
+                        } transition-colors`} />
                       </div>
                       <input
                         type="tel"
                         name="phone"
                         value={formData.phone}
                         onChange={handleChange}
-                        onFocus={() => setFocusedField('phone')}
-                        onBlur={() => setFocusedField('')}
+                        onFocus={() => handleFocus('phone')}
+                        onBlur={handleBlur}
                         className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                          darkMode 
-                            ? 'bg-gray-700/50 text-white focus:ring-green-500 placeholder-gray-400' 
-                            : 'bg-gray-50/50 text-gray-900 focus:ring-green-500 placeholder-gray-500'
-                        } ${formErrors.phone ? 'ring-2 ring-red-500' : ''}`}
-                        placeholder="+237 6XX XXX XXX"
+                          uiState.darkMode 
+                            ? 'bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400' 
+                            : 'bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500'
+                        } ${formState.errors.phone ? 'ring-2 ring-red-500' : ''}`}
+                        placeholder={t.phonePlaceholder}
+                        disabled={formState.isLoading}
                         required
                       />
-                      {formErrors.phone && (
+                      {formState.errors.phone && (
                         <motion.p 
-                          className="text-red-500 text-xs mt-1"
+                          className="text-red-500 text-xs mt-1 flex items-center"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                         >
-                          {formErrors.phone}
+                          <AlertCircle size={12} className="mr-1" />
+                          {formState.errors.phone}
                         </motion.p>
                       )}
                     </motion.div>
@@ -682,50 +1078,59 @@ const Register = () => {
 
                   {/* Password input */}
                   <motion.div variants={itemVariants}>
-                    <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Mot de passe
+                    <label className={`block text-sm font-semibold mb-2 ${uiState.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t.password}
                     </label>
                     <motion.div 
                       className="relative"
                       variants={inputFocusVariants}
-                      animate={focusedField === 'password' ? 'focus' : 'blur'}
+                      animate={uiState.focusedField === 'password' ? 'focus' : 'blur'}
                     >
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Lock size={18} className={`${focusedField === 'password' ? 'text-green-500' : darkMode ? 'text-gray-400' : 'text-gray-500'} transition-colors`} />
+                        <Lock size={18} className={`${
+                          uiState.focusedField === 'password' 
+                            ? 'text-emerald-500' 
+                            : uiState.darkMode ? 'text-gray-400' : 'text-gray-500'
+                        } transition-colors`} />
                       </div>
                       <input
-                        type={showPassword ? "text" : "password"}
+                        type={formState.showPassword ? "text" : "password"}
                         name="password"
                         value={formData.password}
                         onChange={handleChange}
-                        onFocus={() => setFocusedField('password')}
-                        onBlur={() => setFocusedField('')}
+                        onFocus={() => handleFocus('password')}
+                        onBlur={handleBlur}
                         className={`block w-full pl-12 pr-12 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                          darkMode 
-                            ? 'bg-gray-700/50 text-white focus:ring-green-500 placeholder-gray-400' 
-                                                       : 'bg-gray-50/50 text-gray-900 focus:ring-green-500 placeholder-gray-500'
-                        } ${formErrors.password ? 'ring-2 ring-red-500' : ''}`}
-                        placeholder="••••••••"
+                          uiState.darkMode 
+                            ? 'bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400' 
+                            : 'bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500'
+                        } ${formState.errors.password ? 'ring-2 ring-red-500' : ''}`}
+                        placeholder={t.passwordPlaceholder}
+                        disabled={formState.isLoading}
                         required
                       />
-                      <button
+                      <motion.button
                         type="button"
                         className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() => setFormState(prev => ({ ...prev, showPassword: !prev.showPassword }))}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        disabled={formState.isLoading}
                       >
-                        {showPassword ? (
-                          <EyeOff size={18} className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} hover:text-green-500 transition-colors`} />
+                        {formState.showPassword ? (
+                          <EyeOff size={18} className={`${uiState.darkMode ? 'text-gray-400' : 'text-gray-500'} hover:text-emerald-500 transition-colors`} />
                         ) : (
-                          <Eye size={18} className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} hover:text-green-500 transition-colors`} />
+                          <Eye size={18} className={`${uiState.darkMode ? 'text-gray-400' : 'text-gray-500'} hover:text-emerald-500 transition-colors`} />
                         )}
-                      </button>
-                      {formErrors.password && (
+                      </motion.button>
+                      {formState.errors.password && (
                         <motion.p 
-                          className="text-red-500 text-xs mt-1"
+                          className="text-red-500 text-xs mt-1 flex items-center"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                         >
-                          {formErrors.password}
+                          <AlertCircle size={12} className="mr-1" />
+                          {formState.errors.password}
                         </motion.p>
                       )}
                     </motion.div>
@@ -733,154 +1138,267 @@ const Register = () => {
 
                   {/* Confirm Password input */}
                   <motion.div variants={itemVariants}>
-                    <label className={`block text-sm font-semibold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Confirmer le mot de passe
+                    <label className={`block text-sm font-semibold mb-2 ${uiState.darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {t.confirmPassword}
                     </label>
                     <motion.div 
                       className="relative"
                       variants={inputFocusVariants}
-                      animate={focusedField === 'confirmPassword' ? 'focus' : 'blur'}
+                      animate={uiState.focusedField === 'confirmPassword' ? 'focus' : 'blur'}
                     >
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Lock size={18} className={`${focusedField === 'confirmPassword' ? 'text-green-500' : darkMode ? 'text-gray-400' : 'text-gray-500'} transition-colors`} />
+                        <Lock size={18} className={`${
+                          uiState.focusedField === 'confirmPassword' 
+                            ? 'text-emerald-500' 
+                            : uiState.darkMode ? 'text-gray-400' : 'text-gray-500'
+                        } transition-colors`} />
                       </div>
                       <input
-                        type={showConfirmPassword ? "text" : "password"}
+                        type={formState.showConfirmPassword ? "text" : "password"}
                         name="confirmPassword"
                         value={formData.confirmPassword}
                         onChange={handleChange}
-                        onFocus={() => setFocusedField('confirmPassword')}
-                        onBlur={() => setFocusedField('')}
+                        onFocus={() => handleFocus('confirmPassword')}
+                        onBlur={handleBlur}
                         className={`block w-full pl-12 pr-12 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                          darkMode 
-                            ? 'bg-gray-700/50 text-white focus:ring-green-500 placeholder-gray-400' 
-                            : 'bg-gray-50/50 text-gray-900 focus:ring-green-500 placeholder-gray-500'
-                        } ${formErrors.confirmPassword ? 'ring-2 ring-red-500' : ''}`}
-                        placeholder="••••••••"
+                          uiState.darkMode 
+                            ? 'bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400' 
+                            : 'bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500'
+                        } ${formState.errors.confirmPassword ? 'ring-2 ring-red-500' : ''}`}
+                        placeholder={t.confirmPasswordPlaceholder}
+                        disabled={formState.isLoading}
                         required
                       />
-                      <button
+                      <motion.button
                         type="button"
                         className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() => setFormState(prev => ({ ...prev, showConfirmPassword: !prev.showConfirmPassword }))}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        disabled={formState.isLoading}
                       >
-                        {showConfirmPassword ? (
-                          <EyeOff size={18} className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} hover:text-green-500 transition-colors`} />
+                        {formState.showConfirmPassword ? (
+                          <EyeOff size={18} className={`${uiState.darkMode ? 'text-gray-400' : 'text-gray-500'} hover:text-emerald-500 transition-colors`} />
                         ) : (
-                          <Eye size={18} className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} hover:text-green-500 transition-colors`} />
+                          <Eye size={18} className={`${uiState.darkMode ? 'text-gray-400' : 'text-gray-500'} hover:text-emerald-500 transition-colors`} />
                         )}
-                      </button>
-                      {formErrors.confirmPassword && (
+                      </motion.button>
+                      {formState.errors.confirmPassword && (
                         <motion.p 
-                          className="text-red-500 text-xs mt-1"
+                          className="text-red-500 text-xs mt-1 flex items-center"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                         >
-                          {formErrors.confirmPassword}
+                          <AlertCircle size={12} className="mr-1" />
+                          {formState.errors.confirmPassword}
                         </motion.p>
                       )}
                     </motion.div>
                   </motion.div>
 
                   {/* Terms checkbox */}
-                  <motion.div className="flex items-center" variants={itemVariants}>
+                  <motion.div className="flex items-start space-x-3" variants={itemVariants}>
                     <input
                       type="checkbox"
                       name="acceptTerms"
                       checked={formData.acceptTerms}
                       onChange={handleChange}
-                      className={`w-5 h-5 rounded-md focus:ring-green-500 ${
-                        darkMode 
-                          ? 'bg-gray-700 border-gray-600' 
-                          : 'bg-gray-100 border-gray-300'
+                      className={`w-5 h-5 rounded-md focus:ring-emerald-500 border-2 transition-all duration-200 ${
+                        uiState.darkMode 
+                          ? 'bg-gray-700 border-gray-600 text-emerald-500' 
+                          : 'bg-gray-100 border-gray-300 text-emerald-500'
                       }`}
+                      disabled={formState.isLoading}
                       required
                     />
-                    <label className={`ml-2 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      J'accepte les{' '}
-                      <a href="#" className="text-green-600 hover:underline">
-                        conditions d'utilisation
+                    <label className={`text-sm leading-relaxed ${uiState.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      {t.acceptTerms}{' '}
+                      <a href="/terms" className="text-emerald-600 hover:text-emerald-500 font-medium underline transition-colors">
+                        {t.termsLink}
+                      </a>
+                      {' '}et la{' '}
+                      <a href="/privacy" className="text-emerald-600 hover:text-emerald-500 font-medium underline transition-colors">
+                        {t.privacyLink}
                       </a>
                     </label>
                   </motion.div>
 
                   {/* Submit button */}
                   <motion.button
-                    type="submit"
+                    type="button"
+                    onClick={handleSubmit}
                     className={`w-full py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
-                      isLoading 
+                      formState.isLoading 
                         ? 'bg-gray-400 cursor-not-allowed' 
-                        : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-green-500/30'
-                    } ${darkMode ? 'text-white' : 'text-white'}`}
-                    disabled={isLoading}
-                    whileTap={{ scale: isLoading ? 1 : 0.95 }}
+                        : 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-lg hover:shadow-emerald-500/30 transform hover:scale-105'
+                    } text-white`}
+                    disabled={formState.isLoading}
+                    whileTap={{ scale: formState.isLoading ? 1 : 0.95 }}
                     variants={itemVariants}
                   >
-                    {isLoading ? (
+                    {formState.isLoading ? (
                       <>
                         <motion.div
                           animate={{ rotate: 360 }}
                           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                           className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                         />
-                        <span>Création du compte...</span>
+                        <span>{t.creating}</span>
                       </>
                     ) : (
                       <>
-                        <span>S'inscrire</span>
-                        <ChevronRight size={20} className="animate-pulse" />
+                        <span>{t.submitButton}</span>
+                        <ChevronRight size={20} />
                       </>
                     )}
                   </motion.button>
 
+                  {/* Mobile Money Options */}
+                  <motion.div 
+                    className="mt-6"
+                    variants={itemVariants}
+                  >
+                    <div className="relative mb-4">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className={`w-full border-t ${uiState.darkMode ? 'border-gray-600' : 'border-gray-300'}`} />
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className={`px-2 ${uiState.darkMode ? 'bg-gray-800 text-gray-400' : 'bg-white text-gray-500'}`}>
+                          {t.or}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <motion.button 
+                        className={`flex items-center justify-center p-3 rounded-xl border transition-all duration-300 ${
+                          uiState.darkMode 
+                            ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' 
+                            : 'bg-gray-50 hover:bg-gray-100 border-gray-300'
+                        }`}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={formState.isLoading}
+                      >
+                        <Smartphone size={20} className="text-yellow-500 mr-2" />
+                        <span className="text-sm font-medium">MTN</span>
+                      </motion.button>
+                      
+                      <motion.button 
+                        className={`flex items-center justify-center p-3 rounded-xl border transition-all duration-300 ${
+                          uiState.darkMode 
+                            ? 'bg-gray-700 hover:bg-gray-600 border-gray-600' 
+                            : 'bg-gray-50 hover:bg-gray-100 border-gray-300'
+                        }`}
+                        whileHover={{ scale: 1.05, y: -2 }}
+                        whileTap={{ scale: 0.95 }}
+                        disabled={formState.isLoading}
+                      >
+                        <CreditCard size={20} className="text-orange-500 mr-2" />
+                        <span className="text-sm font-medium">Orange</span>
+                      </motion.button>
+                    </div>
+                  </motion.div>
+
                   {/* Login link */}
                   <motion.div className="text-center" variants={itemVariants}>
-                    <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                      Vous avez déjà un compte?{' '}
-                      <Link 
-                        to="/login" 
-                        className="text-green-600 font-semibold hover:underline"
+                    <p className={`text-sm ${uiState.darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      {t.alreadyHaveAccount}{' '}
+                      <motion.button 
+                        onClick={() => window.location.href = '/login'}
+                        className="text-emerald-600 font-semibold hover:text-emerald-500 underline transition-colors"
+                        whileHover={{ scale: 1.05 }}
                       >
-                        Se connecter
-                      </Link>
+                        {t.loginLink}
+                      </motion.button>
                     </p>
                   </motion.div>
-                </form>
+                </div>
               </motion.div>
             </motion.div>
           </motion.div>
         </div>
       </div>
 
-      {/* Footer */}
+      {/* Enhanced Footer */}
       <motion.footer 
-        className={`py-8 relative z-10 ${
-          darkMode 
-            ? 'bg-gray-900/80 text-gray-300' 
-            : 'bg-white/80 text-gray-700'
+        className={`py-12 relative z-10 backdrop-blur-xl ${
+          uiState.darkMode 
+            ? 'bg-gray-900/80 text-gray-300 border-t border-gray-700' 
+            : 'bg-white/80 text-gray-700 border-t border-gray-200'
         }`}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.8 }}
       >
         <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 rounded-lg flex items-center justify-center">
-                <Sparkles className="w-5 h-5 text-white" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            {/* Company Info */}
+            <motion.div variants={itemVariants}>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 via-yellow-500 to-red-500 rounded-lg flex items-center justify-center">
+                  <Sparkles className="w-5 h-5 text-white" />
+                </div>
+                <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 via-yellow-600 to-red-600 bg-clip-text text-transparent">
+                  EatFast
+                </span>
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-green-600 via-yellow-600 to-red-600 bg-clip-text text-transparent">
-                EatFast
-              </span>
-            </div>
-            <div className="flex space-x-6">
-              <a href="#" className="hover:text-green-600 transition-colors">Conditions</a>
-              <a href="#" className="hover:text-green-600 transition-colors">Confidentialité</a>
-              <a href="#" className="hover:text-green-600 transition-colors">Contact</a>
-            </div>
+              <p className="text-sm leading-relaxed mb-4">
+                {uiState.language === 'fr' 
+                  ? "Votre passerelle vers les délices culinaires du Cameroun. Savourez l'authenticité, une commande à la fois."
+                  : "Your gateway to Cameroon's culinary delights. Taste authenticity, one order at a time."
+                }
+              </p>
+              <div className="flex space-x-2">
+                <span className="text-xs bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-200 px-2 py-1 rounded-full">MTN Money</span>
+                <span className="text-xs bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 px-2 py-1 rounded-full">Orange Money</span>
+              </div>
+            </motion.div>
+
+            {/* Quick Links */}
+            <motion.div variants={itemVariants}>
+              <h3 className="text-lg font-bold mb-4">{uiState.language === 'fr' ? 'Liens rapides' : 'Quick Links'}</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/about" className="hover:text-emerald-500 transition-colors">{uiState.language === 'fr' ? 'À propos' : 'About'}</a></li>
+                <li><a href="/restaurants" className="hover:text-emerald-500 transition-colors">{uiState.language === 'fr' ? 'Restaurants' : 'Restaurants'}</a></li>
+                <li><a href="/contact" className="hover:text-emerald-500 transition-colors">{uiState.language === 'fr' ? 'Contact' : 'Contact'}</a></li>
+                <li><a href="/help" className="hover:text-emerald-500 transition-colors">{uiState.language === 'fr' ? 'Aide' : 'Help'}</a></li>
+              </ul>
+            </motion.div>
+
+            {/* Support */}
+            <motion.div variants={itemVariants}>
+              <h3 className="text-lg font-bold mb-4">{uiState.language === 'fr' ? 'Support' : 'Support'}</h3>
+              <ul className="space-y-2 text-sm">
+                <li><a href="/terms" className="hover:text-emerald-500 transition-colors">{uiState.language === 'fr' ? 'Conditions' : 'Terms'}</a></li>
+                <li><a href="/privacy" className="hover:text-emerald-500 transition-colors">{uiState.language === 'fr' ? 'Confidentialité' : 'Privacy'}</a></li>
+                <li><a href="/faq" className="hover:text-emerald-500 transition-colors">FAQ</a></li>
+                <li><a href="/partner" className="hover:text-emerald-500 transition-colors">{uiState.language === 'fr' ? 'Partenaire' : 'Partner'}</a></li>
+              </ul>
+            </motion.div>
+
+            {/* Contact */}
+            <motion.div variants={itemVariants}>
+              <h3 className="text-lg font-bold mb-4">Contact</h3>
+              <ul className="space-y-2 text-sm">
+                <li className="flex items-center">
+                  <div className="w-3 h-3 bg-emerald-500 rounded-full mr-2"></div>
+                  <span>+237 6XX XXX XXX</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
+                  <span>support@eatfast.cm</span>
+                </li>
+                <li className="flex items-center">
+                  <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
+                  <span>Yaoundé, Cameroun</span>
+                </li>
+              </ul>
+            </motion.div>
           </div>
-          <div className="mt-6 text-center text-sm">
-            <p>© {new Date().getFullYear()} EatFast. Tous droits réservés.</p>
+          
+          <div className="pt-8 border-t border-gray-200 dark:border-gray-700 text-center text-sm">
+            <p>&copy; {new Date().getFullYear()} EatFast Cameroun. {uiState.language === 'fr' ? 'Tous droits réservés.' : 'All rights reserved.'}</p>
           </div>
         </div>
       </motion.footer>

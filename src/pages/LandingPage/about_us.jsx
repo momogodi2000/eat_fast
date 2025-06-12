@@ -1,491 +1,950 @@
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Sun, Moon, ChevronDown, User, ShoppingBag, Menu, X, Quote, Award, Rocket, Users, Languages } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
+import { 
+  Sun, Moon, ChevronDown, User, ShoppingBag, Menu, X, Quote, Award, Rocket, 
+  Users, Languages, MapPin, Phone, Mail, Globe, Heart, Star, Truck, Shield,
+  Target, Eye, Lightbulb, Zap, Clock, CheckCircle, TrendingUp, Coffee,
+  Calendar, Camera, Play
+} from 'lucide-react';
 
-// Importation des images (simulations)
-import fina from '../../assets/avartar/avartar.jpeg';
-import alian from '../../assets/avartar/avatar2.jpg';
-import momo from '../../assets/avartar/avatar3.png';
-import yvan from '../../assets/avartar/avartar.jpeg';
-import logo from '../../assets/logo/eat_fast.png';
+// Custom Hooks
+const useTheme = () => {
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
 
-const AboutPage = () => {
-  const { t, i18n } = useTranslation();
-  const [darkMode, setDarkMode] = useState(false);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    setDarkMode(isDarkMode);
+  const toggleTheme = useCallback(() => {
+    setDarkMode(prev => !prev);
+    document.documentElement.classList.toggle('dark');
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => setDarkMode(e.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
+  return { darkMode, toggleTheme };
+};
+
+const useScrollEffects = () => {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '50%']);
+  
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+  return { isScrolled, backgroundY, scrollYProgress };
+};
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+// Animation Variants
+const animations = {
+  fadeInUp: {
+    hidden: { opacity: 0, y: 40 },
+    visible: { 
+      opacity: 1, 
+      y: 0, 
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  },
+  slideInLeft: {
+    hidden: { opacity: 0, x: -60 },
+    visible: { 
+      opacity: 1, 
+      x: 0, 
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  },
+  slideInRight: {
+    hidden: { opacity: 0, x: 60 },
+    visible: { 
+      opacity: 1, 
+      x: 0, 
+      transition: { duration: 0.8, ease: "easeOut" }
+    }
+  },
+  stagger: {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.2,
+        delayChildren: 0.3
+      }
+    }
+  },
+  scaleIn: {
+    hidden: { opacity: 0, scale: 0.8 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        type: "spring", 
+        stiffness: 100, 
+        damping: 15 
+      }
+    }
+  }
+};
 
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
-    localStorage.setItem('language', lng);
-  };
-
-  const teamMembers = [
+// Mock Data - Enhanced
+const mockData = {
+  teamMembers: [
     {
       id: 1,
-      name: 'Madame Fina',
-      role: t('team.ceo'),
-      image: fina,
-      description: 'Visionary leader with 10+ years in the food industry, passionate about connecting people with great food.'
+      name: 'Madame Fina Nguenang',
+      role: 'CEO & Fondatrice',
+      image: 'https://images.unsplash.com/photo-1494790108755-2616b612b0e1?w=300&h=300&fit=crop&crop=face',
+      description: 'Visionnaire passionnée avec plus de 10 ans d\'expérience dans l\'industrie alimentaire et la technologie.',
+      linkedin: '#',
+      email: 'fina@eatfast.cm',
+      achievements: ['Forbes 30 Under 30', 'Tech Leader Award 2023'],
+      quote: "Notre mission est de connecter chaque camerounais à ses saveurs préférées."
     },
     {
       id: 2,
-      name: 'Monsieur Alain',
-      role: t('team.seniorDev'),
-      image: alian,
-      description: 'Experienced developer specializing in scalable food delivery platforms.'
+      name: 'Monsieur Alain Talla',
+      role: 'CTO & Co-fondateur',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face',
+      description: 'Expert en développement logiciel spécialisé dans les plateformes de livraison évolutives.',
+      linkedin: '#',
+      email: 'alain@eatfast.cm',
+      achievements: ['Google Developer Expert', 'AWS Solutions Architect'],
+      quote: "La technologie doit servir l'humain, pas l'inverse."
     },
     {
       id: 3,
       name: 'Monsieur Momo Yvan',
-      role: t('team.juniorDev'),
-      image: momo,
-      description: 'Up-and-coming developer focused on creating seamless user experiences.'
+      role: 'Lead Developer',
+      image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face',
+      description: 'Développeur talentueux spécialisé dans l\'expérience utilisateur et les interfaces modernes.',
+      linkedin: '#',
+      email: 'yvan@eatfast.cm',
+      achievements: ['React Expert', 'UI/UX Certification'],
+      quote: "Chaque ligne de code doit améliorer la vie de nos utilisateurs."
     },
     {
       id: 4,
-      name: 'Madame Sarah',
-      role: t('team.uiUx'),
-      image: yvan,
-      description: 'Creative designer ensuring our platform is beautiful and intuitive.'
+      name: 'Madame Sarah Fokam',
+      role: 'Head of Design',
+      image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face',
+      description: 'Designer créative garantissant que notre plateforme soit à la fois belle et intuitive.',
+      linkedin: '#',
+      email: 'sarah@eatfast.cm',
+      achievements: ['Adobe Certified Expert', 'Design Thinking Master'],
+      quote: "Le design c'est résoudre des problèmes avec beauté."
     }
-  ];
+  ],
 
-  const testimonials = [
+  stats: [
+    { number: '10K+', label: 'Clients Satisfaits', icon: <Users className="text-blue-500" size={32} /> },
+    { number: '500+', label: 'Restaurants Partenaires', icon: <Coffee className="text-green-500" size={32} /> },
+    { number: '50K+', label: 'Commandes Livrées', icon: <Truck className="text-purple-500" size={32} /> },
+    { number: '5', label: 'Villes Couvertes', icon: <MapPin className="text-red-500" size={32} /> }
+  ],
+
+  milestones: [
+    {
+      year: '2022',
+      title: 'Fondation d\'EatFast',
+      description: 'Lancement de l\'idée avec une équipe de 4 passionnés',
+      icon: <Lightbulb className="text-yellow-500" size={24} />
+    },
+    {
+      year: '2023',
+      title: 'Premier Restaurant Partenaire',
+      description: 'Signature du premier contrat avec Le Foufou Délice',
+      icon: <Rocket className="text-blue-500" size={24} />
+    },
+    {
+      year: '2023',
+      title: '100 Restaurants',
+      description: 'Franchissement du cap des 100 restaurants partenaires',
+      icon: <Target className="text-green-500" size={24} />
+    },
+    {
+      year: '2024',
+      title: 'Expansion Nationale',
+      description: 'Lancement dans 5 villes du Cameroun',
+      icon: <Globe className="text-purple-500" size={24} />
+    },
+    {
+      year: '2024',
+      title: '10K Clients',
+      description: 'Atteinte de 10 000 clients actifs sur la plateforme',
+      icon: <Heart className="text-red-500" size={24} />
+    }
+  ],
+
+  values: [
+    {
+      title: 'Authenticité',
+      description: 'Nous préservons et célébrons les saveurs traditionnelles camerounaises',
+      icon: <Heart className="text-red-500" size={28} />,
+      color: 'from-red-500 to-pink-500'
+    },
+    {
+      title: 'Innovation',
+      description: 'Nous utilisons la technologie pour améliorer l\'expérience culinaire',
+      icon: <Zap className="text-yellow-500" size={28} />,
+      color: 'from-yellow-500 to-orange-500'
+    },
+    {
+      title: 'Rapidité',
+      description: 'Livraison ultra-rapide sans compromis sur la qualité',
+      icon: <Clock className="text-blue-500" size={28} />,
+      color: 'from-blue-500 to-cyan-500'
+    },
+    {
+      title: 'Qualité',
+      description: 'Standards élevés pour tous nos restaurants partenaires',
+      icon: <Shield className="text-green-500" size={28} />,
+      color: 'from-green-500 to-emerald-500'
+    }
+  ],
+
+  testimonials: [
     {
       id: 1,
-      quote: t('testimonials.customer1'),
-      author: 'Jean, Yaoundé'
+      quote: "EatFast a révolutionné ma façon de commander. Je retrouve enfin les goûts de mon enfance !",
+      author: 'Jean-Baptiste Nkomo',
+      role: 'Client fidèle',
+      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+      rating: 5,
+      location: 'Yaoundé'
     },
     {
       id: 2,
-      quote: t('testimonials.customer2'),
-      author: 'Amina, Douala'
+      quote: "Grâce à EatFast, mon restaurant a triplé ses ventes. L\'équipe est professionnelle et à l\'écoute.",
+      author: 'Aminata Kouakou',
+      role: 'Propriétaire de restaurant',
+      avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b0e1?w=100&h=100&fit=crop&crop=face',
+      rating: 5,
+      location: 'Douala'
     },
     {
       id: 3,
-      quote: t('testimonials.customer3'),
-      author: 'Chef Paul, Restaurant Owner'
+      quote: "Interface intuitive, livraison rapide, plats délicieux. EatFast dépasse toutes mes attentes !",
+      author: 'Paul Mbarga',
+      role: 'Chef Cuisinier',
+      avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+      rating: 5,
+      location: 'Bafoussam'
     }
-  ];
+  ]
+};
 
+// Components
+const Logo = ({ className = "text-2xl" }) => (
+  <span className={`${className} font-bold bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent`}>
+    EatFast
+  </span>
+);
+
+const Badge = ({ children, variant = "default" }) => {
+  const variants = {
+    default: "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300",
+    success: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300",
+    primary: "bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300"
+  };
+  
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      {/* Navigation (same as home page) */}
-      <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'py-2 shadow-lg' : 'py-4'} ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <div className="container mx-auto px-4 flex justify-between items-center">
+    <span className={`px-3 py-1 text-xs rounded-full font-medium ${variants[variant]}`}>
+      {children}
+    </span>
+  );
+};
+
+const Navigation = ({ darkMode, toggleTheme, isScrolled }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  return (
+    <header className={`fixed w-full z-50 transition-all duration-300 ${
+      isScrolled 
+        ? 'py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-xl border-b border-gray-200/20 dark:border-gray-700/20' 
+        : 'py-5 bg-transparent'
+    }`}>
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex items-center"
+            className="flex items-center gap-3"
           >
-            <span className="text-2xl font-bold bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
-              EatFast
-            </span>
+            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-yellow-500 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-sm">E</span>
+            </div>
+            <Logo />
           </motion.div>
 
-          <div className="hidden md:flex items-center space-x-6">
-            <nav className="flex items-center space-x-6">
-              <a href="/" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.home')}
-              </a>
-              <a href="/restaurants" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.restaurants')}
-              </a>
-              <a href="/about" className="font-medium text-green-500 transition-colors">
-                {t('nav.about')}
-              </a>
-              <a href="/contact" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.contact')}
-              </a>
-            </nav>
-            
-            <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-1"
-                title={i18n.language === 'en' ? 'Switch to French' : 'Passer en Anglais'}
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-8">
+            {[
+              { name: 'Accueil', href: '/', active: false },
+              { name: 'Restaurants', href: '/restaurants', active: false },
+              { name: 'À propos', href: '/about', active: true },
+              { name: 'Contact', href: '/contact', active: false }
+            ].map((item) => (
+              <a 
+                key={item.name}
+                href={item.href}
+                className={`font-medium transition-colors relative ${
+                  item.active 
+                    ? 'text-green-600 dark:text-green-400' 
+                    : 'text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400'
+                }`}
               >
-                <Languages size={20} />
-                <span className="text-sm font-medium">{i18n.language === 'en' ? 'FR' : 'EN'}</span>
-              </button>
-              
-              <button 
-                onClick={toggleDarkMode} 
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
-                        
-              <Link 
-                to="/login" 
-                className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-              >
-                <User size={20} />
-                <span>{t('nav.account')}</span>
-              </Link>
-              
-              <button className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                <ShoppingBag size={20} />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                  2
-                </span>
-              </button>
-            </div>
-          </div>
+                {item.name}
+                {item.active && (
+                  <motion.div 
+                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-green-500"
+                    layoutId="activeTab"
+                  />
+                )}
+              </a>
+            ))}
+          </nav>
           
-          <div className="md:hidden flex items-center">
-            <button 
-              onClick={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')}
-              className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title={i18n.language === 'en' ? 'Switch to French' : 'Passer en Anglais'}
-            >
-              <span className="text-sm font-medium">{i18n.language === 'en' ? 'FR' : 'EN'}</span>
-            </button>
-            <button 
-              onClick={toggleDarkMode} 
-              className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          {/* Actions */}
+          <div className="flex items-center gap-3">
+            <motion.button 
+              onClick={toggleTheme}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button 
-              onClick={toggleMenu}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            </motion.button>
+            
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              className="hidden md:flex items-center gap-2 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <User size={20} />
+            </motion.button>
+            
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              className="relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <ShoppingBag size={20} />
+              <motion.span 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium"
+              >
+                2
+              </motion.span>
+            </motion.button>
+            
+            <motion.button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
+            </motion.button>
           </div>
-        </div>
-      </header>
-
-      {/* Mobile Menu (same as home page) */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className={`fixed top-16 left-0 right-0 z-40 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
-          >
-            <nav className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-              <a href="/" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.home')}
-              </a>
-              <a href="/restaurants" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.restaurants')}
-              </a>
-              <a href="/about" className="font-medium p-2 bg-green-100 dark:bg-green-900 rounded transition-colors">
-                {t('nav.about')}
-              </a>
-              <a href="/contact" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.contact')}
-              </a>
-              <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
-                <button 
-                  onClick={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')}
-                  className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                >
-                  <Languages size={20} />
-                  <span>{i18n.language === 'en' ? 'Français' : 'English'}</span>
-                </button>
-                <div className="flex items-center space-x-4">
-                  <Link 
-                    to="/login" 
-                    className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                  >
-                    <User size={20} />
-                    <span>{t('nav.account')}</span>
-                  </Link>
-                  <button className="relative flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                    <ShoppingBag size={20} />
-                    <span>{t('nav.cart')}</span>
-                    <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                      2
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Hero Section */}
-      <section className="pt-24 md:pt-32 pb-16 relative overflow-hidden">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-            className="text-center max-w-3xl mx-auto"
-          >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              {t('about.title')}
-            </h1>
-            <p className="text-xl md:text-2xl mb-6 dark:text-gray-300">
-              {t('about.subtitle')}
-            </p>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              className="inline-block bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-full"
-            >
-              {t('about.slogan')}
-            </motion.div>
-          </motion.div>
         </div>
         
-        {/* Background decorations */}
-        <div className="absolute -top-20 -right-20 w-64 h-64 bg-green-500 opacity-10 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-20 -left-20 w-64 h-64 bg-yellow-500 opacity-10 rounded-full blur-3xl"></div>
-      </section>
-
-      {/* About Content */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center gap-12 mb-16">
-            <motion.div 
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              className="w-full md:w-1/2"
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden mt-4 p-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/20 dark:border-gray-700/20"
             >
+              {['Accueil', 'Restaurants', 'À propos', 'Contact'].map((item) => (
+                <a 
+                  key={item}
+                  href="#" 
+                  className="block py-3 px-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  {item}
+                </a>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </header>
+  );
+};
+
+const HeroSection = ({ backgroundY }) => (
+  <section className="pt-24 md:pt-32 pb-20 relative overflow-hidden">
+    {/* Animated Background Elements */}
+    <motion.div 
+      style={{ y: backgroundY }}
+      className="absolute inset-0 z-0"
+    >
+      <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-yellow-400/20 to-red-400/20 rounded-full blur-3xl"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
+    </motion.div>
+
+    <div className="container mx-auto px-4 relative z-10">
+      <motion.div 
+        variants={animations.fadeInUp}
+        initial="hidden"
+        animate="visible"
+        className="text-center max-w-4xl mx-auto"
+      >
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+          className="inline-block mb-6"
+        >
+          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-full text-sm font-medium">
+            ✨ Votre passerelle vers les délices culinaires
+          </div>
+        </motion.div>
+
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+          <span className="block mb-2">À Propos</span>
+          <span className="bg-gradient-to-r from-green-600 via-yellow-500 to-red-500 bg-clip-text text-transparent">
+            d'EatFast
+          </span>
+        </h1>
+        
+        <p className="text-xl md:text-2xl mb-8 text-gray-600 dark:text-gray-300 leading-relaxed">
+          Nous connectons les camerounais à leurs saveurs préférées grâce à une technologie innovante 
+          et un service de livraison ultra-rapide
+        </p>
+
+        <motion.div 
+          className="flex flex-col sm:flex-row gap-4 justify-center"
+          variants={animations.stagger}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.button
+            variants={animations.scaleIn}
+            whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-2xl flex items-center justify-center gap-2"
+          >
+            <Play size={20} />
+            Découvrir Notre Histoire
+          </motion.button>
+          
+          <motion.button
+            variants={animations.scaleIn}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-full font-bold text-lg border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
+          >
+            <Users size={20} />
+            Rejoindre l'Équipe
+          </motion.button>
+        </motion.div>
+      </motion.div>
+    </div>
+  </section>
+);
+
+const StatsSection = () => (
+  <section className="py-16 relative">
+    <div className="container mx-auto px-4">
+      <motion.div 
+        variants={animations.stagger}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="grid grid-cols-2 md:grid-cols-4 gap-8"
+      >
+        {mockData.stats.map((stat, index) => (
+          <motion.div
+            key={index}
+            variants={animations.scaleIn}
+            whileHover={{ y: -10, scale: 1.05 }}
+            className="text-center p-6 bg-white dark:bg-gray-800 rounded-3xl shadow-lg hover:shadow-2xl transition-all border border-gray-200 dark:border-gray-700"
+          >
+            <div className="flex justify-center mb-4">
+              {stat.icon}
+            </div>
+            <div className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              {stat.number}
+            </div>
+            <div className="text-gray-600 dark:text-gray-300 font-medium">
+              {stat.label}
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
+  </section>
+);
+
+const MissionVisionSection = () => (
+  <section className="py-20 bg-gradient-to-br from-gray-50 to-green-50 dark:from-gray-800 dark:to-gray-900">
+    <div className="container mx-auto px-4">
+      <div className="flex flex-col lg:flex-row items-center gap-16">
+        {/* Left Content */}
+        <motion.div 
+          variants={animations.slideInLeft}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="w-full lg:w-1/2"
+        >
+          <div className="relative">
+            <div className="w-full h-96 bg-gradient-to-br from-green-500 to-yellow-500 rounded-3xl overflow-hidden">
               <img 
-                src={logo} 
-                alt="EatFast Team" 
-                className="w-full h-auto rounded-2xl shadow-xl"
+                src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&h=400&fit=crop"
+                alt="EatFast Mission" 
+                className="w-full h-full object-cover mix-blend-overlay"
               />
-            </motion.div>
+            </div>
+            <div className="absolute -bottom-6 -right-6 w-24 h-24 bg-white dark:bg-gray-800 rounded-2xl shadow-xl flex items-center justify-center">
+              <Heart className="text-red-500" size={32} />
+            </div>
+          </div>
+        </motion.div>
+        
+        {/* Right Content */}
+        <motion.div 
+          variants={animations.slideInRight}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="w-full lg:w-1/2"
+        >
+          <div className="space-y-8">
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-2xl flex items-center justify-center">
+                  <Target className="text-white" size={24} />
+                </div>
+                <h3 className="text-2xl font-bold">Notre Mission</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
+                Démocratiser l'accès à la cuisine camerounaise authentique en connectant 
+                chaque foyer aux meilleurs restaurants locaux grâce à une technologie 
+                innovante et un service de livraison ultra-rapide.
+              </p>
+            </div>
             
-            <motion.div 
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
+            <div>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl flex items-center justify-center">
+                  <Eye className="text-white" size={24} />
+                </div>
+                <h3 className="text-2xl font-bold">Notre Vision</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300 text-lg leading-relaxed">
+                Devenir la plateforme de référence pour la livraison de nourriture en Afrique, 
+                en préservant et célébrant les traditions culinaires tout en embrassant 
+                l'innovation technologique.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 pt-6">
+              <div className="text-center p-4 bg-white dark:bg-gray-700 rounded-2xl">
+                <div className="text-2xl font-bold text-green-600 mb-1">2022</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Année de création</div>
+              </div>
+              <div className="text-center p-4 bg-white dark:bg-gray-700 rounded-2xl">
+                <div className="text-2xl font-bold text-blue-600 mb-1">100%</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Made in Cameroon</div>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+    </div>
+  </section>
+);
+
+const ValuesSection = () => (
+  <section className="py-20">
+    <div className="container mx-auto px-4">
+      <motion.div
+        variants={animations.fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="text-center mb-16"
+      >
+        <h2 className="text-4xl md:text-5xl font-bold mb-6">Nos Valeurs</h2>
+        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          Les principes fondamentaux qui guident chacune de nos décisions et actions
+        </p>
+      </motion.div>
+      
+      <motion.div 
+        variants={animations.stagger}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+      >
+        {mockData.values.map((value, index) => (
+          <motion.div
+            key={index}
+            variants={animations.scaleIn}
+            whileHover={{ y: -10, scale: 1.02 }}
+            className="group relative"
+          >
+            <div className="absolute inset-0 bg-gradient-to-r opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-3xl blur-xl -z-10"
+                 style={{ background: `linear-gradient(135deg, ${value.color.split(' ')[1]}, ${value.color.split(' ')[3]})` }}
+            ></div>
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all border border-gray-200 dark:border-gray-700 relative z-10">
+              <div className="flex justify-center mb-6">
+                <div className={`w-16 h-16 bg-gradient-to-br ${value.color} rounded-2xl flex items-center justify-center`}>
+                  {value.icon}
+                </div>
+              </div>
+              <h3 className="text-xl font-bold mb-4 text-center">{value.title}</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-center">{value.description}</p>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+    </div>
+  </section>
+);
+
+const TimelineSection = () => (
+  <section className="py-20 bg-gray-50 dark:bg-gray-800">
+    <div className="container mx-auto px-4">
+      <motion.div
+        variants={animations.fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="text-center mb-16"
+      >
+        <h2 className="text-4xl md:text-5xl font-bold mb-6">Notre Parcours</h2>
+        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          Les étapes clés qui ont marqué l'évolution d'EatFast
+        </p>
+      </motion.div>
+
+      <div className="relative">
+        {/* Timeline Line */}
+        <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-gradient-to-b from-green-500 to-red-500 rounded-full"></div>
+        
+        <div className="space-y-12">
+          {mockData.milestones.map((milestone, index) => (
+            <motion.div
+              key={index}
+              variants={animations.fadeInUp}
+              initial="hidden"
+              whileInView="visible"
               viewport={{ once: true }}
-              transition={{ duration: 0.7 }}
-              className="w-full md:w-1/2"
+              transition={{ delay: index * 0.2 }}
+              className={`flex items-center ${index % 2 === 0 ? 'flex-row' : 'flex-row-reverse'}`}
             >
-              <h2 className="text-3xl font-bold mb-6">{t('about.title')}</h2>
-              <p className="text-lg mb-6 dark:text-gray-300">
-                {t('about.description')}
-              </p>
-              <div className="space-y-6">
-                <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-full ${darkMode ? 'bg-green-900' : 'bg-green-100'}`}>
-                    <Rocket className="text-green-500" size={24} />
+              <div className={`w-1/2 ${index % 2 === 0 ? 'pr-8 text-right' : 'pl-8 text-left'}`}>
+                <div className="bg-white dark:bg-gray-700 p-6 rounded-2xl shadow-lg">
+                  <div className="flex items-center gap-3 mb-3">
+                    {index % 2 === 1 && milestone.icon}
+                    <span className="text-2xl font-bold text-green-600">{milestone.year}</span>
+                    {index % 2 === 0 && milestone.icon}
                   </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">{t('about.missionTitle')}</h3>
-                    <p className="dark:text-gray-300">{t('about.missionText')}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-full ${darkMode ? 'bg-yellow-900' : 'bg-yellow-100'}`}>
-                    <Award className="text-yellow-500" size={24} />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">{t('about.visionTitle')}</h3>
-                    <p className="dark:text-gray-300">{t('about.visionText')}</p>
-                  </div>
+                  <h3 className="text-xl font-bold mb-2">{milestone.title}</h3>
+                  <p className="text-gray-600 dark:text-gray-300">{milestone.description}</p>
                 </div>
               </div>
+              
+              {/* Timeline Dot */}
+              <div className="relative z-10">
+                <div className="w-6 h-6 bg-gradient-to-r from-green-500 to-green-600 rounded-full border-4 border-white dark:border-gray-800 shadow-lg"></div>
+              </div>
+              
+              <div className="w-1/2"></div>
             </motion.div>
-          </div>
+          ))}
         </div>
-      </section>
+      </div>
+    </div>
+  </section>
+);
 
-      {/* Our Team */}
-      <section className={`py-12 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
+const TeamSection = () => (
+  <section className="py-20">
+    <div className="container mx-auto px-4">
+      <motion.div
+        variants={animations.fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="text-center mb-16"
+      >
+        <h2 className="text-4xl md:text-5xl font-bold mb-6">Notre Équipe</h2>
+        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          L'équipe passionnée qui donne vie à EatFast chaque jour
+        </p>
+      </motion.div>
+      
+      <motion.div 
+        variants={animations.stagger}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
+      >
+        {mockData.teamMembers.map((member, index) => (
+          <motion.div
+            key={member.id}
+            variants={animations.scaleIn}
+            whileHover={{ y: -10 }}
+            className="group relative"
           >
-            <h2 className="text-3xl font-bold mb-4">{t('sections.ourTeam')}</h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Meet the passionate team behind EatFast
-            </p>
+            <div className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border border-gray-200 dark:border-gray-700">
+              {/* Profile Image */}
+              <div className="relative h-64 overflow-hidden">
+                <img 
+                  src={member.image} 
+                  alt={member.name} 
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                
+                {/* Achievement Badges */}
+                <div className="absolute top-4 left-4 space-y-2">
+                  {member.achievements.slice(0, 1).map((achievement, i) => (
+                    <Badge key={i} variant="success">{achievement}</Badge>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Content */}
+              <div className="p-6">
+                <h3 className="text-xl font-bold mb-1">{member.name}</h3>
+                <p className="text-green-500 font-medium mb-3">{member.role}</p>
+                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{member.description}</p>
+                
+                {/* Quote */}
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl mb-4">
+                  <Quote size={16} className="text-green-500 mb-2" />
+                  <p className="text-sm italic">"{member.quote}"</p>
+                </div>
+                
+                {/* Contact */}
+                <div className="flex items-center justify-between">
+                  <a href={`mailto:${member.email}`} 
+                     className="text-green-500 hover:text-green-600 transition-colors">
+                    <Mail size={18} />
+                  </a>
+                  <div className="flex gap-2">
+                    {member.achievements.slice(1).map((achievement, i) => (
+                      <Badge key={i} variant="primary">{achievement}</Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </motion.div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {teamMembers.map((member, index) => (
-              <motion.div
-                key={member.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`rounded-xl overflow-hidden shadow-lg ${darkMode ? 'bg-gray-700' : 'bg-white'} hover:shadow-xl transition-shadow`}
-              >
-                <div className="relative h-64">
-                  <img 
-                    src={member.image} 
-                    alt={member.name} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-                  <p className="text-green-500 font-medium mb-3">{member.role}</p>
-                  <p className="text-gray-600 dark:text-gray-400">{member.description}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+        ))}
+      </motion.div>
+    </div>
+  </section>
+);
 
-      {/* Testimonials */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
+const TestimonialsSection = () => (
+  <section className="py-20 bg-gradient-to-br from-green-50 to-yellow-50 dark:from-gray-800 dark:to-gray-900">
+    <div className="container mx-auto px-4">
+      <motion.div
+        variants={animations.fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="text-center mb-16"
+      >
+        <h2 className="text-4xl md:text-5xl font-bold mb-6">Ce qu'ils disent de nous</h2>
+        <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          Les témoignages de nos clients et partenaires qui nous font confiance
+        </p>
+      </motion.div>
+      
+      <motion.div 
+        variants={animations.stagger}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-8"
+      >
+        {mockData.testimonials.map((testimonial, index) => (
+          <motion.div
+            key={testimonial.id}
+            variants={animations.scaleIn}
+            whileHover={{ y: -5, scale: 1.02 }}
+            className="bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-lg hover:shadow-2xl transition-all border border-gray-200 dark:border-gray-700"
           >
-            <h2 className="text-3xl font-bold mb-4">{t('sections.testimonials')}</h2>
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Hear what our customers and partners say about us
-            </p>
+            {/* Stars */}
+            <div className="flex items-center gap-1 mb-4">
+              {[...Array(testimonial.rating)].map((_, i) => (
+                <Star key={i} size={16} className="text-yellow-500 fill-current" />
+              ))}
+            </div>
+            
+            {/* Quote */}
+            <div className="mb-6">
+              <Quote size={24} className="text-green-500 mb-4" />
+              <p className="text-lg italic leading-relaxed">"{testimonial.quote}"</p>
+            </div>
+            
+            {/* Author */}
+            <div className="flex items-center gap-4">
+              <img 
+                src={testimonial.avatar} 
+                alt={testimonial.author}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+              <div>
+                <h4 className="font-bold">{testimonial.author}</h4>
+                <p className="text-sm text-gray-600 dark:text-gray-400">{testimonial.role}</p>
+                <p className="text-xs text-green-500 flex items-center gap-1">
+                  <MapPin size={12} />
+                  {testimonial.location}
+                </p>
+              </div>
+            </div>
           </motion.div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={testimonial.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className={`p-6 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
-              >
-                <div className="mb-4 text-yellow-500">
-                  <Quote size={24} />
-                </div>
-                <p className="text-lg italic mb-6">"{testimonial.quote}"</p>
-                <p className="font-medium text-gray-600 dark:text-gray-400">— {testimonial.author}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+        ))}
+      </motion.div>
+    </div>
+  </section>
+);
 
-      {/* Footer (same as home page) */}
-      <footer className={`py-12 ${darkMode ? 'bg-gray-900 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
+const CTASection = () => (
+  <section className="py-20 relative overflow-hidden">
+    <div className="absolute inset-0 bg-gradient-to-br from-green-600 to-green-700"></div>
+    <div className="absolute inset-0 opacity-10">
+      <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-400 rounded-full blur-3xl"></div>
+    </div>
+    
+    <div className="container mx-auto px-4 relative z-10">
+      <motion.div
+        variants={animations.fadeInUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true }}
+        className="text-center text-white"
+      >
+        <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          Rejoignez l'Aventure EatFast
+        </h2>
+        <p className="text-xl mb-8 opacity-90 max-w-3xl mx-auto">
+          Que vous soyez un restaurant souhaitant rejoindre nos partenaires ou un talent 
+          cherchant à révolutionner l'industrie alimentaire, nous avons une place pour vous !
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-white text-green-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-colors shadow-xl"
+          >
+            Devenir Partenaire Restaurant
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-green-600 transition-all"
+          >
+            Rejoindre Notre Équipe
+          </motion.button>
+        </div>
+      </motion.div>
+    </div>
+  </section>
+);
+
+// Main Component
+const AboutPage = () => {
+  const { darkMode, toggleTheme } = useTheme();
+  const { isScrolled, backgroundY } = useScrollEffects();
+
+  return (
+    <div className={`min-h-screen transition-colors duration-300 ${
+      darkMode ? 'dark bg-gray-900 text-white' : 'bg-white text-gray-900'
+    }`}>
+      <Navigation darkMode={darkMode} toggleTheme={toggleTheme} isScrolled={isScrolled} />
+      
+      <HeroSection backgroundY={backgroundY} />
+      <StatsSection />
+      <MissionVisionSection />
+      <ValuesSection />
+      <TimelineSection />
+      <TeamSection />
+      <TestimonialsSection />
+      <CTASection />
+      
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12 px-4">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-lg font-bold mb-4 flex items-center">
-                <span className="bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
-                  EatFast
-                </span>
-              </h3>
-              <p className="mb-4 text-sm">
-                {t('footer.description')}
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-yellow-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">E</span>
+                </div>
+                <Logo className="text-xl" />
+              </div>
+              <p className="text-gray-400 mb-4 text-sm">
+                Votre passerelle vers les délices culinaires du Cameroun
               </p>
-              <div className="flex space-x-4">
-                <a href="#" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 3.093 1.6-.019 3.138.568 4.291 1.615-1.112-.034-2.238.344-2.447 1.176-.126.508.099 1.16.873 1.478-.87.017-1.691-.302-2.202-.765-.057 1.024.561 1.986 1.677 2.202-.731.202-1.533.137-2.055-.124.282.849.857 1.464 1.879 1.468-1.347.568-2.678.666-4.123.456 1.263.810 2.76 1.282 4.368 1.282 5.344 0 8.342-4.421 8.158-8.38l.009-.38z" /></svg>
-                </a>
-                <a href="#" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073z" /><path d="M12 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4z" /></svg>
-                </a>
-                <a href="#" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" /></svg>
-                </a>
-                <a href="#" className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition">
-                  <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                </a>
-              </div>
             </div>
             
             <div>
-              <h3 className="text-lg font-bold mb-4">{t('footer.quickLinks')}</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/about" className="hover:text-green-500 transition-colors">{t('footer.aboutUs')}</a></li>
-                <li><a href="/restaurants" className="hover:text-green-500 transition-colors">{t('footer.restaurants')}</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">{t('footer.becomePartner')}</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">{t('footer.careers')}</a></li>
-                <li><a href="/contact" className="hover:text-green-500 transition-colors">{t('footer.contactUs')}</a></li>
+              <h3 className="font-bold mb-4">Navigation</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="/" className="hover:text-white transition-colors">Accueil</a></li>
+                <li><a href="/restaurants" className="hover:text-white transition-colors">Restaurants</a></li>
+                <li><a href="/about" className="hover:text-white transition-colors">À propos</a></li>
+                <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="text-lg font-bold mb-4">{t('footer.legal')}</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="#" className="hover:text-green-500 transition-colors">{t('footer.terms')}</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">{t('footer.privacy')}</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">{t('footer.cookies')}</a></li>
-                <li><a href="#" className="hover:text-green-500 transition-colors">{t('footer.licensing')}</a></li>
+              <h3 className="font-bold mb-4">Services</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">Livraison</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Devenir partenaire</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Carrières</a></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="text-lg font-bold mb-4">{t('footer.contact')}</h3>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-green-500"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+              <h3 className="font-bold mb-4">Contact</h3>
+              <div className="space-y-2 text-sm text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Phone size={16} />
+                  <span>+237 6XX XXX XXX</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Mail size={16} />
+                  <span>contact@eatfast.cm</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin size={16} />
                   <span>Yaoundé, Cameroun</span>
-                </li>
-                <li className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-green-500"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                  <span>+237 123 456 789</span>
-                </li>
-                <li className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-green-500"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                  <span>info@eatfast.com</span>
-                </li>
-              </ul>
-              <div className="mt-4">
-                <h4 className="font-medium mb-2">{t('footer.newsletter')}</h4>
-                <div className="flex">
-                  <input 
-                    type="email" 
-                    placeholder={t('footer.emailPlaceholder')}
-                    className={`px-4 py-2 rounded-l-lg w-full text-sm ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} border focus:outline-none focus:ring-1 focus:ring-green-500`}
-                  />
-                  <button className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-r-lg transition">
-                    {t('footer.subscribe')}
-                  </button>
                 </div>
               </div>
             </div>
           </div>
           
-          <div className="pt-8 border-t border-gray-200 dark:border-gray-800 text-center text-sm">
-            <p>&copy; {new Date().getFullYear()} EatFast. {t('footer.allRightsReserved')}</p>
+          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
+            <p>&copy; 2024 EatFast. Tous droits réservés.</p>
           </div>
         </div>
       </footer>

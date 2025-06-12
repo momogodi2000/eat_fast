@@ -1,875 +1,982 @@
-import { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
-import { ChevronDown, ChevronUp, MapPin, Clock, Star, ThumbsUp, ThumbsDown, Send, Filter, X, Sun, Moon, ArrowLeft, Menu, User, ShoppingBag, Languages } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { 
+  Sun, Moon, Search, MapPin, Clock, Star, User, ShoppingBag, Menu, X, 
+  Plus, Minus, Trash2, ArrowRight, CreditCard, Smartphone, Gift,
+  ChevronDown, ChevronUp, Award, CheckCircle, Heart, Share2, 
+  ThumbsUp, ThumbsDown, Send, MessageCircle, Filter, Languages, Phone, Globe
+} from 'lucide-react';
 
-// Importation des images (simulations)
-import food1 from '../../assets/images/eru.jpeg';
-import food2 from '../../assets/images/DG.jpeg';
-import food3 from '../../assets/images/couscous.jpeg';
-import food4 from '../../assets/images/mbongo.jpeg';
-import food5 from '../../assets/images/ndoles.jpeg';
-import resto1 from '../../assets/images/resto6.jpeg';
-import resto2 from '../../assets/images/resto2.jpeg';
-import resto3 from '../../assets/images/resto3.jpeg';
-import resto4 from '../../assets/images/resto4.jpeg';
-
-const RestaurantsPage = () => {
-  const { t, i18n } = useTranslation();
-  const [restaurants, setRestaurants] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({
-    category: '',
-    city: 'Yaoundé',
-    zone: '',
-    district: '',
-    priceRange: '',
-    maxDeliveryTime: '',
-    maxDeliveryFee: ''
+// Custom Hooks
+const useTheme = () => {
+  const [darkMode, setDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
   });
-  const [showFilters, setShowFilters] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
+
+  const toggleTheme = useCallback(() => {
+    setDarkMode(prev => !prev);
+    document.documentElement.classList.toggle('dark');
+  }, []);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => setDarkMode(e.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  return { darkMode, toggleTheme };
+};
+
+const useCart = () => {
+  const [cartItems, setCartItems] = useState([]);
+  
+  const addToCart = useCallback((item) => {
+    setCartItems(prev => {
+      const existingItem = prev.find(cartItem => cartItem.id === item.id);
+      if (existingItem) {
+        return prev.map(cartItem =>
+          cartItem.id === item.id 
+            ? { ...cartItem, quantity: cartItem.quantity + 1 } 
+            : cartItem
+        );
+      } else {
+        return [...prev, { ...item, quantity: 1 }];
+      }
+    });
+  }, []);
+
+  const removeFromCart = useCallback((id) => {
+    setCartItems(prev => prev.filter(item => item.id !== id));
+  }, []);
+
+  const updateQuantity = useCallback((id, newQuantity) => {
+    if (newQuantity < 1) {
+      removeFromCart(id);
+      return;
+    }
+    setCartItems(prev =>
+      prev.map(item =>
+        item.id === id ? { ...item, quantity: newQuantity } : item
+      )
+    );
+  }, [removeFromCart]);
+
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
+
+  const cartCount = useMemo(() => 
+    cartItems.reduce((total, item) => total + item.quantity, 0), 
+    [cartItems]
+  );
+
+  const subtotal = useMemo(() => 
+    cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0), 
+    [cartItems]
+  );
+
+  const deliveryFee = subtotal > 0 ? 1000 : 0;
+  const total = subtotal + deliveryFee;
+
+  return {
+    cartItems,
+    addToCart,
+    removeFromCart,
+    updateQuantity,
+    clearCart,
+    cartCount,
+    subtotal,
+    deliveryFee,
+    total
+  };
+};
+
+// Mock Data
+const mockData = {
+  restaurants: [
+    {
+      id: 1,
+      name: "Le Foufou Délice",
+      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop",
+      category: "Camerounaise",
+      rating: 4.7,
+      reviewCount: 328,
+      deliveryTime: "20-30",
+      deliveryFee: 500,
+      minOrder: 2000,
+      address: "Avenue Kennedy, Yaoundé",
+      district: "Centre-ville",
+      zone: "Centre",
+      priceRange: "$$",
+      featured: true,
+      verified: true,
+      description: "Restaurant traditionnel proposant des plats authentiques préparés avec des ingrédients locaux frais et bio.",
+      phone: "+237 6XX XXX XXX",
+      openTime: "07:00 - 22:00",
+      dishes: [
+        { 
+          id: 101, 
+          name: "Ndolé aux crevettes", 
+          price: 3500, 
+          image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=300&h=200&fit=crop",
+          description: "Plat traditionnel à base de feuilles amères, arachides et crevettes fraîches",
+          preparationTime: 45,
+          rating: 4.8,
+          category: "traditionnel"
+        },
+        { 
+          id: 102, 
+          name: "Poulet DG", 
+          price: 4500, 
+          image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&h=200&fit=crop",
+          description: "Poulet frit avec plantains mûrs et légumes frais",
+          preparationTime: 35,
+          rating: 4.9,
+          category: "populaire"
+        }
+      ],
+      comments: [
+        { 
+          id: 201, 
+          user: "Sophie Mukamana", 
+          avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b0e1?w=100&h=100&fit=crop&crop=face",
+          text: "Excellent restaurant ! Le poulet DG était délicieux et la livraison très rapide.", 
+          date: "2025-06-10", 
+          rating: 5,
+          likes: 24, 
+          dislikes: 1,
+          verified: true
+        }
+      ]
+    },
+    {
+      id: 2,
+      name: "Saveurs d'Afrique",
+      image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop",
+      category: "Africaine",
+      rating: 4.3,
+      reviewCount: 142,
+      deliveryTime: "30-45",
+      deliveryFee: 600,
+      minOrder: 3000,
+      address: "Boulevard du 20 Mai, Yaoundé",
+      district: "Biyem-Assi",
+      zone: "Sud",
+      priceRange: "$$",
+      featured: false,
+      verified: true,
+      description: "Fusion de saveurs africaines dans une ambiance chaleureuse.",
+      phone: "+237 6XX XXX XXX",
+      openTime: "09:00 - 22:00",
+      dishes: [
+        { 
+          id: 105, 
+          name: "Thieboudienne", 
+          price: 4000, 
+          image: "https://images.unsplash.com/photo-1574484284002-952d92456975?w=300&h=200&fit=crop",
+          description: "Plat de riz au poisson sénégalais authentique",
+          preparationTime: 50,
+          rating: 4.6,
+          category: "africain"
+        }
+      ],
+      comments: []
+    }
+  ],
+
+  menuItems: [
+    {
+      id: 1,
+      name: 'Ndolé Complet',
+      description: 'Le plat national camerounais avec feuilles de ndolé, arachides, poisson fumé et crevettes.',
+      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
+      price: 4500,
+      rating: 4.8,
+      preparationTime: 35,
+      category: 'traditionnel',
+      spicyLevel: 2,
+      isPopular: true,
+      restaurantId: 1
+    },
+    {
+      id: 2,
+      name: 'Poulet DG',
+      description: 'Poulet sauté avec plantains et légumes frais dans un mélange savoureux.',
+      image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop',
+      price: 5000,
+      rating: 4.9,
+      preparationTime: 30,
+      category: 'populaire',
+      spicyLevel: 2,
+      isPopular: true,
+      restaurantId: 1
+    },
+    {
+      id: 3,
+      name: 'Eru et Water Fufu',
+      description: 'Feuilles d\'eru cuites avec waterleaf et huile de palme, servi avec du water fufu.',
+      image: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop',
+      price: 3500,
+      rating: 4.6,
+      preparationTime: 45,
+      category: 'traditionnel',
+      spicyLevel: 3,
+      restaurantId: 1
+    },
+    {
+      id: 4,
+      name: 'Thieboudienne',
+      description: 'Riz au poisson sénégalais avec légumes et épices authentiques.',
+      image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&h=300&fit=crop',
+      price: 4000,
+      rating: 4.5,
+      preparationTime: 50,
+      category: 'africain',
+      spicyLevel: 2,
+      restaurantId: 2
+    },
+    {
+      id: 5,
+      name: 'Jollof Rice',
+      description: 'Riz épicé ouest-africain avec légumes et viande au choix.',
+      image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&h=300&fit=crop',
+      price: 3200,
+      rating: 4.4,
+      preparationTime: 40,
+      category: 'africain',
+      spicyLevel: 2,
+      restaurantId: 2
+    }
+  ],
+
+  categories: [
+    { id: 'tous', name: 'Tous', icon: '🍽️' },
+    { id: 'traditionnel', name: 'Plats Traditionnels', icon: '🥘' },
+    { id: 'populaire', name: 'Plats Populaires', icon: '⭐' },
+    { id: 'africain', name: 'Cuisine Africaine', icon: '🌍' },
+    { id: 'rapide', name: 'Plats Rapides', icon: '⚡' }
+  ]
+};
+
+// Components
+const Logo = ({ className = "text-2xl" }) => (
+  <span className={`${className} font-bold bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent`}>
+    EatFast
+  </span>
+);
+
+const Badge = ({ children, variant = "default", className = "" }) => {
+  const variants = {
+    default: "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300",
+    success: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300",
+    warning: "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300",
+    featured: "bg-gradient-to-r from-green-500 to-green-600 text-white"
+  };
+  
+  return (
+    <span className={`px-2 py-1 text-xs rounded-full font-medium ${variants[variant]} ${className}`}>
+      {children}
+    </span>
+  );
+};
+
+const StarRating = ({ rating, size = 16, showNumber = true }) => (
+  <div className="flex items-center gap-1">
+    <div className="flex">
+      {[...Array(5)].map((_, i) => (
+        <Star 
+          key={i} 
+          size={size} 
+          className={`${i < Math.floor(rating) ? 'text-yellow-500 fill-current' : 'text-gray-300 dark:text-gray-600'}`} 
+        />
+      ))}
+    </div>
+    {showNumber && <span className="text-sm font-medium ml-1">{rating}</span>}
+  </div>
+);
+
+const Navigation = ({ darkMode, toggleTheme, cartCount, onCartClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   
-  // Check system preference for dark mode
-  useEffect(() => {
-    const darkModeQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    setDarkMode(darkModeQuery.matches);
-    
-    const handleChange = (e) => setDarkMode(e.matches);
-    darkModeQuery.addEventListener('change', handleChange);
-    
-    return () => darkModeQuery.removeEventListener('change', handleChange);
-  }, []);
-
-  // Listen for scroll to add shadow to navbar
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setIsScrolled(true);
-      } else {
-        setIsScrolled(false);
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
-  const changeLanguage = (lng) => {
-    i18n.changeLanguage(lng);
-    localStorage.setItem('selectedLanguage', lng);
-  };
-
-  // Simule le chargement des données depuis une API
-  useEffect(() => {
-    setTimeout(() => {
-      setRestaurants([
-        {
-          id: 1,
-          name: "Le Foufou Délice",
-          image: resto1,
-          category: "Camerounaise",
-          rating: 4.7,
-          reviewCount: 128,
-          deliveryTime: "20-30",
-          deliveryFee: 500,
-          minOrder: 2000,
-          address: "Avenue Kennedy, Yaoundé",
-          district: "Centre-ville",
-          zone: "Centre",
-          priceRange: "$$",
-          featured: true,
-          description: "Un restaurant traditionnel camerounais offrant des plats authentiques préparés avec des ingrédients locaux frais.",
-          dishes: [
-            { id: 101, name: "Ndolé aux crevettes", price: 3500, image: food1, description: "Plat traditionnel camerounais à base de feuilles amères et crevettes" },
-            { id: 102, name: "Poulet DG", price: 4500, image: food2, description: "Poulet frit avec plantains mûrs et légumes" }
-          ],
-          comments: [
-            { 
-              id: 201, 
-              user: "Sophie M.", 
-              text: "Le poulet DG était délicieux, livraison rapide!", 
-              date: "2025-05-10", 
-              likes: 12, 
-              dislikes: 1,
-              replies: [
-                { id: 2011, user: "Restaurant", text: "Merci pour votre retour positif!", date: "2025-05-10", likes: 3, dislikes: 0 }
-              ]
-            }
-          ]
-        },
-        {
-          id: 2,
-          name: "Mami Nyanga",
-          image: resto2,
-          category: "Camerounaise",
-          rating: 4.5,
-          reviewCount: 85,
-          deliveryTime: "25-40",
-          deliveryFee: 700,
-          minOrder: 2500,
-          address: "Rue Essono, Yaoundé",
-          district: "Bastos",
-          zone: "Nord",
-          priceRange: "$$$",
-          featured: false,
-          description: "Spécialisé dans les plats traditionnels de l'ouest Cameroun, Mami Nyanga offre une expérience culinaire unique.",
-          dishes: [
-            { id: 103, name: "Eru et Water fufu", price: 3000, image: food3, description: "Plat traditionnel à base de feuilles d'eru et pâte de manioc" },
-            { id: 104, name: "Poisson braisé et plantains", price: 5000, image: food4, description: "Poisson frais braisé servi avec des plantains grillés" }
-          ],
-          comments: [
-            { 
-              id: 202, 
-              user: "Jean P.", 
-              text: "Excellente cuisine traditionnelle, mais livraison un peu longue", 
-              date: "2025-05-08", 
-              likes: 5, 
-              dislikes: 2,
-              replies: []
-            }
-          ]
-        },
-        {
-          id: 3,
-          name: "Saveurs d'Afrique",
-          image: resto3,
-          category: "Africaine",
-          rating: 4.3,
-          reviewCount: 62,
-          deliveryTime: "30-45",
-          deliveryFee: 600,
-          minOrder: 3000,
-          address: "Boulevard du 20 Mai, Yaoundé",
-          district: "Biyem-Assi",
-          zone: "Sud",
-          priceRange: "$$",
-          featured: false,
-          description: "Une fusion de saveurs africaines proposant des plats de différents pays du continent dans une ambiance chaleureuse.",
-          dishes: [
-            { id: 105, name: "Thieboudienne", price: 4000, image: food5, description: "Plat de riz au poisson typique de la cuisine sénégalaise" },
-            { id: 106, name: "Mafé", price: 3800, image: food1, description: "Ragoût à base de sauce arachide et viande de bœuf" }
-          ],
-          comments: [
-            { 
-              id: 203, 
-              user: "Aminata K.", 
-              text: "Le Thieboudienne était authentique et savoureux!", 
-              date: "2025-05-07", 
-              likes: 8, 
-              dislikes: 0,
-              replies: []
-            }
-          ]
-        },
-        {
-          id: 4,
-          name: "Kwabo Restaurant",
-          image: resto4,
-          category: "Africaine",
-          rating: 4.6,
-          reviewCount: 94,
-          deliveryTime: "20-35",
-          deliveryFee: 550,
-          minOrder: 2500,
-          address: "Rue 1.828, Yaoundé",
-          district: "Nsimeyong",
-          zone: "Ouest",
-          priceRange: "$",
-          featured: true,
-          description: "Kwabo signifie 'bienvenue' en pidgin, et c'est exactement ce que vous ressentirez dans ce restaurant convivial.",
-          dishes: [
-            { id: 107, name: "Jollof Rice", price: 3200, image: food2, description: "Riz épicé typique de l'Afrique de l'Ouest" },
-            { id: 108, name: "Achu Soup", price: 4200, image: food3, description: "Soupe jaune traditionnelle camerounaise avec pâte de taro" }
-          ],
-          comments: [
-            { 
-              id: 204, 
-              user: "Pierre N.", 
-              text: "Portions généreuses et excellent rapport qualité-prix", 
-              date: "2025-05-09", 
-              likes: 10, 
-              dislikes: 1,
-              replies: []
-            }
-          ]
-        }
-      ]);
-      setLoading(false);
-    }, 1000);
-  }, []);
-
-  // Filtrer les restaurants
-  const filteredRestaurants = restaurants.filter(restaurant => {
-    return (
-      (filters.category === '' || restaurant.category === filters.category) &&
-      (filters.zone === '' || restaurant.zone === filters.zone) &&
-      (filters.district === '' || restaurant.district === filters.district) &&
-      (filters.priceRange === '' || restaurant.priceRange.length <= filters.priceRange.length) &&
-      (filters.maxDeliveryTime === '' || parseInt(restaurant.deliveryTime.split('-')[1]) <= parseInt(filters.maxDeliveryTime)) &&
-      (filters.maxDeliveryFee === '' || restaurant.deliveryFee <= parseInt(filters.maxDeliveryFee))
-    );
-  });
-
-  // Gérer l'ajout d'un commentaire
-  const [newComment, setNewComment] = useState('');
-  const [replyingTo, setReplyingTo] = useState(null);
-
-  const handleAddComment = (restaurantId, commentId = null) => {
-    if (!newComment.trim()) return;
-    
-    setRestaurants(restaurants.map(restaurant => {
-      if (restaurant.id === restaurantId) {
-        if (commentId) {
-          // Répondre à un commentaire existant
-          const updatedComments = restaurant.comments.map(comment => {
-            if (comment.id === commentId) {
-              return {
-                ...comment,
-                replies: [
-                  ...comment.replies,
-                  {
-                    id: Date.now(),
-                    user: "Vous",
-                    text: newComment,
-                    date: new Date().toISOString().split('T')[0],
-                    likes: 0,
-                    dislikes: 0
-                  }
-                ]
-              };
-            }
-            return comment;
-          });
-          return { ...restaurant, comments: updatedComments };
-        } else {
-          // Ajouter un nouveau commentaire
-          return {
-            ...restaurant,
-            comments: [
-              ...restaurant.comments,
-              {
-                id: Date.now(),
-                user: "Vous",
-                text: newComment,
-                date: new Date().toISOString().split('T')[0],
-                likes: 0,
-                dislikes: 0,
-                replies: []
-              }
-            ]
-          };
-        }
-      }
-      return restaurant;
-    }));
-    
-    setNewComment('');
-    setReplyingTo(null);
-  };
-
-  // Gérer les likes/dislikes
-  const handleReaction = (restaurantId, commentId, replyId = null, isLike = true) => {
-    setRestaurants(restaurants.map(restaurant => {
-      if (restaurant.id === restaurantId) {
-        if (replyId) {
-          // Réaction à une réponse
-          const updatedComments = restaurant.comments.map(comment => {
-            if (comment.id === commentId) {
-              const updatedReplies = comment.replies.map(reply => {
-                if (reply.id === replyId) {
-                  return {
-                    ...reply,
-                    likes: isLike ? reply.likes + 1 : reply.likes,
-                    dislikes: !isLike ? reply.dislikes + 1 : reply.dislikes
-                  };
-                }
-                return reply;
-              });
-              return { ...comment, replies: updatedReplies };
-            }
-            return comment;
-          });
-          return { ...restaurant, comments: updatedComments };
-        } else {
-          // Réaction à un commentaire
-          const updatedComments = restaurant.comments.map(comment => {
-            if (comment.id === commentId) {
-              return {
-                ...comment,
-                likes: isLike ? comment.likes + 1 : comment.likes,
-                dislikes: !isLike ? comment.dislikes + 1 : comment.dislikes
-              };
-            }
-            return comment;
-          });
-          return { ...restaurant, comments: updatedComments };
-        }
-      }
-      return restaurant;
-    }));
-  };
-
-  // Données pour les filtres
-  const categories = ["Camerounaise", "Africaine"];
-  const zones = ["Nord", "Sud", "Est", "Ouest", "Centre"];
-  const districts = ["Centre-ville", "Bastos", "Biyem-Assi", "Nsimeyong"];
-  const priceRanges = ["$", "$$", "$$$"];
-  const deliveryTimes = ["30", "45", "60"];
-  const deliveryFees = ["500", "700", "1000"];
-
-  // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: { 
-      opacity: 1,
-      transition: { 
-        duration: 0.5,
-        when: "beforeChildren",
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: { duration: 0.5 }
-    }
-  };
-
   return (
-    <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      {/* Navigation - Updated to match other pages */}
-      <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'py-2 shadow-lg backdrop-blur-md bg-opacity-90' : 'py-4'} ${darkMode ? 'bg-gray-800 bg-opacity-90' : 'bg-white bg-opacity-90'}`}>
-        <div className="container mx-auto px-4 flex justify-between items-center">
+    <header className={`fixed w-full z-50 transition-all duration-300 py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg border-b border-gray-200/20 dark:border-gray-700/20`}>
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between">
           {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center"
+          <motion.div 
+            className="flex items-center gap-3"
+            whileHover={{ scale: 1.02 }}
           >
-            <span className="text-2xl font-bold bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
-              EatFast
-            </span>
-          </motion.div>
-
-          <div className="hidden md:flex items-center space-x-6">
-            <nav className="flex items-center space-x-6">
-              <a href="/" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.home')}
-              </a>
-              <a href="/restaurants" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.restaurants')}
-              </a>
-              <a href="/about" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.about')}
-              </a>
-              <a href="/contact" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.contact')}
-              </a>
-            </nav>
-            
-            <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-1"
-                title={i18n.language === 'en' ? 'Switch to French' : 'Passer en Anglais'}
-              >
-                <Languages size={20} />
-                <span className="text-sm font-medium">{i18n.language === 'en' ? 'FR' : 'EN'}</span>
-              </button>
-              
-              <button 
-                onClick={toggleDarkMode} 
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-              </button>
-              
-              <Link 
-                to="/login" 
-                className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-              >
-                <User size={20} />
-                <span>{t('nav.account')}</span>
-              </Link>
-              
-              <button className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
-                <ShoppingBag size={20} />
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                  2
-                </span>
-              </button>
+            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-yellow-500 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-sm">E</span>
             </div>
-          </div>
-          
-          <div className="md:hidden flex items-center">
-            <button 
-              onClick={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')}
-              className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title={i18n.language === 'en' ? 'Switch to French' : 'Passer en Anglais'}
-            >
-              <span className="text-sm font-medium">{i18n.language === 'en' ? 'FR' : 'EN'}</span>
-            </button>
-            <button 
-              onClick={toggleDarkMode} 
-              className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button 
-              onClick={toggleMenu}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className={`fixed top-16 left-0 right-0 z-40 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
-          >
-            <nav className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-              <a href="/" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.home')}
-              </a>
-              <a href="/restaurants" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.restaurants')}
-              </a>
-              <a href="/about" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.about')}
-              </a>
-              <a href="/contact" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.contact')}
-              </a>
-              <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
-                <button 
-                  onClick={() => changeLanguage(i18n.language === 'en' ? 'fr' : 'en')}
-                  className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                >
-                  <Languages size={20} />
-                  <span>{i18n.language === 'en' ? 'Français' : 'English'}</span>
-                </button>
-                <div className="flex items-center space-x-4">
-                  <Link 
-                    to="/login" 
-                    className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                  >
-                    <User size={20} />
-                    <span>{t('nav.account')}</span>
-                  </Link>
-                  <button className="relative flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                    <ShoppingBag size={20} />
-                    <span>{t('nav.cart')}</span>
-                    <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                      2
-                    </span>
-                  </button>
-                </div>
-              </div>
-            </nav>
+            <Logo />
           </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main Content */}
-      <div className="pt-24 pb-12">
-        <div className="container mx-auto px-4">
-          {/* Header with gradient background */}
-          <motion.div 
-            className="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-xl shadow-lg mb-8 relative overflow-hidden"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
-          >
-            <motion.h1 className="text-2xl md:text-3xl font-bold text-white mb-2" variants={itemVariants}>
-              {t('restaurants.title')}
-            </motion.h1>
-            <motion.p className="text-white/90 text-lg" variants={itemVariants}>
-              {t('restaurants.subtitle')}
-            </motion.p>
-            
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-8">
+            {[
+              { name: 'Accueil', href: '/', active: false },
+              { name: 'Restaurants & Menus', href: '/restaurants', active: true },
+              { name: 'À propos', href: '/about', active: false },
+              { name: 'Contact', href: '/contact', active: false }
+            ].map((item) => (
+              <a 
+                key={item.name}
+                href={item.href} 
+                className={`font-medium transition-colors relative ${
+                  item.active 
+                    ? 'text-green-600 dark:text-green-400' 
+                    : 'text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400'
+                }`}
+              >
+                {item.name}
+                {item.active && (
+                  <motion.div 
+                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-green-500"
+                    layoutId="activeTab"
+                  />
+                )}
+              </a>
+            ))}
+          </nav>
+          
+          {/* Actions */}
+          <div className="flex items-center gap-3">
             <motion.button 
-              onClick={() => setShowFilters(!showFilters)}
-              className="mt-4 flex items-center px-4 py-2 bg-white text-green-600 rounded-full shadow-lg hover:bg-green-50 transition-all transform hover:scale-105"
-              variants={itemVariants}
+              onClick={toggleTheme}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
+              className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
             >
-              <Filter size={18} className="mr-2" />
-              {t('restaurants.filters')}
+              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </motion.button>
             
-            {/* Background pattern */}
-            <div className="absolute -right-10 -bottom-10 opacity-10">
-              <svg width="200" height="200" viewBox="0 0 200 200">
-                <path d="M45.3,15.5c17.5-9.2,39.2-4.9,56.9,0.2c17.7,5.1,34.3,11.1,46.4,24.7c12.1,13.6,19.7,34.9,15.2,52.5 c-4.5,17.6-21.1,31.6-38.3,40.7c-17.2,9.1-35,13.2-52.5,9.1c-17.5-4.1-34.6-16.4-43.5-33.4C20.6,92.3,20,70.6,25.5,51.9 C31,33.2,42.5,17.5,45.3,15.5z" fill="currentColor" />
-              </svg>
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              className="hidden md:flex items-center gap-2 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <User size={20} />
+            </motion.button>
+            
+            <motion.button 
+              onClick={onCartClick}
+              whileHover={{ scale: 1.05 }}
+              className="relative p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              <ShoppingBag size={20} />
+              {cartCount > 0 && (
+                <motion.span 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium"
+                >
+                  {cartCount}
+                </motion.span>
+              )}
+            </motion.button>
+            
+            <motion.button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            >
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            </motion.button>
+          </div>
+        </div>
+        
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden mt-4 p-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/20 dark:border-gray-700/20"
+            >
+              {['Accueil', 'Restaurants & Menus', 'À propos', 'Contact'].map((item) => (
+                <a 
+                  key={item}
+                  href="#" 
+                  className="block py-3 px-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                >
+                  {item}
+                </a>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </header>
+  );
+};
+
+const SearchAndFilters = ({ searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, showFilters, setShowFilters }) => {
+  return (
+    <div className="space-y-6">
+      {/* Search Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="relative max-w-2xl mx-auto"
+      >
+        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" size={22} />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Rechercher restaurants, plats..."
+          className="w-full pl-16 pr-6 py-4 text-lg rounded-2xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-green-500 focus:outline-none shadow-lg transition-all"
+        />
+      </motion.div>
+      
+      {/* Categories */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        className="flex justify-center"
+      >
+        <div className="flex overflow-x-auto pb-4 hide-scrollbar gap-4">
+          {mockData.categories.map((category) => (
+            <motion.button
+              key={category.id}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setSelectedCategory(category.id)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl whitespace-nowrap font-medium transition-all ${
+                selectedCategory === category.id 
+                  ? 'bg-green-500 text-white shadow-lg' 
+                  : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+              }`}
+            >
+              <span>{category.icon}</span>
+              <span>{category.name}</span>
+            </motion.button>
+          ))}
+        </div>
+      </motion.div>
+    </div>
+  );
+};
+
+const RestaurantCard = ({ restaurant, onToggleContent, isContentOpen, addToCart }) => {
+  const [isFavorite, setIsFavorite] = useState(false);
+  
+  return (
+    <motion.div 
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5 }}
+      className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border border-gray-200 dark:border-gray-700"
+    >
+      <div className="md:flex">
+        <div className="md:w-1/3 relative">
+          <div className="h-48 md:h-full relative overflow-hidden">
+            <img 
+              src={restaurant.image} 
+              alt={restaurant.name} 
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
+            />
+            
+            <div className="absolute top-4 left-4 space-y-2">
+              {restaurant.featured && (
+                <Badge variant="featured">
+                  <Award size={12} className="mr-1" />
+                  Mis en avant
+                </Badge>
+              )}
+              {restaurant.verified && (
+                <Badge variant="success">
+                  <CheckCircle size={12} className="mr-1" />
+                  Vérifié
+                </Badge>
+              )}
             </div>
-          </motion.div>
+            
+            <div className="absolute top-4 right-4 space-y-2">
+              <motion.button
+                onClick={() => setIsFavorite(!isFavorite)}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
+                  isFavorite 
+                    ? 'bg-red-500 text-white' 
+                    : 'bg-white/80 text-gray-600 hover:bg-red-500 hover:text-white'
+                }`}
+              >
+                <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
+              </motion.button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="md:w-2/3 p-6">
+          <div className="flex justify-between items-start mb-4">
+            <div>
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+                {restaurant.name}
+              </h3>
+              <div className="flex items-center gap-4 mb-2">
+                <StarRating rating={restaurant.rating} />
+                <span className="text-sm text-gray-600 dark:text-gray-400">
+                  ({restaurant.reviewCount} avis)
+                </span>
+              </div>
+            </div>
+            
+            <div className="text-right">
+              <div className="flex items-center gap-2 text-green-600 dark:text-green-400 mb-1">
+                <Clock size={16} />
+                <span className="font-medium">{restaurant.deliveryTime} min</span>
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                {restaurant.deliveryFee} FCFA livraison
+              </div>
+            </div>
+          </div>
           
-          {/* Panneau de filtres */}
-          <AnimatePresence>
-            {showFilters && (
-              <motion.div 
-                initial={{ opacity: 0, y: -20 }}
+          <p className="text-gray-600 dark:text-gray-300 mb-4">
+            {restaurant.description}
+          </p>
+          
+          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4">
+            <MapPin size={16} />
+            <span>{restaurant.address}</span>
+          </div>
+          
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Badge>{restaurant.category}</Badge>
+            <Badge>{restaurant.district}</Badge>
+            <Badge>{restaurant.priceRange}</Badge>
+          </div>
+          
+          <div className="flex gap-3">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all shadow-lg"
+            >
+              Commander maintenant
+            </motion.button>
+            
+            <motion.button
+              onClick={() => onToggleContent(restaurant.id)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+            >
+              {isContentOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </motion.button>
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const MenuCard = ({ item, addToCart }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700"
+    >
+      <div className="relative h-48">
+        <img 
+          src={item.image} 
+          alt={item.name} 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+        
+        {item.isPopular && (
+          <div className="absolute top-4 left-4">
+            <Badge variant="warning">
+              ⭐ Populaire
+            </Badge>
+          </div>
+        )}
+        
+        <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg">
+          <StarRating rating={item.rating} size={14} />
+        </div>
+      </div>
+      
+      <div className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-bold text-lg">{item.name}</h3>
+          <span className="text-green-500 font-bold">{item.price.toLocaleString()} FCFA</span>
+        </div>
+        
+        <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{item.description}</p>
+        
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="flex items-center text-sm text-gray-500">
+              <Clock size={14} className="mr-1" />
+              <span>{item.preparationTime} min</span>
+            </div>
+            <div className="flex">
+              {[...Array(item.spicyLevel)].map((_, i) => (
+                <span key={i} className="text-red-500">🌶️</span>
+              ))}
+            </div>
+          </div>
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => addToCart(item)}
+            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition shadow-md"
+          >
+            Ajouter
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const CartSidebar = ({ show, onClose, cart }) => {
+  const [showCheckout, setShowCheckout] = useState(false);
+  
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div 
+          initial={{ opacity: 0, x: '100%' }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: '100%' }}
+          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          className="fixed inset-y-0 right-0 w-full sm:w-96 z-50 bg-white dark:bg-gray-800 shadow-2xl overflow-y-auto"
+        >
+          <div className="p-6 h-full flex flex-col">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">Votre Panier</h2>
+              <button 
+                onClick={onClose}
+                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {cart.cartItems.length === 0 ? (
+              <div className="flex-grow flex flex-col items-center justify-center text-center">
+                <ShoppingBag size={48} className="text-gray-400 mb-4" />
+                <h3 className="text-lg font-medium mb-2">Votre panier est vide</h3>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">Ajoutez des plats délicieux</p>
+                <button 
+                  onClick={onClose}
+                  className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full font-medium transition"
+                >
+                  Parcourir les menus
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex-grow overflow-y-auto">
+                  {cart.cartItems.map(item => (
+                    <div key={item.id} className="flex items-center py-4 border-b dark:border-gray-700">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden mr-4">
+                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-grow">
+                        <h3 className="font-medium">{item.name}</h3>
+                        <p className="text-green-500 font-bold">{item.price.toLocaleString()} FCFA</p>
+                      </div>
+                      <div className="flex items-center">
+                        <button 
+                          onClick={() => cart.updateQuantity(item.id, item.quantity - 1)}
+                          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          <Minus size={16} />
+                        </button>
+                        <span className="mx-2 w-8 text-center">{item.quantity}</span>
+                        <button 
+                          onClick={() => cart.updateQuantity(item.id, item.quantity + 1)}
+                          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                      <button 
+                        onClick={() => cart.removeFromCart(item.id)}
+                        className="ml-4 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-full"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="border-t dark:border-gray-700 pt-4 mt-4">
+                  <div className="flex justify-between mb-2">
+                    <span>Sous-total</span>
+                    <span className="font-medium">{cart.subtotal.toLocaleString()} FCFA</span>
+                  </div>
+                  <div className="flex justify-between mb-2">
+                    <span>Frais de livraison</span>
+                    <span className="font-medium">{cart.deliveryFee.toLocaleString()} FCFA</span>
+                  </div>
+                  <div className="flex justify-between text-lg font-bold mt-4">
+                    <span>Total</span>
+                    <span>{cart.total.toLocaleString()} FCFA</span>
+                  </div>
+
+                  <button 
+                    onClick={() => setShowCheckout(true)}
+                    className="w-full mt-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium flex items-center justify-center transition"
+                  >
+                    Passer la commande <ArrowRight size={18} className="ml-2" />
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+// Main Component
+const UnifiedRestaurantMenuPage = () => {
+  const { darkMode, toggleTheme } = useTheme();
+  const cart = useCart();
+  
+  const [activeTab, setActiveTab] = useState('restaurants');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('tous');
+  const [showCart, setShowCart] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const [openContent, setOpenContent] = useState({});
+
+  const handleToggleContent = useCallback((id) => {
+    setOpenContent(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  }, []);
+
+  const filteredRestaurants = useMemo(() => {
+    return mockData.restaurants.filter(restaurant => {
+      const matchesSearch = searchQuery === '' || 
+        restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        restaurant.category.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'tous' || 
+        restaurant.category.toLowerCase().includes(selectedCategory);
+      return matchesSearch && matchesCategory;
+    });
+  }, [searchQuery, selectedCategory]);
+
+  const filteredMenuItems = useMemo(() => {
+    return mockData.menuItems.filter(item => {
+      const matchesSearch = searchQuery === '' || 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesCategory = selectedCategory === 'tous' || item.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [searchQuery, selectedCategory]);
+
+  return (
+    <div className={`min-h-screen transition-colors duration-300 ${
+      darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
+    }`}>
+      <Navigation 
+        darkMode={darkMode} 
+        toggleTheme={toggleTheme} 
+        cartCount={cart.cartCount}
+        onCartClick={() => setShowCart(true)}
+      />
+      
+      <CartSidebar 
+        show={showCart} 
+        onClose={() => setShowCart(false)} 
+        cart={cart}
+      />
+      
+      {/* Hero Section */}
+      <section className="pt-24 pb-12 px-4">
+        <div className="container mx-auto">
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-12"
+          >
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Restaurants & Menus
+            </h1>
+            <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
+              Découvrez les meilleurs restaurants et plats du Cameroun, livrés rapidement chez vous
+            </p>
+            
+            {/* Tab Navigation */}
+            <div className="flex justify-center mb-8">
+              <div className="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => setActiveTab('restaurants')}
+                  className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                    activeTab === 'restaurants'
+                      ? 'bg-green-500 text-white shadow-lg'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-green-500'
+                  }`}
+                >
+                  🏪 Restaurants ({filteredRestaurants.length})
+                </button>
+                <button
+                  onClick={() => setActiveTab('menus')}
+                  className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                    activeTab === 'menus'
+                      ? 'bg-green-500 text-white shadow-lg'
+                      : 'text-gray-600 dark:text-gray-400 hover:text-green-500'
+                  }`}
+                >
+                  🍽️ Menus ({filteredMenuItems.length})
+                </button>
+              </div>
+            </div>
+            
+            <SearchAndFilters 
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              selectedCategory={selectedCategory}
+              setSelectedCategory={setSelectedCategory}
+              showFilters={showFilters}
+              setShowFilters={setShowFilters}
+            />
+          </motion.div>
+        </div>
+      </section>
+      
+      {/* Content Section */}
+      <section className="pb-16 px-4">
+        <div className="container mx-auto">
+          <AnimatePresence mode="wait">
+            {activeTab === 'restaurants' ? (
+              <motion.div
+                key="restaurants"
+                initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="bg-white dark:bg-gray-800 shadow-xl rounded-lg border border-gray-200 dark:border-gray-700 p-4 mb-8"
+                className="space-y-6"
               >
-                <div className="max-w-7xl mx-auto">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white">{t('restaurants.refineSearch')}</h3>
-                    <button onClick={() => setShowFilters(false)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
-                      <X size={20} />
-                    </button>
+                {filteredRestaurants.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">🏪</div>
+                    <h3 className="text-xl font-bold mb-2">Aucun restaurant trouvé</h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Essayez d'ajuster votre recherche ou vos filtres
+                    </p>
                   </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Catégorie */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('restaurants.category')}</label>
-                      <select 
-                        value={filters.category}
-                        onChange={(e) => setFilters({...filters, category: e.target.value})}
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm"
-                      >
-                        <option value="">{t('restaurants.allCategories')}</option>
-                        {categories.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    {/* Zone */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('restaurants.zone')}</label>
-                      <select 
-                        value={filters.zone}
-                        onChange={(e) => setFilters({...filters, zone: e.target.value})}
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm"
-                      >
-                        <option value="">{t('restaurants.allZones')}</option>
-                        {zones.map(zone => (
-                          <option key={zone} value={zone}>{zone}</option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    {/* Quartier */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('restaurants.district')}</label>
-                      <select 
-                        value={filters.district}
-                        onChange={(e) => setFilters({...filters, district: e.target.value})}
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm"
-                      >
-                        <option value="">{t('restaurants.allDistricts')}</option>
-                        {districts.map(district => (
-                          <option key={district} value={district}>{district}</option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    {/* Gamme de prix */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('restaurants.priceRange')}</label>
-                      <select 
-                        value={filters.priceRange}
-                        onChange={(e) => setFilters({...filters, priceRange: e.target.value})}
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm"
-                      >
-                        <option value="">{t('restaurants.allPrices')}</option>
-                        {priceRanges.map(price => (
-                          <option key={price} value={price}>{price}</option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    {/* Temps de livraison max */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('restaurants.maxDeliveryTime')}</label>
-                      <select 
-                        value={filters.maxDeliveryTime}
-                        onChange={(e) => setFilters({...filters, maxDeliveryTime: e.target.value})}
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm"
-                      >
-                        <option value="">{t('restaurants.anyTime')}</option>
-                        {deliveryTimes.map(time => (
-                          <option key={time} value={time}>{time} min max</option>
-                        ))}
-                      </select>
-                    </div>
-                    
-                    {/* Frais de livraison max */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('restaurants.maxDeliveryFee')}</label>
-                      <select 
-                        value={filters.maxDeliveryFee}
-                        onChange={(e) => setFilters({...filters, maxDeliveryFee: e.target.value})}
-                        className="w-full rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2 text-sm"
-                      >
-                        <option value="">{t('restaurants.anyFee')}</option>
-                        {deliveryFees.map(fee => (
-                          <option key={fee} value={fee}>{fee} FCFA max</option>
-                        ))}
-                      </select>
-                    </div>
+                ) : (
+                  filteredRestaurants.map(restaurant => (
+                    <RestaurantCard 
+                      key={restaurant.id} 
+                      restaurant={restaurant}
+                      onToggleContent={handleToggleContent}
+                      isContentOpen={openContent[restaurant.id]}
+                      addToCart={cart.addToCart}
+                    />
+                  ))
+                )}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="menus"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+              >
+                {filteredMenuItems.length === 0 ? (
+                  <div className="col-span-full text-center py-12">
+                    <div className="text-6xl mb-4">🍽️</div>
+                    <h3 className="text-xl font-bold mb-2">Aucun plat trouvé</h3>
+                    <p className="text-gray-600 dark:text-gray-400">
+                      Essayez d'ajuster votre recherche ou vos filtres
+                    </p>
                   </div>
-                  
-                  <div className="mt-4 flex justify-end">
-                    <button 
-                      onClick={() => setFilters({
-                        category: '',
-                        city: 'Yaoundé',
-                        zone: '',
-                        district: '',
-                        priceRange: '',
-                        maxDeliveryTime: '',
-                        maxDeliveryFee: ''
-                      })}
-                      className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors"
-                    >
-                      {t('restaurants.resetFilters')}
-                    </button>
-                  </div>
-                </div>
+                ) : (
+                  filteredMenuItems.map(item => (
+                    <MenuCard 
+                      key={item.id} 
+                      item={item} 
+                      addToCart={cart.addToCart}
+                    />
+                  ))
+                )}
               </motion.div>
             )}
           </AnimatePresence>
-          
-          {loading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <div className="w-16 h-16 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-              <p className="mt-4 text-gray-600 dark:text-gray-400">{t('restaurants.loading')}</p>
-            </div>
-          ) : (
-            <>
-              {/* Restaurants mis en avant */}
-              {restaurants.some(r => r.featured) && (
-                <div className="mb-8">
-                  <h2 className="text-xl font-bold mb-4">{t('restaurants.featured')}</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {restaurants
-                      .filter(r => r.featured)
-                      .map(restaurant => (
-                        <motion.div 
-                          key={restaurant.id}
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3 }}
-                          className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow border border-gray-200 dark:border-gray-700"
-                        >
-                          <div className="h-48 bg-gray-300 relative overflow-hidden">
-                            <img 
-                              src={restaurant.image} 
-                              alt={restaurant.name} 
-                              className="w-full h-full object-cover transition-transform hover:scale-105 duration-500"
-                            />
-                            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                              <span className="px-2 py-1 bg-green-500 text-white text-xs rounded-full">{t('restaurants.featured')}</span>
-                            </div>
-                          </div>
-                          <div className="p-4">
-                            <div className="flex justify-between items-start">
-                              <h3 className="text-lg font-bold">{restaurant.name}</h3>
-                              <div className="flex items-center bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded">
-                                <Star size={14} className="fill-current" />
-                                <span className="ml-1 text-sm font-medium">{restaurant.rating}</span>
-                              </div>
-                            </div>
-                            
-                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{restaurant.description}</p>
-                            
-                            <div className="mt-2 flex items-center text-sm text-gray-600 dark:text-gray-400">
-                              <MapPin size={14} className="mr-1" />
-                              <span>{restaurant.address}</span>
-                            </div>
-                            
-                            <div className="mt-2 flex flex-wrap gap-2">
-                              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 text-xs rounded-full">
-                                {restaurant.category}
-                              </span>
-                              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 text-xs rounded-full">
-                                {restaurant.district}
-                              </span>
-                              <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 text-xs rounded-full">
-                                {restaurant.priceRange}
-                              </span>
-                            </div>
-                            
-                            <div className="mt-4 flex justify-between items-center">
-                              <div className="flex items-center text-sm">
-                                <Clock size={14} className="mr-1 text-gray-600 dark:text-gray-400" />
-                                <span className="text-gray-600 dark:text-gray-400">{restaurant.deliveryTime} min</span>
-                              </div>
-                              <div className="text-sm">
-                                <span className="font-medium">{restaurant.deliveryFee} FCFA</span>
-                                <span className="text-gray-600 dark:text-gray-400 ml-1">{t('restaurants.deliveryFee')}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                  </div>
-                </div>
-              )}
-              
-              {/* Liste des restaurants */}
-              <h2 className="text-xl font-bold mb-4">{t('restaurants.allRestaurants')}</h2>
-              {filteredRestaurants.length === 0 ? (
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-8 text-center">
-                  <div className="w-16 h-16 mx-auto mb-4 text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-medium mb-2">{t('restaurants.noResults')}</h3>
-                  <p className="text-gray-600 dark:text-gray-400">{t('restaurants.tryAdjusting')}</p>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {filteredRestaurants.map(restaurant => (
-                    <motion.div 
-                      key={restaurant.id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.5 }}
-                      className="bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow border border-gray-200 dark:border-gray-700"
-                    >
-                      {/* En-tête du restaurant */}
-                      <div className="md:flex">
-                        <div className="md:w-1/3 h-48 md:h-auto bg-gray-300 relative">
-                          <img 
-                            src={restaurant.image} 
-                            alt={restaurant.name} 
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="md:w-2/3 p-4 md:p-6">
-                          <div className="flex justify-between items-start">
-                            <h3 className="text-xl font-bold">{restaurant.name}</h3>
-                            <div className="flex items-center">
-                              <div className="flex items-center bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded">
-                                <Star size={16} className="fill-current" />
-                                <span className="ml-1 font-medium">{restaurant.rating}</span>
-                              </div>
-                              <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">({restaurant.reviewCount})</span>
-                            </div>
-                          </div>
-                          
-                          <p className="mt-2 text-gray-600 dark:text-gray-400">{restaurant.description}</p>
-                          
-                          <div className="mt-2 flex items-center text-gray-600 dark:text-gray-400">
-                            <MapPin size={16} className="mr-1" />
-                            <span>{restaurant.address}</span>
-                          </div>
-                          
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 text-sm rounded-full">
-                              {restaurant.category}
-                            </span>
-                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 text-sm rounded-full">
-                              {restaurant.district}
-                            </span>
-                            <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300 text-sm rounded-full">
-                              {restaurant.priceRange}
-                            </span>
-                          </div>
-                          
-                          <div className="mt-4 flex flex-wrap justify-between items-center gap-y-2">
-                            <div className="flex items-center">
-                              <Clock size={16} className="mr-1 text-gray-600 dark:text-gray-400" />
-                              <span className="text-gray-600 dark:text-gray-400">{restaurant.deliveryTime} min</span>
-                            </div>
-                            <div>
-                              <span className="font-medium">{restaurant.deliveryFee} FCFA</span>
-                              <span className="text-gray-600 dark:text-gray-400 ml-1">{t('restaurants.deliveryFee')}</span>
-                            </div>
-                            <div className="text-sm text-gray-600 dark:text-gray-400">
-                              {t('restaurants.minOrder')}: {restaurant.minOrder} FCFA
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Contenu restaurant (plats et commentaires) */}
-                      <RestaurantContent restaurant={restaurant} handleAddComment={handleAddComment} handleReaction={handleReaction} newComment={newComment} setNewComment={setNewComment} replyingTo={replyingTo} setReplyingTo={setReplyingTo} />
-                    </motion.div>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
         </div>
-      </div>
-
-      {/* Footer - Matching Login Page */}
-      <footer className={`py-8 ${darkMode ? 'bg-gray-900 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
+      </section>
+      
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12 px-4">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-lg font-bold mb-4">
-                <span className="bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
-                  EatFast
-                </span>
-              </h3>
-              <p className="text-sm">
-                "Savourez l'authenticité, une commande à la fois" - Votre passerelle vers les délices culinaires du Cameroun.
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-yellow-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">E</span>
+                </div>
+                <Logo className="text-xl" />
+              </div>
+              <p className="text-gray-400 mb-4 text-sm">
+                Votre passerelle vers les délices culinaires du Cameroun
               </p>
             </div>
             
             <div>
-              <h3 className="text-lg font-bold mb-4">Liens rapides</h3>
-              <ul className="space-y-2 text-sm">
-                <li><a href="/about" className="hover:text-green-500 transition-colors">À propos</a></li>
-                <li><a href="/restaurants" className="hover:text-green-500 transition-colors">Restaurants</a></li>
-                <li><a href="/contact" className="hover:text-green-500 transition-colors">Contactez-nous</a></li>
+              <h3 className="font-bold mb-4">Navigation</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="/" className="hover:text-white transition-colors">Accueil</a></li>
+                <li><a href="/restaurants" className="hover:text-white transition-colors">Restaurants</a></li>
+                <li><a href="/about" className="hover:text-white transition-colors">À propos</a></li>
+                <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="text-lg font-bold mb-4">Contact</h3>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-green-500"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-                  <span>+237 6XX XXX XXX</span>
-                </li>
-                <li className="flex items-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-green-500"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
-                  <span>contact@eatfast.cm</span>
-                </li>
+              <h3 className="font-bold mb-4">Services</h3>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#" className="hover:text-white transition-colors">Livraison</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Devenir partenaire</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Support</a></li>
               </ul>
+            </div>
+            
+            <div>
+              <h3 className="font-bold mb-4">Contact</h3>
+              <div className="space-y-2 text-sm text-gray-400">
+                <div className="flex items-center gap-2">
+                  <Phone size={16} />
+                  <span>+237 6XX XXX XXX</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Globe size={16} />
+                  <span>contact@eatfast.cm</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin size={16} />
+                  <span>Yaoundé, Cameroun</span>
+                </div>
+              </div>
             </div>
           </div>
           
-          <div className="pt-6 border-t border-gray-200 dark:border-gray-800 text-center text-sm">
-            <p>&copy; {new Date().getFullYear()} EatFast. Tous droits réservés.</p>
+          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
+            <p>&copy; 2024 EatFast. Tous droits réservés.</p>
           </div>
         </div>
       </footer>
@@ -877,205 +984,4 @@ const RestaurantsPage = () => {
   );
 };
 
-// Composant pour le contenu déroulant d'un restaurant (plats et commentaires)
-const RestaurantContent = ({ restaurant, handleAddComment, handleReaction, newComment, setNewComment, replyingTo, setReplyingTo }) => {
-  const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState('dishes');
-  const [showContent, setShowContent] = useState(false);
-  
-  return (
-    <div className="border-t border-gray-200 dark:border-gray-700">
-      {/* Onglets et bouton de menu déroulant */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="flex space-x-4">
-          <button 
-            onClick={() => { setActiveTab('dishes'); setShowContent(true); }}
-            className={`text-sm font-medium ${activeTab === 'dishes' ? 'text-green-500 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}
-          >
-            {t('restaurants.menu')}
-          </button>
-          <button 
-            onClick={() => { setActiveTab('comments'); setShowContent(true); }}
-            className={`text-sm font-medium ${activeTab === 'comments' ? 'text-green-500 dark:text-green-400' : 'text-gray-600 dark:text-gray-400'}`}
-          >
-            {t('restaurants.reviews')} ({restaurant.comments.length})
-          </button>
-        </div>
-        <button 
-          onClick={() => setShowContent(!showContent)}
-          className="p-1 text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors"
-        >
-          {showContent ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-        </button>
-      </div>
-      
-      {/* Contenu déroulant */}
-      <AnimatePresence>
-        {showContent && (
-          <motion.div 
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3 }}
-            className="overflow-hidden"
-          >
-            {/* Plats du restaurant */}
-            {activeTab === 'dishes' && (
-              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold mb-4">{t('restaurants.popularDishes')}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {restaurant.dishes.map(dish => (
-                    <div key={dish.id} className="flex bg-gray-50 dark:bg-gray-900 rounded-lg overflow-hidden">
-                      <div className="w-1/3 h-24 bg-gray-200">
-                        <img 
-                          src={dish.image} 
-                          alt={dish.name} 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="w-2/3 p-3">
-                        <h4 className="font-medium">{dish.name}</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2 mt-1">{dish.description}</p>
-                        <div className="mt-2 text-green-600 dark:text-green-400 font-medium">{dish.price} FCFA</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* Commentaires */}
-            {activeTab === 'comments' && (
-              <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-                {/* Liste des commentaires */}
-                <div className="space-y-4 mb-4">
-                  {restaurant.comments.length === 0 ? (
-                    <div className="text-center py-4 text-gray-500 dark:text-gray-400">
-                      {t('restaurants.noComments')}
-                    </div>
-                  ) : (
-                    restaurant.comments.map(comment => (
-                      <div key={comment.id} className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-medium">{comment.user}</div>
-                            <div className="text-xs text-gray-500 dark:text-gray-400">{comment.date}</div>
-                          </div>
-                          <div className="flex space-x-2">
-                            <button 
-                              onClick={() => handleReaction(restaurant.id, comment.id, null, true)}
-                              className="p-1 text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors"
-                            >
-                              <ThumbsUp size={16} />
-                            </button>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{comment.likes}</span>
-                            <button 
-                              onClick={() => handleReaction(restaurant.id, comment.id, null, false)}
-                              className="p-1 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                            >
-                              <ThumbsDown size={16} />
-                            </button>
-                            <span className="text-sm text-gray-600 dark:text-gray-400">{comment.dislikes}</span>
-                          </div>
-                        </div>
-                        <p className="mt-2 text-gray-700 dark:text-gray-300">{comment.text}</p>
-                        
-                        {/* Bouton de réponse */}
-                        <button 
-                          onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                          className="mt-2 text-sm text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 transition-colors flex items-center"
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" />
-                          </svg>
-                          {t('restaurants.reply')}
-                        </button>
-                        
-                        {/* Formulaire de réponse */}
-                        {replyingTo === comment.id && (
-                          <div className="mt-2 pl-4 border-l-2 border-gray-300 dark:border-gray-600">
-                            <div className="flex">
-                              <input 
-                                type="text" 
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                placeholder={t('restaurants.writeReply')}
-                                className="flex-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400"
-                              />
-                              <button 
-                                onClick={() => handleAddComment(restaurant.id, comment.id)}
-                                className="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded-r-lg transition-colors"
-                              >
-                                <Send size={16} />
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {/* Réponses */}
-                        {comment.replies.length > 0 && (
-                          <div className="mt-2 pl-4 border-l-2 border-gray-300 dark:border-gray-600 space-y-3">
-                            {comment.replies.map(reply => (
-                              <div key={reply.id} className="bg-white dark:bg-gray-800 rounded-lg p-2">
-                                <div className="flex justify-between items-start">
-                                  <div>
-                                    <div className="font-medium">{reply.user}</div>
-                                    <div className="text-xs text-gray-500 dark:text-gray-400">{reply.date}</div>
-                                  </div>
-                                  <div className="flex space-x-2">
-                                    <button 
-                                      onClick={() => handleReaction(restaurant.id, comment.id, reply.id, true)}
-                                      className="p-1 text-gray-600 dark:text-gray-400 hover:text-green-500 dark:hover:text-green-400 transition-colors"
-                                    >
-                                      <ThumbsUp size={14} />
-                                    </button>
-                                    <span className="text-xs text-gray-600 dark:text-gray-400">{reply.likes}</span>
-                                    <button 
-                                      onClick={() => handleReaction(restaurant.id, comment.id, reply.id, false)}
-                                      className="p-1 text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors"
-                                    >
-                                      <ThumbsDown size={14} />
-                                    </button>
-                                    <span className="text-xs text-gray-600 dark:text-gray-400">{reply.dislikes}</span>
-                                  </div>
-                                </div>
-                                <p className="mt-1 text-sm text-gray-700 dark:text-gray-300">{reply.text}</p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    ))
-                  )}
-                </div>
-                
-                {/* Formulaire d'ajout de commentaire */}
-                <div className="bg-white dark:bg-gray-800 rounded-lg p-3 shadow-sm border border-gray-200 dark:border-gray-700">
-                  <h4 className="font-medium mb-2">{t('restaurants.leaveReview')}</h4>
-                  <div className="flex">
-                    <input 
-                      type="text" 
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                      placeholder={t('restaurants.writeReview')}
-                      className="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-400"
-                    />
-                    <button 
-                      onClick={() => handleAddComment(restaurant.id)}
-                      className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-r-lg transition-colors flex items-center"
-                    >
-                      <Send size={16} className="mr-1" />
-                      {t('restaurants.send')}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-};
-
-export default RestaurantsPage;
+export default UnifiedRestaurantMenuPage;
