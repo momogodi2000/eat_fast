@@ -4,7 +4,7 @@ import {
   Sun, Moon, Menu, X, ChevronDown, User, ShoppingBag,
   MapPin, Clock, Star, Shield, Check, Upload, FileText, 
   HelpCircle, Home, Phone, Mail, Users, TrendingUp,
-  Award, Zap, Globe, Heart, MessageCircle
+  Award, Zap, Globe, Heart, MessageCircle, Play, Pause, Volume2
 } from 'lucide-react';
 
 const BecomeAPartner = () => {
@@ -13,9 +13,11 @@ const BecomeAPartner = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('restaurant');
-  const [currentLanguage, setCurrentLanguage] = useState('en');
   const [submissionState, setSubmissionState] = useState('idle');
   const [activeProcess, setActiveProcess] = useState(0);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -41,116 +43,122 @@ const BecomeAPartner = () => {
   // Form validation
   const [formErrors, setFormErrors] = useState({});
 
-  // Refs for scroll animations
+  // Refs for scroll animations and video
   const heroRef = useRef(null);
   const benefitsRef = useRef(null);
+  const videoRef = useRef(null);
+  const fileInputRef = useRef(null);
   const { scrollYProgress } = useScroll();
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
 
-  // Translation object (simplified for demo)
+  // French translations (default language)
   const t = (key) => {
     const translations = {
-      'nav.home': 'Home',
+      'nav.home': 'Accueil',
       'nav.restaurants': 'Restaurants',
-      'nav.about': 'About',
+      'nav.about': 'À propos',
       'nav.contact': 'Contact',
-      'nav.account': 'Account',
-      'nav.cart': 'Cart',
-      'partner.heroTitle': 'Partner with',
-      'partner.heroSubtitle': 'Join thousands of successful restaurant partners and grow your business with our comprehensive food delivery platform.',
-      'partner.applyNow': 'Apply Now',
-      'partner.fastOnboarding': 'Fast Onboarding',
-      'partner.days': 'business days',
-      'partner.location': 'Location',
-      'partner.whyJoin': 'Why Partner With Eat-Fast?',
-      'partner.whyJoinSubtitle': 'Discover the benefits of joining our growing network of food partners.',
-      'partner.benefit1Title': 'Increase Revenue',
-      'partner.benefit1Desc': 'Reach new customers and boost your sales with our extensive delivery network.',
-      'partner.benefit2Title': 'Easy Management',
-      'partner.benefit2Desc': 'Manage orders, menu, and analytics through our intuitive partner dashboard.',
-      'partner.benefit3Title': '24/7 Support',
-      'partner.benefit3Desc': 'Get dedicated support from our partner success team whenever you need help.',
-      'partner.requirementsTitle': 'Partnership Requirements',
-      'partner.requirementsSubtitle': 'Ensure your business meets our standards for quality and compliance.',
-      'partner.legalRequirements': 'Legal Requirements',
-      'partner.operationalRequirements': 'Operational Standards',
-      'partner.requirement1': 'Valid business license and registration',
-      'partner.requirement2': 'Food safety certification',
-      'partner.requirement3': 'Tax identification number',
-      'partner.requirement4': 'Valid ID documentation',
-      'partner.requirement5': 'Proof of business insurance',
-      'partner.operational1': 'Minimum 50 orders per week capacity',
-      'partner.operational2': 'Average preparation time under 25 minutes',
-      'partner.operational3': 'Quality packaging for delivery',
-      'partner.operational4': 'Professional food photography',
-      'partner.operational5': 'Responsive customer service',
-      'partner.applicationFormTitle': 'Partner Application Form',
-      'partner.applicationFormSubtitle': 'Fill out this form to start your partnership journey with us.',
+      'nav.account': 'Compte',
+      'nav.cart': 'Panier',
+      'partner.heroTitle': 'Partenaire avec',
+      'partner.heroSubtitle': 'Rejoignez des milliers de partenaires restaurateurs prospères et développez votre entreprise avec notre plateforme de livraison de repas complète.',
+      'partner.applyNow': 'Postuler maintenant',
+      'partner.watchDemo': 'Regarder la démo',
+      'partner.fastOnboarding': 'Intégration rapide',
+      'partner.days': 'jours ouvrables',
+      'partner.location': 'Localisation',
+      'partner.whyJoin': 'Pourquoi s\'associer avec Eat-Fast ?',
+      'partner.whyJoinSubtitle': 'Découvrez les avantages de rejoindre notre réseau croissant de partenaires alimentaires.',
+      'partner.benefit1Title': 'Augmenter les revenus',
+      'partner.benefit1Desc': 'Atteignez de nouveaux clients et boostez vos ventes avec notre vaste réseau de livraison.',
+      'partner.benefit2Title': 'Gestion facile',
+      'partner.benefit2Desc': 'Gérez les commandes, le menu et les analyses via notre tableau de bord partenaire intuitif.',
+      'partner.benefit3Title': 'Support 24/7',
+      'partner.benefit3Desc': 'Obtenez un support dédié de notre équipe de succès partenaire quand vous en avez besoin.',
+      'partner.requirementsTitle': 'Exigences de partenariat',
+      'partner.requirementsSubtitle': 'Assurez-vous que votre entreprise répond à nos normes de qualité et de conformité.',
+      'partner.legalRequirements': 'Exigences légales',
+      'partner.operationalRequirements': 'Normes opérationnelles',
+      'partner.requirement1': 'Licence commerciale et enregistrement valides',
+      'partner.requirement2': 'Certification de sécurité alimentaire',
+      'partner.requirement3': 'Numéro d\'identification fiscale',
+      'partner.requirement4': 'Documentation d\'identité valide',
+      'partner.requirement5': 'Preuve d\'assurance commerciale',
+      'partner.operational1': 'Capacité minimale de 50 commandes par semaine',
+      'partner.operational2': 'Temps de préparation moyen sous 25 minutes',
+      'partner.operational3': 'Emballage de qualité pour la livraison',
+      'partner.operational4': 'Photographie alimentaire professionnelle',
+      'partner.operational5': 'Service client réactif',
+      'partner.applicationFormTitle': 'Formulaire de candidature partenaire',
+      'partner.applicationFormSubtitle': 'Remplissez ce formulaire pour commencer votre parcours de partenariat avec nous.',
       'partner.restaurant': 'Restaurant',
-      'partner.cloudKitchen': 'Cloud Kitchen',
-      'partner.caterer': 'Catering Service',
-      'partner.businessInfo': 'Business Information',
-      'partner.contactInfo': 'Contact Information',
-      'partner.locationInfo': 'Location Information',
-      'partner.legalInfo': 'Legal Information',
-      'partner.documentUploads': 'Required Documents',
-      'partner.businessName': 'Business Name',
-      'partner.cuisineType': 'Cuisine Type',
-      'partner.capacity': 'Daily Capacity (orders)',
-      'partner.openingHours': 'Operating Hours',
-      'partner.contactName': 'Contact Person',
-      'partner.email': 'Email Address',
-      'partner.phone': 'Phone Number',
-      'partner.address': 'Full Address',
-      'partner.city': 'City',
-      'partner.legalStatus': 'Legal Status',
-      'partner.taxId': 'Tax ID Number',
-      'partner.selectOption': 'Select an option',
-      'partner.soleProprietor': 'Sole Proprietorship',
-      'partner.llc': 'Limited Liability Company',
+      'partner.cloudKitchen': 'Cuisine Cloud',
+      'partner.caterer': 'Service traiteur',
+      'partner.businessInfo': 'Informations sur l\'entreprise',
+      'partner.contactInfo': 'Informations de contact',
+      'partner.locationInfo': 'Informations de localisation',
+      'partner.legalInfo': 'Informations légales',
+      'partner.documentUploads': 'Documents requis',
+      'partner.businessName': 'Nom de l\'entreprise',
+      'partner.cuisineType': 'Type de cuisine',
+      'partner.capacity': 'Capacité quotidienne (commandes)',
+      'partner.openingHours': 'Heures d\'ouverture',
+      'partner.contactName': 'Personne de contact',
+      'partner.email': 'Adresse e-mail',
+      'partner.phone': 'Numéro de téléphone',
+      'partner.address': 'Adresse complète',
+      'partner.city': 'Ville',
+      'partner.legalStatus': 'Statut juridique',
+      'partner.taxId': 'Numéro d\'identification fiscale',
+      'partner.selectOption': 'Sélectionner une option',
+      'partner.soleProprietor': 'Entreprise individuelle',
+      'partner.llc': 'Société à responsabilité limitée',
       'partner.corporation': 'Corporation',
-      'partner.other': 'Other',
-      'partner.healthCertificate': 'Health Certificate',
-      'partner.idDocument': 'ID Document',
-      'partner.menu': 'Menu/Price List',
-      'partner.restaurantPhotos': 'Restaurant Photos',
-      'partner.chooseFile': 'Choose File',
-      'partner.healthCertificateDesc': 'Valid health department certificate',
-      'partner.idDocumentDesc': 'Government-issued identification',
-      'partner.menuDesc': 'Current menu with prices',
-      'partner.photosDesc': 'High-quality photos of your establishment',
-      'partner.agreeToTerms1': 'I agree to the',
-      'partner.terms': 'Terms of Service',
-      'partner.and': 'and',
-      'partner.privacyPolicy': 'Privacy Policy',
-      'partner.agreeToTerms2': 'of Eat-Fast platform.',
-      'partner.processing': 'Processing...',
-      'partner.submitApplication': 'Submit Application',
-      'partner.successTitle': 'Application Submitted!',
-      'partner.successMessage': 'Thank you for your interest in partnering with us. We will review your application and get back to you within 3-5 business days.',
-      'partner.submitAnother': 'Submit Another Application',
-      'partner.processTitle': 'Application Process',
-      'partner.processSubtitle': 'Learn about our simple 4-step onboarding process.',
-      'partner.step1Title': '1. Submit Application',
-      'partner.step1Desc': 'Complete the partnership application with all required documents.',
-      'partner.step2Title': '2. Review & Verification',
-      'partner.step2Desc': 'Our team reviews your application and verifies all information.',
-      'partner.step3Title': '3. Setup & Training',
-      'partner.step3Desc': 'We help you set up your account and provide comprehensive training.',
-      'partner.step4Title': '4. Go Live',
-      'partner.step4Desc': 'Start receiving orders and growing your business with us.',
-      'partner.faqTitle': 'Frequently Asked Questions',
-      'partner.faq1Question': 'How long does the approval process take?',
-      'partner.faq1Answer': 'The approval process typically takes 3-5 business days after we receive your complete application.',
-      'partner.faq2Question': 'What commission does Eat-Fast charge?',
-      'partner.faq2Answer': 'Our commission rates are competitive and vary based on your business volume and location. We will discuss specific rates during the onboarding process.',
-      'partner.faq3Question': 'Do I need special equipment?',
-      'partner.faq3Answer': 'You will need a tablet or smartphone to receive orders and a printer for order receipts. We provide the necessary software and training.',
-      'partner.faq4Question': 'Can I update my menu anytime?',
-      'partner.faq4Answer': 'Yes, you can update your menu, prices, and availability through our partner dashboard 24/7.',
-      'partner.faq5Question': 'What support do you provide?',
-      'partner.faq5Answer': 'We provide comprehensive support including training, marketing assistance, technical support, and a dedicated partner success manager.',
-      'partner.statsTitle': 'Join Our Success Story'
+      'partner.other': 'Autre',
+      'partner.healthCertificate': 'Certificat de santé',
+      'partner.idDocument': 'Document d\'identité',
+      'partner.menu': 'Menu/Liste de prix',
+      'partner.restaurantPhotos': 'Photos du restaurant',
+      'partner.chooseFile': 'Choisir un fichier',
+      'partner.healthCertificateDesc': 'Certificat valide du département de la santé',
+      'partner.idDocumentDesc': 'Pièce d\'identité émise par le gouvernement',
+      'partner.menuDesc': 'Menu actuel avec prix',
+      'partner.photosDesc': 'Photos de haute qualité de votre établissement',
+      'partner.agreeToTerms1': 'J\'accepte les',
+      'partner.terms': 'Conditions de service',
+      'partner.and': 'et la',
+      'partner.privacyPolicy': 'Politique de confidentialité',
+      'partner.agreeToTerms2': 'de la plateforme Eat-Fast.',
+      'partner.processing': 'Traitement en cours...',
+      'partner.submitApplication': 'Soumettre la candidature',
+      'partner.successTitle': 'Candidature soumise !',
+      'partner.successMessage': 'Merci pour votre intérêt à vous associer avec nous. Nous examinerons votre candidature et vous recontacterons sous 3-5 jours ouvrables.',
+      'partner.submitAnother': 'Soumettre une autre candidature',
+      'partner.processTitle': 'Processus de candidature',
+      'partner.processSubtitle': 'Découvrez notre simple processus d\'intégration en 4 étapes.',
+      'partner.step1Title': '1. Soumettre la candidature',
+      'partner.step1Desc': 'Complétez la candidature de partenariat avec tous les documents requis.',
+      'partner.step2Title': '2. Examen et vérification',
+      'partner.step2Desc': 'Notre équipe examine votre candidature et vérifie toutes les informations.',
+      'partner.step3Title': '3. Configuration et formation',
+      'partner.step3Desc': 'Nous vous aidons à configurer votre compte et fournissons une formation complète.',
+      'partner.step4Title': '4. Mise en ligne',
+      'partner.step4Desc': 'Commencez à recevoir des commandes et à développer votre entreprise avec nous.',
+      'partner.faqTitle': 'Questions fréquemment posées',
+      'partner.faq1Question': 'Combien de temps prend le processus d\'approbation ?',
+      'partner.faq1Answer': 'Le processus d\'approbation prend généralement 3-5 jours ouvrables après réception de votre candidature complète.',
+      'partner.faq2Question': 'Quelle commission Eat-Fast facture-t-elle ?',
+      'partner.faq2Answer': 'Nos taux de commission sont compétitifs et varient selon votre volume d\'affaires et votre localisation. Nous discuterons des taux spécifiques pendant le processus d\'intégration.',
+      'partner.faq3Question': 'Ai-je besoin d\'équipement spécial ?',
+      'partner.faq3Answer': 'Vous aurez besoin d\'une tablette ou d\'un smartphone pour recevoir les commandes et d\'une imprimante pour les reçus. Nous fournissons le logiciel nécessaire et la formation.',
+      'partner.faq4Question': 'Puis-je mettre à jour mon menu à tout moment ?',
+      'partner.faq4Answer': 'Oui, vous pouvez mettre à jour votre menu, prix et disponibilité via notre tableau de bord partenaire 24/7.',
+      'partner.faq5Question': 'Quel support fournissez-vous ?',
+      'partner.faq5Answer': 'Nous fournissons un support complet incluant formation, assistance marketing, support technique et un gestionnaire de succès partenaire dédié.',
+      'partner.statsTitle': 'Rejoignez notre histoire de succès',
+      'partner.selectVideo': 'Sélectionner une vidéo',
+      'partner.noVideoSelected': 'Aucune vidéo sélectionnée',
+      'partner.closeVideo': 'Fermer la vidéo'
     };
     return translations[key] || key;
   };
@@ -182,7 +190,44 @@ const BecomeAPartner = () => {
   // Event handlers
   const toggleDarkMode = () => setDarkMode(!darkMode);
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const changeLanguage = () => setCurrentLanguage(prev => prev === 'en' ? 'fr' : 'en');
+
+  // Video handlers
+  const handleVideoSelect = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleVideoFile = (e) => {
+    const file = e.target.files?.[0];
+    if (file && file.type.startsWith('video/')) {
+      const videoUrl = URL.createObjectURL(file);
+      setSelectedVideo(videoUrl);
+      setIsVideoModalOpen(true);
+    }
+  };
+
+  const closeVideoModal = () => {
+    setIsVideoModalOpen(false);
+    setIsVideoPlaying(false);
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.currentTime = 0;
+    }
+    if (selectedVideo) {
+      URL.revokeObjectURL(selectedVideo);
+      setSelectedVideo(null);
+    }
+  };
+
+  const toggleVideoPlayback = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsVideoPlaying(!isVideoPlaying);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value, files, type, checked } = e.target;
@@ -224,16 +269,16 @@ const BecomeAPartner = () => {
     
     required.forEach(field => {
       if (!formData[field]) {
-        errors[field] = 'This field is required';
+        errors[field] = 'Ce champ est requis';
       }
     });
 
     if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Please enter a valid email address';
+      errors.email = 'Veuillez entrer une adresse e-mail valide';
     }
 
     if (!formData.termsAccepted) {
-      errors.terms = 'Please accept the terms and conditions';
+      errors.terms = 'Veuillez accepter les termes et conditions';
     }
 
     return errors;
@@ -321,15 +366,6 @@ const BecomeAPartner = () => {
           {/* Action buttons */}
           <div className="hidden md:flex items-center space-x-3">
             <motion.button 
-              onClick={changeLanguage}
-              className="px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {currentLanguage.toUpperCase()}
-            </motion.button>
-            
-            <motion.button 
               onClick={toggleDarkMode} 
               className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               whileHover={{ scale: 1.1 }}
@@ -390,6 +426,85 @@ const BecomeAPartner = () => {
         </AnimatePresence>
       </header>
 
+      {/* Video Modal */}
+      <AnimatePresence>
+        {isVideoModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={closeVideoModal}
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.8, opacity: 0 }}
+              className="relative w-full max-w-4xl mx-4 bg-black rounded-2xl overflow-hidden shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Video Header */}
+              <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/60 to-transparent p-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-white text-xl font-semibold">Démo Eat-Fast</h3>
+                  <button
+                    onClick={closeVideoModal}
+                    className="text-white hover:text-gray-300 transition-colors"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Video Player */}
+              {selectedVideo ? (
+                <div className="relative">
+                  <video
+                    ref={videoRef}
+                    src={selectedVideo}
+                    className="w-full h-auto max-h-[70vh]"
+                    controls={false}
+                    onPlay={() => setIsVideoPlaying(true)}
+                    onPause={() => setIsVideoPlaying(false)}
+                  />
+                  
+                  {/* Custom Video Controls */}
+                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
+                    <div className="flex items-center space-x-4">
+                      <button
+                        onClick={toggleVideoPlayback}
+                        className="text-white hover:text-emerald-400 transition-colors"
+                      >
+                        {isVideoPlaying ? <Pause size={24} /> : <Play size={24} />}
+                      </button>
+                      <div className="flex-1 bg-white/20 rounded-full h-1">
+                        <div className="bg-emerald-500 h-1 rounded-full w-1/3"></div>
+                      </div>
+                      <button className="text-white hover:text-emerald-400 transition-colors">
+                        <Volume2 size={20} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center justify-center h-64 text-white">
+                  <p>{t('partner.noVideoSelected')}</p>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Hidden file input for video selection */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="video/*"
+        className="hidden"
+        onChange={handleVideoFile}
+      />
+
       {/* Enhanced Hero Section */}
       <section className="pt-24 md:pt-32 pb-20 relative overflow-hidden" ref={heroRef}>
         {/* Animated background elements */}
@@ -422,7 +537,7 @@ const BecomeAPartner = () => {
                 className="inline-flex items-center px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-full text-emerald-700 dark:text-emerald-300 text-sm font-medium mb-6"
               >
                 <Zap size={16} className="mr-2" />
-                Fast Growing Network
+                Réseau en croissance rapide
               </motion.div>
 
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
@@ -449,9 +564,9 @@ const BecomeAPartner = () => {
                 className="grid grid-cols-3 gap-6 mb-8 max-w-md mx-auto lg:mx-0"
               >
                 {[
-                  { number: '500+', label: 'Partners' },
-                  { number: '50K+', label: 'Orders Daily' },
-                  { number: '4.8★', label: 'Rating' }
+                  { number: '500+', label: 'Partenaires' },
+                  { number: '50K+', label: 'Commandes quotidiennes' },
+                  { number: '4.8★', label: 'Évaluation' }
                 ].map((stat, index) => (
                   <div key={index} className="text-center">
                     <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
@@ -483,9 +598,11 @@ const BecomeAPartner = () => {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  className="px-8 py-4 border-2 border-gray-300 dark:border-gray-600 hover:border-emerald-500 dark:hover:border-emerald-400 rounded-xl font-semibold transition-colors"
+                  onClick={handleVideoSelect}
+                  className="px-8 py-4 border-2 border-gray-300 dark:border-gray-600 hover:border-emerald-500 dark:hover:border-emerald-400 rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
                 >
-                  Watch Demo
+                  <Play size={20} />
+                  <span>{t('partner.watchDemo')}</span>
                 </motion.button>
               </motion.div>
             </motion.div>
@@ -501,8 +618,8 @@ const BecomeAPartner = () => {
                 <div className="w-full h-80 bg-gradient-to-br from-emerald-500 via-emerald-600 to-emerald-700 rounded-3xl shadow-2xl shadow-emerald-500/20 flex items-center justify-center overflow-hidden">
                   <div className="text-white text-center p-8">
                     <Globe size={64} className="mx-auto mb-4 opacity-90" />
-                    <h3 className="text-2xl font-bold mb-2">Join Our Network</h3>
-                    <p className="text-emerald-100">Connect with hungry customers worldwide</p>
+                    <h3 className="text-2xl font-bold mb-2">Rejoignez notre réseau</h3>
+                    <p className="text-emerald-100">Connectez-vous avec des clients affamés dans le monde entier</p>
                   </div>
                   
                   {/* Floating elements */}
@@ -599,20 +716,20 @@ const BecomeAPartner = () => {
               },
               {
                 icon: <Award size={32} className="text-yellow-500" />,
-                title: 'Marketing Support',
-                description: 'Get featured in our promotional campaigns and benefit from our marketing efforts.',
+                title: 'Support marketing',
+                description: 'Soyez mis en avant dans nos campagnes promotionnelles et bénéficiez de nos efforts marketing.',
                 color: 'yellow'
               },
               {
                 icon: <Users size={32} className="text-purple-500" />,
-                title: 'Community Network',
-                description: 'Join a community of successful partners and share best practices.',
+                title: 'Réseau communautaire',
+                description: 'Rejoignez une communauté de partenaires prospères et partagez les meilleures pratiques.',
                 color: 'purple'
               },
               {
                 icon: <MessageCircle size={32} className="text-indigo-500" />,
-                title: 'Real-time Analytics',
-                description: 'Track your performance with detailed insights and analytics dashboard.',
+                title: 'Analyses en temps réel',
+                description: 'Suivez vos performances avec des informations détaillées et un tableau de bord analytique.',
                 color: 'indigo'
               }
             ].map((benefit, index) => (
@@ -838,7 +955,7 @@ const BecomeAPartner = () => {
                   </motion.button>
                 </motion.div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-12">
+                <div className="space-y-12">
                   {/* Business Information */}
                   <motion.section
                     initial={{ opacity: 0, y: 20 }}
@@ -1171,7 +1288,8 @@ const BecomeAPartner = () => {
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
-                      type="submit"
+                      type="button"
+                      onClick={handleSubmit}
                       disabled={submissionState === 'submitting'}
                       className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-emerald-400 disabled:to-emerald-500 text-white rounded-xl font-semibold text-lg transition-all shadow-lg flex items-center justify-center"
                     >
@@ -1188,7 +1306,7 @@ const BecomeAPartner = () => {
                       )}
                     </motion.button>
                   </motion.section>
-                </form>
+                </div>
               )}
             </div>
           </motion.div>
@@ -1371,9 +1489,9 @@ const BecomeAPartner = () => {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Start Your Journey?</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">Prêt à commencer votre parcours ?</h2>
             <p className="text-xl mb-8 text-emerald-100 max-w-2xl mx-auto">
-              Join thousands of successful partners who are growing their business with Eat-Fast. Apply now and start earning more revenue today.
+              Rejoignez des milliers de partenaires prospères qui développent leur entreprise avec Eat-Fast. Postulez maintenant et commencez à gagner plus de revenus aujourd'hui.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -1383,7 +1501,7 @@ const BecomeAPartner = () => {
                 onClick={() => document.getElementById('application-form').scrollIntoView({ behavior: 'smooth' })}
                 className="px-8 py-4 bg-white text-emerald-700 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
               >
-                Apply Now - It's Free!
+                Postuler maintenant - C'est gratuit !
               </motion.button>
               
               <motion.button 
@@ -1391,7 +1509,7 @@ const BecomeAPartner = () => {
                 whileTap={{ scale: 0.95 }}
                 className="px-8 py-4 border-2 border-white/30 hover:border-white/50 rounded-xl font-semibold transition-colors"
               >
-                Contact Sales Team
+                Contacter l'équipe commerciale
               </motion.button>
             </div>
           </motion.div>

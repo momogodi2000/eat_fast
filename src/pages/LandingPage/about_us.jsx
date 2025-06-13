@@ -45,6 +45,16 @@ const useScrollEffects = () => {
   return { isScrolled, backgroundY, scrollYProgress };
 };
 
+// Real Navigation
+const useNavigation = () => {
+  const navigate = (path) => {
+    // Real navigation - this will actually redirect to the routes
+    window.location.href = path;
+  };
+
+  return { navigate };
+};
+
 // Animation Variants
 const animations = {
   fadeInUp: {
@@ -263,8 +273,62 @@ const Badge = ({ children, variant = "default" }) => {
   );
 };
 
+// Video Modal Component
+const VideoModal = ({ isOpen, onClose }) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+          className="relative w-full max-w-4xl mx-4 bg-black rounded-2xl overflow-hidden"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 z-10 p-2 bg-black/50 text-white rounded-full hover:bg-black/70 transition-colors"
+          >
+            <X size={24} />
+          </button>
+          <div className="aspect-video">
+            <video
+              controls
+              autoPlay
+              className="w-full h-full object-cover"
+              poster="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=450&fit=crop"
+            >
+              <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
+              Votre navigateur ne supporte pas la lecture de vidéos.
+            </video>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
 const Navigation = ({ darkMode, toggleTheme, isScrolled }) => {
+  const { navigate } = useNavigation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  const navigationItems = [
+    { name: 'Accueil', href: '/', active: false },
+    { name: 'Restaurants', href: '/restaurants', active: false },
+    { name: 'À propos', href: '/about', active: true },
+    { name: 'Contact', href: '/contact', active: false }
+  ];
+
+  const handleNavigation = (href) => {
+    navigate(href);
+    setIsMenuOpen(false);
+  };
   
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 ${
@@ -279,7 +343,8 @@ const Navigation = ({ darkMode, toggleTheme, isScrolled }) => {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="flex items-center gap-3"
+            className="flex items-center gap-3 cursor-pointer"
+            onClick={() => navigate('/')}
           >
             <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-yellow-500 rounded-xl flex items-center justify-center">
               <span className="text-white font-bold text-sm">E</span>
@@ -289,15 +354,10 @@ const Navigation = ({ darkMode, toggleTheme, isScrolled }) => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            {[
-              { name: 'Accueil', href: '/', active: false },
-              { name: 'Restaurants', href: '/restaurants', active: false },
-              { name: 'À propos', href: '/about', active: true },
-              { name: 'Contact', href: '/contact', active: false }
-            ].map((item) => (
-              <a 
+            {navigationItems.map((item) => (
+              <button 
                 key={item.name}
-                href={item.href}
+                onClick={() => handleNavigation(item.href)}
                 className={`font-medium transition-colors relative ${
                   item.active 
                     ? 'text-green-600 dark:text-green-400' 
@@ -311,7 +371,7 @@ const Navigation = ({ darkMode, toggleTheme, isScrolled }) => {
                     layoutId="activeTab"
                   />
                 )}
-              </a>
+              </button>
             ))}
           </nav>
           
@@ -329,6 +389,7 @@ const Navigation = ({ darkMode, toggleTheme, isScrolled }) => {
             <motion.button 
               whileHover={{ scale: 1.05 }}
               className="hidden md:flex items-center gap-2 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => navigate('/login')}
             >
               <User size={20} />
             </motion.button>
@@ -367,15 +428,26 @@ const Navigation = ({ darkMode, toggleTheme, isScrolled }) => {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden mt-4 p-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/20 dark:border-gray-700/20"
             >
-              {['Accueil', 'Restaurants', 'À propos', 'Contact'].map((item) => (
-                <a 
-                  key={item}
-                  href="#" 
-                  className="block py-3 px-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              {navigationItems.map((item) => (
+                <button 
+                  key={item.name}
+                  onClick={() => handleNavigation(item.href)}
+                  className="block w-full text-left py-3 px-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  {item}
-                </a>
+                  {item.name}
+                </button>
               ))}
+              {/* Mobile User Login */}
+              <button 
+                onClick={() => {
+                  navigate('/login');
+                  setIsMenuOpen(false);
+                }}
+                className="flex items-center gap-2 w-full py-3 px-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <User size={20} />
+                Se connecter
+              </button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -384,78 +456,92 @@ const Navigation = ({ darkMode, toggleTheme, isScrolled }) => {
   );
 };
 
-const HeroSection = ({ backgroundY }) => (
-  <section className="pt-24 md:pt-32 pb-20 relative overflow-hidden">
-    {/* Animated Background Elements */}
-    <motion.div 
-      style={{ y: backgroundY }}
-      className="absolute inset-0 z-0"
-    >
-      <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-yellow-400/20 to-red-400/20 rounded-full blur-3xl"></div>
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
-    </motion.div>
+const HeroSection = ({ backgroundY }) => {
+  const { navigate } = useNavigation();
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
 
-    <div className="container mx-auto px-4 relative z-10">
-      <motion.div 
-        variants={animations.fadeInUp}
-        initial="hidden"
-        animate="visible"
-        className="text-center max-w-4xl mx-auto"
-      >
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
-          className="inline-block mb-6"
-        >
-          <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-full text-sm font-medium">
-            ✨ Votre passerelle vers les délices culinaires
-          </div>
-        </motion.div>
-
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
-          <span className="block mb-2">À Propos</span>
-          <span className="bg-gradient-to-r from-green-600 via-yellow-500 to-red-500 bg-clip-text text-transparent">
-            d'EatFast
-          </span>
-        </h1>
-        
-        <p className="text-xl md:text-2xl mb-8 text-gray-600 dark:text-gray-300 leading-relaxed">
-          Nous connectons les camerounais à leurs saveurs préférées grâce à une technologie innovante 
-          et un service de livraison ultra-rapide
-        </p>
-
+  return (
+    <>
+      <section className="pt-24 md:pt-32 pb-20 relative overflow-hidden">
+        {/* Animated Background Elements */}
         <motion.div 
-          className="flex flex-col sm:flex-row gap-4 justify-center"
-          variants={animations.stagger}
-          initial="hidden"
-          animate="visible"
+          style={{ y: backgroundY }}
+          className="absolute inset-0 z-0"
         >
-          <motion.button
-            variants={animations.scaleIn}
-            whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-2xl flex items-center justify-center gap-2"
-          >
-            <Play size={20} />
-            Découvrir Notre Histoire
-          </motion.button>
-          
-          <motion.button
-            variants={animations.scaleIn}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-full font-bold text-lg border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
-          >
-            <Users size={20} />
-            Rejoindre l'Équipe
-          </motion.button>
+          <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-green-400/20 to-blue-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-yellow-400/20 to-red-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-gradient-to-r from-purple-400/10 to-pink-400/10 rounded-full blur-3xl"></div>
         </motion.div>
-      </motion.div>
-    </div>
-  </section>
-);
+
+        <div className="container mx-auto px-4 relative z-10">
+          <motion.div 
+            variants={animations.fadeInUp}
+            initial="hidden"
+            animate="visible"
+            className="text-center max-w-4xl mx-auto"
+          >
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 0.5, type: "spring", stiffness: 200 }}
+              className="inline-block mb-6"
+            >
+              <div className="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-full text-sm font-medium">
+                ✨ Votre passerelle vers les délices culinaires
+              </div>
+            </motion.div>
+
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 leading-tight">
+              <span className="block mb-2">À Propos</span>
+              <span className="bg-gradient-to-r from-green-600 via-yellow-500 to-red-500 bg-clip-text text-transparent">
+                d'EatFast
+              </span>
+            </h1>
+            
+            <p className="text-xl md:text-2xl mb-8 text-gray-600 dark:text-gray-300 leading-relaxed">
+              Nous connectons les camerounais à leurs saveurs préférées grâce à une technologie innovante 
+              et un service de livraison ultra-rapide
+            </p>
+
+            <motion.div 
+              className="flex flex-col sm:flex-row gap-4 justify-center"
+              variants={animations.stagger}
+              initial="hidden"
+              animate="visible"
+            >
+              <motion.button
+                variants={animations.scaleIn}
+                whileHover={{ scale: 1.05, boxShadow: "0 20px 40px rgba(0,0,0,0.2)" }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setIsVideoModalOpen(true)}
+                className="bg-gradient-to-r from-green-500 to-green-600 text-white px-8 py-4 rounded-full font-bold text-lg shadow-2xl flex items-center justify-center gap-2"
+              >
+                <Play size={20} />
+                Découvrir Notre Histoire
+              </motion.button>
+              
+              <motion.button
+                variants={animations.scaleIn}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/become')}
+                className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white px-8 py-4 rounded-full font-bold text-lg border-2 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all flex items-center justify-center gap-2"
+              >
+                <Users size={20} />
+                Rejoindre l'Équipe
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      <VideoModal 
+        isOpen={isVideoModalOpen} 
+        onClose={() => setIsVideoModalOpen(false)} 
+      />
+    </>
+  );
+};
 
 const StatsSection = () => (
   <section className="py-16 relative">
@@ -699,7 +785,7 @@ const TeamSection = () => (
         viewport={{ once: true }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8"
       >
-        {mockData.teamMembers.map((member, index) => (
+        {mockData.teamMembers.map((member) => (
           <motion.div
             key={member.id}
             variants={animations.scaleIn}
@@ -823,56 +909,63 @@ const TestimonialsSection = () => (
   </section>
 );
 
-const CTASection = () => (
-  <section className="py-20 relative overflow-hidden">
-    <div className="absolute inset-0 bg-gradient-to-br from-green-600 to-green-700"></div>
-    <div className="absolute inset-0 opacity-10">
-      <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-400 rounded-full blur-3xl"></div>
-    </div>
-    
-    <div className="container mx-auto px-4 relative z-10">
-      <motion.div
-        variants={animations.fadeInUp}
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        className="text-center text-white"
-      >
-        <h2 className="text-4xl md:text-5xl font-bold mb-6">
-          Rejoignez l'Aventure EatFast
-        </h2>
-        <p className="text-xl mb-8 opacity-90 max-w-3xl mx-auto">
-          Que vous soyez un restaurant souhaitant rejoindre nos partenaires ou un talent 
-          cherchant à révolutionner l'industrie alimentaire, nous avons une place pour vous !
-        </p>
-        
-        <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-white text-green-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-colors shadow-xl"
-          >
-            Devenir Partenaire Restaurant
-          </motion.button>
+const CTASection = () => {
+  const { navigate } = useNavigation();
+
+  return (
+    <section className="py-20 relative overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-green-600 to-green-700"></div>
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute top-0 left-0 w-72 h-72 bg-white rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-400 rounded-full blur-3xl"></div>
+      </div>
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div
+          variants={animations.fadeInUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="text-center text-white"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            Rejoignez l'Aventure EatFast
+          </h2>
+          <p className="text-xl mb-8 opacity-90 max-w-3xl mx-auto">
+            Que vous soyez un restaurant souhaitant rejoindre nos partenaires ou un talent 
+            cherchant à révolutionner l'industrie alimentaire, nous avons une place pour vous !
+          </p>
           
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-green-600 transition-all"
-          >
-            Rejoindre Notre Équipe
-          </motion.button>
-        </div>
-      </motion.div>
-    </div>
-  </section>
-);
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/become')}
+              className="bg-white text-green-600 px-8 py-4 rounded-full font-bold text-lg hover:bg-gray-100 transition-colors shadow-xl"
+            >
+              Devenir Partenaire Restaurant
+            </motion.button>
+            
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => navigate('/become')}
+              className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white hover:text-green-600 transition-all"
+            >
+              Rejoindre Notre Équipe
+            </motion.button>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+};
 
 // Main Component
 const AboutPage = () => {
   const { darkMode, toggleTheme } = useTheme();
   const { isScrolled, backgroundY } = useScrollEffects();
+  const { navigate } = useNavigation();
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -908,10 +1001,10 @@ const AboutPage = () => {
             <div>
               <h3 className="font-bold mb-4">Navigation</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="/" className="hover:text-white transition-colors">Accueil</a></li>
-                <li><a href="/restaurants" className="hover:text-white transition-colors">Restaurants</a></li>
-                <li><a href="/about" className="hover:text-white transition-colors">À propos</a></li>
-                <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
+                <li><button onClick={() => navigate('/')} className="hover:text-white transition-colors">Accueil</button></li>
+                <li><button onClick={() => navigate('/restaurants')} className="hover:text-white transition-colors">Restaurants</button></li>
+                <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors">À propos</button></li>
+                <li><button onClick={() => navigate('/contact')} className="hover:text-white transition-colors">Contact</button></li>
               </ul>
             </div>
             
@@ -919,8 +1012,8 @@ const AboutPage = () => {
               <h3 className="font-bold mb-4">Services</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><a href="#" className="hover:text-white transition-colors">Livraison</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Devenir partenaire</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Carrières</a></li>
+                <li><button onClick={() => navigate('/become')} className="hover:text-white transition-colors">Devenir partenaire</button></li>
+                <li><button onClick={() => navigate('/become')} className="hover:text-white transition-colors">Carrières</button></li>
               </ul>
             </div>
             

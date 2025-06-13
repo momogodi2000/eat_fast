@@ -1,36 +1,39 @@
 import { useState, useEffect, useRef } from 'react';
-import { useTranslation } from 'react-i18next';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
-import { Sun, Moon, Search, MapPin, Clock, Star, ChevronDown, User, ShoppingBag, Menu, X, Plus, Minus, Trash2, ArrowRight, CreditCard, Smartphone, Gift } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Sun, Moon, Search, MapPin, Clock, Star, ChevronDown, User, ShoppingBag, 
+  Menu, X, Plus, Minus, Trash2, ArrowRight, CreditCard, Smartphone, Gift,
+  Heart, MessageCircle, Send, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown,
+  Award, Users, TrendingUp, Filter, SortAsc
+} from 'lucide-react';
 
-// Import images
-import ndole from '../../assets/images/ndoles.jpeg';
-import eru from '../../assets/images/eru.jpeg';
-import koki from '../../assets/images/koki.jpeg';
-import achue from '../../assets/images/achue.jpeg';
-import pouletDG from '../../assets/images/DG.jpeg';
-import bobolo from '../../assets/images/bobolo.jpg';
-import mbongo from '../../assets/images/mbongo.jpeg';
-import kondre from '../../assets/images/kondre.jpg';
-import logo from '../../assets/logo/eat_fast.png';
-
-import brochettesDeBeuf from '../../assets/images/Brochettes_de_Bœuff.jpg';
-import beignetsDeHaricot from '../../assets/images/Beignets_de_Haricot.jpg';
-import plantainFrites from '../../assets/images/plantain_frites.jpg';
-import folere from '../../assets/images/Foléré.jpg';
-import jusDeGingembre from '../../assets/images/Jus_de_Gingembre.jpg';
-import palmWine from '../../assets/images/Palm_Wine.jpg';
-import puffPuff from '../../assets/images/Puff_Puff.jpg';
-import kondole from '../../assets/images/kondole.jpg';
-import beignetsPatate from '../../assets/images/beignets_patate.jpg';
-import packageFamilleTradition from '../../assets/images/package_famille_tradition.jpg';
-import packageDecouverte from '../../assets/images/package_decouverte.jpg';
-import packageRapide from '../../assets/images/package_rapide.jpg';
-
+// Import images (these would be your actual image imports)
+const images = {
+  ndole: '/api/placeholder/400/300',
+  eru: '/api/placeholder/400/300',
+  koki: '/api/placeholder/400/300',
+  achue: '/api/placeholder/400/300',
+  pouletDG: '/api/placeholder/400/300',
+  bobolo: '/api/placeholder/400/300',
+  mbongo: '/api/placeholder/400/300',
+  kondre: '/api/placeholder/400/300',
+  logo: '/api/placeholder/200/100',
+  brochettesDeBeuf: '/api/placeholder/400/300',
+  beignetsDeHaricot: '/api/placeholder/400/300',
+  plantainFrites: '/api/placeholder/400/300',
+  folere: '/api/placeholder/400/300',
+  jusDeGingembre: '/api/placeholder/400/300',
+  palmWine: '/api/placeholder/400/300',
+  puffPuff: '/api/placeholder/400/300',
+  kondole: '/api/placeholder/400/300',
+  beignetsPatate: '/api/placeholder/400/300',
+  packageFamilleTradition: '/api/placeholder/400/300',
+  packageDecouverte: '/api/placeholder/400/300',
+  packageRapide: '/api/placeholder/400/300'
+};
 
 const MenuPage = () => {
-  const { t, i18n } = useTranslation();
+  // États principaux
   const [darkMode, setDarkMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeCategory, setActiveCategory] = useState('tous');
@@ -38,266 +41,256 @@ const MenuPage = () => {
   const [cartItems, setCartItems] = useState([]);
   const [showCart, setShowCart] = useState(false);
   const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Simulated login state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState('populaire');
+  
+  // États pour les restaurants et commentaires
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [showRestaurantModal, setShowRestaurantModal] = useState(false);
+  const [restaurantComments, setRestaurantComments] = useState({});
+  const [newComment, setNewComment] = useState('');
+  const [userRatings, setUserRatings] = useState({});
+  const [restaurants, setRestaurants] = useState([
+    {
+      id: 1,
+      name: "Chez Mama Ngozi",
+      description: "Restaurant traditionnel spécialisé dans les plats camerounais authentiques depuis 1985.",
+      rating: 4.8,
+      totalReviews: 245,
+      location: "Bastos, Yaoundé",
+      specialties: ["Ndolé", "Eru", "Koki"],
+      images: [images.ndole, images.eru, images.koki],
+      currentImageIndex: 0,
+      deliveryTime: "25-35 min",
+      deliveryFee: 1000,
+      isPopular: true,
+      verified: true
+    },
+    {
+      id: 2,
+      name: "Le Palais des Saveurs",
+      description: "Cuisine camerounaise moderne avec une touche gastronomique contemporaine.",
+      rating: 4.6,
+      totalReviews: 189,
+      location: "Centre-ville, Yaoundé",
+      specialties: ["Poulet DG", "Mbongo Tchobi", "Kondre"],
+      images: [images.pouletDG, images.mbongo, images.kondre],
+      currentImageIndex: 0,
+      deliveryTime: "30-40 min",
+      deliveryFee: 1500,
+      isPopular: false,
+      verified: true
+    },
+    {
+      id: 3,
+      name: "Quick Bites Cameroun",
+      description: "Spécialiste des en-cas camerounais et plats rapides pour les gourmands pressés.",
+      rating: 4.4,
+      totalReviews: 156,
+      location: "Mvan, Yaoundé",
+      specialties: ["Brochettes", "Beignets", "Plantains frits"],
+      images: [images.brochettesDeBeuf, images.beignetsDeHaricot, images.plantainFrites],
+      currentImageIndex: 0,
+      deliveryTime: "15-25 min",
+      deliveryFee: 800,
+      isPopular: true,
+      verified: false
+    }
+  ]);
 
-  // Food categories
+  // Couleurs du drapeau camerounais
+  const cameroonColors = {
+    green: '#009639',
+    red: '#CE1126', 
+    yellow: '#FCDD09'
+  };
+
+  // Catégories de nourriture
   const categories = [
-    { id: 'tous', name: t('categories.all') },
-    { id: 'plats_traditionnels', name: 'Plats Traditionnels' },
-    { id: 'plats_populaires', name: 'Plats Populaires' },
-    { id: 'plats_rapides', name: 'Plats Rapides' },
-    { id: 'boissons', name: 'Boissons Locales' },
-    { id: 'desserts', name: 'Desserts' },
-    { id: 'packages', name: 'Food Packages' }
+    { id: 'tous', name: 'Tous les plats', icon: '🍽️' },
+    { id: 'plats_traditionnels', name: 'Plats Traditionnels', icon: '🍲' },
+    { id: 'plats_populaires', name: 'Plats Populaires', icon: '⭐' },
+    { id: 'plats_rapides', name: 'Plats Rapides', icon: '⚡' },
+    { id: 'boissons', name: 'Boissons Locales', icon: '🥤' },
+    { id: 'desserts', name: 'Desserts', icon: '🍰' },
+    { id: 'packages', name: 'Packages Familiaux', icon: '📦' }
   ];
 
-  // Sample menu data with more details
+  // Données du menu avec plus de détails
   const menuItems = [
     {
       id: 1,
       name: 'Ndolé Complet',
-      description: 'Le plat national camerounais avec des feuilles de ndolé, des arachides, du poisson fumé, de la viande et des crevettes. Servi avec des plantains mûrs et du riz blanc.',
-      image: ndole,
+      description: 'Le plat national camerounais avec des feuilles de ndolé, des arachides, du poisson fumé, de la viande et des crevettes. Servi avec des plantains mûrs et du riz blanc parfumé.',
+      image: images.ndole,
       price: 4500,
+      originalPrice: 5000,
       rating: 4.8,
       preparationTime: '25-35 min',
       category: 'plats_traditionnels',
       spicyLevel: 2,
       isPopular: true,
-      isChefChoice: true
+      isChefChoice: true,
+      restaurantId: 1,
+      ingredients: ['Feuilles de ndolé', 'Arachides', 'Poisson fumé', 'Viande de bœuf', 'Crevettes'],
+      allergens: ['Fruits de mer', 'Arachides'],
+      nutritionInfo: { calories: 520, protein: 35, carbs: 45, fat: 28 }
     },
     {
       id: 2,
       name: 'Eru et Water Fufu',
-      description: 'Feuilles d\'eru cuites avec du waterleaf, de l\'huile de palme et du poisson fumé. Servi avec du water fufu frais.',
-      image: eru,
+      description: 'Feuilles d\'eru cuites avec du waterleaf, de l\'huile de palme rouge et du poisson fumé. Servi avec du water fufu frais et tendre.',
+      image: images.eru,
       price: 3500,
       rating: 4.6,
       preparationTime: '20-30 min',
       category: 'plats_traditionnels',
       spicyLevel: 3,
-      isPopular: true
+      isPopular: true,
+      restaurantId: 1,
+      ingredients: ['Feuilles d\'eru', 'Waterleaf', 'Huile de palme', 'Poisson fumé'],
+      allergens: ['Poisson'],
+      nutritionInfo: { calories: 450, protein: 25, carbs: 40, fat: 22 }
     },
     {
       id: 3,
-      name: 'Koki Mais',
-      description: 'Pudding de haricots noir préparé avec de l\'huile de palme, épices et enveloppé dans des feuilles de bananier. Servi avec du manioc ou du plantain.',
-      image: koki,
-      price: 3000,
-      rating: 4.4,
-      preparationTime: '15-25 min',
-      category: 'plats_traditionnels',
-      spicyLevel: 1
-    },
-    {
-      id: 4,
-      name: 'Achu Soupe Jaune',
-      description: 'Cocoyam pilé servi avec une soupe jaune préparée avec du njinja, de l\'huile de palme et diverses épices. Accompagné de viande ou de poisson.',
-      image: achue,
-      price: 4000,
-      rating: 4.5,
-      preparationTime: '30-40 min',
-      category: 'plats_traditionnels',
-      spicyLevel: 2,
-      isChefChoice: true
-    },
-    {
-      id: 5,
-      name: 'Poulet DG',
-      description: 'Poulet sauté avec des plantains, légumes frais et épices, créant un mélange savoureux et équilibré. Un plat festif par excellence.',
-      image: pouletDG,
-      price: 5000,
+      name: 'Poulet DG Spécial',
+      description: 'Poulet sauté avec des plantains dorés, légumes frais croquants et épices aromatiques, créant un mélange savoureux et équilibré. Un plat festif par excellence.',
+      image: images.pouletDG,
+      price: 5500,
+      originalPrice: 6000,
       rating: 4.9,
       preparationTime: '25-35 min',
       category: 'plats_populaires',
       spicyLevel: 2,
       isPopular: true,
-      isChefChoice: true
+      isChefChoice: true,
+      restaurantId: 2,
+      ingredients: ['Poulet fermier', 'Plantains', 'Légumes verts', 'Épices locales'],
+      allergens: [],
+      nutritionInfo: { calories: 580, protein: 42, carbs: 35, fat: 30 }
+    },
+    {
+      id: 4,
+      name: 'Brochettes de Bœuf Grillées',
+      description: 'Brochettes de bœuf mariné 24h, grillées au charbon de bois, servies avec des oignons caramélisés et du piment doux.',
+      image: images.brochettesDeBeuf,
+      price: 2800,
+      rating: 4.5,
+      preparationTime: '10-15 min',
+      category: 'plats_rapides',
+      spicyLevel: 2,
+      isPopular: true,
+      restaurantId: 3,
+      ingredients: ['Bœuf de qualité', 'Oignons', 'Épices barbecue', 'Piment doux'],
+      allergens: [],
+      nutritionInfo: { calories: 380, protein: 35, carbs: 8, fat: 23 }
+    },
+    {
+      id: 5,
+      name: 'Foléré Rafraîchissant',
+      description: 'Boisson traditionnelle à base de fleurs d\'hibiscus fraîches, légèrement sucrée avec du miel local et des touches de gingembre.',
+      image: images.folere,
+      price: 1200,
+      rating: 4.6,
+      preparationTime: '2-5 min',
+      category: 'boissons',
+      spicyLevel: 0,
+      restaurantId: 1,
+      ingredients: ['Fleurs d\'hibiscus', 'Miel local', 'Gingembre', 'Citron vert'],
+      allergens: [],
+      nutritionInfo: { calories: 45, protein: 0, carbs: 12, fat: 0 }
     },
     {
       id: 6,
-      name: 'Bobolo et Sauce Jaune',
-      description: 'Bâtonnets de manioc fermenté cuits à la vapeur, servis avec une sauce jaune onctueuse et du poisson braisé.',
-      image: bobolo,
-      price: 3500,
-      rating: 4.3,
-      preparationTime: '20-30 min',
-      category: 'plats_populaires',
-      spicyLevel: 2
+      name: 'Package Famille Tradition',
+      description: 'Ndolé complet, Eru, Poulet DG et 4 boissons au choix pour 4 personnes. Idéal pour les repas en famille avec dessert inclus.',
+      image: images.packageFamilleTradition,
+      price: 16500,
+      originalPrice: 20000,
+      rating: 4.9,
+      preparationTime: '40-50 min',
+      category: 'packages',
+      spicyLevel: 2,
+      isPopular: true,
+      isChefChoice: true,
+      restaurantId: 1,
+      ingredients: ['Assortiment de plats traditionnels'],
+      allergens: ['Fruits de mer', 'Arachides'],
+      nutritionInfo: { calories: 2100, protein: 180, carbs: 220, fat: 140 }
     },
     {
       id: 7,
-      name: 'Mbongo Tchobi',
-      description: 'Sauce noire épicée préparée avec des graines de mbongo, servie avec du poisson ou de la viande et du plantain mûr.',
-      image: mbongo,
-      price: 4500,
-      rating: 4.7,
-      preparationTime: '30-45 min',
-      category: 'plats_populaires',
-      spicyLevel: 4,
-      isPopular: true
+      name: 'Koki Mais Traditionnel',
+      description: 'Pudding savoureux à base de haricots noirs moulus, d\'huile de palme rouge et d\'épices authentiques, cuit dans des feuilles de bananier pour un goût incomparable.',
+      image: images.koki,
+      price: 3200,
+      rating: 4.4,
+      preparationTime: '20-30 min',
+      category: 'plats_traditionnels',
+      spicyLevel: 1,
+      isPopular: false,
+      restaurantId: 1,
+      ingredients: ['Haricots noirs', 'Huile de palme', 'Épices', 'Feuilles de bananier'],
+      allergens: [],
+      nutritionInfo: { calories: 320, protein: 18, carbs: 35, fat: 12 }
     },
     {
       id: 8,
-      name: 'Kondre de Porc',
-      description: 'Ragoût de porc cuit lentement avec des plantains verts, créant une sauce riche et savoureuse. Plat complet et nourrissant.',
-      image: kondre,
-      price: 4000,
-      rating: 4.6,
-      preparationTime: '35-45 min',
-      category: 'plats_populaires',
-      spicyLevel: 3
-    },
-    {
-        id: 9,
-        name: 'Brochettes de Bœuf',
-        description: 'Brochettes de bœuf mariné grillées au charbon de bois, servies avec des oignons et du piment.',
-        image: brochettesDeBeuf,
-        price: 2500,
-        rating: 4.5,
-        preparationTime: '10-15 min',
-        category: 'plats_rapides',
-        spicyLevel: 2,
-        isPopular: true
-      },
-      {
-        id: 10,
-        name: 'Beignets de Haricot',
-        description: 'Beignets croustillants à base de purée de haricots, parfaits pour un en-cas rapide.',
-        image: beignetsDeHaricot,
-        price: 1500,
-        rating: 4.2,
-        preparationTime: '5-10 min',
-        category: 'plats_rapides',
-        spicyLevel: 1
-      },
-      {
-        id: 11,
-        name: 'Pommes Plantain Frites',
-        description: 'Plantains mûrs frits à la perfection, dorés et croustillants à l\'extérieur, moelleux à l\'intérieur.',
-        image: plantainFrites,
-        price: 2000,
-        rating: 4.3,
-        preparationTime: '10-15 min',
-        category: 'plats_rapides',
-        spicyLevel: 1
-      },
-    
-      // Boissons Locales examples
-      {
-        id: 12,
-        name: 'Foléré',
-        description: 'Boisson rafraîchissante à base de fleurs d\'hibiscus, légèrement sucrée et acidulée.',
-        image: folere ,
-        price: 1000,
-        rating: 4.6,
-        preparationTime: '2-5 min',
-        category: 'boissons',
-        spicyLevel: 0
-      },
-      {
-        id: 13,
-        name: 'Jus de Gingembre',
-        description: 'Jus piquant et revigorant à base de gingembre frais, excellent pour la digestion.',
-        image: jusDeGingembre ,
-        price: 1500,
-        rating: 4.4,
-        preparationTime: '5-10 min',
-        category: 'boissons',
-        spicyLevel: 3
-      },
-      {
-        id: 14,
-        name: 'Palm Wine',
-        description: 'Vin de palme traditionnel légèrement fermenté, boisson emblématique des régions côtières.',
-        image: palmWine ,
-        price: 2000,
-        rating: 4.7,
-        preparationTime: '2-5 min',
-        category: 'boissons',
-        spicyLevel: 0
-      },
-    
-      // Desserts examples
-      {
-        id: 15,
-        name: 'Puff Puff',
-        description: 'Beignets moelleux et sucrés, parfaits pour accompagner le café ou le thé.',
-        image: puffPuff,
-        price: 1500,
-        rating: 4.5,
-        preparationTime: '10-15 min',
-        category: 'desserts',
-        spicyLevel: 0
-      },
-      {
-        id: 16,
-        name: 'Kondolé',
-        description: 'Dessert traditionnel à base de bananes plantains mûres cuites dans une sauce sucrée.',
-        image: kondole,
-        price: 2000,
-        rating: 4.3,
-        preparationTime: '15-20 min',
-        category: 'desserts',
-        spicyLevel: 0
-      },
-      {
-        id: 17,
-        name: 'Beignets de Patate',
-        description: 'Beignets sucrés à base de patates douces, croustillants à l\'extérieur et moelleux à l\'intérieur.',
-        image: beignetsPatate,
-        price: 1800,
-        rating: 4.4,
-        preparationTime: '15-20 min',
-        category: 'desserts',
-        spicyLevel: 0
-      },
-    
-      // Food Packages examples
-      {
-        id: 18,
-        name: 'Package Famille Tradition',
-        description: 'Ndolé complet, Eru, Poulet DG et boisson au choix pour 4 personnes. Idéal pour les repas en famille.',
-        image: packageFamilleTradition,
-        price: 15000,
-        rating: 4.9,
-        preparationTime: '40-50 min',
-        category: 'packages',
-        spicyLevel: 2,
-        isPopular: true,
-        isChefChoice: true
-      },
-      {
-        id: 19,
-        name: 'Package Découverte',
-        description: 'Assortiment de 3 plats traditionnels (portion individuelle) avec dessert et boisson. Parfait pour découvrir la cuisine camerounaise.',
-        image: packageDecouverte,
-        price: 7000,
-        rating: 4.7,
-        preparationTime: '30-40 min',
-        category: 'packages',
-        spicyLevel: 2
-      },
-      {
-        id: 20,
-        name: 'Package Rapide',
-        description: 'Brochettes, plantains frits et boisson. Solution rapide et savoureuse pour un déjeuner sur le pouce.',
-        image: packageRapide,
-        price: 5000,
-        rating: 4.5,
-        preparationTime: '15-20 min',
-        category: 'packages',
-        spicyLevel: 1,
-        isPopular: true
-      }
+      name: 'Jus de Gingembre Pimenté',
+      description: 'Boisson énergisante à base de gingembre frais râpé, avec une pointe de piment et de citron vert. Parfait pour la digestion et revitalisant.',
+      image: images.jusDeGingembre,
+      price: 1500,
+      rating: 4.3,
+      preparationTime: '5-10 min',
+      category: 'boissons',
+      spicyLevel: 3,
+      isPopular: true,
+      restaurantId: 2,
+      ingredients: ['Gingembre frais', 'Piment', 'Citron vert', 'Miel'],
+      allergens: [],
+      nutritionInfo: { calories: 35, protein: 1, carbs: 8, fat: 0 }
+    }
   ];
 
-  // Filter menu items based on active category
-  const filteredMenuItems = activeCategory === 'tous' 
-    ? menuItems 
-    : menuItems.filter(item => item.category === activeCategory);
+  // Carrousel d'images pour les restaurants - Fix: utiliser useState pour éviter la mutation directe
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRestaurants(prevRestaurants => 
+        prevRestaurants.map(restaurant => ({
+          ...restaurant,
+          currentImageIndex: (restaurant.currentImageIndex + 1) % restaurant.images.length
+        }))
+      );
+    }, 30000); // Change toutes les 30 secondes
 
-  // Add item to cart
+    return () => clearInterval(interval);
+  }, []);
+
+  // Filtrage et tri des éléments du menu
+  const filteredAndSortedItems = menuItems
+    .filter(item => {
+      const matchesCategory = activeCategory === 'tous' || item.category === activeCategory;
+      const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      switch (sortBy) {
+        case 'prix_asc':
+          return a.price - b.price;
+        case 'prix_desc':
+          return b.price - a.price;
+        case 'note':
+          return b.rating - a.rating;
+        case 'temps':
+          return parseInt(a.preparationTime) - parseInt(b.preparationTime);
+        default: // 'populaire'
+          return (b.isPopular ? 1 : 0) - (a.isPopular ? 1 : 0);
+      }
+    });
+
+  // Fonctions du panier
   const addToCart = (item) => {
     setCartItems(prevItems => {
       const existingItem = prevItems.find(cartItem => cartItem.id === item.id);
@@ -311,15 +304,19 @@ const MenuPage = () => {
         return [...prevItems, { ...item, quantity: 1 }];
       }
     });
-    setShowCart(true);
+    
+    // Animation de confirmation
+    const button = document.querySelector(`[data-item-id="${item.id}"] .add-to-cart-btn`);
+    if (button) {
+      button.classList.add('animate-bounce');
+      setTimeout(() => button.classList.remove('animate-bounce'), 600);
+    }
   };
 
-  // Remove item from cart
   const removeFromCart = (id) => {
     setCartItems(prevItems => prevItems.filter(item => item.id !== id));
   };
 
-  // Update item quantity in cart
   const updateQuantity = (id, newQuantity) => {
     if (newQuantity < 1) {
       removeFromCart(id);
@@ -332,29 +329,54 @@ const MenuPage = () => {
     );
   };
 
-  // Calculate total price
+  // Calcul du total
   const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const deliveryFee = subtotal > 0 ? 1000 : 0; // 1000 FCFA delivery fee
-  const total = subtotal + deliveryFee;
+  const deliveryFee = subtotal > 0 ? 1000 : 0;
+  const discount = subtotal > 15000 ? subtotal * 0.1 : 0; // 10% de réduction si > 15000 FCFA
+  const total = subtotal + deliveryFee - discount;
 
-  // Toggle dark mode
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
+  // Fonctions des commentaires
+  const addComment = (restaurantId, comment, parentId = null) => {
+    const newCommentObj = {
+      id: Date.now(),
+      restaurantId,
+      text: comment,
+      author: 'Utilisateur Anonyme',
+      timestamp: new Date().toISOString(),
+      likes: 0,
+      dislikes: 0,
+      parentId,
+      replies: []
+    };
+
+    setRestaurantComments(prev => ({
+      ...prev,
+      [restaurantId]: [
+        ...(prev[restaurantId] || []),
+        newCommentObj
+      ]
+    }));
   };
 
-  // Toggle mobile menu
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
+  const toggleCommentReaction = (restaurantId, commentId, type) => {
+    setRestaurantComments(prev => ({
+      ...prev,
+      [restaurantId]: prev[restaurantId]?.map(comment =>
+        comment.id === commentId
+          ? { ...comment, [type]: comment[type] + 1 }
+          : comment
+      )
+    }));
   };
 
-  // Change language
-  const changeLanguage = () => {
-    const newLanguage = i18n.language === 'en' ? 'fr' : 'en';
-    i18n.changeLanguage(newLanguage);
-    localStorage.setItem('selectedLanguage', newLanguage);
+  const rateRestaurant = (restaurantId, rating) => {
+    setUserRatings(prev => ({
+      ...prev,
+      [restaurantId]: rating
+    }));
   };
 
-  // Handle scroll for navbar shadow
+  // Gestion du scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
@@ -363,731 +385,1117 @@ const MenuPage = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Fermeture du menu mobile en cas de redimensionnement
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsMenuOpen(false);
+      }
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
-      {/* Navigation */}
-      <header className={`fixed w-full z-50 transition-all duration-300 ${isScrolled ? 'py-2 shadow-lg backdrop-blur-md bg-opacity-90' : 'py-4'} ${darkMode ? 'bg-gray-800 bg-opacity-90' : 'bg-white bg-opacity-90'}`}>
+    <div className={`min-h-screen transition-all duration-300 ${
+      darkMode 
+        ? 'dark bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white' 
+        : 'bg-gradient-to-br from-green-50 via-yellow-50 to-red-50 text-gray-900'
+    }`}>
+      
+      {/* Navigation avec thème camerounais */}
+      <header className={`fixed w-full z-50 transition-all duration-300 ${
+        isScrolled 
+          ? 'py-2 shadow-xl backdrop-blur-lg bg-opacity-95' 
+          : 'py-4'
+      } ${
+        darkMode 
+          ? 'bg-gray-900 bg-opacity-95 border-b border-gray-700/50' 
+          : 'bg-white bg-opacity-95 border-b border-green-200/50'
+      }`}>
         <div className="container mx-auto px-4 flex justify-between items-center">
-          {/* Logo */}
+          {/* Logo avec couleurs camerounaises */}
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="flex items-center"
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="flex items-center space-x-3"
           >
-            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-green-500 via-yellow-500 to-red-500 bg-clip-text text-transparent">
+            <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-yellow-500 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-xl">🍽️</span>
+            </div>
+            <span className="text-2xl font-bold bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 bg-clip-text text-transparent">
               Eat-Fast
-            </Link>
+            </span>
           </motion.div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6">
-            <nav className="flex items-center space-x-6">
-              <Link to="/" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.home')}
-              </Link>
-              <Link to="/menus" className="font-medium text-green-500 transition-colors">
-                Menus
-              </Link>
-              <a href="/about" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.about')}
-              </a>
-              <a href="/contact" className="font-medium hover:text-green-500 transition-colors">
-                {t('nav.contact')}
-              </a>
-            </nav>
-            
-            <div className="flex items-center space-x-4">
-              {/* Language switcher */}
-              <motion.button 
-                onClick={changeLanguage}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                aria-label="Change language"
-              >
-                <span className="font-medium text-sm uppercase">
-                  {i18n.language === 'en' ? 'FR' : 'EN'}
-                </span>
-              </motion.button>
-              
-              <motion.button 
-                onClick={toggleDarkMode} 
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-              >
-                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-              </motion.button>
-                        
-              <Link 
-                to="/login"
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <motion.div
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  <User size={20} />
-                </motion.div>
-              </Link>
-              
-              <motion.button 
-                className="relative p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setShowCart(!showCart)}
-              >
-                <ShoppingBag size={20} />
-                {cartItems.length > 0 && (
-                  <motion.span 
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                    className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs"
-                  >
-                    {cartItems.reduce((total, item) => total + item.quantity, 0)}
-                  </motion.span>
-                )}
-              </motion.button>
-            </div>
-          </div>
-          
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <button 
-              onClick={toggleDarkMode} 
-              className="p-2 mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          {/* Navigation desktop */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <a href="/" className="font-medium hover:text-green-600 transition-colors relative group">
+              Accueil
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-600 transition-all group-hover:w-full"></span>
+            </a>
+            <a href="/menus" className="font-medium text-green-600 relative">
+              Menus
+              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-green-600"></span>
+            </a>
+            <a href="/restaurants" className="font-medium hover:text-green-600 transition-colors relative group">
+              Restaurants
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-600 transition-all group-hover:w-full"></span>
+            </a>
+            <a href="/contact" className="font-medium hover:text-green-600 transition-colors relative group">
+              Contact
+              <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-green-600 transition-all group-hover:w-full"></span>
+            </a>
+          </nav>
+
+          {/* Actions utilisateur avec thème camerounais */}
+          <div className="flex items-center space-x-4">
+            <motion.button 
+              onClick={() => setDarkMode(!darkMode)} 
+              className={`p-3 rounded-xl transition-all hover:scale-105 ${
+                darkMode 
+                  ? 'bg-gray-800 hover:bg-gray-700 text-yellow-400' 
+                  : 'bg-green-100 hover:bg-green-200 text-green-700'
+              }`}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-            <button 
-              onClick={toggleMenu}
-              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            </motion.button>
+            
+            <motion.button className={`p-3 rounded-xl transition-all hover:scale-105 ${
+              darkMode 
+                ? 'bg-gray-800 hover:bg-gray-700' 
+                : 'bg-green-100 hover:bg-green-200 text-green-700'
+            }`}>
+              <User size={20} />
+            </motion.button>
+            
+            <motion.button 
+              className={`relative p-3 rounded-xl transition-all hover:scale-105 ${
+                darkMode 
+                  ? 'bg-gray-800 hover:bg-gray-700' 
+                  : 'bg-green-100 hover:bg-green-200 text-green-700'
+              }`}
+              onClick={() => setShowCart(!showCart)}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+              <ShoppingBag size={20} />
+              {cartItems.length > 0 && (
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="absolute -top-2 -right-2 bg-gradient-to-r from-red-600 to-yellow-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg"
+                >
+                  {cartItems.reduce((total, item) => total + item.quantity, 0)}
+                </motion.div>
+              )}
+            </motion.button>
+
+            {/* Menu mobile - Fix: suppression du className dupliqué */}
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className={`md:hidden p-3 rounded-xl transition-all ${
+                darkMode 
+                  ? 'bg-gray-800 hover:bg-gray-700' 
+                  : 'bg-green-100 hover:bg-green-200 text-green-700'
+              }`}
+            >
+              {isMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
         </div>
+
+        {/* Menu mobile avec thème camerounais */}
+        <AnimatePresence>
+          {isMenuOpen && (
+            <motion.div 
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              className={`md:hidden border-t ${
+                darkMode 
+                  ? 'bg-gray-900 border-gray-700' 
+                  : 'bg-white border-green-200'
+              }`}
+            >
+              <nav className="container mx-auto px-4 py-6 space-y-4">
+                <a href="/" className="block py-3 px-4 rounded-xl hover:bg-green-100 dark:hover:bg-gray-800 transition-colors">
+                  Accueil
+                </a>
+                <a href="/menus" className="block py-3 px-4 rounded-xl bg-green-100 dark:bg-gray-800 text-green-600 dark:text-green-400">
+                  Menus
+                </a>
+                <a href="/restaurants" className="block py-3 px-4 rounded-xl hover:bg-green-100 dark:hover:bg-gray-800 transition-colors">
+                  Restaurants
+                </a>
+                <a href="/contact" className="block py-3 px-4 rounded-xl hover:bg-green-100 dark:hover:bg-gray-800 transition-colors">
+                  Contact
+                </a>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isMenuOpen && (
-          <motion.div 
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
-            className={`fixed top-16 left-0 right-0 z-40 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg`}
-          >
-            <nav className="container mx-auto px-4 py-4 flex flex-col space-y-4">
-              <Link to="/" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.home')}
-              </Link>
-              <Link to="/menus" className="font-medium p-2 bg-gray-100 dark:bg-gray-700 rounded transition-colors">
-                Menus
-              </Link>
-              <a href="/about" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.about')}
-              </a>
-              <a href="/contact" className="font-medium p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">
-                {t('nav.contact')}
-              </a>
-              <div className="flex items-center justify-between pt-2 border-t dark:border-gray-700">
-                <button 
-                  onClick={changeLanguage}
-                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                >
-                  <span className="font-medium">
-                    {i18n.language === 'en' ? 'Français' : 'English'}
-                  </span>
-                </button>
-                <div className="flex items-center space-x-4">
-                  <Link 
-                    to="/login" 
-                    className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                  >
-                    <User size={20} />
-                    <span>{t('nav.account')}</span>
-                  </Link>
-                  <button 
-                    className="relative flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
-                    onClick={() => {
-                      setShowCart(true);
-                      setIsMenuOpen(false);
-                    }}
-                  >
-                    <ShoppingBag size={20} />
-                    <span>{t('nav.cart')}</span>
-                    {cartItems.length > 0 && (
-                      <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
-                        {cartItems.reduce((total, item) => total + item.quantity, 0)}
-                      </span>
-                    )}
-                  </button>
-                </div>
-              </div>
-            </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Shopping Cart Sidebar */}
+      {/* Panier latéral avec thème camerounais */}
       <AnimatePresence>
         {showCart && (
-          <motion.div 
-            initial={{ opacity: 0, x: '100%' }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: '100%' }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className={`fixed inset-y-0 right-0 w-full sm:w-96 z-50 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-2xl overflow-y-auto`}
-          >
-            <div className="p-6 h-full flex flex-col">
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">Votre Panier</h2>
-                <button 
-                  onClick={() => setShowCart(false)}
-                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {cartItems.length === 0 ? (
-                <div className="flex-grow flex flex-col items-center justify-center text-center">
-                  <ShoppingBag size={48} className="text-gray-400 mb-4" />
-                  <h3 className="text-lg font-medium mb-2">Votre panier est vide</h3>
-                  <p className="text-gray-500 dark:text-gray-400 mb-6">Ajoutez des plats délicieux pour commencer</p>
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black bg-opacity-50 z-50"
+              onClick={() => setShowCart(false)}
+            />
+            <motion.div 
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className={`fixed inset-y-0 right-0 w-full sm:w-96 z-50 ${
+                darkMode ? 'bg-gray-900' : 'bg-white'
+              } shadow-2xl overflow-y-auto`}
+            >
+              <div className="p-6 h-full flex flex-col">
+                {/* En-tête du panier avec couleurs camerounaises */}
+                <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+                  <h2 className="text-xl font-bold flex items-center">
+                    <ShoppingBag className="mr-2 text-green-600" size={24} />
+                    Votre Panier
+                  </h2>
                   <button 
                     onClick={() => setShowCart(false)}
-                    className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full font-medium transition"
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                   >
-                    Parcourir les menus
+                    <X size={20} />
                   </button>
                 </div>
-              ) : (
-                <>
-                  <div className="flex-grow overflow-y-auto">
-                    {cartItems.map(item => (
-                      <div key={item.id} className="flex items-center py-4 border-b dark:border-gray-700">
-                        <div className="w-16 h-16 rounded-lg overflow-hidden mr-4">
-                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-grow">
-                          <h3 className="font-medium">{item.name}</h3>
-                          <p className="text-green-500 font-bold">{item.price.toLocaleString()} FCFA</p>
-                        </div>
-                        <div className="flex items-center">
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            <Minus size={16} />
-                          </button>
-                          <span className="mx-2 w-8 text-center">{item.quantity}</span>
-                          <button 
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                          >
-                            <Plus size={16} />
-                          </button>
-                        </div>
-                        <button 
-                          onClick={() => removeFromCart(item.id)}
-                          className="ml-4 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-full"
+
+                {cartItems.length === 0 ? (
+                  <div className="flex-grow flex flex-col items-center justify-center text-center">
+                    <div className="w-24 h-24 bg-green-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                      <ShoppingBag size={32} className="text-green-600" />
+                    </div>
+                    <h3 className="text-lg font-medium mb-2">Votre panier est vide</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mb-6">
+                      Ajoutez des plats délicieux pour commencer votre commande
+                    </p>
+                    <button 
+                      onClick={() => setShowCart(false)}
+                      className="px-6 py-3 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-xl font-medium transition-all transform hover:scale-105"
+                    >
+                      Parcourir les menus
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Articles du panier */}
+                    <div className="flex-grow overflow-y-auto space-y-4">
+                      {cartItems.map(item => (
+                        <motion.div 
+                          key={item.id}
+                          layout
+                          className="flex items-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl"
                         >
-                          <Trash2 size={16} />
-                        </button>
+                          <div className="w-16 h-16 rounded-xl overflow-hidden mr-4 flex-shrink-0">
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          </div>
+                          <div className="flex-grow min-w-0">
+                            <h3 className="font-medium truncate">{item.name}</h3>
+                            <p className="text-green-600 font-bold">{item.price.toLocaleString()} FCFA</p>
+                          </div>
+                          <div className="flex items-center space-x-2 ml-4">
+                            <button 
+                              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                              className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                            >
+                              <Minus size={16} />
+                            </button>
+                            <span className="w-8 text-center font-medium">{item.quantity}</span>
+                            <button 
+                              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                              className="p-1 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                            >
+                              <Plus size={16} />
+                            </button>
+                          </div>
+                          <button 
+                            onClick={() => removeFromCart(item.id)}
+                            className="ml-2 p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-colors"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Résumé de la commande avec couleurs camerounaises */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6 space-y-3">
+                      <div className="flex justify-between">
+                        <span>Sous-total</span>
+                        <span className="font-medium">{subtotal.toLocaleString()} FCFA</span>
                       </div>
-                    ))}
-                  </div>
+                      <div className="flex justify-between">
+                        <span>Frais de livraison</span>
+                        <span className="font-medium">{deliveryFee.toLocaleString()} FCFA</span>
+                      </div>
+                      {discount > 0 && (
+                        <div className="flex justify-between text-green-600">
+                          <span>Réduction (10%)</span>
+                          <span className="font-medium">-{discount.toLocaleString()} FCFA</span>
+                        </div>
+                      )}
+                      <div className="flex justify-between text-lg font-bold pt-3 border-t border-gray-200 dark:border-gray-700">
+                        <span>Total</span>
+                        <span className="text-green-600">{total.toLocaleString()} FCFA</span>
+                      </div>
 
-                  <div className="border-t dark:border-gray-700 pt-4 mt-4">
-                    <div className="flex justify-between mb-2">
-                      <span>Sous-total</span>
-                      <span className="font-medium">{subtotal.toLocaleString()} FCFA</span>
+                      <motion.button 
+                        onClick={() => {
+                          setShowCart(false);
+                          setShowCheckoutModal(true);
+                        }}
+                        className="w-full mt-6 py-4 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-xl font-medium flex items-center justify-center transition-all transform hover:scale-105 shadow-lg"
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        Passer la commande
+                        <ArrowRight size={18} className="ml-2" />
+                      </motion.button>
                     </div>
-                    <div className="flex justify-between mb-2">
-                      <span>Frais de livraison</span>
-                      <span className="font-medium">{deliveryFee.toLocaleString()} FCFA</span>
-                    </div>
-                    <div className="flex justify-between text-lg font-bold mt-4">
-                      <span>Total</span>
-                      <span>{total.toLocaleString()} FCFA</span>
-                    </div>
-
-                    <button 
-                      onClick={() => {
-                        setShowCart(false);
-                        setShowCheckoutModal(true);
-                      }}
-                      className="w-full mt-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium flex items-center justify-center transition"
-                    >
-                      Passer la commande <ArrowRight size={18} className="ml-2" />
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Checkout Modal */}
-      <AnimatePresence>
-        {showCheckoutModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50"
-          >
-            <motion.div
-              initial={{ scale: 0.9, y: 20 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.9, y: 20 }}
-              className={`w-full max-w-md rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 shadow-2xl`}
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold">Finaliser la commande</h2>
-                <button 
-                  onClick={() => setShowCheckoutModal(false)}
-                  className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                >
-                  <X size={20} />
-                </button>
+                  </>
+                )}
               </div>
-
-              {isLoggedIn ? (
-                <div>
-                  <h3 className="font-medium mb-4">Méthode de paiement</h3>
-                  <div className="space-y-3 mb-6">
-                    <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-300'} flex items-center`}>
-                      <CreditCard size={20} className="mr-3" />
-                      <span>Carte bancaire</span>
-                    </div>
-                    <div className={`p-4 rounded-lg border ${darkMode ? 'border-gray-700' : 'border-gray-300'} flex items-center`}>
-                      <Smartphone size={20} className="mr-3" />
-                      <span>Mobile Money (MTN, Orange)</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-green-50 dark:bg-green-900 p-4 rounded-lg mb-6">
-                    <div className="flex items-start">
-                      <Gift size={20} className="text-green-500 mr-3 mt-1" />
-                      <div>
-                        <h4 className="font-medium mb-1">Avantages des membres</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Vous bénéficiez de 10% de réduction sur cette commande et pouvez suivre son statut en temps réel.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <button className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition">
-                    Payer {total.toLocaleString()} FCFA
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div className="bg-yellow-50 dark:bg-yellow-900 p-4 rounded-lg mb-6">
-                    <div className="flex items-start">
-                      <Gift size={20} className="text-yellow-500 mr-3 mt-1" />
-                      <div>
-                        <h4 className="font-medium mb-1">Avantages supplémentaires</h4>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          Connectez-vous pour bénéficier de réductions, suivre vos commandes et accéder à votre historique.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-3">
-                    <Link to="/login">
-                      <button className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition">
-                        Se connecter et bénéficier des avantages
-                      </button>
-                    </Link>
-                    <button 
-                      onClick={() => {
-                        // Simulate guest checkout
-                        alert('Commande passée en tant qu\'invité. Vous ne bénéficierez pas des avantages membres.');
-                        setShowCheckoutModal(false);
-                        setCartItems([]);
-                      }}
-                      className="w-full py-3 border border-gray-300 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg font-medium transition"
-                    >
-                      Continuer sans se connecter
-                    </button>
-                  </div>
-                </div>
-              )}
             </motion.div>
-          </motion.div>
+          </>
         )}
       </AnimatePresence>
 
-      {/* Main Content */}
+      {/* Section principale */}
       <main className="pt-24 pb-12">
-        {/* Hero Section */}
-        <section className="py-12 relative overflow-hidden">
-          <div className="absolute -top-20 -right-20 w-96 h-96 bg-green-500 opacity-10 rounded-full blur-3xl"></div>
-          <div className="absolute -bottom-20 -left-20 w-96 h-96 bg-yellow-500 opacity-10 rounded-full blur-3xl"></div>
+        {/* Section héro avec thème camerounais */}
+        <section className="py-16 relative overflow-hidden">
+          {/* Éléments décoratifs aux couleurs du Cameroun */}
+          <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-r from-green-400 to-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
+          <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-r from-red-400 to-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse animation-delay-2000"></div>
           
-          <div className="container mx-auto px-4">
+          <div className="container mx-auto px-4 relative z-10">
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              className="text-center mb-12"
+            >
+              <h1 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 bg-clip-text text-transparent">
+                Savourez le Cameroun
+              </h1>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-10 leading-relaxed">
+                Découvrez une sélection exceptionnelle de plats traditionnels camerounais, préparés avec amour par nos chefs partenaires et livrés directement chez vous.
+              </p>
+              
+              {/* Statistiques avec couleurs camerounaises */}
+              <div className="flex flex-wrap justify-center gap-8 mb-12">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-600">50+</div>
+                  <div className="text-gray-600 dark:text-gray-400">Plats disponibles</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-red-600">15+</div>
+                  <div className="text-gray-600 dark:text-gray-400">Restaurants partenaires</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-yellow-600">1000+</div>
+                  <div className="text-gray-600 dark:text-gray-400">Clients satisfaits</div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Barre de recherche et filtres avec thème camerounais */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-12"
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="max-w-4xl mx-auto"
             >
-              <h1 className="text-4xl md:text-5xl font-bold mb-4">Nos Menus Camerounais</h1>
-              <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-                Découvrez une sélection de plats traditionnels préparés avec soin par nos restaurants partenaires. Commandez en quelques clics et savourez l'authenticité culinaire du Cameroun.
-              </p>
-            </motion.div>
-
-            {/* Search and Filter */}
-            <div className="max-w-2xl mx-auto mb-12">
-              <div className="relative mb-6">
+              {/* Recherche */}
+              <div className="relative mb-8">
                 <input 
                   type="text" 
-                  placeholder="Rechercher un plat, un restaurant..."
-                  className={`w-full py-3 px-4 pr-12 rounded-full border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-300'} focus:outline-none focus:ring-2 focus:ring-green-500 shadow-lg`}
+                  placeholder="Rechercher un plat, un ingrédient, un restaurant..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`w-full py-4 px-6 pr-14 rounded-2xl border-2 text-lg transition-all focus:outline-none focus:ring-4 focus:ring-green-500/20 ${
+                    darkMode 
+                      ? 'bg-gray-800 border-gray-700 focus:border-green-500' 
+                      : 'bg-white border-gray-200 focus:border-green-500 shadow-lg hover:shadow-xl'
+                  }`}
                 />
-                <Search className="absolute right-4 top-3 text-gray-500" size={20} />
+                <Search className="absolute right-5 top-4 text-gray-400" size={24} />
               </div>
 
-              <div className="flex overflow-x-auto pb-4 hide-scrollbar">
-                <div className="flex space-x-4">
-                  {categories.map((category) => (
-                    <motion.button
-                      key={category.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      onClick={() => setActiveCategory(category.id)}
-                      className={`px-4 py-2 rounded-full whitespace-nowrap transition-colors ${
-                        activeCategory === category.id 
-                          ? 'bg-green-500 text-white shadow-lg' 
-                          : darkMode 
-                            ? 'bg-gray-800 hover:bg-gray-700' 
-                            : 'bg-gray-100 hover:bg-gray-200'
-                      }`}
-                    >
-                      {category.name}
-                    </motion.button>
-                  ))}
-                </div>
+              {/* Filtres par catégorie avec couleurs camerounaises */}
+              <div className="flex flex-wrap justify-center gap-4 mb-8">
+                {categories.map((category) => (
+                  <motion.button
+                    key={category.id}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={() => setActiveCategory(category.id)}
+                    className={`px-6 py-3 rounded-xl font-medium transition-all flex items-center space-x-2 ${
+                      activeCategory === category.id 
+                        ? 'bg-gradient-to-r from-green-600 to-yellow-500 text-white shadow-lg transform scale-105' 
+                        : darkMode 
+                          ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
+                          : 'bg-white hover:bg-gray-50 text-gray-700 shadow-md hover:shadow-lg'
+                    }`}
+                  >
+                    <span className="text-lg">{category.icon}</span>
+                    <span>{category.name}</span>
+                  </motion.button>
+                ))}
               </div>
-            </div>
+
+              {/* Tri */}
+              <div className="flex justify-center">
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className={`px-4 py-2 rounded-xl border font-medium ${
+                    darkMode 
+                      ? 'bg-gray-800 border-gray-700 text-white' 
+                      : 'bg-white border-gray-200 text-gray-700'
+                  }`}
+                >
+                  <option value="populaire">Plus populaires</option>
+                  <option value="note">Mieux notés</option>
+                  <option value="prix_asc">Prix croissant</option>
+                  <option value="prix_desc">Prix décroissant</option>
+                  <option value="temps">Temps de préparation</option>
+                </select>
+              </div>
+            </motion.div>
           </div>
         </section>
 
-        {/* Menu Grid */}
-        <section className="py-8">
+        {/* Section des restaurants avec carrousel et thème camerounais */}
+        <section className={`py-16 ${darkMode ? 'bg-gray-800/50' : 'bg-white/50'} backdrop-blur-sm`}>
           <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-              {filteredMenuItems.map((item, index) => (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-12"
+            >
+              <h2 className="text-4xl font-bold mb-4">Nos Restaurants Partenaires</h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Découvrez les meilleurs restaurants camerounais de Yaoundé, sélectionnés pour leur qualité et leur authenticité.
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {restaurants.map((restaurant, index) => (
                 <motion.div
-                  key={item.id}
+                  key={restaurant.id}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                  className={`rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+                  transition={{ delay: index * 0.1 }}
+                  whileHover={{ y: -10 }}
+                  className={`rounded-2xl overflow-hidden shadow-xl transition-all cursor-pointer ${
+                    darkMode ? 'bg-gray-800' : 'bg-white'
+                  } hover:shadow-2xl`}
+                  onClick={() => {
+                    setSelectedRestaurant(restaurant);
+                    setShowRestaurantModal(true);
+                  }}
                 >
-                  <div className="relative">
+                  {/* Carrousel d'images */}
+                  <div className="relative h-48 overflow-hidden">
                     <img 
-                      src={item.image} 
-                      alt={item.name} 
-                      className="w-full h-48 object-cover"
+                      src={restaurant.images[restaurant.currentImageIndex]} 
+                      alt={restaurant.name}
+                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                     
-                    {/* Badges */}
+                    {/* Badges avec couleurs camerounaises */}
                     <div className="absolute top-4 left-4 flex space-x-2">
-                      {item.isPopular && (
-                        <span className="bg-yellow-500 text-white px-2 py-1 rounded-full text-xs font-medium">
+                      {restaurant.isPopular && (
+                        <span className="bg-gradient-to-r from-yellow-500 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                          <TrendingUp size={12} className="mr-1" />
                           Populaire
                         </span>
                       )}
-                      {item.isChefChoice && (
-                        <span className="bg-red-500 text-white px-2 py-1 rounded-full text-xs font-medium">
-                          Choix du Chef
+                      {restaurant.verified && (
+                        <span className="bg-gradient-to-r from-green-500 to-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center">
+                          <Award size={12} className="mr-1" />
+                          Vérifié
                         </span>
                       )}
                     </div>
-                    
-                    <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg flex items-center space-x-1 shadow-md">
+
+                    {/* Note et avis */}
+                    <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-xl flex items-center space-x-1">
                       <Star className="text-yellow-500" size={16} fill="currentColor" />
-                      <span className="font-medium">{item.rating}</span>
+                      <span className="font-bold text-gray-900">{restaurant.rating}</span>
+                      <span className="text-gray-600 text-sm">({restaurant.totalReviews})</span>
+                    </div>
+
+                    {/* Indicateurs de carrousel */}
+                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
+                      {restaurant.images.map((_, imageIndex) => (
+                        <div
+                          key={imageIndex}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            imageIndex === restaurant.currentImageIndex 
+                              ? 'bg-white scale-125' 
+                              : 'bg-white/50'
+                          }`}
+                        />
+                      ))}
                     </div>
                   </div>
-                  
-                  <div className="p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="font-bold text-lg">{item.name}</h3>
-                      <span className="text-green-500 font-bold">{item.price.toLocaleString()} FCFA</span>
+
+                  {/* Informations du restaurant */}
+                  <div className="p-6">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-xl font-bold">{restaurant.name}</h3>
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <Clock size={14} className="mr-1" />
+                        {restaurant.deliveryTime}
+                      </div>
                     </div>
                     
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{item.description}</p>
-                    
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                          <Clock size={14} className="mr-1" />
-                          <span>{item.preparationTime}</span>
-                        </div>
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <svg
-                              key={i}
-                              className={`w-4 h-4 ${i < item.spicyLevel ? 'text-red-500 fill-current' : 'text-gray-300 dark:text-gray-600'}`}
-                              viewBox="0 0 20 20"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                            </svg>
-                          ))}
-                        </div>
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2">
+                      {restaurant.description}
+                    </p>
+
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <MapPin size={14} className="mr-1" />
+                        {restaurant.location}
                       </div>
-                      
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => addToCart(item)}
-                        className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full text-sm font-medium transition shadow-md"
-                      >
-                        Ajouter
-                      </motion.button>
+                      <div className="text-sm font-medium">
+                        Livraison: {restaurant.deliveryFee.toLocaleString()} FCFA
+                      </div>
+                    </div>
+
+                    {/* Spécialités avec couleurs camerounaises */}
+                    <div className="flex flex-wrap gap-2">
+                      {restaurant.specialties.slice(0, 3).map((specialty, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs font-medium"
+                        >
+                          {specialty}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </motion.div>
               ))}
             </div>
-            
-            {/* Empty state */}
-            {filteredMenuItems.length === 0 && (
-              <div className="text-center py-12">
-                <div className="mx-auto w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-6">
-                  <Search size={32} className="text-gray-400" />
+          </div>
+        </section>
+
+        {/* Modal de restaurant avec commentaires et thème camerounais */}
+        <AnimatePresence>
+          {showRestaurantModal && selectedRestaurant && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+              onClick={() => setShowRestaurantModal(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                className={`w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-2xl ${
+                  darkMode ? 'bg-gray-900' : 'bg-white'
+                } shadow-2xl`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* En-tête */}
+                <div className="relative">
+                  <img 
+                    src={selectedRestaurant.images[0]} 
+                    alt={selectedRestaurant.name}
+                    className="w-full h-64 object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <button
+                    onClick={() => setShowRestaurantModal(false)}
+                    className="absolute top-4 right-4 p-2 bg-white/20 backdrop-blur-sm rounded-full hover:bg-white/30 transition-colors"
+                  >
+                    <X size={20} className="text-white" />
+                  </button>
+                  <div className="absolute bottom-6 left-6 text-white">
+                    <h2 className="text-3xl font-bold mb-2">{selectedRestaurant.name}</h2>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center">
+                        <Star className="text-yellow-400" size={20} fill="currentColor" />
+                        <span className="ml-1 font-bold text-lg">{selectedRestaurant.rating}</span>
+                        <span className="ml-2 text-white/80">({selectedRestaurant.totalReviews} avis)</span>
+                      </div>
+                      <div className="flex items-center">
+                        <MapPin size={16} />
+                        <span className="ml-1">{selectedRestaurant.location}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-xl font-medium mb-2">Aucun résultat trouvé</h3>
-                <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-                  Aucun plat ne correspond à votre recherche. Essayez de modifier vos critères ou explorez nos autres catégories.
-                </p>
-                <button 
-                  onClick={() => setActiveCategory('tous')}
-                  className="mt-6 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full font-medium transition"
-                >
-                  Voir tous les plats
-                </button>
+
+                <div className="p-6">
+                  {/* Description et informations avec couleurs camerounaises */}
+                  <div className="mb-8">
+                    <p className="text-gray-600 dark:text-gray-300 mb-4 text-lg">
+                      {selectedRestaurant.description}
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                        <Clock className="mx-auto mb-2 text-green-600" size={24} />
+                        <div className="font-bold">{selectedRestaurant.deliveryTime}</div>
+                        <div className="text-sm text-gray-500">Livraison</div>
+                      </div>
+                      <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                        <Users className="mx-auto mb-2 text-yellow-600" size={24} />
+                        <div className="font-bold">{selectedRestaurant.totalReviews}</div>
+                        <div className="text-sm text-gray-500">Avis clients</div>
+                      </div>
+                      <div className="text-center p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                        <Award className="mx-auto mb-2 text-red-600" size={24} />
+                        <div className="font-bold">{selectedRestaurant.specialties.length}</div>
+                        <div className="text-sm text-gray-500">Spécialités</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Système de notation et commentaires avec thème camerounais */}
+                  <div className="border-t border-gray-200 dark:border-gray-700 pt-8">
+                    <h3 className="text-2xl font-bold mb-6">Avis et commentaires</h3>
+                    
+                    {/* Notation par étoiles */}
+                    <div className="mb-6 p-4 bg-gradient-to-r from-green-50 to-yellow-50 dark:from-gray-800 dark:to-gray-800 rounded-xl">
+                      <div className="text-center mb-4">
+                        <h4 className="font-semibold mb-2">Noter ce restaurant</h4>
+                        <div className="flex justify-center space-x-2">
+                          {[1, 2, 3, 4, 5].map((rating) => (
+                            <button
+                              key={rating}
+                              onClick={() => rateRestaurant(selectedRestaurant.id, rating)}
+                              className={`p-1 rounded-full transition-colors ${
+                                (userRatings[selectedRestaurant.id] || 0) >= rating
+                                  ? 'text-yellow-500 hover:text-yellow-600'
+                                  : 'text-gray-300 hover:text-yellow-400'
+                              }`}
+                            >
+                              <Star size={24} fill="currentColor" />
+                            </button>
+                          ))}
+                        </div>
+                        {userRatings[selectedRestaurant.id] && (
+                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+                            Vous avez donné {userRatings[selectedRestaurant.id]} étoile{userRatings[selectedRestaurant.id] > 1 ? 's' : ''}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Ajouter un commentaire avec couleurs camerounaises */}
+                    <div className="mb-6">
+                      <div className="flex space-x-4">
+                        <input
+                          type="text"
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          placeholder="Partagez votre expérience..."
+                          className={`flex-1 px-4 py-3 rounded-xl border ${
+                            darkMode 
+                              ? 'bg-gray-800 border-gray-700' 
+                              : 'bg-white border-gray-300'
+                          } focus:outline-none focus:ring-2 focus:ring-green-500`}
+                        />
+                        <button
+                          onClick={() => {
+                            if (newComment.trim()) {
+                              addComment(selectedRestaurant.id, newComment);
+                              setNewComment('');
+                            }
+                          }}
+                          className="px-6 py-3 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-xl font-medium transition-all flex items-center"
+                        >
+                          <Send size={16} className="mr-2" />
+                          Publier
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Liste des commentaires */}
+                    <div className="space-y-4 max-h-64 overflow-y-auto">
+                      {(restaurantComments[selectedRestaurant.id] || []).map((comment) => (
+                        <div key={comment.id} className={`p-4 rounded-xl ${
+                          darkMode ? 'bg-gray-800' : 'bg-gray-50'
+                        }`}>
+                          <div className="flex justify-between items-start mb-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-yellow-500 rounded-full flex items-center justify-center">
+                                <User size={16} className="text-white" />
+                              </div>
+                              <span className="font-medium">{comment.author}</span>
+                            </div>
+                            <span className="text-sm text-gray-500">
+                              {new Date(comment.timestamp).toLocaleDateString('fr-FR')}
+                            </span>
+                          </div>
+                          <p className="mb-3">{comment.text}</p>
+                          <div className="flex items-center space-x-4">
+                            <button
+                              onClick={() => toggleCommentReaction(selectedRestaurant.id, comment.id, 'likes')}
+                              className="flex items-center space-x-1 text-green-600 hover:text-green-700 transition-colors"
+                            >
+                              <ThumbsUp size={16} />
+                              <span>{comment.likes}</span>
+                            </button>
+                            <button
+                              onClick={() => toggleCommentReaction(selectedRestaurant.id, comment.id, 'dislikes')}
+                              className="flex items-center space-x-1 text-red-600 hover:text-red-700 transition-colors"
+                            >
+                              <ThumbsDown size={16} />
+                              <span>{comment.dislikes}</span>
+                            </button>
+                            <button className="flex items-center space-x-1 text-gray-600 hover:text-gray-700 transition-colors">
+                              <MessageCircle size={16} />
+                              <span>Répondre</span>
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      
+                      {!(restaurantComments[selectedRestaurant.id]?.length) && (
+                        <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                          <MessageCircle size={48} className="mx-auto mb-4 text-gray-300" />
+                          <p>Aucun commentaire pour le moment.</p>
+                          <p className="text-sm">Soyez le premier à partager votre avis !</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Grille du menu avec thème camerounais */}
+        <section className="py-16">
+          <div className="container mx-auto px-4">
+            {filteredAndSortedItems.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {filteredAndSortedItems.map((item, index) => (
+                  <motion.div
+                    key={item.id}
+                    data-item-id={item.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                    whileHover={{ y: -8, transition: { duration: 0.2 } }}
+                    className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all transform ${
+                      darkMode ? 'bg-gray-800' : 'bg-white'
+                    }`}
+                  >
+                    {/* Image du plat */}
+                    <div className="relative overflow-hidden">
+                      <img 
+                        src={item.image} 
+                        alt={item.name} 
+                        className="w-full h-56 object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                      
+                      {/* Badges avec couleurs camerounaises */}
+                      <div className="absolute top-4 left-4 flex flex-col space-y-2">
+                        {item.isPopular && (
+                          <span className="bg-gradient-to-r from-yellow-500 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center shadow-lg">
+                            <TrendingUp size={12} className="mr-1" />
+                            Populaire
+                          </span>
+                        )}
+                        {item.isChefChoice && (
+                          <span className="bg-gradient-to-r from-red-600 to-yellow-500 text-white px-3 py-1 rounded-full text-xs font-bold flex items-center shadow-lg">
+                            <Award size={12} className="mr-1" />
+                            Choix du Chef
+                          </span>
+                        )}
+                        {item.originalPrice && (
+                          <span className="bg-gradient-to-r from-red-600 to-green-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+                            -{Math.round((1 - item.price / item.originalPrice) * 100)}%
+                          </span>
+                        )}
+                      </div>
+                      
+                      {/* Note */}
+                      <div className="absolute top-4 right-4 bg-white/95 backdrop-blur-sm px-3 py-1 rounded-xl flex items-center shadow-lg">
+                        <Star className="text-yellow-500" size={14} fill="currentColor" />
+                        <span className="ml-1 font-bold text-gray-900 text-sm">{item.rating}</span>
+                      </div>
+
+                      {/* Bouton d'ajout rapide avec couleurs camerounaises */}
+                      <div className="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                        <button
+                          onClick={() => addToCart(item)}
+                          className="add-to-cart-btn p-3 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-full shadow-xl transition-all transform hover:scale-110"
+                        >
+                          <Plus size={16} />
+                        </button>
+                      </div>
+                    </div>
+                    
+                    {/* Contenu */}
+                    <div className="p-6">
+                      <div className="flex justify-between items-start mb-3">
+                        <h3 className="font-bold text-lg group-hover:text-green-600 transition-colors line-clamp-1">
+                          {item.name}
+                        </h3>
+                        <div className="text-right flex-shrink-0 ml-4">
+                          {item.originalPrice && (
+                            <div className="text-gray-400 line-through text-sm">
+                              {item.originalPrice.toLocaleString()} FCFA
+                            </div>
+                          )}
+                          <div className="text-green-600 font-bold text-lg">
+                            {item.price.toLocaleString()} FCFA
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 line-clamp-3 leading-relaxed">
+                        {item.description}
+                      </p>
+                      
+                      {/* Informations supplémentaires */}
+                      <div className="flex justify-between items-center mb-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                            <Clock size={14} className="mr-1 text-green-600" />
+                            <span>{item.preparationTime}</span>
+                          </div>
+                          <div className="flex">
+                            {[...Array(5)].map((_, i) => (
+                              <div
+                                key={i}
+                                className={`w-3 h-3 rounded-full ${
+                                  i < item.spicyLevel 
+                                    ? 'bg-gradient-to-r from-red-500 to-yellow-500' 
+                                    : 'bg-gray-200 dark:bg-gray-600'
+                                }`}
+                                title={`Niveau d'épice: ${item.spicyLevel}/5`}
+                              ></div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Ingrédients principaux */}
+                      {item.ingredients && (
+                        <div className="mb-4">
+                          <div className="flex flex-wrap gap-2">
+                            {item.ingredients.slice(0, 3).map((ingredient, idx) => (
+                              <span
+                                key={idx}
+                                className="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-xs"
+                              >
+                                {ingredient}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Bouton d'ajout au panier avec couleurs camerounaises */}
+                      <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        onClick={() => addToCart(item)}
+                        className="w-full py-3 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-xl font-medium transition-all transform shadow-lg hover:shadow-xl flex items-center justify-center"
+                      >
+                        <ShoppingBag size={16} className="mr-2" />
+                        Ajouter au panier
+                      </motion.button>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
+            ) : (
+              /* État vide avec thème camerounais */
+              <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-20"
+              >
+                <div className="w-32 h-32 bg-gradient-to-r from-green-100 to-yellow-100 dark:from-gray-800 dark:to-gray-700 rounded-full flex items-center justify-center mb-8 mx-auto">
+                  <Search size={48} className="text-gray-400" />
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Aucun plat trouvé</h3>
+                <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-8">
+                  Nous n'avons pas trouvé de plats correspondant à vos critères. 
+                  Essayez de modifier votre recherche ou explorez nos autres catégories.
+                </p>
+                <div className="flex flex-wrap justify-center gap-4">
+                  <button 
+                    onClick={() => {
+                      setActiveCategory('tous');
+                      setSearchQuery('');
+                    }}
+                    className="px-6 py-3 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-xl font-medium transition-all transform hover:scale-105"
+                  >
+                    Voir tous les plats
+                  </button>
+                  <button 
+                    onClick={() => setSearchQuery('')}
+                    className="px-6 py-3 border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl font-medium transition-all"
+                  >
+                    Effacer la recherche
+                  </button>
+                </div>
+              </motion.div>
             )}
           </div>
         </section>
 
-        {/* Special Offers */}
-        <section className={`py-12 ${darkMode ? 'bg-gray-800' : 'bg-green-50'}`}>
+        {/* Section offres spéciales avec thème camerounais */}
+        <section className={`py-20 ${
+          darkMode 
+            ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800' 
+            : 'bg-gradient-to-r from-green-50 via-yellow-50 to-red-50'
+        }`}>
           <div className="container mx-auto px-4">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold mb-4">Offres Spéciales</h2>
-              <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-                Profitez de nos promotions exclusives et menus spéciaux pour découvrir plus de saveurs à petit prix.
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl font-bold mb-4">Offres Exceptionnelles</h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Profitez de nos promotions exclusives et découvrez nos menus spéciaux à prix réduits.
               </p>
-            </div>
+            </motion.div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {/* Offre 1 avec couleurs camerounaises */}
               <motion.div
-                whileHover={{ y: -10 }}
-                className={`rounded-xl overflow-hidden shadow-lg ${darkMode ? 'bg-gray-700' : 'bg-white'}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className={`rounded-2xl overflow-hidden shadow-xl transition-all ${
+                  darkMode ? 'bg-gray-800' : 'bg-white'
+                }`}
               >
-                <div className="relative h-48">
-                  <img src={ndole} alt="Menu Famille" className="w-full h-full object-cover" />
-                  <div className="absolute top-4 right-4 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    -20%
+                <div className="relative h-56">
+                  <img src={images.ndole} alt="Menu Famille" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-red-600 to-yellow-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">
+                    -25%
+                  </div>
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="font-bold text-xl mb-1">Menu Famille Deluxe</h3>
+                    <p className="text-sm opacity-90">Parfait pour 4-6 personnes</p>
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="font-bold text-xl mb-2">Menu Famille</h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    Ndolé, Poulet DG, Riz et Plantains pour 4 personnes. Parfait pour un repas en famille.
+                    Ndolé complet, Eru, Poulet DG, riz parfumé et 6 boissons au choix. 
+                    L'expérience culinaire camerounaise complète pour toute la famille.
                   </p>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-6">
                     <div>
-                      <span className="text-gray-400 line-through mr-2">18,000 FCFA</span>
-                      <span className="text-green-500 font-bold">14,400 FCFA</span>
+                      <span className="text-gray-400 line-through text-lg mr-3">24,000 FCFA</span>
+                      <span className="text-2xl font-bold text-green-600">18,000 FCFA</span>
                     </div>
-                    <button 
-                      onClick={() => {
-                        const familyMenu = {
-                          id: 100,
-                          name: "Menu Famille",
-                          description: "Ndolé, Poulet DG, Riz et Plantains pour 4 personnes. Parfait pour un repas en famille.",
-                          image: ndole,
-                          price: 14400,
-                          rating: 4.9,
-                          preparationTime: '40-50 min',
-                          category: 'plats_traditionnels',
-                          spicyLevel: 2,
-                          quantity: 1
-                        };
-                        addToCart(familyMenu);
-                      }}
-                      className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full text-sm font-medium transition shadow-md"
-                    >
-                      Commander
-                    </button>
                   </div>
+                  <button 
+                    onClick={() => addToCart({
+                      id: 200,
+                      name: "Menu Famille Deluxe",
+                      description: "Ndolé complet, Eru, Poulet DG, riz parfumé et 6 boissons au choix.",
+                      image: images.ndole,
+                      price: 18000,
+                      originalPrice: 24000,
+                      category: 'packages'
+                    })}
+                    className="w-full py-3 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-xl font-medium transition-all transform hover:scale-105 shadow-lg"
+                  >
+                    Commander maintenant
+                  </button>
                 </div>
               </motion.div>
 
+              {/* Offre 2 */}
               <motion.div
-                whileHover={{ y: -10 }}
-                className={`rounded-xl overflow-hidden shadow-lg ${darkMode ? 'bg-gray-700' : 'bg-white'}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.1 }}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className={`rounded-2xl overflow-hidden shadow-xl transition-all ${
+                  darkMode ? 'bg-gray-800' : 'bg-white'
+                }`}
               >
-                <div className="relative h-48">
-                  <img src={pouletDG} alt="Menu Duo" className="w-full h-full object-cover" />
-                  <div className="absolute top-4 right-4 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-bold">
+                <div className="relative h-56">
+                  <img src={images.pouletDG} alt="Menu Duo Romantique" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-yellow-500 to-red-600 text-white px-4 py-2 rounded-full font-bold shadow-lg">
                     Nouveau
                   </div>
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="font-bold text-xl mb-1">Menu Duo Romantique</h3>
+                    <p className="text-sm opacity-90">Pour un moment à deux</p>
+                  </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="font-bold text-xl mb-2">Menu Duo</h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    Poulet DG et Eru pour 2 personnes avec jus de gingembre frais. Idéal pour un dîner romantique.
+                    Poulet DG pour deux, Eru traditionnel, riz jasmin et deux verres de vin de palme. 
+                    L'intimité camerounaise à partager.
                   </p>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-6">
                     <div>
-                      <span className="text-green-500 font-bold">9,900 FCFA</span>
+                      <span className="text-2xl font-bold text-red-600">12,500 FCFA</span>
                     </div>
-                    <button 
-                      onClick={() => {
-                        const duoMenu = {
-                          id: 101,
-                          name: "Menu Duo",
-                          description: "Poulet DG et Eru pour 2 personnes avec jus de gingembre frais.",
-                          image: pouletDG,
-                          price: 9900,
-                          rating: 4.8,
-                          preparationTime: '30-40 min',
-                          category: 'plats_populaires',
-                          spicyLevel: 3,
-                          quantity: 1
-                        };
-                        addToCart(duoMenu);
-                      }}
-                      className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full text-sm font-medium transition shadow-md"
-                    >
-                      Commander
-                    </button>
                   </div>
+                  <button 
+                    onClick={() => addToCart({
+                      id: 201,
+                      name: "Menu Duo Romantique",
+                      description: "Poulet DG pour deux, Eru traditionnel, riz jasmin et deux verres de vin de palme.",
+                      image: images.pouletDG,
+                      price: 12500,
+                      category: 'packages'
+                    })}
+                    className="w-full py-3 bg-gradient-to-r from-yellow-500 to-red-600 hover:from-yellow-600 hover:to-red-700 text-white rounded-xl font-medium transition-all transform hover:scale-105 shadow-lg"
+                  >
+                    Commander maintenant
+                  </button>
                 </div>
               </motion.div>
 
+              {/* Offre 3 */}
               <motion.div
-                whileHover={{ y: -10 }}
-                className={`rounded-xl overflow-hidden shadow-lg ${darkMode ? 'bg-gray-700' : 'bg-white'}`}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+                whileHover={{ y: -10, scale: 1.02 }}
+                className={`rounded-2xl overflow-hidden shadow-xl transition-all ${
+                  darkMode ? 'bg-gray-800' : 'bg-white'
+                }`}
               >
-                <div className="relative h-48">
-                  <img src={mbongo} alt="Menu Découverte" className="w-full h-full object-cover" />
-                  <div className="absolute top-4 right-4 bg-purple-500 text-white px-3 py-1 rounded-full text-sm font-bold">
-                    Premium
+                <div className="relative h-56">
+                  <img src={images.brochettesDeBeuf} alt="Menu Express" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  <div className="absolute top-4 right-4 bg-gradient-to-r from-green-600 to-yellow-500 text-white px-4 py-2 rounded-full font-bold shadow-lg">
+                    Express
+                  </div>
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h3 className="font-bold text-xl mb-1">Menu Express Gourmet</h3>
+                    <p className="text-sm opacity-90">Livré en 15 minutes</p>
                   </div>
                 </div>
                 <div className="p-6">
-                  <h3 className="font-bold text-xl mb-2">Menu Découverte</h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-4">
-                    Assortiment de 4 plats traditionnels en portions dégustation. Idéal pour découvrir la cuisine camerounaise.
+                    Brochettes de bœuf grillées, plantains frits croustillants et jus de gingembre frais. 
+                    La satisfaction rapide sans compromis sur la qualité.
                   </p>
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center mb-6">
                     <div>
-                      <span className="text-green-500 font-bold">12,500 FCFA</span>
+                      <span className="text-2xl font-bold text-yellow-600">6,800 FCFA</span>
                     </div>
-                    <button 
-                      onClick={() => {
-                        const discoveryMenu = {
-                          id: 102,
-                          name: "Menu Découverte",
-                          description: "Assortiment de 4 plats traditionnels en portions dégustation.",
-                          image: mbongo,
-                          price: 12500,
-                          rating: 4.7,
-                          preparationTime: '35-45 min',
-                          category: 'plats_traditionnels',
-                          spicyLevel: 3,
-                          quantity: 1
-                        };
-                        addToCart(discoveryMenu);
-                      }}
-                      className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full text-sm font-medium transition shadow-md"
-                    >
-                      Commander
-                    </button>
                   </div>
+                  <button 
+                    onClick={() => addToCart({
+                      id: 202,
+                      name: "Menu Express Gourmet",
+                      description: "Brochettes de bœuf grillées, plantains frits croustillants et jus de gingembre frais.",
+                      image: images.brochettesDeBeuf,
+                      price: 6800,
+                      category: 'plats_rapides'
+                    })}
+                    className="w-full py-3 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-xl font-medium transition-all transform hover:scale-105 shadow-lg"
+                  >
+                    Commander maintenant
+                  </button>
                 </div>
               </motion.div>
             </div>
           </div>
         </section>
 
-        {/* Subscribe Section */}
-        <section className="py-16">
+        {/* Section newsletter avec thème camerounais */}
+        <section className="py-20">
           <div className="container mx-auto px-4">
-            <div className={`rounded-3xl overflow-hidden shadow-xl ${darkMode ? 'bg-gray-800' : 'bg-green-50'} px-6 py-12 md:p-12`}>
-              <div className="md:flex items-center justify-between">
-                <div className="md:w-1/2 mb-8 md:mb-0">
-                  <motion.h2 
+            <div className={`rounded-3xl overflow-hidden shadow-2xl ${
+              darkMode 
+                ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800' 
+                : 'bg-gradient-to-r from-green-100 via-yellow-100 to-red-100'
+            } relative`}>
+              {/* Éléments décoratifs avec couleurs camerounaises */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-l from-green-300 to-transparent rounded-full opacity-20 transform translate-x-32 -translate-y-32"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-r from-red-300 to-transparent rounded-full opacity-20 transform -translate-x-32 translate-y-32"></div>
+              
+              <div className="relative z-10 p-8 md:p-12 lg:p-16">
+                <div className="max-w-4xl mx-auto text-center">
+                  <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5 }}
                     viewport={{ once: true }}
-                    className="text-3xl font-bold mb-4"
                   >
-                    Recevez nos offres spéciales
-                  </motion.h2>
-                  <motion.p 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    viewport={{ once: true }}
-                    className="text-gray-600 dark:text-gray-300 mb-6"
-                  >
-                    Inscrivez-vous à notre newsletter pour recevoir des promotions exclusives, des réductions et être informé des nouveaux plats.
-                  </motion.p>
-                  <motion.div 
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
-                    viewport={{ once: true }}
-                    className="flex flex-col sm:flex-row gap-4"
-                  >
-                    <input 
-                      type="email" 
-                      placeholder="Votre adresse email"
-                      className={`flex-grow py-3 px-4 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-300'} focus:outline-none focus:ring-2 focus:ring-green-500`}
-                    />
-                    <button className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition">
-                      S'inscrire
-                    </button>
-                  </motion.div>
-                </div>
-                <div className="md:w-1/3">
-                  <motion.div 
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6 }}
-                    viewport={{ once: true }}
-                    className="relative"
-                  >
-                    <img 
-                      src={logo} 
-                      alt="Eat-Fast Logo" 
-                      className="w-full max-w-sm mx-auto"
-                    />
-                    <div className="absolute -top-6 -right-6 w-24 h-24 bg-yellow-400 rounded-full opacity-30 blur-xl"></div>
-                    <div className="absolute -bottom-6 -left-6 w-24 h-24 bg-green-400 rounded-full opacity-30 blur-xl"></div>
+                    <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-green-600 to-red-600 bg-clip-text text-transparent">
+                      Restez connecté à la saveur
+                    </h2>
+                    <p className="text-xl text-gray-600 dark:text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+                      Inscrivez-vous à notre newsletter pour recevoir nos offres exclusives, 
+                      découvrir nos nouveaux plats et ne manquer aucune promotion spéciale.
+                    </p>
+                    
+                    <div className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto mb-8">
+                      <input 
+                        type="email" 
+                        placeholder="votre@email.com"
+                        className={`flex-1 py-4 px-6 rounded-xl border-2 text-lg font-medium transition-all focus:outline-none focus:ring-4 focus:ring-green-500/20 ${
+                          darkMode 
+                            ? 'bg-gray-800 border-gray-700 focus:border-green-500' 
+                            : 'bg-white border-gray-200 focus:border-green-500 shadow-lg'
+                        }`}
+                      />
+                      <motion.button 
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-8 py-4 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-xl font-bold text-lg transition-all shadow-lg transform"
+                      >
+                        S'inscrire
+                      </motion.button>
+                    </div>
+                    
+                    <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center">
+                        <Gift size={16} className="mr-2 text-green-600" />
+                        <span>Offres exclusives</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Star size={16} className="mr-2 text-yellow-600" />
+                        <span>Nouveaux plats en avant-première</span>
+                      </div>
+                      <div className="flex items-center">
+                        <TrendingUp size={16} className="mr-2 text-red-600" />
+                        <span>Réductions sur vos favoris</span>
+                      </div>
+                    </div>
                   </motion.div>
                 </div>
               </div>
@@ -1096,134 +1504,220 @@ const MenuPage = () => {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer className={`py-12 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'}`}>
+      {/* Footer avec thème camerounais */}
+      <footer className={`py-16 ${
+        darkMode 
+          ? 'bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900' 
+          : 'bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800'
+      } text-white`}>
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+            {/* À propos avec couleurs camerounaises */}
             <div>
-              <h3 className="text-xl font-bold mb-4">Eat-Fast</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Votre service de livraison de cuisine camerounaise authentique, directement à votre porte.
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-yellow-500 rounded-xl flex items-center justify-center">
+                  <span className="text-white font-bold text-xl">🍽️</span>
+                </div>
+                <span className="text-2xl font-bold bg-gradient-to-r from-green-400 to-yellow-400 bg-clip-text text-transparent">
+                  Eat-Fast
+                </span>
+              </div>
+              <p className="text-gray-300 mb-6 leading-relaxed">
+                Votre plateforme de référence pour la livraison de cuisine camerounaise authentique. 
+                Nous connectons les amoureux de la gastronomie locale avec les meilleurs restaurants du Cameroun.
               </p>
               <div className="flex space-x-4">
-                <a href="#" className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} transition`}>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fillRule="evenodd" d="M22 12c0-5.523-4.477-10-10-10S2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.878v-6.987h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.988C18.343 21.128 22 16.991 22 12z" clipRule="evenodd"></path>
-                  </svg>
-                </a>
-                <a href="#" className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} transition`}>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fillRule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 110 10.27 5.135 5.135 0 010-10.27zm0 1.802a3.333 3.333 0 100 6.666 3.333 3.333 0 000-6.666zm5.338-3.205a1.2 1.2 0 110 2.4 1.2 1.2 0 010-2.4z" clipRule="evenodd"></path>
-                  </svg>
-                </a>
-                <a href="#" className={`p-2 rounded-full ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-200 hover:bg-gray-300'} transition`}>
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84"></path>
-                  </svg>
-                </a>
+                {['facebook', 'instagram', 'twitter', 'whatsapp'].map((social) => (
+                  <a 
+                    key={social}
+                    href="#" 
+                    className="w-10 h-10 bg-gray-700 hover:bg-gradient-to-r hover:from-green-600 hover:to-yellow-500 rounded-full flex items-center justify-center transition-all transform hover:scale-110"
+                  >
+                    <span className="text-sm">📱</span>
+                  </a>
+                ))}
               </div>
             </div>
             
+            {/* Navigation */}
             <div>
-              <h3 className="text-lg font-semibold mb-4">Menu</h3>
-              <ul className="space-y-2">
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    Plats Traditionnels
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    Plats Populaires
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    Plats Rapides
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    Boissons Locales
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    Desserts
-                  </a>
-                </li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Liens utiles</h3>
-              <ul className="space-y-2">
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    À propos de nous
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    FAQ
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    Contactez-nous
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    Politique de confidentialité
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-600 dark:text-gray-300 hover:text-green-500 dark:hover:text-green-400 transition">
-                    Conditions d'utilisation
-                  </a>
-                </li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Contact</h3>
+              <h3 className="text-lg font-bold mb-6 text-green-400">Navigation</h3>
               <ul className="space-y-3">
-                <li className="flex items-start">
-                  <MapPin size={18} className="mr-2 mt-1 text-green-500" />
-                  <span className="text-gray-600 dark:text-gray-300">
-                    123 Avenue Kennedy, Yaoundé, Cameroun
-                  </span>
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                  </svg>
-                  <span className="text-gray-600 dark:text-gray-300">
-                    info@eat-fast.cm
-                  </span>
-                </li>
-                <li className="flex items-center">
-                  <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                  </svg>
-                  <span className="text-gray-600 dark:text-gray-300">
-                    +237 6XX XXX XXX
-                  </span>
-                </li>
+                {[
+                  'Accueil', 'Nos Menus', 'Restaurants Partenaires', 
+                  'À Propos', 'Contact', 'FAQ'
+                ].map((item) => (
+                  <li key={item}>
+                    <a 
+                      href="#" 
+                      className="text-gray-300 hover:text-green-400 transition-colors flex items-center group"
+                    >
+                      <span className="w-0 group-hover:w-2 h-0.5 bg-green-400 transition-all mr-0 group-hover:mr-2"></span>
+                      {item}
+                    </a>
+                  </li>
+                ))}
               </ul>
+            </div>
+            
+            {/* Catégories */}
+            <div>
+              <h3 className="text-lg font-bold mb-6 text-yellow-400">Nos Spécialités</h3>
+              <ul className="space-y-3">
+                {[
+                  'Plats Traditionnels', 'Grillades & Brochettes', 'Boissons Locales',
+                  'Desserts Camerounais', 'Packages Familiaux', 'Menu Express'
+                ].map((category) => (
+                  <li key={category}>
+                    <a 
+                      href="#" 
+                      className="text-gray-300 hover:text-yellow-400 transition-colors flex items-center group"
+                    >
+                      <span className="w-0 group-hover:w-2 h-0.5 bg-yellow-400 transition-all mr-0 group-hover:mr-2"></span>
+                      {category}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            {/* Contact */}
+            <div>
+              <h3 className="text-lg font-bold mb-6 text-red-400">Contactez-nous</h3>
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <MapPin size={20} className="text-green-400 mt-1 flex-shrink-0" />
+                  <div>
+                    <p className="text-gray-300">123 Avenue Kennedy</p>
+                    <p className="text-gray-300">Bastos, Yaoundé - Cameroun</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs">📞</span>
+                  </div>
+                  <span className="text-gray-300">+237 6XX XXX XXX</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="w-5 h-5 bg-red-400 rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-xs">✉️</span>
+                  </div>
+                  <span className="text-gray-300">contact@eat-fast.cm</span>
+                </div>
+                <div className="mt-6 p-4 bg-gradient-to-r from-green-600/10 to-yellow-500/10 rounded-xl border border-green-500/20">
+                  <p className="text-sm text-green-300 font-medium">Horaires de livraison</p>
+                  <p className="text-xs text-gray-300 mt-1">Lun-Dim: 8h00 - 23h00</p>
+                </div>
+              </div>
             </div>
           </div>
           
-          <div className="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
-            <p className="text-center text-gray-500 dark:text-gray-400">
-              © {new Date().getFullYear()} Eat-Fast. Tous droits réservés.
-            </p>
+          <div className="border-t border-gray-700 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center">
+              <p className="text-gray-400 mb-4 md:mb-0">
+                © {new Date().getFullYear()} Eat-Fast. Tous droits réservés.
+              </p>
+              <div className="flex space-x-6 text-sm">
+                <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
+                  Conditions d'utilisation
+                </a>
+                <a href="#" className="text-gray-400 hover:text-yellow-400 transition-colors">
+                  Politique de confidentialité
+                </a>
+                <a href="#" className="text-gray-400 hover:text-red-400 transition-colors">
+                  Mentions légales
+                </a>
+              </div>
+            </div>
           </div>
         </div>
       </footer>
+
+      {/* Modal de commande avec thème camerounais */}
+      <AnimatePresence>
+        {showCheckoutModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className={`w-full max-w-md rounded-2xl ${
+                darkMode ? 'bg-gray-900' : 'bg-white'
+              } p-6 shadow-2xl`}
+            >
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold">Finaliser la commande</h2>
+                <button 
+                  onClick={() => setShowCheckoutModal(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-6">
+                <div className="p-4 bg-gradient-to-r from-green-50 to-yellow-50 dark:from-green-900/20 dark:to-yellow-900/20 rounded-xl border border-green-200 dark:border-green-800">
+                  <div className="flex items-start space-x-3">
+                    <Gift className="text-green-600 mt-1" size={20} />
+                    <div>
+                      <h4 className="font-bold text-green-800 dark:text-green-300 mb-1">
+                        Avantages de votre commande
+                      </h4>
+                      <ul className="text-sm text-green-700 dark:text-green-400 space-y-1">
+                        <li>• Suivi en temps réel de votre livraison</li>
+                        <li>• Garantie de fraîcheur et qualité</li>
+                        <li>• Service client disponible 24h/7</li>
+                        {discount > 0 && <li>• Réduction de {discount.toLocaleString()} FCFA appliquée</li>}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-bold mb-4">Méthodes de paiement</h3>
+                  <div className="space-y-3">
+                    <div className={`p-4 rounded-xl border-2 cursor-pointer transition-all hover:scale-105 ${
+                      darkMode 
+                        ? 'border-gray-700 hover:border-yellow-500 bg-gray-800' 
+                        : 'border-gray-200 hover:border-yellow-500 bg-gray-50'
+                    }`}>
+                      <div className="flex items-center space-x-3">
+                        <CreditCard className="text-yellow-600" size={20} />
+                        <div>
+                          <p className="font-medium">Carte bancaire</p>
+                          <p className="text-sm text-gray-500">Visa, Mastercard</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      alert('Commande confirmée ! Vous recevrez un SMS de confirmation dans quelques instants.');
+                      setShowCheckoutModal(false);
+                      setCartItems([]);
+                    }}
+                    className="w-full py-4 bg-gradient-to-r from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600 text-white rounded-xl font-bold text-lg transition-all shadow-lg"
+                  >
+                    Confirmer et payer {total.toLocaleString()} FCFA
+                  </motion.button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
-export default MenuPage;
+export default MenuPage; 
