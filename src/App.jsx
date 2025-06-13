@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import HomePage from './pages/LandingPage/homepage';
 import AboutPage from './pages/LandingPage/about_us';
 import ContactPage from './pages/LandingPage/contact_us';
-import UnifiedRestaurantMenuPage from './pages/LandingPage/Restaurants';
+import RestaurantPublicityPage from './pages/LandingPage/Restaurants';
 import Login from './pages/Authentication/login';
 import Register from './pages/Authentication/register';
 import ForgotPassword from './pages/Authentication/forgot_password';
@@ -76,7 +76,7 @@ function App() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/restaurants" element={<UnifiedRestaurantMenuPage />} />
+          <Route path="/restaurants" element={<RestaurantPublicityPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />

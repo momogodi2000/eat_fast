@@ -4,7 +4,9 @@ import {
   Sun, Moon, Search, MapPin, Clock, Star, User, ShoppingBag, Menu, X, 
   Plus, Minus, Trash2, ArrowRight, CreditCard, Smartphone, Gift,
   ChevronDown, ChevronUp, Award, CheckCircle, Heart, Share2, 
-  ThumbsUp, ThumbsDown, Send, MessageCircle, Filter, Languages, Phone, Globe
+  ThumbsUp, ThumbsDown, Send, MessageCircle, Filter, Languages, Phone, Globe,
+  LogIn, UserPlus, ChevronLeft, ChevronRight, Eye, Users, TrendingUp,
+  Shield, Verified, Camera
 } from 'lucide-react';
 
 // Custom Hooks
@@ -22,10 +24,12 @@ const useTheme = () => {
   }, []);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e) => setDarkMode(e.matches);
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    if (typeof window !== 'undefined') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      const handleChange = (e) => setDarkMode(e.matches);
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
   }, []);
 
   return { darkMode, toggleTheme };
@@ -95,13 +99,17 @@ const useCart = () => {
   };
 };
 
-// Mock Data
+// Enhanced Mock Data
 const mockData = {
   restaurants: [
     {
       id: 1,
       name: "Le Foufou Délice",
-      image: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop",
+      images: [
+        "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&h=400&fit=crop"
+      ],
       category: "Camerounaise",
       rating: 4.7,
       reviewCount: 328,
@@ -114,41 +122,56 @@ const mockData = {
       priceRange: "$$",
       featured: true,
       verified: true,
-      description: "Restaurant traditionnel proposant des plats authentiques préparés avec des ingrédients locaux frais et bio.",
-      phone: "+237 6XX XXX XXX",
+      partner: true,
+      description: "Restaurant traditionnel proposant des plats authentiques préparés avec des ingrédients locaux frais et bio. Spécialisé dans la cuisine camerounaise depuis plus de 15 ans.",
+      phone: "+237 677 123 456",
+      email: "contact@foufoudelice.cm",
+      website: "www.foufoudelice.cm",
       openTime: "07:00 - 22:00",
-      dishes: [
-        { 
-          id: 101, 
-          name: "Ndolé aux crevettes", 
-          price: 3500, 
-          image: "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=300&h=200&fit=crop",
-          description: "Plat traditionnel à base de feuilles amères, arachides et crevettes fraîches",
-          preparationTime: 45,
-          rating: 4.8,
-          category: "traditionnel"
-        },
-        { 
-          id: 102, 
-          name: "Poulet DG", 
-          price: 4500, 
-          image: "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=300&h=200&fit=crop",
-          description: "Poulet frit avec plantains mûrs et légumes frais",
-          preparationTime: 35,
-          rating: 4.9,
-          category: "populaire"
-        }
-      ],
+      specialties: ["Ndolé", "Poulet DG", "Eru", "Koki"],
+      totalOrders: 2850,
+      monthlyViews: 15420,
+      establishedYear: 2008,
+      chefName: "Marie Nkomo",
+      ambiance: ["Familial", "Traditionnel", "Chaleureux"],
+      services: ["Livraison", "Sur place", "À emporter", "Événements"],
+      socialMedia: {
+        facebook: "@foufoudelice",
+        instagram: "@foufou_delice",
+        whatsapp: "+237677123456"
+      },
       comments: [
         { 
           id: 201, 
           user: "Sophie Mukamana", 
           avatar: "https://images.unsplash.com/photo-1494790108755-2616b612b0e1?w=100&h=100&fit=crop&crop=face",
-          text: "Excellent restaurant ! Le poulet DG était délicieux et la livraison très rapide.", 
+          text: "Excellent restaurant ! Le poulet DG était délicieux et la livraison très rapide. Je recommande vivement cette adresse.", 
           date: "2025-06-10", 
           rating: 5,
           likes: 24, 
           dislikes: 1,
+          verified: true
+        },
+        { 
+          id: 202, 
+          user: "Jean-Paul Essomba", 
+          avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face",
+          text: "Très bon accueil et plats authentiques. Les portions sont généreuses et les prix raisonnables.", 
+          date: "2025-06-08", 
+          rating: 4,
+          likes: 18, 
+          dislikes: 0,
+          verified: true
+        },
+        { 
+          id: 203, 
+          user: "Aminata Diallo", 
+          avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face",
+          text: "Le ndolé est exceptionnel ! On sent vraiment les saveurs traditionnelles. Service impeccable.", 
+          date: "2025-06-05", 
+          rating: 5,
+          likes: 31, 
+          dislikes: 2,
           verified: true
         }
       ]
@@ -156,7 +179,11 @@ const mockData = {
     {
       id: 2,
       name: "Saveurs d'Afrique",
-      image: "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop",
+      images: [
+        "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1514933651103-005eec06c04b?w=600&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1551218808-94e220e084d2?w=600&h=400&fit=crop"
+      ],
       category: "Africaine",
       rating: 4.3,
       reviewCount: 142,
@@ -169,97 +196,117 @@ const mockData = {
       priceRange: "$$",
       featured: false,
       verified: true,
-      description: "Fusion de saveurs africaines dans une ambiance chaleureuse.",
-      phone: "+237 6XX XXX XXX",
+      partner: true,
+      description: "Fusion de saveurs africaines dans une ambiance chaleureuse. Restaurant moderne proposant des plats de toute l'Afrique de l'Ouest avec une touche contemporaine.",
+      phone: "+237 655 987 321",
+      email: "info@saveursafrique.cm",
+      website: "www.saveursafrique.cm",
       openTime: "09:00 - 22:00",
-      dishes: [
+      specialties: ["Thieboudienne", "Jollof Rice", "Attieké", "Mafé"],
+      totalOrders: 1420,
+      monthlyViews: 8950,
+      establishedYear: 2015,
+      chefName: "Amadou Ba",
+      ambiance: ["Moderne", "Cosmopolite", "Convivial"],
+      services: ["Livraison", "Sur place", "À emporter"],
+      socialMedia: {
+        facebook: "@saveursafrique",
+        instagram: "@saveurs_afrique",
+        whatsapp: "+237655987321"
+      },
+      comments: [
         { 
-          id: 105, 
-          name: "Thieboudienne", 
-          price: 4000, 
-          image: "https://images.unsplash.com/photo-1574484284002-952d92456975?w=300&h=200&fit=crop",
-          description: "Plat de riz au poisson sénégalais authentique",
-          preparationTime: 50,
-          rating: 4.6,
-          category: "africain"
+          id: 204, 
+          user: "Ibrahim Touré", 
+          avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face",
+          text: "Le thieboudienne est authentique ! Ça me rappelle mon Sénégal natal. Très bon restaurant.", 
+          date: "2025-06-09", 
+          rating: 5,
+          likes: 15, 
+          dislikes: 0,
+          verified: true
         }
-      ],
-      comments: []
-    }
-  ],
-
-  menuItems: [
-    {
-      id: 1,
-      name: 'Ndolé Complet',
-      description: 'Le plat national camerounais avec feuilles de ndolé, arachides, poisson fumé et crevettes.',
-      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
-      price: 4500,
-      rating: 4.8,
-      preparationTime: 35,
-      category: 'traditionnel',
-      spicyLevel: 2,
-      isPopular: true,
-      restaurantId: 1
-    },
-    {
-      id: 2,
-      name: 'Poulet DG',
-      description: 'Poulet sauté avec plantains et légumes frais dans un mélange savoureux.',
-      image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop',
-      price: 5000,
-      rating: 4.9,
-      preparationTime: 30,
-      category: 'populaire',
-      spicyLevel: 2,
-      isPopular: true,
-      restaurantId: 1
+      ]
     },
     {
       id: 3,
-      name: 'Eru et Water Fufu',
-      description: 'Feuilles d\'eru cuites avec waterleaf et huile de palme, servi avec du water fufu.',
-      image: 'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=400&h=300&fit=crop',
-      price: 3500,
+      name: "Chez Mama Africa",
+      images: [
+        "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=600&h=400&fit=crop",
+        "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=600&h=400&fit=crop"
+      ],
+      category: "Traditionelle",
       rating: 4.6,
-      preparationTime: 45,
-      category: 'traditionnel',
-      spicyLevel: 3,
-      restaurantId: 1
-    },
-    {
-      id: 4,
-      name: 'Thieboudienne',
-      description: 'Riz au poisson sénégalais avec légumes et épices authentiques.',
-      image: 'https://images.unsplash.com/photo-1574484284002-952d92456975?w=400&h=300&fit=crop',
-      price: 4000,
-      rating: 4.5,
-      preparationTime: 50,
-      category: 'africain',
-      spicyLevel: 2,
-      restaurantId: 2
-    },
-    {
-      id: 5,
-      name: 'Jollof Rice',
-      description: 'Riz épicé ouest-africain avec légumes et viande au choix.',
-      image: 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&h=300&fit=crop',
-      price: 3200,
-      rating: 4.4,
-      preparationTime: 40,
-      category: 'africain',
-      spicyLevel: 2,
-      restaurantId: 2
+      reviewCount: 289,
+      deliveryTime: "25-40",
+      deliveryFee: 750,
+      minOrder: 2500,
+      address: "Carrefour Nlongkak, Yaoundé",
+      district: "Nlongkak",
+      zone: "Nord",
+      priceRange: "$$$",
+      featured: true,
+      verified: true,
+      partner: true,
+      description: "Restaurant familial authentique dirigé par Mama Africa depuis 20 ans. Spécialités camerounaises préparées selon les recettes ancestrales transmises de génération en génération.",
+      phone: "+237 699 456 789",
+      email: "mama@chezmamafrica.cm",
+      openTime: "06:00 - 23:00",
+      specialties: ["Koki beans", "Eru et Water fufu", "Achu soup", "Banga soup"],
+      totalOrders: 3250,
+      monthlyViews: 18750,
+      establishedYear: 2004,
+      chefName: "Mama Africa Ngono",
+      ambiance: ["Familial", "Authentique", "Traditionnel"],
+      services: ["Livraison", "Sur place", "À emporter", "Traiteur"],
+      socialMedia: {
+        facebook: "@chezmamafrica",
+        instagram: "@mama_africa_cm",
+        whatsapp: "+237699456789"
+      },
+      comments: [
+        { 
+          id: 205, 
+          user: "Grace Mballa", 
+          avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face",
+          text: "Mama Africa cuisine comme ma grand-mère ! Les saveurs sont authentiques et l'accueil chaleureux.", 
+          date: "2025-06-11", 
+          rating: 5,
+          likes: 42, 
+          dislikes: 1,
+          verified: true
+        },
+        { 
+          id: 206, 
+          user: "Paul Biya Jr", 
+          avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face",
+          text: "Le meilleur koki beans de Yaoundé ! Service rapide et prix abordables.", 
+          date: "2025-06-07", 
+          rating: 4,
+          likes: 28, 
+          dislikes: 3,
+          verified: false
+        }
+      ]
     }
   ],
 
   categories: [
     { id: 'tous', name: 'Tous', icon: '🍽️' },
-    { id: 'traditionnel', name: 'Plats Traditionnels', icon: '🥘' },
-    { id: 'populaire', name: 'Plats Populaires', icon: '⭐' },
-    { id: 'africain', name: 'Cuisine Africaine', icon: '🌍' },
-    { id: 'rapide', name: 'Plats Rapides', icon: '⚡' }
-  ]
+    { id: 'camerounaise', name: 'Camerounaise', icon: '🇨🇲' },
+    { id: 'africaine', name: 'Africaine', icon: '🌍' },
+    { id: 'traditionelle', name: 'Traditionnelle', icon: '🥘' },
+    { id: 'moderne', name: 'Moderne', icon: '✨' },
+    { id: 'featured', name: 'Mis en avant', icon: '⭐' }
+  ],
+
+  stats: {
+    totalRestaurants: 45,
+    totalOrders: 12500,
+    activeUsers: 3200,
+    avgRating: 4.5
+  }
 };
 
 // Components
@@ -274,7 +321,8 @@ const Badge = ({ children, variant = "default", className = "" }) => {
     default: "bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300",
     success: "bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300",
     warning: "bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-300",
-    featured: "bg-gradient-to-r from-green-500 to-green-600 text-white"
+    featured: "bg-gradient-to-r from-green-500 to-green-600 text-white",
+    partner: "bg-gradient-to-r from-blue-500 to-purple-600 text-white"
   };
   
   return (
@@ -284,23 +332,39 @@ const Badge = ({ children, variant = "default", className = "" }) => {
   );
 };
 
-const StarRating = ({ rating, size = 16, showNumber = true }) => (
-  <div className="flex items-center gap-1">
-    <div className="flex">
-      {[...Array(5)].map((_, i) => (
-        <Star 
-          key={i} 
-          size={size} 
-          className={`${i < Math.floor(rating) ? 'text-yellow-500 fill-current' : 'text-gray-300 dark:text-gray-600'}`} 
-        />
-      ))}
+const StarRating = ({ rating, size = 16, showNumber = true, interactive = false, onRate = null }) => {
+  const [hoverRating, setHoverRating] = useState(0);
+  
+  return (
+    <div className="flex items-center gap-1">
+      <div className="flex">
+        {[...Array(5)].map((_, i) => (
+          <Star 
+            key={i} 
+            size={size} 
+            className={`${
+              i < (interactive ? (hoverRating || rating) : Math.floor(rating)) 
+                ? 'text-yellow-500 fill-current' 
+                : 'text-gray-300 dark:text-gray-600'
+            } ${interactive ? 'cursor-pointer hover:scale-110 transition-transform' : ''}`}
+            onMouseEnter={interactive ? () => setHoverRating(i + 1) : undefined}
+            onMouseLeave={interactive ? () => setHoverRating(0) : undefined}
+            onClick={interactive ? () => onRate && onRate(i + 1) : undefined}
+          />
+        ))}
+      </div>
+      {showNumber && <span className="text-sm font-medium ml-1">{rating}</span>}
     </div>
-    {showNumber && <span className="text-sm font-medium ml-1">{rating}</span>}
-  </div>
-);
+  );
+};
 
 const Navigation = ({ darkMode, toggleTheme, cartCount, onCartClick }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  const handleLogin = () => {
+    // Navigate to login page
+    window.location.href = '/login';
+  };
   
   return (
     <header className={`fixed w-full z-50 transition-all duration-300 py-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg border-b border-gray-200/20 dark:border-gray-700/20`}>
@@ -321,7 +385,7 @@ const Navigation = ({ darkMode, toggleTheme, cartCount, onCartClick }) => {
           <nav className="hidden md:flex items-center gap-8">
             {[
               { name: 'Accueil', href: '/', active: false },
-              { name: 'Restaurants & Menus', href: '/restaurants', active: true },
+              { name: 'Restaurants', href: '/restaurants', active: true },
               { name: 'À propos', href: '/about', active: false },
               { name: 'Contact', href: '/contact', active: false }
             ].map((item) => (
@@ -356,11 +420,14 @@ const Navigation = ({ darkMode, toggleTheme, cartCount, onCartClick }) => {
               {darkMode ? <Sun size={20} /> : <Moon size={20} />}
             </motion.button>
             
+            {/* Login Button - Desktop */}
             <motion.button 
+              onClick={handleLogin}
               whileHover={{ scale: 1.05 }}
-              className="hidden md:flex items-center gap-2 p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="hidden md:flex items-center gap-2 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors"
             >
-              <User size={20} />
+              <LogIn size={18} />
+              Connexion
             </motion.button>
             
             <motion.button 
@@ -400,15 +467,30 @@ const Navigation = ({ darkMode, toggleTheme, cartCount, onCartClick }) => {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden mt-4 p-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-xl border border-gray-200/20 dark:border-gray-700/20"
             >
-              {['Accueil', 'Restaurants & Menus', 'À propos', 'Contact'].map((item) => (
+              {[
+                { name: 'Accueil', href: '/' },
+                { name: 'Restaurants', href: '/restaurants' },
+                { name: 'À propos', href: '/about' },
+                { name: 'Contact', href: '/contact' }
+              ].map((item) => (
                 <a 
-                  key={item}
-                  href="#" 
+                  key={item.name}
+                  href={item.href} 
                   className="block py-3 px-2 text-gray-700 dark:text-gray-300 hover:text-green-600 dark:hover:text-green-400 font-medium rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  {item}
+                  {item.name}
                 </a>
               ))}
+              
+              {/* Login Button - Mobile */}
+              <motion.button 
+                onClick={handleLogin}
+                whileHover={{ scale: 1.02 }}
+                className="w-full mt-4 flex items-center justify-center gap-2 px-4 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors"
+              >
+                <LogIn size={18} />
+                Connexion
+              </motion.button>
             </motion.div>
           )}
         </AnimatePresence>
@@ -417,7 +499,7 @@ const Navigation = ({ darkMode, toggleTheme, cartCount, onCartClick }) => {
   );
 };
 
-const SearchAndFilters = ({ searchQuery, setSearchQuery, selectedCategory, setSelectedCategory, showFilters, setShowFilters }) => {
+const SearchAndFilters = ({ searchQuery, setSearchQuery, selectedCategory, setSelectedCategory }) => {
   return (
     <div className="space-y-6">
       {/* Search Bar */}
@@ -431,7 +513,7 @@ const SearchAndFilters = ({ searchQuery, setSearchQuery, selectedCategory, setSe
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Rechercher restaurants, plats..."
+          placeholder="Rechercher restaurants, spécialités, quartiers..."
           className="w-full pl-16 pr-6 py-4 text-lg rounded-2xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-green-500 focus:outline-none shadow-lg transition-all"
         />
       </motion.div>
@@ -466,9 +548,199 @@ const SearchAndFilters = ({ searchQuery, setSearchQuery, selectedCategory, setSe
   );
 };
 
-const RestaurantCard = ({ restaurant, onToggleContent, isContentOpen, addToCart }) => {
+const ImageCarousel = ({ images, restaurantName }) => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const nextImage = () => {
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const prevImage = () => {
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  return (
+    <div className="relative h-64 md:h-full overflow-hidden rounded-2xl md:rounded-l-3xl md:rounded-r-none">
+      <AnimatePresence mode="wait">
+        <motion.img
+          key={currentIndex}
+          src={images[currentIndex]}
+          alt={`${restaurantName} - Image ${currentIndex + 1}`}
+          className="w-full h-full object-cover"
+          initial={{ scale: 1.1, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ duration: 0.5 }}
+        />
+      </AnimatePresence>
+      
+      {/* Navigation Arrows */}
+      <button
+        onClick={prevImage}
+        className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors backdrop-blur-sm"
+      >
+        <ChevronLeft size={20} />
+      </button>
+      <button
+        onClick={nextImage}
+        className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors backdrop-blur-sm"
+      >
+        <ChevronRight size={20} />
+      </button>
+      
+      {/* Dots Indicator */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`w-2 h-2 rounded-full transition-colors ${
+              index === currentIndex ? 'bg-white' : 'bg-white/50'
+            }`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
+const CommentSection = ({ comments, restaurantId }) => {
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [newRating, setNewRating] = useState(5);
+  const [commentLikes, setCommentLikes] = useState({});
+
+  const handleLike = (commentId, isLike) => {
+    setCommentLikes(prev => ({
+      ...prev,
+      [commentId]: { ...prev[commentId], [isLike ? 'liked' : 'disliked']: !prev[commentId]?.[isLike ? 'liked' : 'disliked'] }
+    }));
+  };
+
+  const handleSubmitComment = () => {
+    if (newComment.trim()) {
+      // In a real app, this would submit to the backend
+      console.log('New comment:', { rating: newRating, text: newComment, restaurantId });
+      setNewComment('');
+      setNewRating(5);
+    }
+  };
+
+  return (
+    <div className="mt-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-2xl">
+      <div className="flex items-center justify-between mb-4">
+        <h4 className="text-xl font-bold flex items-center gap-2">
+          <MessageCircle size={20} />
+          Avis clients ({comments.length})
+        </h4>
+        <button
+          onClick={() => setShowComments(!showComments)}
+          className="text-green-500 hover:text-green-600 font-medium flex items-center gap-1"
+        >
+          {showComments ? 'Masquer' : 'Voir tous'}
+          {showComments ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+        </button>
+      </div>
+
+      {/* Add Comment Form */}
+      <div className="mb-6 p-4 bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600">
+        <h5 className="font-medium mb-3">Laisser un avis</h5>
+        <div className="mb-3">
+          <span className="text-sm text-gray-600 dark:text-gray-400 block mb-2">Votre note :</span>
+          <StarRating rating={newRating} interactive={true} onRate={setNewRating} />
+        </div>
+        <textarea
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Partagez votre expérience..."
+          className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:outline-none focus:border-green-500 dark:bg-gray-800"
+          rows={3}
+        />
+        <button
+          onClick={handleSubmitComment}
+          className="mt-3 px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors flex items-center gap-2"
+        >
+          <Send size={16} />
+          Publier l'avis
+        </button>
+      </div>
+
+      {/* Comments List */}
+      <AnimatePresence>
+        {(showComments || comments.length <= 2) && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="space-y-4"
+          >
+            {comments.slice(0, showComments ? comments.length : 2).map((comment) => (
+              <motion.div
+                key={comment.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 bg-white dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600"
+              >
+                <div className="flex items-start gap-3">
+                  <img
+                    src={comment.avatar}
+                    alt={comment.user}
+                    className="w-10 h-10 rounded-full object-cover"
+                  />
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h6 className="font-medium">{comment.user}</h6>
+                      {comment.verified && (
+                        <Badge variant="success">
+                          <CheckCircle size={10} className="mr-1" />
+                          Vérifié
+                        </Badge>
+                      )}
+                      <span className="text-sm text-gray-500">
+                        {new Date(comment.date).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                    <StarRating rating={comment.rating} size={14} showNumber={false} />
+                    <p className="text-gray-700 dark:text-gray-300 mt-2">{comment.text}</p>
+                    <div className="flex items-center gap-4 mt-3">
+                      <button
+                        onClick={() => handleLike(comment.id, true)}
+                        className={`flex items-center gap-1 text-sm transition-colors ${
+                          commentLikes[comment.id]?.liked 
+                            ? 'text-green-500' 
+                            : 'text-gray-500 hover:text-green-500'
+                        }`}
+                      >
+                        <ThumbsUp size={14} />
+                        {comment.likes + (commentLikes[comment.id]?.liked ? 1 : 0)}
+                      </button>
+                      <button
+                        onClick={() => handleLike(comment.id, false)}
+                        className={`flex items-center gap-1 text-sm transition-colors ${
+                          commentLikes[comment.id]?.disliked 
+                            ? 'text-red-500' 
+                            : 'text-gray-500 hover:text-red-500'
+                        }`}
+                      >
+                        <ThumbsDown size={14} />
+                        {comment.dislikes + (commentLikes[comment.id]?.disliked ? 1 : 0)}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const RestaurantCard = ({ restaurant }) => {
   const [isFavorite, setIsFavorite] = useState(false);
-  
+  const [showDetails, setShowDetails] = useState(false);
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
@@ -477,52 +749,55 @@ const RestaurantCard = ({ restaurant, onToggleContent, isContentOpen, addToCart 
       className="bg-white dark:bg-gray-800 rounded-3xl overflow-hidden shadow-lg hover:shadow-2xl transition-all border border-gray-200 dark:border-gray-700"
     >
       <div className="md:flex">
-        <div className="md:w-1/3 relative">
-          <div className="h-48 md:h-full relative overflow-hidden">
-            <img 
-              src={restaurant.image} 
-              alt={restaurant.name} 
-              className="w-full h-full object-cover transition-transform duration-500 hover:scale-110"
-            />
-            
-            <div className="absolute top-4 left-4 space-y-2">
-              {restaurant.featured && (
-                <Badge variant="featured">
-                  <Award size={12} className="mr-1" />
-                  Mis en avant
-                </Badge>
-              )}
-              {restaurant.verified && (
-                <Badge variant="success">
-                  <CheckCircle size={12} className="mr-1" />
-                  Vérifié
-                </Badge>
-              )}
-            </div>
-            
-            <div className="absolute top-4 right-4 space-y-2">
-              <motion.button
-                onClick={() => setIsFavorite(!isFavorite)}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
-                  isFavorite 
-                    ? 'bg-red-500 text-white' 
-                    : 'bg-white/80 text-gray-600 hover:bg-red-500 hover:text-white'
-                }`}
-              >
-                <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
-              </motion.button>
-            </div>
+        <div className="md:w-2/5 relative">
+          <ImageCarousel images={restaurant.images} restaurantName={restaurant.name} />
+          
+          <div className="absolute top-4 left-4 space-y-2">
+            {restaurant.featured && (
+              <Badge variant="featured">
+                <Award size={12} className="mr-1" />
+                Mis en avant
+              </Badge>
+            )}
+            {restaurant.partner && (
+              <Badge variant="partner">
+                <Shield size={12} className="mr-1" />
+                Partenaire Vérifié
+              </Badge>
+            )}
+          </div>
+          
+          <div className="absolute top-4 right-4 space-y-2">
+            <motion.button
+              onClick={() => setIsFavorite(!isFavorite)}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className={`p-2 rounded-full backdrop-blur-sm transition-colors ${
+                isFavorite 
+                  ? 'bg-red-500 text-white' 
+                  : 'bg-white/80 text-gray-600 hover:bg-red-500 hover:text-white'
+              }`}
+            >
+              <Heart size={16} fill={isFavorite ? 'currentColor' : 'none'} />
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              className="p-2 rounded-full bg-white/80 text-gray-600 hover:bg-gray-100 transition-colors backdrop-blur-sm"
+            >
+              <Share2 size={16} />
+            </motion.button>
           </div>
         </div>
         
-        <div className="md:w-2/3 p-6">
+        <div className="md:w-3/5 p-6">
           <div className="flex justify-between items-start mb-4">
             <div>
-              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                {restaurant.name}
-              </h3>
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  {restaurant.name}
+                </h3>
+                <Verified className="text-blue-500" size={20} />
+              </div>
               <div className="flex items-center gap-4 mb-2">
                 <StarRating rating={restaurant.rating} />
                 <span className="text-sm text-gray-600 dark:text-gray-400">
@@ -546,15 +821,42 @@ const RestaurantCard = ({ restaurant, onToggleContent, isContentOpen, addToCart 
             {restaurant.description}
           </p>
           
-          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 mb-4">
-            <MapPin size={16} />
-            <span>{restaurant.address}</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <MapPin size={16} />
+              <span className="text-sm">{restaurant.address}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <Phone size={16} />
+              <span className="text-sm">{restaurant.phone}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <Clock size={16} />
+              <span className="text-sm">{restaurant.openTime}</span>
+            </div>
+            <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+              <Users size={16} />
+              <span className="text-sm">{restaurant.totalOrders} commandes</span>
+            </div>
           </div>
           
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge>{restaurant.category}</Badge>
             <Badge>{restaurant.district}</Badge>
             <Badge>{restaurant.priceRange}</Badge>
+            <Badge>Chef {restaurant.chefName}</Badge>
+          </div>
+
+          {/* Specialties */}
+          <div className="mb-4">
+            <h4 className="font-medium text-sm text-gray-600 dark:text-gray-400 mb-2">Spécialités :</h4>
+            <div className="flex flex-wrap gap-1">
+              {restaurant.specialties.slice(0, 4).map((specialty, index) => (
+                <span key={index} className="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs rounded-full">
+                  {specialty}
+                </span>
+              ))}
+            </div>
           </div>
           
           <div className="flex gap-3">
@@ -563,227 +865,150 @@ const RestaurantCard = ({ restaurant, onToggleContent, isContentOpen, addToCart 
               whileTap={{ scale: 0.98 }}
               className="flex-1 bg-gradient-to-r from-green-500 to-green-600 text-white py-3 px-6 rounded-xl font-semibold hover:from-green-600 hover:to-green-700 transition-all shadow-lg"
             >
-              Commander maintenant
+              <Eye size={18} className="inline mr-2" />
+              Voir le menu
             </motion.button>
             
             <motion.button
-              onClick={() => onToggleContent(restaurant.id)}
+              onClick={() => setShowDetails(!showDetails)}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               className="px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
-              {isContentOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+              {showDetails ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
             </motion.button>
           </div>
         </div>
       </div>
-    </motion.div>
-  );
-};
-
-const MenuCard = ({ item, addToCart }) => {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      whileHover={{ y: -5, transition: { duration: 0.2 } }}
-      className="bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700"
-    >
-      <div className="relative h-48">
-        <img 
-          src={item.image} 
-          alt={item.name} 
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-        
-        {item.isPopular && (
-          <div className="absolute top-4 left-4">
-            <Badge variant="warning">
-              ⭐ Populaire
-            </Badge>
-          </div>
-        )}
-        
-        <div className="absolute top-4 right-4 bg-white dark:bg-gray-800 px-2 py-1 rounded-lg">
-          <StarRating rating={item.rating} size={14} />
-        </div>
-      </div>
       
-      <div className="p-4">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-bold text-lg">{item.name}</h3>
-          <span className="text-green-500 font-bold">{item.price.toLocaleString()} FCFA</span>
-        </div>
-        
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{item.description}</p>
-        
-        <div className="flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <div className="flex items-center text-sm text-gray-500">
-              <Clock size={14} className="mr-1" />
-              <span>{item.preparationTime} min</span>
-            </div>
-            <div className="flex">
-              {[...Array(item.spicyLevel)].map((_, i) => (
-                <span key={i} className="text-red-500">🌶️</span>
-              ))}
-            </div>
-          </div>
-          
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => addToCart(item)}
-            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition shadow-md"
+      {/* Extended Details */}
+      <AnimatePresence>
+        {showDetails && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="border-t border-gray-200 dark:border-gray-700"
           >
-            Ajouter
-          </motion.button>
-        </div>
-      </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                  <h4 className="font-bold mb-3 flex items-center gap-2">
+                    <TrendingUp size={18} className="text-green-500" />
+                    Statistiques
+                  </h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Vues mensuelles:</span>
+                      <span className="font-medium">{restaurant.monthlyViews.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Total commandes:</span>
+                      <span className="font-medium">{restaurant.totalOrders.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600 dark:text-gray-400">Ouvert depuis:</span>
+                      <span className="font-medium">{restaurant.establishedYear}</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-bold mb-3">Ambiance</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {restaurant.ambiance.map((item, index) => (
+                      <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-300 text-xs rounded-full">
+                        {item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-bold mb-3">Services</h4>
+                  <div className="flex flex-wrap gap-1">
+                    {restaurant.services.map((service, index) => (
+                      <span key={index} className="px-2 py-1 bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-300 text-xs rounded-full">
+                        {service}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              <CommentSection comments={restaurant.comments} restaurantId={restaurant.id} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 };
 
-const CartSidebar = ({ show, onClose, cart }) => {
-  const [showCheckout, setShowCheckout] = useState(false);
-  
+const StatsSection = () => {
   return (
-    <AnimatePresence>
-      {show && (
-        <motion.div 
-          initial={{ opacity: 0, x: '100%' }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: '100%' }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="fixed inset-y-0 right-0 w-full sm:w-96 z-50 bg-white dark:bg-gray-800 shadow-2xl overflow-y-auto"
-        >
-          <div className="p-6 h-full flex flex-col">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold">Votre Panier</h2>
-              <button 
-                onClick={onClose}
-                className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            {cart.cartItems.length === 0 ? (
-              <div className="flex-grow flex flex-col items-center justify-center text-center">
-                <ShoppingBag size={48} className="text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium mb-2">Votre panier est vide</h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-6">Ajoutez des plats délicieux</p>
-                <button 
-                  onClick={onClose}
-                  className="px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-full font-medium transition"
-                >
-                  Parcourir les menus
-                </button>
-              </div>
-            ) : (
-              <>
-                <div className="flex-grow overflow-y-auto">
-                  {cart.cartItems.map(item => (
-                    <div key={item.id} className="flex items-center py-4 border-b dark:border-gray-700">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden mr-4">
-                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div className="flex-grow">
-                        <h3 className="font-medium">{item.name}</h3>
-                        <p className="text-green-500 font-bold">{item.price.toLocaleString()} FCFA</p>
-                      </div>
-                      <div className="flex items-center">
-                        <button 
-                          onClick={() => cart.updateQuantity(item.id, item.quantity - 1)}
-                          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          <Minus size={16} />
-                        </button>
-                        <span className="mx-2 w-8 text-center">{item.quantity}</span>
-                        <button 
-                          onClick={() => cart.updateQuantity(item.id, item.quantity + 1)}
-                          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                          <Plus size={16} />
-                        </button>
-                      </div>
-                      <button 
-                        onClick={() => cart.removeFromCart(item.id)}
-                        className="ml-4 p-1 text-red-500 hover:bg-red-50 dark:hover:bg-gray-700 rounded-full"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="border-t dark:border-gray-700 pt-4 mt-4">
-                  <div className="flex justify-between mb-2">
-                    <span>Sous-total</span>
-                    <span className="font-medium">{cart.subtotal.toLocaleString()} FCFA</span>
-                  </div>
-                  <div className="flex justify-between mb-2">
-                    <span>Frais de livraison</span>
-                    <span className="font-medium">{cart.deliveryFee.toLocaleString()} FCFA</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold mt-4">
-                    <span>Total</span>
-                    <span>{cart.total.toLocaleString()} FCFA</span>
-                  </div>
-
-                  <button 
-                    onClick={() => setShowCheckout(true)}
-                    className="w-full mt-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium flex items-center justify-center transition"
-                  >
-                    Passer la commande <ArrowRight size={18} className="ml-2" />
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <section className="py-12 bg-gradient-to-r from-green-500 to-blue-600">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <div className="text-3xl font-bold mb-2">{mockData.stats.totalRestaurants}+</div>
+            <div className="text-sm opacity-90">Restaurants Partenaires</div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <div className="text-3xl font-bold mb-2">{mockData.stats.totalOrders.toLocaleString()}+</div>
+            <div className="text-sm opacity-90">Commandes Livrées</div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="text-3xl font-bold mb-2">{mockData.stats.activeUsers.toLocaleString()}+</div>
+            <div className="text-sm opacity-90">Clients Actifs</div>
+          </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="text-3xl font-bold mb-2">{mockData.stats.avgRating}/5</div>
+            <div className="text-sm opacity-90">Note Moyenne</div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
   );
 };
 
 // Main Component
-const UnifiedRestaurantMenuPage = () => {
+const RestaurantPublicityPage = () => {
   const { darkMode, toggleTheme } = useTheme();
   const cart = useCart();
   
-  const [activeTab, setActiveTab] = useState('restaurants');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('tous');
   const [showCart, setShowCart] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [openContent, setOpenContent] = useState({});
-
-  const handleToggleContent = useCallback((id) => {
-    setOpenContent(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  }, []);
 
   const filteredRestaurants = useMemo(() => {
     return mockData.restaurants.filter(restaurant => {
       const matchesSearch = searchQuery === '' || 
         restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        restaurant.category.toLowerCase().includes(searchQuery.toLowerCase());
+        restaurant.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        restaurant.district.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        restaurant.specialties.some(s => s.toLowerCase().includes(searchQuery.toLowerCase()));
+      
       const matchesCategory = selectedCategory === 'tous' || 
+        (selectedCategory === 'featured' && restaurant.featured) ||
         restaurant.category.toLowerCase().includes(selectedCategory);
-      return matchesSearch && matchesCategory;
-    });
-  }, [searchQuery, selectedCategory]);
-
-  const filteredMenuItems = useMemo(() => {
-    return mockData.menuItems.filter(item => {
-      const matchesSearch = searchQuery === '' || 
-        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesCategory = selectedCategory === 'tous' || item.category === selectedCategory;
+      
       return matchesSearch && matchesCategory;
     });
   }, [searchQuery, selectedCategory]);
@@ -799,12 +1024,6 @@ const UnifiedRestaurantMenuPage = () => {
         onCartClick={() => setShowCart(true)}
       />
       
-      <CartSidebar 
-        show={showCart} 
-        onClose={() => setShowCart(false)} 
-        cart={cart}
-      />
-      
       {/* Hero Section */}
       <section className="pt-24 pb-12 px-4">
         <div className="container mx-auto">
@@ -813,111 +1032,82 @@ const UnifiedRestaurantMenuPage = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Restaurants & Menus
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-green-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Restaurants Partenaires
             </h1>
             <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8">
-              Découvrez les meilleurs restaurants et plats du Cameroun, livrés rapidement chez vous
+              Découvrez nos restaurants partenaires vérifiés, leurs spécialités authentiques et les avis de notre communauté. 
+              Chaque établissement est soigneusement sélectionné pour vous garantir une expérience culinaire exceptionnelle.
             </p>
-            
-            {/* Tab Navigation */}
-            <div className="flex justify-center mb-8">
-              <div className="bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
-                <button
-                  onClick={() => setActiveTab('restaurants')}
-                  className={`px-6 py-3 rounded-xl font-medium transition-all ${
-                    activeTab === 'restaurants'
-                      ? 'bg-green-500 text-white shadow-lg'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-green-500'
-                  }`}
-                >
-                  🏪 Restaurants ({filteredRestaurants.length})
-                </button>
-                <button
-                  onClick={() => setActiveTab('menus')}
-                  className={`px-6 py-3 rounded-xl font-medium transition-all ${
-                    activeTab === 'menus'
-                      ? 'bg-green-500 text-white shadow-lg'
-                      : 'text-gray-600 dark:text-gray-400 hover:text-green-500'
-                  }`}
-                >
-                  🍽️ Menus ({filteredMenuItems.length})
-                </button>
-              </div>
-            </div>
             
             <SearchAndFilters 
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
               selectedCategory={selectedCategory}
               setSelectedCategory={setSelectedCategory}
-              showFilters={showFilters}
-              setShowFilters={setShowFilters}
             />
           </motion.div>
         </div>
       </section>
       
+      {/* Stats Section */}
+      <StatsSection />
+      
       {/* Content Section */}
-      <section className="pb-16 px-4">
+      <section className="py-16 px-4">
         <div className="container mx-auto">
-          <AnimatePresence mode="wait">
-            {activeTab === 'restaurants' ? (
-              <motion.div
-                key="restaurants"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="space-y-6"
-              >
-                {filteredRestaurants.length === 0 ? (
-                  <div className="text-center py-12">
-                    <div className="text-6xl mb-4">🏪</div>
-                    <h3 className="text-xl font-bold mb-2">Aucun restaurant trouvé</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Essayez d'ajuster votre recherche ou vos filtres
-                    </p>
-                  </div>
-                ) : (
-                  filteredRestaurants.map(restaurant => (
-                    <RestaurantCard 
-                      key={restaurant.id} 
-                      restaurant={restaurant}
-                      onToggleContent={handleToggleContent}
-                      isContentOpen={openContent[restaurant.id]}
-                      addToCart={cart.addToCart}
-                    />
-                  ))
-                )}
-              </motion.div>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-bold">
+              Restaurants trouvés ({filteredRestaurants.length})
+            </h2>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              Tous nos restaurants sont vérifiés et partenaires certifiés
+            </div>
+          </div>
+          
+          <div className="space-y-8">
+            {filteredRestaurants.length === 0 ? (
+              <div className="text-center py-16">
+                <div className="text-6xl mb-4">🏪</div>
+                <h3 className="text-2xl font-bold mb-4">Aucun restaurant trouvé</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                  Essayez d'ajuster votre recherche ou explorez d'autres catégories
+                </p>
+                <button 
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSelectedCategory('tous');
+                  }}
+                  className="px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-medium transition-colors"
+                >
+                  Voir tous les restaurants
+                </button>
+              </div>
             ) : (
-              <motion.div
-                key="menus"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-              >
-                {filteredMenuItems.length === 0 ? (
-                  <div className="col-span-full text-center py-12">
-                    <div className="text-6xl mb-4">🍽️</div>
-                    <h3 className="text-xl font-bold mb-2">Aucun plat trouvé</h3>
-                    <p className="text-gray-600 dark:text-gray-400">
-                      Essayez d'ajuster votre recherche ou vos filtres
-                    </p>
-                  </div>
-                ) : (
-                  filteredMenuItems.map(item => (
-                    <MenuCard 
-                      key={item.id} 
-                      item={item} 
-                      addToCart={cart.addToCart}
-                    />
-                  ))
-                )}
-              </motion.div>
+              filteredRestaurants.map(restaurant => (
+                <RestaurantCard key={restaurant.id} restaurant={restaurant} />
+              ))
             )}
-          </AnimatePresence>
+          </div>
+        </div>
+      </section>
+      
+      {/* CTA Section */}
+      <section className="py-16 bg-gradient-to-r from-green-500 to-blue-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Vous êtes restaurateur ?
+          </h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+            Rejoignez notre réseau de restaurants partenaires et développez votre activité avec EatFast
+          </p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="px-8 py-4 bg-white text-green-600 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg"
+          >
+            Devenir Partenaire
+          </motion.button>
         </div>
       </section>
       
@@ -933,7 +1123,7 @@ const UnifiedRestaurantMenuPage = () => {
                 <Logo className="text-xl" />
               </div>
               <p className="text-gray-400 mb-4 text-sm">
-                Votre passerelle vers les délices culinaires du Cameroun
+                Votre plateforme de référence pour découvrir et commander dans les meilleurs restaurants du Cameroun
               </p>
             </div>
             
@@ -942,6 +1132,7 @@ const UnifiedRestaurantMenuPage = () => {
               <ul className="space-y-2 text-sm text-gray-400">
                 <li><a href="/" className="hover:text-white transition-colors">Accueil</a></li>
                 <li><a href="/restaurants" className="hover:text-white transition-colors">Restaurants</a></li>
+                <li><a href="/partner" className="hover:text-white transition-colors">Devenir Partenaire</a></li>
                 <li><a href="/about" className="hover:text-white transition-colors">À propos</a></li>
                 <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
               </ul>
@@ -950,9 +1141,10 @@ const UnifiedRestaurantMenuPage = () => {
             <div>
               <h3 className="font-bold mb-4">Services</h3>
               <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Livraison</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Devenir partenaire</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Support</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Livraison rapide</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Support client</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Programme fidélité</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Carte cadeau</a></li>
               </ul>
             </div>
             
@@ -976,7 +1168,7 @@ const UnifiedRestaurantMenuPage = () => {
           </div>
           
           <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2024 EatFast. Tous droits réservés.</p>
+            <p>&copy; 2024 EatFast. Tous droits réservés. | Politique de confidentialité | Conditions d'utilisation</p>
           </div>
         </div>
       </footer>
@@ -984,4 +1176,4 @@ const UnifiedRestaurantMenuPage = () => {
   );
 };
 
-export default UnifiedRestaurantMenuPage;
+export default RestaurantPublicityPage;
