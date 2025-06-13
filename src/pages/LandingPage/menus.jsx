@@ -7,29 +7,53 @@ import {
   Award, Users, TrendingUp, Filter, SortAsc
 } from 'lucide-react';
 
+// Import images
+import ndole from '../../assets/images/ndoles.jpeg';
+import eru from '../../assets/images/eru.jpeg';
+import koki from '../../assets/images/koki.jpeg';
+import achue from '../../assets/images/achue.jpeg';
+import pouletDG from '../../assets/images/DG.jpeg';
+import bobolo from '../../assets/images/bobolo.jpg';
+import mbongo from '../../assets/images/mbongo.jpeg';
+import kondre from '../../assets/images/kondre.jpg';
+import logo from '../../assets/logo/eat_fast.png';
+
+import brochettesDeBeuf from '../../assets/images/Brochettes_de_Bœuff.jpg';
+import beignetsDeHaricot from '../../assets/images/Beignets_de_Haricot.jpg';
+import plantainFrites from '../../assets/images/plantain_frites.jpg';
+import folere from '../../assets/images/Foléré.jpg';
+import jusDeGingembre from '../../assets/images/Jus_de_Gingembre.jpg';
+import palmWine from '../../assets/images/Palm_Wine.jpg';
+import puffPuff from '../../assets/images/Puff_Puff.jpg';
+import kondole from '../../assets/images/kondole.jpg';
+import beignetsPatate from '../../assets/images/beignets_patate.jpg';
+import packageFamilleTradition from '../../assets/images/package_famille_tradition.jpg';
+import packageDecouverte from '../../assets/images/package_decouverte.jpg';
+import packageRapide from '../../assets/images/package_rapide.jpg';
+
 // Import images (these would be your actual image imports)
 const images = {
-  ndole: '/api/placeholder/400/300',
-  eru: '/api/placeholder/400/300',
-  koki: '/api/placeholder/400/300',
-  achue: '/api/placeholder/400/300',
-  pouletDG: '/api/placeholder/400/300',
-  bobolo: '/api/placeholder/400/300',
-  mbongo: '/api/placeholder/400/300',
-  kondre: '/api/placeholder/400/300',
-  logo: '/api/placeholder/200/100',
-  brochettesDeBeuf: '/api/placeholder/400/300',
-  beignetsDeHaricot: '/api/placeholder/400/300',
-  plantainFrites: '/api/placeholder/400/300',
-  folere: '/api/placeholder/400/300',
-  jusDeGingembre: '/api/placeholder/400/300',
-  palmWine: '/api/placeholder/400/300',
-  puffPuff: '/api/placeholder/400/300',
-  kondole: '/api/placeholder/400/300',
-  beignetsPatate: '/api/placeholder/400/300',
-  packageFamilleTradition: '/api/placeholder/400/300',
-  packageDecouverte: '/api/placeholder/400/300',
-  packageRapide: '/api/placeholder/400/300'
+  ndole: ndole,
+  eru: eru,
+  koki: koki,
+  achue: achue,
+  pouletDG: pouletDG,
+  bobolo: bobolo,
+  mbongo: mbongo,
+  kondre: kondre,
+  logo: logo,
+  brochettesDeBeuf: brochettesDeBeuf,
+  beignetsDeHaricot: beignetsDeHaricot,
+  plantainFrites: plantainFrites,
+  folere: folere,
+  jusDeGingembre: jusDeGingembre,
+  palmWine: palmWine,
+  puffPuff: puffPuff,
+  kondole: kondole,
+  beignetsPatate: beignetsPatate,
+  packageFamilleTradition: packageFamilleTradition,
+  packageDecouverte: packageDecouverte,
+  packageRapide: packageRapide
 };
 
 const MenuPage = () => {
