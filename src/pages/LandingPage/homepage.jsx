@@ -6,6 +6,21 @@ import {
   Truck, Phone, Mail, Facebook, Twitter, Instagram, Youtube
 } from 'lucide-react';
 
+import koki from '../../assets/images/koki.jpeg';
+import achu from '../../assets/images/achue.jpeg';
+import ndole from '../../assets/images/ndoles.jpeg';
+import eru from '../../assets/images/eru.jpeg';
+import livraison from '../../assets/images/carroussel_1.png';
+import authentique from '../../assets/images/carroussel_2.png';
+
+import saveur from '../../assets/images/resto.jpeg';
+import grandmere from '../../assets/images/TKC2.jpg';
+import mama from '../../assets/images/TKC3.png';
+import greengarden from '../../assets/images/resto6.jpeg';
+import goodFood from '../../assets/images/resto3.jpeg';
+import tchop from '../../assets/images/carroussel_3.png';
+
+
 // Mock translation function for demo
 const useTranslation = () => ({
   t: (key, fallback) => {
@@ -99,21 +114,21 @@ const HomePage = () => {
   const heroSlides = [
     {
       id: 1,
-      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=800&h=600&fit=crop',
+      image: authentique,
       title: 'Saveurs Authentiques',
       subtitle: 'Découvrez la cuisine camerounaise',
       cta: 'Explorer les menus'
     },
     {
       id: 2,
-      image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=800&h=600&fit=crop',
+      image: livraison,
       title: 'Livraison Rapide',
       subtitle: 'En moins de 30 minutes',
       cta: 'Commander maintenant'
     },
     {
       id: 3,
-      image: 'https://images.unsplash.com/photo-1555939594-58e687d16f8b?w=800&h=600&fit=crop',
+      image: tchop,
       title: 'Restaurants Partenaires',
       subtitle: 'Plus de 500 restaurants',
       cta: 'Voir les restaurants'
@@ -126,28 +141,28 @@ const HomePage = () => {
       id: 1,
       name: 'Ndolé',
       description: 'Le plat national du Cameroun avec des feuilles amères, noix et viande',
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop',
+      image: ndole,
       price: '2500 FCFA'
     },
     {
       id: 2,
       name: 'Eru',
       description: 'Feuilles de vigne forestière avec huile de palme et poisson fumé',
-      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
+      image: eru,
       price: '2000 FCFA'
     },
     {
       id: 3,
       name: 'Koki',
       description: 'Pudding de haricots enveloppé dans des feuilles de bananier',
-      image: 'https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=crop',
+      image: koki,
       price: '1800 FCFA'
     },
     {
       id: 4,
       name: 'Achu',
       description: 'Igname pilée avec soupe jaune épicée',
-      image: 'https://images.unsplash.com/photo-1555939594-58e687d16f8b?w=400&h=300&fit=crop',
+      image: achu,
       price: '2200 FCFA'
     }
   ];
@@ -157,7 +172,7 @@ const HomePage = () => {
     {
       id: 1,
       name: 'Saveurs du Pays',
-      image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=300&fit=crop',
+      image: saveur,
       rating: 4.8,
       deliveryTime: '20-30',
       category: 'traditionnel',
@@ -177,7 +192,7 @@ const HomePage = () => {
     {
       id: 3,
       name: 'Ocean Délices',
-      image: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=400&h=300&fit=crop',
+      image: goodFood,
       rating: 4.7,
       deliveryTime: '25-35',
       category: 'fruits_de_mer',
@@ -187,7 +202,7 @@ const HomePage = () => {
     {
       id: 4,
       name: 'Green Garden',
-      image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=300&fit=crop',
+      image: greengarden,
       rating: 4.9,
       deliveryTime: '20-30',
       category: 'vegetarien',
@@ -197,7 +212,7 @@ const HomePage = () => {
     {
       id: 5,
       name: 'Mama Italia',
-      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop',
+      image: mama,
       rating: 4.5,
       deliveryTime: '30-40',
       category: 'italien',
@@ -207,7 +222,7 @@ const HomePage = () => {
     {
       id: 6,
       name: 'Chez Grand-Mère',
-      image: 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop',
+      image: grandmere,
       rating: 4.8,
       deliveryTime: '25-35',
       category: 'traditionnel',
