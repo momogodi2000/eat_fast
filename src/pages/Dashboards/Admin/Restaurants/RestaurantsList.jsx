@@ -30,9 +30,18 @@ import { HiOutlineSpeakerphone } from 'react-icons/hi';
 import AdminLayout from '../../../../layouts/admin_layout';
 import { Tooltip, Badge, Modal, Progress } from '../../../../components/ui/ui-components';
 import { OrderProvider } from '../../Restaurants/command/restaurant_command';
+import { useFetcher } from 'react-router-dom';
 
 
 export const adminRestaurantContext = createContext();
+
+export const registerRestaurantContext = createContext();
+
+// Mock data for register Restaurant 
+
+const mockRegisterRestaurants = [];
+
+
 
 // Mock data for restaurants
 const mockRestaurants = [
@@ -146,7 +155,7 @@ const mockRestaurants = [
   }
 ];
 
-const RestaurantManagement = () => {
+const   RestaurantManagement = () => {
   const { t, i18n } = useTranslation();
   const chatbotRef = useRef(null);
   
@@ -270,7 +279,73 @@ const RestaurantManagement = () => {
   const handleSubmitNewRestaurant = (e) => {
     e.preventDefault();
     setLoading(true);
+
+    const inputRestaurantName = document.getElementById("restaurantName").value;
+
+    const inputCuisineType = document.getElementById("cuisineType").value;
     
+    const inputContactPhone = document.getElementById("contactPhone").value;
+
+    const inputContactMail = document.getElementById("contactEmail").value;
+
+    const inputAddress = document.getElementById("address").value;
+
+    const inputCity = document.getElementById("city").value;
+
+    const inputStatus = document.getElementById("status").value ; 
+
+   
+    const inputCategorie = document.getElementById("categorie").value;
+
+
+    const today = new Date();
+
+    const date = `${today.getFullYear().toString()+ "-"+today.getMonth().toString() +" -" +today.getDate().toString()}`
+    const newRestaurant = {
+      id : mockRestaurants.length + 1 ,
+      name : inputRestaurantName,
+      address : inputAddress,
+      cuisine : inputCuisineType,
+      status : inputStatus,
+      // image 
+      verificationStatus : inputStatus === "active" ? "verified":"pending" ,
+      createdAt : new Date().toISOString().split('T')[0],
+      rating : 1.0,
+      contactPhone : inputContactPhone,
+      contactEmail : inputContactMail,
+      categorie : inputCategorie,
+      orders:0,
+      revenue : 0 ,
+      city : inputCity,
+      avgDeliveryTime : 30
+
+    }
+
+    const registerRestaurantsNotification = {
+
+      action : "added" ,
+
+      name : inputRestaurantName,
+
+      id : mockRestaurants.length + 1 ,
+
+      type : "restaurant",
+
+      createdAt : new Date(Date.now())
+
+
+    }
+
+    mockRestaurants.push(newRestaurant);
+
+    mockRegisterRestaurants.push(registerRestaurantsNotification);
+
+ 
+
+    // setRestaurants([...restaurants, newRestaurant])
+
+
+   
     // Simulate API call
     setTimeout(() => {
       setLoading(false);
@@ -947,12 +1022,14 @@ const RestaurantManagement = () => {
                   type="text" 
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
                   placeholder={t('enterRestaurantName')}
+                  id= "restaurantName"
                 />
               </div>
               <div>
                 <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('cuisineType')}</label>
                 <select 
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                  id= "cuisineType"
                 >
                   <option value="">{t('selectCuisine')}</option>
                   <option value="traditional">{t('traditional')}</option>
@@ -968,6 +1045,7 @@ const RestaurantManagement = () => {
                   type="text" 
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
                   placeholder="+237 6XX XXX XXX"
+                  id="contactPhone"
                 />
               </div>
               <div>
@@ -976,6 +1054,7 @@ const RestaurantManagement = () => {
                   type="email" 
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
                   placeholder="restaurant@example.com"
+                  id = "contactEmail"
                 />
               </div>
               <div className="md:col-span-2">
@@ -984,12 +1063,14 @@ const RestaurantManagement = () => {
                   type="text" 
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
                   placeholder={t('enterFullAddress')}
+                  id = "address"
                 />
               </div>
               <div>
                 <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('city')}</label>
                 <select 
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                  id ="city"
                 >
                   <option value="">{t('selectCity')}</option>
                   <option value="douala">Douala</option>
@@ -1003,9 +1084,23 @@ const RestaurantManagement = () => {
                 <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('initialStatus')}</label>
                 <select 
                   className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                  id = "status"
                 >
                   <option value="pending">{t('pendingApproval')}</option>
                   <option value="active">{t('activeImmediately')}</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-1">{t('Categorie')}</label>
+                <select 
+                  className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 focus:ring-2 focus:ring-green-500"
+                  id = "categorie"
+                >
+                  <option value="african">{t('African')}</option>
+                  <option value="european">{t('European')}</option>
+                  <option value="asian">{t('Asian')}</option>
+                  <option value="fast food">{t('Fast Food')}</option>
+                   <option value="others">{t('Others')}</option>
                 </select>
               </div>
               <div className="md:col-span-2">
@@ -1106,11 +1201,26 @@ export default RestaurantManagement;
 
 export const AdminRestaurantProvider = ({children}) => {
 
-  return(
-    <adminRestaurantContext.Provider value={mockRestaurants}>
+const [restaurants, setRestaurants] = useState(mockRestaurants); 
+
+const [registerRestaurants, setRegisterRestaurant] = useState(mockRegisterRestaurants);
+useEffect( () => {
+  setRestaurants(mockRestaurants);
+},[mockRestaurants])  
+
+useEffect (() => {
+setRegisterRestaurant(mockRegisterRestaurants)
+}, [mockRegisterRestaurants]);
+
+
+return(
+    <adminRestaurantContext.Provider value={restaurants}>
+      <registerRestaurantContext.Provider value={registerRestaurants}>
+      
       <OrderProvider>
       {children}
       </OrderProvider>
+      </registerRestaurantContext.Provider>
     </adminRestaurantContext.Provider>
 
   )

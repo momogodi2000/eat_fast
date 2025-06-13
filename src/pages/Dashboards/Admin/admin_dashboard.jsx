@@ -4,7 +4,7 @@ import { HiOutlineMoon, HiOutlineSun } from 'react-icons/hi';
 import AdminLayout from '../../../layouts/admin_layout';
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, LineChart, Line } from 'recharts';
 import { useTranslation } from 'react-i18next';
-import { adminRestaurantContext } from './Restaurants/RestaurantsList';
+import { adminRestaurantContext, registerRestaurantContext } from './Restaurants/RestaurantsList';
 import { number } from 'framer-motion';
 import { OrderContext } from '../Restaurants/command/restaurant_command';
 
@@ -18,6 +18,10 @@ const AdminDashboard = () => {
   const listOfRestaurants = useContext(adminRestaurantContext);
 
   const listOfOrders = useContext(OrderContext);
+
+  const listOfRegistersRestaurants = useContext(registerRestaurantContext);
+
+  console.log(listOfRegistersRestaurants);
 
   
   const listOfRestaurant = listOfRestaurants.filter(restaurant => restaurant.status === "active"
@@ -118,6 +122,35 @@ const AdminDashboard = () => {
 
 
   }
+
+  // To calculate how many restaurants have been created recently 
+
+
+  const newRestaurants = () => {
+    const finalList = listOfRegistersRestaurants.filter(restaurant => {
+      return timeAgo(restaurant.createdAt) < 10 ;
+
+    });
+
+
+    console.log(finalList);
+
+
+     const listRegister = finalList.map(restaurant => ({...restaurant, 
+      
+      time :  timeAgo(restaurant.createdAt) 
+    }));
+
+    return listRegister;
+
+  } 
+
+  // To combine the different recenty activity 
+
+  // const combineRecentActivity = () => {
+
+  //   const 
+  // }
 
 
   // Sample data for the dashboard
@@ -526,7 +559,7 @@ const AdminDashboard = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
           <h3 className="text-lg font-semibold mb-4 dark:text-white">{t('recent_activity')}</h3>
           <div className="space-y-4">
-            {/*recentActivity*/newOrderActivity().map((activity) => (
+            {/*recentActivity*/[...newOrderActivity() , ...newRestaurants()].map((activity) => (
               <div key={activity.id} className="flex items-start p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <div className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center text-white mr-3
                   ${activity.type === 'order' ? 'bg-gradient-to-r from-green-600 to-yellow-500' : 
