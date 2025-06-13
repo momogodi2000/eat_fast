@@ -168,7 +168,6 @@ const AdminLayout = ({ children }) => {
     { name: t('users'), icon: <FiUsers size={20} />, path: '/admin/user' }, 
     { name: t('delivery'), icon: <FiTruck size={20} />, path: '/admin/delivery' },
     { name: t('orders'), icon: <FiBarChart2 size={20} />, path: '/admin/orders' },
-    { name: t('support services'), icon: <FiMessageSquare size={20} />, path: '/admin/support-services' },
     { name: t('contactMessages'), icon: <FiMail size={20} />, path: '/admin/contact-messages' },
     { name: t('statistics'), icon: <FiPieChart size={20} />, path: '/admin/statistics' },
     { name: t('promotions'), icon: <FiTag size={20} />, path: '/admin/promotion' },

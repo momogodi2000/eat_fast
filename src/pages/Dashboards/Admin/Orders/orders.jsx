@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import AdminLayout from '../../../../layouts/admin_layout';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiPackage,
   FiFilter,
@@ -13,7 +12,6 @@ import {
   FiAlertTriangle,
   FiXCircle,
   FiTruck,
-  FiMoreVertical,
   FiPhone,
   FiMail,
   FiChevronDown,
@@ -21,13 +19,17 @@ import {
   FiCalendar,
   FiPrinter,
   FiEye,
-  FiBriefcase
+  FiBriefcase,
+  FiMapPin,
+  FiDollarSign,
+  FiUsers,
+  FiTrendingUp,
+  FiActivity
 } from 'react-icons/fi';
 import { formatDistanceToNow } from 'date-fns';
-import { fr, enUS } from 'date-fns/locale';
+import { fr } from 'date-fns/locale';
 
 const AdminOrdersPage = () => {
-  const { t, i18n } = useTranslation();
   const [isLoading, setIsLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -142,7 +144,7 @@ const AdminOrdersPage = () => {
         estimatedTime: '35 min'
       },
       status: 'pending',
-      paymentMethod: 'Cash à la livraison',
+      paymentMethod: 'Espèces à la livraison',
       paymentStatus: 'pending',
       date: new Date(2025, 4, 17, 13, 5),
       subtotal: 13600,
@@ -273,7 +275,7 @@ const AdminOrdersPage = () => {
         estimatedTime: '25 min'
       },
       status: 'completed',
-      paymentMethod: 'Cash à la livraison',
+      paymentMethod: 'Espèces à la livraison',
       paymentStatus: 'completed',
       date: new Date(2025, 4, 16, 20, 15),
       subtotal: 16000,
@@ -316,11 +318,10 @@ const AdminOrdersPage = () => {
     }
   ], []);
 
-  // Simulate loading orders
+  // Simulate loading orders with better UX
   useEffect(() => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setOrders(mockOrders);
       
       // Calculate statistics
@@ -335,31 +336,34 @@ const AdminOrdersPage = () => {
       
       setStatistics(stats);
       setIsLoading(false);
-    }, 1200);
+    }, 800);
+
+    return () => clearTimeout(timer);
   }, [mockOrders]);
 
-  // Handle sorting
-  const handleSort = (sortKey) => {
+  // Optimized sort handler
+  const handleSort = useCallback((sortKey) => {
     if (sortBy === sortKey) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
       setSortBy(sortKey);
       setSortOrder('asc');
     }
-  };
+  }, [sortBy, sortOrder]);
 
-  // Filter orders based on search query and filter status
+  // Optimized filter orders
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
-      const matchesSearch = 
-        order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer.phone.toLowerCase().includes(searchQuery.toLowerCase());
+      const searchTerm = searchQuery.toLowerCase();
+      const matchesSearch = !searchQuery || 
+        order.id.toLowerCase().includes(searchTerm) ||
+        order.customer.name.toLowerCase().includes(searchTerm) ||
+        order.restaurant.name.toLowerCase().includes(searchTerm) ||
+        order.customer.phone.toLowerCase().includes(searchTerm) ||
+        order.customer.email.toLowerCase().includes(searchTerm);
       
       const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
       
-      // Filter by date range if set
       let matchesDateRange = true;
       if (dateRange.start && dateRange.end) {
         const orderDate = new Date(order.date);
@@ -374,7 +378,7 @@ const AdminOrdersPage = () => {
     });
   }, [orders, searchQuery, filterStatus, dateRange]);
 
-  // Sort filtered orders
+  // Optimized sort filtered orders
   const sortedOrders = useMemo(() => {
     return [...filteredOrders].sort((a, b) => {
       let compareResult = 0;
@@ -409,606 +413,648 @@ const AdminOrdersPage = () => {
   const currentItems = sortedOrders.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
 
-  // Toggle row expansion
-  const toggleRowExpansion = (orderId) => {
+  // Optimized toggle row expansion
+  const toggleRowExpansion = useCallback((orderId) => {
     setExpandedRows(prev => ({
       ...prev,
       [orderId]: !prev[orderId]
     }));
-  };
+  }, []);
 
   // Open order details modal
-  const openOrderDetails = (order) => {
+  const openOrderDetails = useCallback((order) => {
     setSelectedOrder(order);
     setIsOrderDetailsOpen(true);
-  };
+  }, []);
 
-  // Format date based on current language
-  const formatDate = (date) => {
-    const locale = i18n.language === 'fr' ? fr : enUS;
+  // Close order details modal
+  const closeOrderDetails = useCallback(() => {
+    setIsOrderDetailsOpen(false);
+    setSelectedOrder(null);
+  }, []);
+
+  // Format date
+  const formatDate = useCallback((date) => {
     return formatDistanceToNow(new Date(date), { 
       addSuffix: true,
-      locale
+      locale: fr
     });
-  };
+  }, []);
 
-  // Get status color and icon
-  const getStatusInfo = (status) => {
-    switch (status) {
-      case 'pending':
-        return { 
-          color: 'bg-yellow-100 text-yellow-800',
-          icon: <FiClock className="mr-1" />,
-          label: t('orders.status.pending')
-        };
-      case 'preparing':
-        return { 
-          color: 'bg-blue-100 text-blue-800',
-          icon: <FiBriefcase className="mr-1" />,
-          label: t('orders.status.preparing')
-        };
-      case 'delivering':
-        return { 
-          color: 'bg-purple-100 text-purple-800',
-          icon: <FiTruck className="mr-1" />,
-          label: t('orders.status.delivering')
-        };
-      case 'completed':
-        return { 
-          color: 'bg-green-100 text-green-800',
-          icon: <FiCheckCircle className="mr-1" />,
-          label: t('orders.status.completed')
-        };
-      case 'cancelled':
-        return { 
-          color: 'bg-red-100 text-red-800',
-          icon: <FiXCircle className="mr-1" />,
-          label: t('orders.status.cancelled')
-        };
-      default:
-        return { 
-          color: 'bg-gray-100 text-gray-800',
-          icon: <FiAlertTriangle className="mr-1" />,
-          label: t('orders.status.unknown')
-        };
-    }
-  };
+  // Get status info with improved styling
+  const getStatusInfo = useCallback((status) => {
+    const statusConfig = {
+      pending: { 
+        color: 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border border-yellow-300',
+        icon: <FiClock className="mr-1" />,
+        label: 'En attente',
+        pulse: 'animate-pulse'
+      },
+      preparing: { 
+        color: 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300',
+        icon: <FiBriefcase className="mr-1" />,
+        label: 'En préparation',
+        pulse: ''
+      },
+      delivering: { 
+        color: 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border border-purple-300',
+        icon: <FiTruck className="mr-1" />,
+        label: 'En livraison',
+        pulse: 'animate-bounce'
+      },
+      completed: { 
+        color: 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-300',
+        icon: <FiCheckCircle className="mr-1" />,
+        label: 'Terminé',
+        pulse: ''
+      },
+      cancelled: { 
+        color: 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300',
+        icon: <FiXCircle className="mr-1" />,
+        label: 'Annulé',
+        pulse: ''
+      }
+    };
+    
+    return statusConfig[status] || { 
+      color: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300',
+      icon: <FiAlertTriangle className="mr-1" />,
+      label: 'Inconnu',
+      pulse: ''
+    };
+  }, []);
 
   // Reset all filters
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setSearchQuery('');
     setFilterStatus('all');
     setSortBy('date');
     setSortOrder('desc');
     setDateRange({ start: null, end: null });
     setCurrentPage(1);
-  };
+  }, []);
   
   // Handle page change
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+  const paginate = useCallback((pageNumber) => {
+    setCurrentPage(pageNumber);
+  }, []);
 
   // Handle date range change
-  const handleDateRangeChange = (e, field) => {
+  const handleDateRangeChange = useCallback((e, field) => {
     setDateRange(prev => ({
       ...prev,
       [field]: e.target.value
     }));
-  };
+  }, []);
 
   // Export orders to CSV
-  const exportToCSV = () => {
-    // In a real application, this would generate and download a CSV file
-    console.log('Exporting filtered orders to CSV...');
-    alert(t('orders.exportSuccess'));
-  };
+  const exportToCSV = useCallback(() => {
+    try {
+      const csvData = sortedOrders.map(order => ({
+        'ID Commande': order.id,
+        'Date': new Date(order.date).toLocaleDateString('fr-FR'),
+        'Client': order.customer.name,
+        'Téléphone': order.customer.phone,
+        'Email': order.customer.email,
+        'Restaurant': order.restaurant.name,
+        'Statut': getStatusInfo(order.status).label,
+        'Total': order.total,
+        'Mode de paiement': order.paymentMethod,
+        'Statut paiement': order.paymentStatus
+      }));
+      
+      console.log('Export CSV des commandes filtrées...', csvData);
+      alert('Export CSV réussi ! Données prêtes à être téléchargées.');
+    } catch (error) {
+      console.error('Erreur lors de l\'export:', error);
+      alert('Erreur lors de l\'export CSV.');
+    }
+  }, [sortedOrders, getStatusInfo]);
+
+  // Format currency
+  const formatCurrency = useCallback((amount) => {
+    return new Intl.NumberFormat('fr-FR', {
+      style: 'currency',
+      currency: 'XAF',
+      minimumFractionDigits: 0
+    }).format(amount);
+  }, []);
+
+  // Loading skeleton component
+  const LoadingSkeleton = () => (
+    <div className="animate-pulse">
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-2"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
+      <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-5/6"></div>
+    </div>
+  );
 
   return (
     <AdminLayout>
-      <div className="flex flex-col space-y-6">
-        {/* Page Header */}
+      <div className="flex flex-col space-y-6 p-2 sm:p-4">
+        {/* Page Header avec animation améliorée */}
         <motion.div 
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
+          className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
         >
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-            <div className="flex items-center mb-4 md:mb-0">
-              <FiPackage 
-                className="text-green-600 dark:text-yellow-400 mr-3" 
-                size={32}
-              />
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
+            <div className="flex items-center mb-4 lg:mb-0">
+              <motion.div 
+                className="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-xl shadow-lg mr-4"
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 300 }}
+              >
+                <FiPackage className="text-white" size={28} />
+              </motion.div>
               <div>
-                <h1 className="text-2xl font-bold">{t('orders.pageTitle')}</h1>
-                <p className="text-gray-500 dark:text-gray-400">
-                  {t('orders.pageDescription')}
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                  Gestion des Commandes
+                </h1>
+                <p className="text-gray-600 dark:text-gray-400 text-lg">
+                  Suivez et gérez toutes vos commandes en temps réel
                 </p>
               </div>
             </div>
-            <div className="flex space-x-2">
-              <button 
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center transition-colors duration-300"
-                onClick={() => exportToCSV()}
+            <div className="flex flex-wrap gap-3">
+              <motion.button 
+                className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl flex items-center font-medium shadow-lg transition-all duration-300 transform hover:scale-105"
+                onClick={exportToCSV}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <FiDownload className="mr-2" />
-                {t('orders.exportCSV')}
-              </button>
-              <button 
-                className="px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-800 dark:text-white rounded-lg flex items-center transition-colors duration-300"
-                onClick={() => resetFilters()}
+                <FiDownload className="mr-2" size={18} />
+                Exporter CSV
+              </motion.button>
+              <motion.button 
+                className="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-700 dark:text-white rounded-xl flex items-center font-medium shadow-lg transition-all duration-300 transform hover:scale-105"
+                onClick={resetFilters}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <FiRefreshCw className="mr-2" />
-                {t('orders.resetFilters')}
-              </button>
+                <FiRefreshCw className="mr-2" size={18} />
+                Réinitialiser
+              </motion.button>
             </div>
           </div>
         </motion.div>
 
-        {/* Order Statistics */}
+        {/* Statistiques améliorées */}
         <motion.div 
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
+          transition={{ duration: 0.6, delay: 0.2, staggerChildren: 0.1 }}
         >
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 transform transition-all duration-300 hover:scale-105">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('orders.total')}</p>
-                <h3 className="text-2xl font-bold">{statistics.total}</h3>
+          {[
+            { key: 'total', label: 'Total', value: statistics.total, icon: FiPackage, color: 'indigo', bgGradient: 'from-indigo-500 to-indigo-600' },
+            { key: 'pending', label: 'En attente', value: statistics.pending, icon: FiClock, color: 'yellow', bgGradient: 'from-yellow-500 to-yellow-600' },
+            { key: 'preparing', label: 'En préparation', value: statistics.preparing, icon: FiBriefcase, color: 'blue', bgGradient: 'from-blue-500 to-blue-600' },
+            { key: 'delivering', label: 'En livraison', value: statistics.delivering, icon: FiTruck, color: 'purple', bgGradient: 'from-purple-500 to-purple-600' },
+            { key: 'completed', label: 'Terminées', value: statistics.completed, icon: FiCheckCircle, color: 'green', bgGradient: 'from-green-500 to-green-600' },
+            { key: 'cancelled', label: 'Annulées', value: statistics.cancelled, icon: FiXCircle, color: 'red', bgGradient: 'from-red-500 to-red-600' }
+          ].map((stat, index) => (
+            <motion.div
+              key={stat.key}
+              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 * index }}
+              whileHover={{ y: -4 }}
+            >
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
+                    {stat.label}
+                  </p>
+                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+                    {stat.value}
+                  </h3>
+                </div>
+                <div className={`bg-gradient-to-br ${stat.bgGradient} p-3 rounded-xl shadow-lg`}>
+                  <stat.icon className="text-white" size={24} />
+                </div>
               </div>
-              <div className="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-full">
-                <FiPackage className="text-indigo-600 dark:text-indigo-400" size={20} />
+              <div className="mt-3 flex items-center">
+                <FiTrendingUp className={`text-${stat.color}-500 mr-1`} size={14} />
+                <span className={`text-${stat.color}-600 dark:text-${stat.color}-400 text-sm font-medium`}>
+                  {stat.value > 0 ? '+' : ''}{stat.value}
+                </span>
               </div>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 transform transition-all duration-300 hover:scale-105">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('orders.status.pending')}</p>
-                <h3 className="text-2xl font-bold">{statistics.pending}</h3>
-              </div>
-              <div className="bg-yellow-100 dark:bg-yellow-900 p-3 rounded-full">
-                <FiClock className="text-yellow-600 dark:text-yellow-400" size={20} />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 transform transition-all duration-300 hover:scale-105">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('orders.status.preparing')}</p>
-                <h3 className="text-2xl font-bold">{statistics.preparing}</h3>
-              </div>
-              <div className="bg-blue-100 dark:bg-blue-900 p-3 rounded-full">
-                <FiBriefcase className="text-blue-600 dark:text-blue-400" size={20} />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 transform transition-all duration-300 hover:scale-105">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('orders.status.delivering')}</p>
-                <h3 className="text-2xl font-bold">{statistics.delivering}</h3>
-              </div>
-              <div className="bg-purple-100 dark:bg-purple-900 p-3 rounded-full">
-                <FiTruck className="text-purple-600 dark:text-purple-400" size={20} />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 transform transition-all duration-300 hover:scale-105">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('orders.status.completed')}</p>
-                <h3 className="text-2xl font-bold">{statistics.completed}</h3>
-              </div>
-              <div className="bg-green-100 dark:bg-green-900 p-3 rounded-full">
-                <FiCheckCircle className="text-green-600 dark:text-green-400" size={20} />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 transform transition-all duration-300 hover:scale-105">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-gray-500 dark:text-gray-400 text-sm">{t('orders.status.cancelled')}</p>
-                <h3 className="text-2xl font-bold">{statistics.cancelled}</h3>
-              </div>
-              <div className="bg-red-100 dark:bg-red-900 p-3 rounded-full">
-                <FiXCircle className="text-red-600 dark:text-red-400" size={20} />
-              </div>
-            </div>
-          </div>
+            </motion.div>
+          ))}
         </motion.div>
 
-        {/* Filters Section */}
+        {/* Section des filtres améliorée */}
         <motion.div 
-          className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6"
-          initial={{ opacity: 0, y: 20 }}
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700"
+          initial={ { opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.3 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Recherche */}
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiSearch className="text-gray-400" />
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400" size={18} />
               </div>
               <input
                 type="text"
-                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow duration-200"
-                placeholder={t('orders.searchPlaceholder')}
+                className="pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium"
+                placeholder="Rechercher une commande..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             
-            {/* Status Filter */}
-            <div className="flex items-center">
-              <FiFilter className="text-gray-400 mr-2" />
+            {/* Filtre par statut */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <FiFilter className="text-gray-400" size={18} />
+              </div>
               <select
-                className="py-2 pl-3 pr-8 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow duration-200"
+                className="pl-12 pr-8 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium appearance-none bg-white dark:bg-gray-700"
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
               >
-                <option value="all">{t('orders.filter.allStatuses')}</option>
-                <option value="pending">{t('orders.status.pending')}</option>
-                <option value="preparing">{t('orders.status.preparing')}</option>
-                <option value="delivering">{t('orders.status.delivering')}</option>
-                <option value="completed">{t('orders.status.completed')}</option>
-                <option value="cancelled">{t('orders.status.cancelled')}</option>
+                <option value="all">Tous les statuts</option>
+                <option value="pending">En attente</option>
+                <option value="preparing">En préparation</option>
+                <option value="delivering">En livraison</option>
+                <option value="completed">Terminées</option>
+                <option value="cancelled">Annulées</option>
               </select>
             </div>
             
-            {/* Date Range */}
-            <div className="flex space-x-2">
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiCalendar className="text-gray-400" />
-                </div>
-                <input
-                  type="date"
-                  className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow duration-200"
-                  value={dateRange.start || ''}
-                  onChange={(e) => handleDateRangeChange(e, 'start')}
-                />
-              </div>
-              <div className="relative flex-1">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FiCalendar className="text-gray-400" />
+            {/* Plage de dates */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <FiCalendar className="text-gray-400" size={18} />
               </div>
               <input
                 type="date"
-                className="pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-green-500 transition-shadow duration-200"
+                className="pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium"
+                value={dateRange.start || ''}
+                onChange={(e) => handleDateRangeChange(e, 'start')}
+              />
+            </div>
+            
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <FiCalendar className="text-gray-400" size={18} />
+              </div>
+              <input
+                type="date"
+                className="pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium"
                 value={dateRange.end || ''}
                 onChange={(e) => handleDateRangeChange(e, 'end')}
               />
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      {/* Orders Table */}
-      <motion.div 
-        className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, delay: 0.4 }}
-      >
-        {isLoading ? (
-          <div className="p-8 flex justify-center items-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead className="bg-gray-50 dark:bg-gray-700">
-                <tr>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('id')}
-                  >
-                    <div className="flex items-center">
-                      {t('orders.table.orderId')}
-                      {sortBy === 'id' && (
-                        sortOrder === 'asc' ? <FiChevronUp className="ml-1" /> : <FiChevronDown className="ml-1" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('date')}
-                  >
-                    <div className="flex items-center">
-                      {t('orders.table.date')}
-                      {sortBy === 'date' && (
-                        sortOrder === 'asc' ? <FiChevronUp className="ml-1" /> : <FiChevronDown className="ml-1" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('customer')}
-                  >
-                    <div className="flex items-center">
-                      {t('orders.table.customer')}
-                      {sortBy === 'customer' && (
-                        sortOrder === 'asc' ? <FiChevronUp className="ml-1" /> : <FiChevronDown className="ml-1" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('restaurant')}
-                  >
-                    <div className="flex items-center">
-                      {t('orders.table.restaurant')}
-                      {sortBy === 'restaurant' && (
-                        sortOrder === 'asc' ? <FiChevronUp className="ml-1" /> : <FiChevronDown className="ml-1" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('total')}
-                  >
-                    <div className="flex items-center">
-                      {t('orders.table.total')}
-                      {sortBy === 'total' && (
-                        sortOrder === 'asc' ? <FiChevronUp className="ml-1" /> : <FiChevronDown className="ml-1" />
-                      )}
-                    </div>
-                  </th>
-                  <th 
-                    scope="col" 
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer"
-                    onClick={() => handleSort('status')}
-                  >
-                    <div className="flex items-center">
-                      {t('orders.table.status')}
-                      {sortBy === 'status' && (
-                        sortOrder === 'asc' ? <FiChevronUp className="ml-1" /> : <FiChevronDown className="ml-1" />
-                      )}
-                    </div>
-                  </th>
-                  <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                    {t('orders.table.actions')}
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                {currentItems.length > 0 ? (
-                  currentItems.map((order) => (
-                    <React.Fragment key={order.id}>
-                      <tr className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {order.id}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {formatDate(order.date)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {order.customer.name}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {order.customer.phone}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900 dark:text-white">
-                            {order.restaurant.name}
-                          </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400">
-                            {order.restaurant.id}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {order.total.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusInfo(order.status).color}`}>
-                            {getStatusInfo(order.status).icon}
-                            {getStatusInfo(order.status).label}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-2">
-                            <button
-                              onClick={() => openOrderDetails(order)}
-                              className="text-green-600 hover:text-green-900 dark:hover:text-green-400 transition-colors duration-200"
-                              title={t('orders.viewDetails')}
+        {/* Tableau des commandes amélioré */}
+        <motion.div 
+          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+        >
+          {isLoading ? (
+            <div className="p-12 flex flex-col items-center justify-center">
+              <motion.div 
+                className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full mb-4"
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+              />
+              <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">
+                Chargement des commandes...
+              </p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                  <tr>
+                    {[
+                      { key: 'id', label: 'ID Commande' },
+                      { key: 'date', label: 'Date' },
+                      { key: 'customer', label: 'Client' },
+                      { key: 'restaurant', label: 'Restaurant' },
+                      { key: 'total', label: 'Total' },
+                      { key: 'status', label: 'Statut' },
+                      { key: 'actions', label: 'Actions' }
+                    ].map((column) => (
+                      <th 
+                        key={column.key}
+                        scope="col" 
+                        className={`px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider ${column.key !== 'actions' ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200' : ''}`}
+                        onClick={column.key !== 'actions' ? () => handleSort(column.key) : undefined}
+                      >
+                        <div className="flex items-center">
+                          {column.label}
+                          {sortBy === column.key && column.key !== 'actions' && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.5 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ duration: 0.2 }}
                             >
-                              <FiEye size={18} />
-                            </button>
-                            <button
-                              onClick={() => toggleRowExpansion(order.id)}
-                              className="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400 transition-colors duration-200"
-                              title={t('orders.showMore')}
-                            >
-                              {expandedRows[order.id] ? <FiChevronUp size={18} /> : <FiChevronDown size={18} />}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                      {expandedRows[order.id] && (
-                        <tr className="bg-gray-50 dark:bg-gray-700">
-                          <td colSpan="7" className="px-6 py-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div>
-                                <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                                  {t('orders.orderItems')}
-                                </h4>
-                                <ul className="divide-y divide-gray-200 dark:divide-gray-600">
-                                  {order.items.map((item, index) => (
-                                    <li key={index} className="py-2 flex justify-between">
-                                      <span className="text-gray-700 dark:text-gray-300">
-                                        {item.quantity} × {item.name}
-                                      </span>
-                                      <span className="font-medium text-gray-900 dark:text-white">
-                                        {item.total.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}
-                                      </span>
-                                    </li>
-                                  ))}
-                                </ul>
-                                <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                                  <div className="flex justify-between py-1 text-sm">
-                                    <span className="text-gray-600 dark:text-gray-300">{t('orders.subtotal')}</span>
-                                    <span className="font-medium">{order.subtotal.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}</span>
+                              {sortOrder === 'asc' ? 
+                                <FiChevronUp className="ml-2 text-green-600" size={16} /> : 
+                                <FiChevronDown className="ml-2 text-green-600" size={16} />
+                              }
+                            </motion.div>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  <AnimatePresence>
+                    {currentItems.length > 0 ? (
+                      currentItems.map((order, index) => (
+                        <React.Fragment key={order.id}>
+                          <motion.tr 
+                            className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 group"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -20 }}
+                            transition={{ duration: 0.3, delay: index * 0.05 }}
+                          >
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-bold text-gray-900 dark:text-white">
+                                {order.id}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <FiClock className="text-gray-400 mr-2" size={14} />
+                                <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                  {formatDate(order.date)}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-full mr-3">
+                                  <FiUsers className="text-white" size={14} />
+                                </div>
+                                <div>
+                                  <div className="text-sm font-bold text-gray-900 dark:text-white">
+                                    {order.customer.name}
                                   </div>
-                                  <div className="flex justify-between py-1 text-sm">
-                                    <span className="text-gray-600 dark:text-gray-300">{t('orders.deliveryFee')}</span>
-                                    <span className="font-medium">{order.delivery.fee.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}</span>
-                                  </div>
-                                  <div className="flex justify-between py-1 text-sm">
-                                    <span className="text-gray-600 dark:text-gray-300">{t('orders.tax')}</span>
-                                    <span className="font-medium">{order.tax.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}</span>
-                                  </div>
-                                  <div className="flex justify-between py-2 text-base font-bold">
-                                    <span className="text-gray-900 dark:text-white">{t('orders.total')}</span>
-                                    <span className="text-green-600 dark:text-green-400">{order.total.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}</span>
+                                  <div className="text-sm text-gray-500 dark:text-gray-400">
+                                    {order.customer.phone}
                                   </div>
                                 </div>
                               </div>
-                              <div>
-                                <div className="mb-4">
-                                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                                    {t('orders.deliveryInfo')}
-                                  </h4>
-                                  <div className="bg-gray-100 dark:bg-gray-600 p-3 rounded-lg">
-                                    <div className="flex items-start mb-2">
-                                      <FiTruck className="text-gray-500 dark:text-gray-300 mt-1 mr-2 flex-shrink-0" />
-                                      <div>
-                                        <p className="text-gray-700 dark:text-gray-300">{order.delivery.address}</p>
-                                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                                          {t('orders.estimatedTime')}: {order.delivery.estimatedTime}
-                                        </p>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                                {order.restaurant.name}
+                              </div>
+                              <div className="text-sm text-gray-500 dark:text-gray-400">
+                                {order.restaurant.id}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <div className="flex items-center">
+                                <FiDollarSign className="text-green-500 mr-1" size={14} />
+                                <div className="text-sm font-bold text-gray-900 dark:text-white">
+                                  {formatCurrency(order.total)}
+                                </div>
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <motion.span 
+                                className={`px-3 py-2 inline-flex text-xs leading-5 font-bold rounded-full ${getStatusInfo(order.status).color} ${getStatusInfo(order.status).pulse}`}
+                                whileHover={{ scale: 1.05 }}
+                                transition={{ type: "spring", stiffness: 300 }}
+                              >
+                                {getStatusInfo(order.status).icon}
+                                {getStatusInfo(order.status).label}
+                              </motion.span>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                              <div className="flex justify-end items-center space-x-2">
+                                <motion.button
+                                  onClick={() => openOrderDetails(order)}
+                                  className="text-green-600 hover:text-green-800 dark:hover:text-green-400 p-2 rounded-full hover:bg-green-50 dark:hover:bg-green-900 transition-all duration-200"
+                                  title="Voir les détails"
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  <FiEye size={18} />
+                                </motion.button>
+                                <motion.button
+                                  onClick={() => toggleRowExpansion(order.id)}
+                                  className="text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 p-2 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900 transition-all duration-200"
+                                  title="Afficher plus"
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.95 }}
+                                >
+                                  <motion.div
+                                    animate={{ rotate: expandedRows[order.id] ? 180 : 0 }}
+                                    transition={{ duration: 0.3 }}
+                                  >
+                                    <FiChevronDown size={18} />
+                                  </motion.div>
+                                </motion.button>
+                              </div>
+                            </td>
+                          </motion.tr>
+                          <AnimatePresence>
+                            {expandedRows[order.id] && (
+                              <motion.tr 
+                                className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <td colSpan="7" className="px-6 py-6">
+                                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+                                      <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                                        <FiPackage className="mr-2 text-green-600" />
+                                        Articles commandés
+                                      </h4>
+                                      <div className="space-y-3">
+                                        {order.items.map((item, index) => (
+                                          <motion.div
+                                            key={index}
+                                            className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: index * 0.1 }}
+                                          >
+                                            <span className="text-gray-700 dark:text-gray-300 font-medium">
+                                              <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs font-bold mr-2">
+                                                {item.quantity}
+                                              </span>
+                                              {item.name}
+                                            </span>
+                                            <span className="font-bold text-gray-900 dark:text-white">
+                                              {formatCurrency(item.total)}
+                                            </span>
+                                          </motion.div>
+                                        ))}
+                                      </div>
+                                      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600 space-y-2">
+                                        <div className="flex justify-between py-1 text-sm">
+                                          <span className="text-gray-600 dark:text-gray-300">Sous-total</span>
+                                          <span className="font-medium">{formatCurrency(order.subtotal)}</span>
+                                        </div>
+                                        <div className="flex justify-between py-1 text-sm">
+                                          <span className="text-gray-600 dark:text-gray-300">Frais de livraison</span>
+                                          <span className="font-medium">{formatCurrency(order.delivery.fee)}</span>
+                                        </div>
+                                        <div className="flex justify-between py-1 text-sm">
+                                          <span className="text-gray-600 dark:text-gray-300">Taxes</span>
+                                          <span className="font-medium">{formatCurrency(order.tax)}</span>
+                                        </div>
+                                        <div className="flex justify-between py-3 text-lg font-bold border-t border-gray-200 dark:border-gray-600">
+                                          <span className="text-gray-900 dark:text-white">Total</span>
+                                          <span className="text-green-600 dark:text-green-400">{formatCurrency(order.total)}</span>
+                                        </div>
                                       </div>
                                     </div>
-                                    {order.delivery.courier !== 'En attente' && (
-                                      <div className="flex items-start">
-                                        <FiPhone className="text-gray-500 dark:text-gray-300 mt-1 mr-2 flex-shrink-0" />
-                                        <div>
+                                    <div className="space-y-6">
+                                      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+                                        <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                                          <FiTruck className="mr-2 text-purple-600" />
+                                          Informations de livraison
+                                        </h4>
+                                        <div className="space-y-3">
+                                          <div className="flex items-start">
+                                            <FiMapPin className="text-gray-500 dark:text-gray-300 mt-1 mr-3 flex-shrink-0" />
+                                            <div>
+                                              <p className="text-gray-700 dark:text-gray-300 font-medium">
+                                                {order.delivery.address}
+                                              </p>
+                                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                Temps estimé: {order.delivery.estimatedTime}
+                                              </p>
+                                            </div>
+                                          </div>
+                                          {order.delivery.courier !== 'En attente' && (
+                                            <div className="flex items-center">
+                                              <FiPhone className="text-gray-500 dark:text-gray-300 mr-3 flex-shrink-0" />
+                                              <div>
+                                                <p className="text-gray-700 dark:text-gray-300 font-medium">
+                                                  {order.delivery.courier}
+                                                </p>
+                                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                  {order.delivery.courierPhone}
+                                                </p>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+                                        <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                                          <FiDollarSign className="mr-2 text-green-600" />
+                                          Informations de paiement
+                                        </h4>
+                                        <div className="space-y-2">
                                           <p className="text-gray-700 dark:text-gray-300">
-                                            {order.delivery.courier} ({order.delivery.courierPhone})
+                                            <span className="font-medium">Mode de paiement:</span> {order.paymentMethod}
+                                          </p>
+                                          <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-medium">Statut du paiement:</span> 
+                                            <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${
+                                              order.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' : 
+                                              order.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                              'bg-red-100 text-red-800'
+                                            }`}>
+                                              {order.paymentStatus}
+                                            </span>
                                           </p>
                                         </div>
                                       </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <div>
-                                  <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                                    {t('orders.paymentInfo')}
-                                  </h4>
-                                  <div className="bg-gray-100 dark:bg-gray-600 p-3 rounded-lg">
-                                    <p className="text-gray-700 dark:text-gray-300">
-                                      {t('orders.paymentMethod')}: {order.paymentMethod}
-                                    </p>
-                                    <p className="text-gray-700 dark:text-gray-300">
-                                      {t('orders.paymentStatus')}: {order.paymentStatus}
-                                    </p>
-                                  </div>
-                                </div>
-                                {order.specialInstructions && (
-                                  <div className="mt-4">
-                                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                                      {t('orders.specialInstructions')}
-                                    </h4>
-                                    <div className="bg-gray-100 dark:bg-gray-600 p-3 rounded-lg">
-                                      <p className="text-gray-700 dark:text-gray-300">
-                                        {order.specialInstructions}
-                                      </p>
+                                      {order.specialInstructions && (
+                                        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+                                          <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                                            <FiActivity className="mr-2 text-blue-600" />
+                                            Instructions spéciales
+                                          </h4>
+                                          <p className="text-gray-700 dark:text-gray-300 italic">
+                                            "{order.specialInstructions}"
+                                          </p>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
-                                )}
-                              </div>
-                            </div>
-                          </td>
-                        </tr>
-                      )}
-                    </React.Fragment>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="7" className="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
-                      {t('orders.noOrdersFound')}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {/* Pagination */}
-        {sortedOrders.length > 0 && (
-          <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 flex items-center justify-between border-t border-gray-200 dark:border-gray-600">
-            <div className="flex-1 flex justify-between items-center sm:hidden">
-              <button
-                onClick={() => paginate(currentPage - 1)}
-                disabled={currentPage === 1}
-                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md ${
-                  currentPage === 1 ? 'bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600'
-                }`}
-              >
-                {t('pagination.previous')}
-              </button>
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                {t('pagination.page')} {currentPage} {t('pagination.of')} {totalPages}
-              </span>
-              <button
-                onClick={() => paginate(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className={`relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md ${
-                  currentPage === totalPages ? 'bg-gray-100 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-600'
-                }`}
-              >
-                {t('pagination.next')}
-              </button>
+                                </td>
+                              </motion.tr>
+                            )}
+                          </AnimatePresence>
+                        </React.Fragment>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="7" className="px-6 py-12 text-center">
+                          <div className="flex flex-col items-center">
+                            <FiPackage className="text-gray-300 dark:text-gray-600 mb-4" size={48} />
+                            <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+                              Aucune commande trouvée
+                            </p>
+                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+                              Essayez de modifier vos filtres de recherche
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </AnimatePresence>
+                </tbody>
+              </table>
             </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700 dark:text-gray-300">
-                  {t('pagination.showing')} <span className="font-medium">{indexOfFirstItem + 1}</span> {t('pagination.to')} <span className="font-medium">{Math.min(indexOfLastItem, sortedOrders.length)}</span> {t('pagination.of')} <span className="font-medium">{sortedOrders.length}</span> {t('pagination.results')}
-                </p>
-              </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                  <button
+          )}
+
+          {/* Pagination améliorée */}
+          {sortedOrders.length > 0 && (
+            <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 border-t border-gray-200 dark:border-gray-600">
+              <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                <div className="flex items-center space-x-2">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                    Affichage de <span className="font-bold">{indexOfFirstItem + 1}</span> à{' '}
+                    <span className="font-bold">{Math.min(indexOfLastItem, sortedOrders.length)}</span> sur{' '}
+                    <span className="font-bold">{sortedOrders.length}</span> résultats
+                  </p>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <motion.button
                     onClick={() => paginate(1)}
                     disabled={currentPage === 1}
-                    className={`relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium ${
-                      currentPage === 1 ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      currentPage === 1 
+                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
                     }`}
+                    whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
                   >
-                    <span className="sr-only">{t('pagination.first')}</span>
-                    «
-                  </button>
-                  <button
+                    ««
+                  </motion.button>
+                  
+                  <motion.button
                     onClick={() => paginate(currentPage - 1)}
                     disabled={currentPage === 1}
-                    className={`relative inline-flex items-center px-2 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium ${
-                      currentPage === 1 ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      currentPage === 1 
+                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
                     }`}
+                    whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
                   >
-                    <span className="sr-only">{t('pagination.previous')}</span>
-                    ‹
-                  </button>
+                    «
+                  </motion.button>
+
                   {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                     let pageNum;
                     if (totalPages <= 5) {
@@ -1021,221 +1067,288 @@ const AdminOrdersPage = () => {
                       pageNum = currentPage - 2 + i;
                     }
                     return (
-                      <button
+                      <motion.button
                         key={pageNum}
                         onClick={() => paginate(pageNum)}
-                        className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                           currentPage === pageNum
-                            ? 'z-10 bg-green-50 dark:bg-green-900 border-green-500 dark:border-green-700 text-green-600 dark:text-green-300'
-                            : 'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
+                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
                         }`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
                         {pageNum}
-                      </button>
+                      </motion.button>
                     );
                   })}
-                  <button
+
+                  <motion.button
                     onClick={() => paginate(currentPage + 1)}
                     disabled={currentPage === totalPages}
-                    className={`relative inline-flex items-center px-2 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium ${
-                      currentPage === totalPages ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      currentPage === totalPages 
+                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
                     }`}
+                    whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
                   >
-                    <span className="sr-only">{t('pagination.next')}</span>
-                    ›
-                  </button>
-                  <button
+                    »
+                  </motion.button>
+                  
+                  <motion.button
                     onClick={() => paginate(totalPages)}
                     disabled={currentPage === totalPages}
-                    className={`relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium ${
-                      currentPage === totalPages ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed' : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
+                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      currentPage === totalPages 
+                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
                     }`}
+                    whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
                   >
-                    <span className="sr-only">{t('pagination.last')}</span>
-                    »
-                  </button>
-                </nav>
+                    »»
+                  </motion.button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
-      </motion.div>
+          )}
+        </motion.div>
 
-      {/* Order Details Modal */}
-      {isOrderDetailsOpen && selectedOrder && (
-        <div className="fixed inset-0 overflow-y-auto z-50">
-          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75" onClick={() => setIsOrderDetailsOpen(false)}></div>
-            </div>
-            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-              <div className="bg-white dark:bg-gray-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                <div className="sm:flex sm:items-start">
-                  <div className="mt-3 text-center sm:mt-0 sm:text-left w-full">
-                    <div className="flex justify-between items-start">
-                      <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
-                        {t('orders.orderDetails')} - {selectedOrder.id}
+        {/* Modal des détails de commande amélioré */}
+        <AnimatePresence>
+          {isOrderDetailsOpen && selectedOrder && (
+            <motion.div 
+              className="fixed inset-0 overflow-y-auto z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <motion.div 
+                  className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 transition-opacity"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={closeOrderDetails}
+                />
+                <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+                <motion.div 
+                  className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full"
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                    <div className="flex justify-between items-center">
+                      <h3 className="text-xl font-bold text-white flex items-center">
+                        <FiPackage className="mr-3" />
+                        Détails de la commande - {selectedOrder.id}
                       </h3>
-                      <button
-                        type="button"
-                        className="bg-white dark:bg-gray-800 rounded-md text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
-                        onClick={() => setIsOrderDetailsOpen(false)}
+                      <motion.button
+                        onClick={closeOrderDetails}
+                        className="text-white hover:text-gray-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-all duration-200"
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
                       >
-                        <span className="sr-only">{t('common.close')}</span>
                         <FiXCircle size={24} />
-                      </button>
+                      </motion.button>
                     </div>
-                    <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                          {t('orders.customerInfo')}
+                  </div>
+                  
+                  <div className="bg-white dark:bg-gray-800 px-6 py-6 max-h-96 overflow-y-auto">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      {/* Informations client */}
+                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-xl p-6">
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                          <FiUsers className="mr-2 text-blue-600" />
+                          Information client
                         </h4>
-                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                          <div className="flex items-center mb-2">
-                            <FiPackage className="text-gray-500 dark:text-gray-300 mr-2" />
-                            <span className="font-medium">{selectedOrder.customer.name}</span>
+                        <div className="space-y-3">
+                          <div className="flex items-center">
+                            <FiUsers className="text-gray-500 dark:text-gray-300 mr-3" />
+                            <span className="font-bold text-gray-900 dark:text-white">{selectedOrder.customer.name}</span>
                           </div>
-                          <div className="flex items-center mb-2">
-                            <FiPhone className="text-gray-500 dark:text-gray-300 mr-2" />
-                            <span>{selectedOrder.customer.phone}</span>
+                          <div className="flex items-center">
+                            <FiPhone className="text-gray-500 dark:text-gray-300 mr-3" />
+                            <span className="text-gray-700 dark:text-gray-300">{selectedOrder.customer.phone}</span>
                           </div>
-                          <div className="flex items-center mb-2">
-                            <FiMail className="text-gray-500 dark:text-gray-300 mr-2" />
-                            <span>{selectedOrder.customer.email}</span>
+                          <div className="flex items-center">
+                            <FiMail className="text-gray-500 dark:text-gray-300 mr-3" />
+                            <span className="text-gray-700 dark:text-gray-300">{selectedOrder.customer.email}</span>
                           </div>
                           <div className="flex items-start">
-                            <FiPackage className="text-gray-500 dark:text-gray-300 mt-1 mr-2 flex-shrink-0" />
-                            <span>{selectedOrder.customer.address}</span>
+                            <FiMapPin className="text-gray-500 dark:text-gray-300 mt-1 mr-3 flex-shrink-0" />
+                            <span className="text-gray-700 dark:text-gray-300">{selectedOrder.customer.address}</span>
                           </div>
                         </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                          {t('orders.restaurantInfo')}
+
+                      {/* Informations restaurant */}
+                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 rounded-xl p-6">
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                          <FiBriefcase className="mr-2 text-purple-600" />
+                          Information restaurant
                         </h4>
-                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                          <div className="font-medium mb-2">{selectedOrder.restaurant.name}</div>
-                          <div>ID: {selectedOrder.restaurant.id}</div>
+                        <div className="space-y-3">
+                          <div className="font-bold text-gray-900 dark:text-white text-lg">
+                            {selectedOrder.restaurant.name}
+                          </div>
+                          <div className="text-gray-700 dark:text-gray-300">
+                            ID: {selectedOrder.restaurant.id}
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                          {t('orders.orderSummary')}
+
+                      {/* Résumé de commande */}
+                      <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-xl p-6">
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                          <FiPackage className="mr-2 text-green-600" />
+                          Résumé de commande
                         </h4>
-                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                          <ul className="divide-y divide-gray-200 dark:divide-gray-600">
-                            {selectedOrder.items.map((item, index) => (
-                              <li key={index} className="py-2 flex justify-between">
-                                <span className="text-gray-700 dark:text-gray-300">
-                                  {item.quantity} × {item.name}
+                        <div className="space-y-3">
+                          {selectedOrder.items.map((item, index) => (
+                            <motion.div
+                              key={index}
+                              className="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm"
+                              initial={{ opacity: 0, x: -20 }}
+                              animate={{ opacity: 1, x: 0 }}
+                              transition={{ delay: index * 0.1 }}
+                            >
+                              <span className="text-gray-700 dark:text-gray-300">
+                                <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold mr-2">
+                                  {item.quantity}
                                 </span>
-                                <span className="font-medium">
-                                  {item.total.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}
-                                </span>
-                              </li>
-                            ))}
-                          </ul>
-                          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-600">
-                            <div className="flex justify-between py-1 text-sm">
-                              <span className="text-gray-600 dark:text-gray-300">{t('orders.subtotal')}</span>
-                              <span className="font-medium">{selectedOrder.subtotal.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}</span>
-                            </div>
-                            <div className="flex justify-between py-1 text-sm">
-                              <span className="text-gray-600 dark:text-gray-300">{t('orders.deliveryFee')}</span>
-                              <span className="font-medium">{selectedOrder.delivery.fee.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}</span>
-                            </div>
-                            <div className="flex justify-between py-1 text-sm">
-                              <span className="text-gray-600 dark:text-gray-300">{t('orders.tax')}</span>
-                              <span className="font-medium">{selectedOrder.tax.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}</span>
-                            </div>
-                            <div className="flex justify-between py-2 text-base font-bold">
-                              <span className="text-gray-900 dark:text-white">{t('orders.total')}</span>
-                              <span className="text-green-600 dark:text-green-400">{selectedOrder.total.toLocaleString(i18n.language, { style: 'currency', currency: 'XAF' })}</span>
-                            </div>
+                                {item.name}
+                              </span>
+                              <span className="font-bold text-gray-900 dark:text-white">
+                                {formatCurrency(item.total)}
+                              </span>
+                            </motion.div>
+                          ))}
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600 dark:text-gray-300">Sous-total</span>
+                            <span className="font-medium">{formatCurrency(selectedOrder.subtotal)}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600 dark:text-gray-300">Frais de livraison</span>
+                            <span className="font-medium">{formatCurrency(selectedOrder.delivery.fee)}</span>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600 dark:text-gray-300">Taxes</span>
+                            <span className="font-medium">{formatCurrency(selectedOrder.tax)}</span>
+                          </div>
+                          <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-600">
+                            <span className="text-gray-900 dark:text-white">Total</span>
+                            <span className="text-green-600 dark:text-green-400">{formatCurrency(selectedOrder.total)}</span>
                           </div>
                         </div>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mb-2">
-                          {t('orders.deliveryInfo')}
-                        </h4>
-                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                          <div className="flex items-start mb-3">
-                            <FiTruck className="text-gray-500 dark:text-gray-300 mt-1 mr-2 flex-shrink-0" />
-                            <div>
-                              <p className="text-gray-700 dark:text-gray-300">{selectedOrder.delivery.address}</p>
-                              <p className="text-sm text-gray-500 dark:text-gray-400">
-                                {t('orders.estimatedTime')}: {selectedOrder.delivery.estimatedTime}
-                              </p>
-                            </div>
-                          </div>
-                          {selectedOrder.delivery.courier !== 'En attente' && (
+
+                      {/* Informations de livraison et paiement */}
+                      <div className="space-y-6">
+                        <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 rounded-xl p-6">
+                          <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                            <FiTruck className="mr-2 text-orange-600" />
+                            Informations de livraison
+                          </h4>
+                          <div className="space-y-3">
                             <div className="flex items-start">
-                              <FiPhone className="text-gray-500 dark:text-gray-300 mt-1 mr-2 flex-shrink-0" />
+                              <FiMapPin className="text-gray-500 dark:text-gray-300 mt-1 mr-3 flex-shrink-0" />
                               <div>
-                                <p className="text-gray-700 dark:text-gray-300">
-                                  {selectedOrder.delivery.courier} ({selectedOrder.delivery.courierPhone})
+                                <p className="text-gray-700 dark:text-gray-300 font-medium">
+                                  {selectedOrder.delivery.address}
+                                </p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                  Temps estimé: {selectedOrder.delivery.estimatedTime}
                                 </p>
                               </div>
                             </div>
-                          )}
+                            {selectedOrder.delivery.courier !== 'En attente' && (
+                              <div className="flex items-center">
+                                <FiPhone className="text-gray-500 dark:text-gray-300 mr-3 flex-shrink-0" />
+                                <div>
+                                  <p className="text-gray-700 dark:text-gray-300 font-medium">
+                                    {selectedOrder.delivery.courier}
+                                  </p>
+                                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                                    {selectedOrder.delivery.courierPhone}
+                                  </p>
+                                </div>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                        <h4 className="font-medium text-gray-900 dark:text-white mt-4 mb-2">
-                          {t('orders.paymentInfo')}
-                        </h4>
-                        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                          <p className="text-gray-700 dark:text-gray-300">
-                            {t('orders.paymentMethod')}: {selectedOrder.paymentMethod}
-                          </p>
-                          <p className="text-gray-700 dark:text-gray-300">
-                            {t('orders.paymentStatus')}: {selectedOrder.paymentStatus}
-                          </p>
+
+                        <div className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900 dark:to-teal-800 rounded-xl p-6">
+                          <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                            <FiDollarSign className="mr-2 text-teal-600" />
+                            Informations de paiement
+                          </h4>
+                          <div className="space-y-2">
+                            <p className="text-gray-700 dark:text-gray-300">
+                              <span className="font-medium">Mode de paiement:</span> {selectedOrder.paymentMethod}
+                            </p>
+                            <p className="text-gray-700 dark:text-gray-300">
+                              <span className="font-medium">Statut du paiement:</span>
+                              <span className={`ml-2 px-3 py-1 rounded-full text-xs font-bold ${
+                                selectedOrder.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' : 
+                                selectedOrder.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                'bg-red-100 text-red-800'
+                              }`}>
+                                {selectedOrder.paymentStatus}
+                              </span>
+                            </p>
+                          </div>
                         </div>
+
                         {selectedOrder.specialInstructions && (
-                          <>
-                            <h4 className="font-medium text-gray-900 dark:text-white mt-4 mb-2">
-                              {t('orders.specialInstructions')}
+                          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900 dark:to-indigo-800 rounded-xl p-6">
+                            <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                              <FiActivity className="mr-2 text-indigo-600" />
+                              Instructions spéciales
                             </h4>
-                            <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg">
-                              <p className="text-gray-700 dark:text-gray-300">
-                                {selectedOrder.specialInstructions}
-                              </p>
-                            </div>
-                          </>
+                            <p className="text-gray-700 dark:text-gray-300 italic bg-white dark:bg-gray-700 p-4 rounded-lg">
+                              "{selectedOrder.specialInstructions}"
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
                   </div>
-                </div>
+                  
+                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 px-6 py-4 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
+                    <motion.button
+                      onClick={() => window.print()}
+                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl flex items-center justify-center font-medium shadow-lg transition-all duration-300"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <FiPrinter className="mr-2" />
+                      Imprimer
+                    </motion.button>
+                    <motion.button
+                      onClick={closeOrderDetails}
+                      className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl flex items-center justify-center font-medium shadow-lg transition-all duration-300"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      Fermer
+                    </motion.button>
+                  </div>
+                </motion.div>
               </div>
-              <div className="bg-gray-50 dark:bg-gray-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                <button
-                  type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-green-600 text-base font-medium text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={() => setIsOrderDetailsOpen(false)}
-                >
-                  {t('common.close')}
-                </button>
-                <button
-                  type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-600 text-base font-medium text-gray-700 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                  onClick={() => {
-                    // Print functionality would be implemented here
-                    window.print();
-                  }}
-                >
-                  <FiPrinter className="mr-2" />
-                  {t('orders.print')}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  </AdminLayout>
-);
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    </AdminLayout>
+  );
 };
 
 export default AdminOrdersPage;
