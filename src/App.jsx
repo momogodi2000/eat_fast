@@ -165,10 +165,10 @@ function App() {
           <DeliveryLayout>
           <DeliveryHistoryPage />
           </DeliveryLayout>} />
-         <Route path="/delivery/support" element={
+         {/* <Route path="/delivery/support" element={
           <DeliveryLayout>
           <DeliverySupport />
-          </DeliveryLayout>} />
+          </DeliveryLayout>} /> */}
 
           <Route path="/delivery/support/chat" element={
           <DeliveryLayout>

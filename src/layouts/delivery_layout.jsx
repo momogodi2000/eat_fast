@@ -177,8 +177,8 @@ const DeliveryLayout = ({ children }) => {
                 <NavItem 
                   icon={<HelpCircle size={20} className="text-current" />}
                   label={t('support')} 
-                  path="/delivery/support" 
-                  isActive={location.pathname === '/delivery/support'}
+                  path="/delivery/support/chat" 
+                  isActive={location.pathname === '/delivery/support/chat'}
                 />
               </nav>
 
