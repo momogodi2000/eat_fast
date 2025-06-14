@@ -140,27 +140,27 @@ const DeliveryLayout = ({ children }) => {
                 <NavItem 
                   icon={<User size={20} className="text-current" />}
                   label={t('dashboard')} 
-                  path="/delivery" 
-                  isActive={location.pathname === '/delivery'}
+                  path="/delivery/" 
+                  isActive={location.pathname === '/delivery/'}
                   badge="New"
                 />
                 <NavItem 
                   icon={<Map size={20} className="text-current" />}
                   label={t('missions')} 
-                  path="/missions" 
-                  isActive={location.pathname === '/missions'}
+                  path="/delivery/missions" 
+                  isActive={location.pathname === '/delivery/missions'}
                 />
                 <NavItem 
                   icon={<Clock size={20} className="text-current" />}
                   label={t('live_map')} 
-                  path="/live-map" 
-                  isActive={location.pathname === '/live-map'}
+                  path="/delivery/live-map" 
+                  isActive={location.pathname === '/delivery/live-map'}
                 />
                 <NavItem 
                   icon={<Award size={20} className="text-current" />}
                   label={t('earnings')} 
-                  path="/earnings" 
-                  isActive={location.pathname === '/earnings'}
+                  path="/delivery/earnings" 
+                  isActive={location.pathname === '/delivery/earnings'}
                 />
                {/* <NavItem 
                   icon={<User size={20} className="text-current" />}
@@ -171,14 +171,14 @@ const DeliveryLayout = ({ children }) => {
                 <NavItem 
                   icon={<FileText size={20} className="text-current" />}
                   label={t('delivery_history')} 
-                  path="/history" 
-                  isActive={location.pathname === '/history'}
+                  path="/delivery/history" 
+                  isActive={location.pathname === '/delivery/history'}
                 />
                 <NavItem 
                   icon={<HelpCircle size={20} className="text-current" />}
                   label={t('support')} 
-                  path="/support" 
-                  isActive={location.pathname === '/support'}
+                  path="/delivery/support" 
+                  isActive={location.pathname === '/delivery/support'}
                 />
               </nav>
 

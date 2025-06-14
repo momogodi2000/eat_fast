@@ -2,7 +2,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useLocation } from 'react-router-dom';
-
+import { Sun, Moon, Globe, User, Bell, MessageCircle, MapPin, Clock, Star, TrendingUp, Package, CreditCard, ShoppingCart, History, Settings, LogOut } from 'lucide-react';
 import {
   FiHome,
   FiShoppingBag,
@@ -186,6 +186,8 @@ const RestaurantLayout = ({ children }) => {
     //{ name: t('dashboard.hours'), icon: <FiClock size={20} />, path: '/restaurant/hours' },
     //{ name: t('dashboard.settings'), icon: <FiSettings size={20} />, path: '/restaurant/settings' },
   ];
+
+  
   
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -306,8 +308,25 @@ const RestaurantLayout = ({ children }) => {
             ))}
           </nav>
           
-          {/* User Profile & Logout */}
+        
+
+          
+
+              {/* User Profile & Logout */}
           <div className={`p-4 border-t border-gray-200 dark:border-gray-700 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+             
+              {/* Support Button */}
+               <div className="p-6 space-y-3">
+              <button 
+                  onClick={() => handleNavClick('/restaurant/support/chat' )}
+                  className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
+                >
+                  <MessageCircle size={20} />
+                  <span className="font-medium">{'Contacter le Support'}</span>
+
+                </button>
+
+                </div>
             <div className="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-all duration-200 mb-3">
               <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 flex items-center justify-center shadow-md">
                 <FiUser className="text-white" size={20} />

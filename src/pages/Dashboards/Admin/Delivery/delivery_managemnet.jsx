@@ -109,7 +109,7 @@ const generateMockDeliveries = () => {
 // Fonction pour générer des points de route
 const generateRoutePoints = () => {
   const points = [];
-  const baseLat= 4.0511;
+  const baseLatitude= 4.0511;
   const baseLng = 9.7679;
   
   for (let i = 0; i < 5; i++) {

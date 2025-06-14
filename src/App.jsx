@@ -61,6 +61,8 @@ import RestaurantLayoutWithProviders from './layouts/restaurants_layout.jsx';
 
 // Common components
 import DashboardRedirect from './components/CommonShare/test';
+import RestaurantChatSupport from './pages/Dashboards/Restaurants/contact_support/restaurant-aide.jsx';
+import DeliveryChatSupport from './pages/Dashboards/Delivery/contact_support/delivery_aide.jsx';
 
 // Create QueryClient
 const queryClient = new QueryClient();
@@ -134,32 +136,43 @@ function App() {
             <RestaurantReviews />
             </RestaurantLayoutWithProviders>} />
 
+          <Route path="/restaurant/support/chat" element={
+            <RestaurantLayoutWithProviders>            
+            <RestaurantChatSupport />
+            </RestaurantLayoutWithProviders>} />
+          
+
   {/* Delivery Router */}
 
-         <Route path="/delivery" element={
+         <Route path="/delivery/" element={
           <DeliveryLayout>
           <DeliveryDashboard />
           </DeliveryLayout>} />
-         <Route path="/missions" element={
+         <Route path="/delivery/missions" element={
           <DeliveryLayout>
           <MissionsPage />
           </DeliveryLayout>} />
          {/*<Route path="/live-map" element={<CameroonDeliveryMap />} />*/}
-         <Route path="/live-map" element={
+         <Route path="/delivery/live-map" element={
           <DeliveryLayout>
           <RestaurantDeliverCommand />
           </DeliveryLayout>} />
-         <Route path="/earnings" element={
+         <Route path="/delivery/earnings" element={
           <DeliveryLayout>
           <DeliveryEarningsPage />
           </DeliveryLayout>} />
-         <Route path="/history" element={
+         <Route path="/delivery/history" element={
           <DeliveryLayout>
           <DeliveryHistoryPage />
           </DeliveryLayout>} />
-         <Route path="/support" element={
+         <Route path="/delivery/support" element={
           <DeliveryLayout>
           <DeliverySupport />
+          </DeliveryLayout>} />
+
+          <Route path="/delivery/support/chat" element={
+          <DeliveryLayout>
+          <DeliveryChatSupport />
           </DeliveryLayout>} />
 
   {/* Clients Router */}
