@@ -1,9 +1,21 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
-import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Globe, Sun, Moon, Bell, User, Settings, LogOut, Menu, X, Map, Clock, Award, FileText, HelpCircle } from 'lucide-react';
+import { Sun, Moon, Bell, User, Settings, LogOut, Menu, X, Map, Clock, Award, FileText, HelpCircle } from 'lucide-react';
 
-// Create context for theme and language
+// Traductions françaises (remplace i18n)
+const translations = {
+  dashboard: 'Tableau de bord',
+  missions: 'Missions',
+  live_map: 'Carte en direct',
+  earnings: 'Gains',
+  profile: 'Profil',
+  delivery_history: 'Historique des livraisons',
+  support: 'Support',
+  settings: 'Paramètres',
+  logout: 'Déconnexion'
+};
+
+// Create context for theme
 export const DeliveryContext = createContext();
 
 export const useDeliveryContext = () => {
@@ -15,30 +27,22 @@ export const useDeliveryContext = () => {
 };
 
 const DeliveryLayout = ({ children }) => {
-  const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState('fr');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState(3);
 
-  // Initialize theme and language from localStorage
+  // Initialize theme from localStorage
   useEffect(() => {
     const savedTheme = localStorage.getItem('eat-fast-theme');
-    const savedLanguage = localStorage.getItem('eat-fast-language');
     
     if (savedTheme) {
       const theme = savedTheme === 'dark';
       setIsDarkMode(theme);
       document.documentElement.classList.toggle('dark', theme);
     }
-    
-    if (savedLanguage) {
-      setCurrentLanguage(savedLanguage);
-      i18n.changeLanguage(savedLanguage);
-    }
-  }, [i18n]);
+  }, []);
 
   // Toggle theme
   const toggleTheme = () => {
@@ -46,14 +50,6 @@ const DeliveryLayout = ({ children }) => {
     setIsDarkMode(newTheme);
     localStorage.setItem('eat-fast-theme', newTheme ? 'dark' : 'light');
     document.documentElement.classList.toggle('dark', newTheme);
-  };
-
-  // Toggle language
-  const toggleLanguage = () => {
-    const newLanguage = currentLanguage === 'fr' ? 'en' : 'fr';
-    setCurrentLanguage(newLanguage);
-    localStorage.setItem('eat-fast-language', newLanguage);
-    i18n.changeLanguage(newLanguage);
   };
 
   // Handle logout
@@ -64,16 +60,14 @@ const DeliveryLayout = ({ children }) => {
 
   const contextValue = {
     isDarkMode,
-    currentLanguage,
     toggleTheme,
-    toggleLanguage,
-    t
+    t: (key) => translations[key] || key
   };
 
   return (
     <DeliveryContext.Provider value={contextValue}>
       <div className={`min-h-screen transition-all duration-300 ${
-        isDarkMode ? 'dark bg-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'
+        isDarkMode ? 'dark bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900' : 'bg-gradient-to-br from-blue-50 to-indigo-100'
       }`}>
         {/* Mobile Header */}
         <div className="lg:hidden bg-white dark:bg-gray-800 shadow-lg border-b border-gray-200 dark:border-gray-700">
@@ -95,9 +89,7 @@ const DeliveryLayout = ({ children }) => {
             
             <div className="flex items-center space-x-2">
               <HeaderControls 
-                toggleLanguage={toggleLanguage}
                 toggleTheme={toggleTheme}
-                currentLanguage={currentLanguage}
                 isDarkMode={isDarkMode}
                 notifications={notifications}
               />
@@ -119,7 +111,7 @@ const DeliveryLayout = ({ children }) => {
                   </div>
                   <div>
                     <h1 className="font-bold text-xl text-gray-800 dark:text-white">Eat Fast</h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Delivery Partner</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Partenaire de livraison</p>
                   </div>
                 </Link>
               </div>
@@ -127,9 +119,7 @@ const DeliveryLayout = ({ children }) => {
               {/* Desktop Controls */}
               <div className="hidden lg:block p-4 border-b border-gray-200 dark:border-gray-700">
                 <HeaderControls 
-                  toggleLanguage={toggleLanguage}
                   toggleTheme={toggleTheme}
-                  currentLanguage={currentLanguage}
                   isDarkMode={isDarkMode}
                   notifications={notifications}
                 />
@@ -139,44 +129,38 @@ const DeliveryLayout = ({ children }) => {
               <nav className="flex-1 p-6 space-y-2">
                 <NavItem 
                   icon={<User size={20} className="text-current" />}
-                  label={t('dashboard')} 
+                  label={translations.dashboard} 
                   path="/delivery/" 
                   isActive={location.pathname === '/delivery/'}
-                  badge="New"
+                  badge="Nouveau"
                 />
                 <NavItem 
                   icon={<Map size={20} className="text-current" />}
-                  label={t('missions')} 
+                  label={translations.missions} 
                   path="/delivery/missions" 
                   isActive={location.pathname === '/delivery/missions'}
                 />
                 <NavItem 
                   icon={<Clock size={20} className="text-current" />}
-                  label={t('live_map')} 
+                  label={translations.live_map} 
                   path="/delivery/live-map" 
                   isActive={location.pathname === '/delivery/live-map'}
                 />
                 <NavItem 
                   icon={<Award size={20} className="text-current" />}
-                  label={t('earnings')} 
+                  label={translations.earnings} 
                   path="/delivery/earnings" 
                   isActive={location.pathname === '/delivery/earnings'}
                 />
-               {/* <NavItem 
-                  icon={<User size={20} className="text-current" />}
-                  label={t('profile')} 
-                  path="/profile" 
-                  isActive={location.pathname === '/profile'}
-                />  */}
                 <NavItem 
                   icon={<FileText size={20} className="text-current" />}
-                  label={t('delivery_history')} 
+                  label={translations.delivery_history} 
                   path="/delivery/history" 
                   isActive={location.pathname === '/delivery/history'}
                 />
                 <NavItem 
                   icon={<HelpCircle size={20} className="text-current" />}
-                  label={t('support')} 
+                  label={translations.support} 
                   path="/delivery/support/chat" 
                   isActive={location.pathname === '/delivery/support/chat'}
                 />
@@ -189,20 +173,20 @@ const DeliveryLayout = ({ children }) => {
                     JD
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-800 dark:text-white">John Doe</p>
-                    <p className="text-sm text-green-500">Online</p>
+                    <p className="font-semibold text-gray-800 dark:text-white">Jean Dupont</p>
+                    <p className="text-sm text-green-500">En ligne</p>
                   </div>
                 </div>
                 
                 <div className="space-y-2">
                   <ProfileButton 
                     icon={<Settings size={16} className="text-current" />} 
-                    label={t('settings')} 
+                    label={translations.settings} 
                     path="/settings"
                   />
                   <ProfileButton 
                     icon={<LogOut size={16} className="text-current" />} 
-                    label={t('logout')} 
+                    label={translations.logout} 
                     onClick={handleLogout}
                   />
                 </div>
@@ -231,27 +215,13 @@ const DeliveryLayout = ({ children }) => {
 };
 
 // Header Controls Component
-const HeaderControls = ({ toggleLanguage, toggleTheme, currentLanguage, isDarkMode, notifications }) => (
+const HeaderControls = ({ toggleTheme, isDarkMode, notifications }) => (
   <div className="flex items-center space-x-3">
-    {/* Language Toggle */}
-    <button
-      onClick={toggleLanguage}
-      className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transform hover:scale-110 transition-all duration-200 group"
-      title="Toggle Language"
-    >
-      <div className="flex items-center space-x-1">
-        <Globe size={18} className="text-gray-600 dark:text-gray-300 group-hover:text-blue-500 transition-colors" />
-        <span className="text-xs font-medium text-gray-600 dark:text-gray-300 group-hover:text-blue-500 uppercase">
-          {currentLanguage}
-        </span>
-      </div>
-    </button>
-
     {/* Theme Toggle */}
     <button
       onClick={toggleTheme}
       className="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transform hover:scale-110 hover:rotate-12 transition-all duration-200"
-      title="Toggle Theme"
+      title="Changer le thème"
     >
       {isDarkMode ? (
         <Sun size={18} className="text-yellow-500 hover:text-yellow-400 transition-colors" />
