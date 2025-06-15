@@ -1,3 +1,4 @@
+// src/components/BecomeAPartner.jsx - Complete Updated Version
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
@@ -5,8 +6,33 @@ import {
   MapPin, Clock, Star, Shield, Check, Upload, FileText, 
   HelpCircle, Home, Phone, Mail, Users, TrendingUp,
   Award, Zap, Globe, Heart, MessageCircle, Play, Pause, Volume2,
-  Truck, DollarSign, Building
+  Truck, DollarSign, Building, AlertCircle, Loader2, CheckCircle,
+  WifiOff, RefreshCw, ExternalLink, Camera, FileImage, FileCheck
 } from 'lucide-react';
+
+// Import services
+import partnerServices from '../../Services/Public/BecomeAPartnerServices';
+import { formatPartnerError, getPartnerTypeDisplay, getStatusDisplay } from '../../Services/Public/BecomeAPartnerServices';
+import dbConnection, { isOnline } from '../../Services/db_connection';
+
+// Import constants
+import {
+  PARTNER_TYPES,
+  APPLICATION_STATUS,
+  LEGAL_STATUS_OPTIONS,
+  VEHICLE_TYPE_OPTIONS,
+  INVESTMENT_TYPE_OPTIONS,
+  SERVICE_TYPE_OPTIONS,
+  formatFileSize,
+  formatCurrency,
+  formatDate,
+  getPartnerTypeIcon,
+  isValidEmail,
+  isValidPhone,
+  getFieldLabel,
+  isFieldRequired,
+  isDocumentRequired
+} from '../../utils/constants';
 
 const BecomeAPartner = () => {
   // Core state management
@@ -14,11 +40,20 @@ const BecomeAPartner = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('restaurant');
-  const [submissionState, setSubmissionState] = useState('idle');
+  const [submissionState, setSubmissionState] = useState('idle'); // idle, submitting, success, error
   const [activeProcess, setActiveProcess] = useState(0);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  
+  // Service integration states
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [error, setError] = useState(null);
+  const [isConnected, setIsConnected] = useState(isOnline());
+  const [applicationId, setApplicationId] = useState(null);
+  const [applicationStatus, setApplicationStatus] = useState(null);
+  const [serviceHealth, setServiceHealth] = useState(null);
+  const [notification, setNotification] = useState(null);
   
   // Form state
   const [formData, setFormData] = useState({
@@ -53,6 +88,7 @@ const BecomeAPartner = () => {
 
   // Form validation
   const [formErrors, setFormErrors] = useState({});
+  const [touchedFields, setTouchedFields] = useState({});
 
   // Refs for scroll animations and video
   const heroRef = useRef(null);
@@ -62,7 +98,7 @@ const BecomeAPartner = () => {
   const { scrollYProgress } = useScroll();
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
 
-  // French translations (default language)
+  // French translations
   const t = (key) => {
     const translations = {
       'nav.home': 'Accueil',
@@ -173,31 +209,21 @@ const BecomeAPartner = () => {
       'partner.successTitle': 'Candidature soumise !',
       'partner.successMessage': 'Merci pour votre intérêt à vous associer avec nous. Nous examinerons votre candidature et vous recontacterons sous 3-5 jours ouvrables.',
       'partner.submitAnother': 'Soumettre une autre candidature',
-      'partner.processTitle': 'Processus de candidature',
-      'partner.processSubtitle': 'Découvrez notre simple processus d\'intégration en 4 étapes.',
-      'partner.step1Title': '1. Soumettre la candidature',
-      'partner.step1Desc': 'Complétez la candidature de partenariat avec tous les documents requis.',
-      'partner.step2Title': '2. Examen et vérification',
-      'partner.step2Desc': 'Notre équipe examine votre candidature et vérifie toutes les informations.',
-      'partner.step3Title': '3. Configuration et formation',
-      'partner.step3Desc': 'Nous vous aidons à configurer votre compte et fournissons une formation complète.',
-      'partner.step4Title': '4. Mise en ligne',
-      'partner.step4Desc': 'Commencez à recevoir des commandes et à développer votre entreprise avec nous.',
-      'partner.faqTitle': 'Questions fréquemment posées',
-      'partner.faq1Question': 'Combien de temps prend le processus d\'approbation ?',
-      'partner.faq1Answer': 'Le processus d\'approbation prend généralement 3-5 jours ouvrables après réception de votre candidature complète.',
-      'partner.faq2Question': 'Quelle commission Eat-Fast facture-t-elle ?',
-      'partner.faq2Answer': 'Nos taux de commission sont compétitifs et varient selon votre volume d\'affaires et votre localisation. Nous discuterons des taux spécifiques pendant le processus d\'intégration.',
-      'partner.faq3Question': 'Ai-je besoin d\'équipement spécial ?',
-      'partner.faq3Answer': 'Vous aurez besoin d\'une tablette ou d\'un smartphone pour recevoir les commandes et d\'une imprimante pour les reçus. Nous fournissons le logiciel nécessaire et la formation.',
-      'partner.faq4Question': 'Puis-je mettre à jour mon menu à tout moment ?',
-      'partner.faq4Answer': 'Oui, vous pouvez mettre à jour votre menu, prix et disponibilité via notre tableau de bord partenaire 24/7.',
-      'partner.faq5Question': 'Quel support fournissez-vous ?',
-      'partner.faq5Answer': 'Nous fournissons un support complet incluant formation, assistance marketing, support technique et un gestionnaire de succès partenaire dédié.',
-      'partner.statsTitle': 'Rejoignez notre histoire de succès',
-      'partner.selectVideo': 'Sélectionner une vidéo',
-      'partner.noVideoSelected': 'Aucune vidéo sélectionnée',
-      'partner.closeVideo': 'Fermer la vidéo'
+      'partner.checkStatus': 'Vérifier le statut',
+      'partner.applicationId': 'ID de candidature',
+      'partner.retry': 'Réessayer',
+      'partner.offline': 'Vous êtes hors ligne',
+      'partner.offlineMessage': 'Vérifiez votre connexion internet et réessayez.',
+      'partner.uploadProgress': 'Progression du téléchargement',
+      'partner.fileUploaded': 'Fichier téléchargé',
+      'partner.removeFile': 'Supprimer le fichier',
+      'partner.dragDropFiles': 'Glissez-déposez vos fichiers ici ou cliquez pour sélectionner',
+      'partner.maxFileSize': 'Taille maximale',
+      'partner.acceptedFormats': 'Formats acceptés',
+      'partner.validating': 'Validation en cours...',
+      'partner.networkError': 'Erreur de connexion',
+      'partner.serviceUnavailable': 'Service temporairement indisponible',
+      'partner.tryAgain': 'Réessayer',
     };
     return translations[key] || key;
   };
@@ -206,6 +232,43 @@ const BecomeAPartner = () => {
   useEffect(() => {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     setDarkMode(isDarkMode);
+  }, []);
+
+  // Monitor network connectivity
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsConnected(true);
+      showNotification('Connexion rétablie', 'success');
+    };
+    const handleOffline = () => {
+      setIsConnected(false);
+      showNotification('Connexion perdue', 'error');
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Check service health on mount
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const health = await partnerServices.checkServiceHealth();
+        setServiceHealth(health);
+      } catch (error) {
+        setServiceHealth({ success: false, message: 'Service indisponible' });
+      }
+    };
+    
+    checkHealth();
+    const interval = setInterval(checkHealth, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Scroll event handler
@@ -226,9 +289,42 @@ const BecomeAPartner = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // Check for existing application ID on mount
+  useEffect(() => {
+    const storedApplicationId = localStorage.getItem('applicationId');
+    if (storedApplicationId) {
+      setApplicationId(storedApplicationId);
+    }
+  }, []);
+
+  // Auto-hide notifications
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => {
+        setNotification(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
+
+  // Auto-hide errors
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        setError(null);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   // Event handlers
   const toggleDarkMode = () => setDarkMode(!darkMode);
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+
+  // Notification handler
+  const showNotification = (message, type = 'info') => {
+    setNotification({ message, type });
+  };
 
   // Video handlers
   const handleVideoSelect = () => {
@@ -268,30 +364,81 @@ const BecomeAPartner = () => {
     }
   };
 
+  // Form handlers
   const handleInputChange = (e) => {
     const { name, value, files, type, checked } = e.target;
     
+    // Mark field as touched
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+    
     if (files) {
-      setFormData(prev => ({ ...prev, [name]: files[0] }));
+      const file = files[0];
+      
+      if (file) {
+        // Validate file using service
+        const validation = partnerServices.validateFile(file, 'document');
+        
+        if (validation.isValid) {
+          setFormData(prev => ({ ...prev, [name]: file }));
+          // Clear any previous file errors
+          if (formErrors[name]) {
+            setFormErrors(prev => ({ ...prev, [name]: '' }));
+          }
+          showNotification(`${getFieldLabel(name)} téléchargé avec succès`, 'success');
+        } else {
+          // Show file validation errors
+          setFormErrors(prev => ({ 
+            ...prev, 
+            [name]: validation.errors.join(', ') 
+          }));
+          showNotification(`Erreur de fichier: ${validation.errors.join(', ')}`, 'error');
+        }
+      }
     } else if (type === 'checkbox') {
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
 
-    // Clear error when user starts typing
+    // Clear field error when user starts typing
     if (formErrors[name]) {
       setFormErrors(prev => ({ ...prev, [name]: '' }));
+    }
+
+    // Real-time validation for critical fields
+    if (name === 'email' && value && !isValidEmail(value)) {
+      setFormErrors(prev => ({ ...prev, [name]: 'Format d\'email invalide' }));
+    } else if (name === 'phone' && value && !isValidPhone(value)) {
+      setFormErrors(prev => ({ ...prev, [name]: 'Format de téléphone invalide' }));
     }
   };
 
   const handlePhotoUpload = (e) => {
     if (e.target.files?.length > 0) {
       const files = Array.from(e.target.files);
-      setFormData(prev => ({
-        ...prev,
-        photos: [...prev.photos, ...files].slice(0, 5)
-      }));
+      const validFiles = [];
+      const errors = [];
+      
+      files.forEach((file, index) => {
+        const validation = partnerServices.validateFile(file, 'image');
+        if (validation.isValid) {
+          validFiles.push(file);
+        } else {
+          errors.push(`Photo ${index + 1}: ${validation.errors.join(', ')}`);
+        }
+      });
+      
+      if (validFiles.length > 0) {
+        setFormData(prev => ({
+          ...prev,
+          photos: [...prev.photos, ...validFiles].slice(0, 5)
+        }));
+        showNotification(`${validFiles.length} photo(s) ajoutée(s)`, 'success');
+      }
+      
+      if (errors.length > 0) {
+        showNotification(errors.join('\n'), 'error');
+      }
     }
   };
 
@@ -300,59 +447,153 @@ const BecomeAPartner = () => {
       ...prev,
       photos: prev.photos.filter((_, i) => i !== index)
     }));
+    showNotification('Photo supprimée', 'info');
   };
 
-  const getRequiredFields = () => {
-    const baseFields = ['contactName', 'email', 'phone'];
-    
-    switch (formData.partnerType) {
-      case 'restaurant':
-        return [...baseFields, 'businessName', 'address', 'city', 'cuisineType', 'capacity', 'openingHours', 'legalStatus', 'taxId'];
-      case 'delivery-agent':
-        return [...baseFields, 'address', 'city', 'vehicleType', 'drivingLicense'];
-      case 'investor':
-        return [...baseFields, 'investmentAmount', 'investmentType', 'businessExperience'];
-      case 'other':
-        return [...baseFields, 'serviceType', 'businessExperience'];
-      default:
-        return baseFields;
-    }
+  const removeFile = (fieldName) => {
+    setFormData(prev => ({ ...prev, [fieldName]: null }));
+    setFormErrors(prev => ({ ...prev, [fieldName]: '' }));
+    showNotification(`${getFieldLabel(fieldName)} supprimé`, 'info');
   };
 
-  const validateForm = () => {
-    const errors = {};
-    const required = getRequiredFields();
-    
-    required.forEach(field => {
-      if (!formData[field]) {
-        errors[field] = 'Ce champ est requis';
-      }
-    });
-
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Veuillez entrer une adresse e-mail valide';
-    }
-
-    if (!formData.termsAccepted) {
-      errors.terms = 'Veuillez accepter les termes et conditions';
-    }
-
-    return errors;
-  };
-
-  const handleSubmit = (e) => {
+  // Form submission handler
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const errors = validateForm();
     
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
+    // Check network connectivity
+    if (!isConnected) {
+      showNotification(t('partner.offlineMessage'), 'error');
+      return;
+    }
+    
+    // Reset states
+    setSubmissionState('submitting');
+    setError(null);
+    setFormErrors({});
+    setUploadProgress(0);
+
+    try {
+      console.log('Submitting application with data:', {
+        partnerType: formData.partnerType,
+        contactName: formData.contactName,
+        email: formData.email,
+      });
+
+      const result = await partnerServices.submitPartnerApplication(
+        formData,
+        (progress) => {
+          setUploadProgress(progress);
+          console.log(`Upload progress: ${progress}%`);
+        }
+      );
+
+      if (result.success) {
+        setSubmissionState('success');
+        setApplicationId(result.data.id);
+        localStorage.setItem('applicationId', result.data.id);
+        setUploadProgress(100);
+        showNotification('Candidature soumise avec succès !', 'success');
+        
+        console.log('Application submitted successfully:', result.data);
+        
+        // Scroll to top to show success message
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setSubmissionState('error');
+        setError(result.message);
+        
+        // Set field-specific errors if available
+        if (result.errors && Array.isArray(result.errors)) {
+          const fieldErrors = {};
+          result.errors.forEach(error => {
+            if (error.field) {
+              fieldErrors[error.field] = error.message;
+            }
+          });
+          setFormErrors(fieldErrors);
+        }
+        
+        showNotification('Erreur lors de la soumission', 'error');
+        console.error('Application submission failed:', result);
+      }
+    } catch (error) {
+      setSubmissionState('error');
+      const formattedError = formatPartnerError(error);
+      setError(formattedError);
+      showNotification('Erreur de soumission', 'error');
+      
+      console.error('Application submission error:', error);
+    }
+  };
+
+  // Check application status
+  const handleCheckStatus = async () => {
+    if (!applicationId || !formData.email) {
+      showNotification('ID de candidature et email requis pour vérifier le statut', 'error');
       return;
     }
 
-    setSubmissionState('submitting');
-    setTimeout(() => {
-      setSubmissionState('success');
-    }, 2000);
+    try {
+      showNotification('Vérification du statut...', 'info');
+      const result = await partnerServices.checkApplicationStatus(applicationId, formData.email);
+      
+      if (result.success) {
+        const statusInfo = getStatusDisplay(result.data.status);
+        setApplicationStatus({
+          ...result.data,
+          displayInfo: statusInfo,
+        });
+        showNotification('Statut mis à jour', 'success');
+      } else {
+        showNotification(result.message, 'error');
+      }
+    } catch (error) {
+      showNotification(formatPartnerError(error), 'error');
+    }
+  };
+
+  // Reset form
+  const resetForm = () => {
+    setSubmissionState('idle');
+    setError(null);
+    setFormErrors({});
+    setTouchedFields({});
+    setUploadProgress(0);
+    setApplicationId(null);
+    setApplicationStatus(null);
+    localStorage.removeItem('applicationId');
+    
+    setFormData({
+      partnerType: 'restaurant',
+      businessName: '',
+      contactName: '',
+      email: '',
+      phone: '',
+      address: '',
+      city: '',
+      cuisineType: '',
+      capacity: '',
+      openingHours: '',
+      legalStatus: '',
+      taxId: '',
+      vehicleType: '',
+      drivingLicense: '',
+      investmentAmount: '',
+      investmentType: '',
+      businessExperience: '',
+      serviceType: '',
+      healthCertificate: null,
+      idDocument: null,
+      menu: null,
+      drivingLicenseDoc: null,
+      vehicleRegistration: null,
+      businessPlan: null,
+      financialStatements: null,
+      photos: [],
+      termsAccepted: false
+    });
+    
+    showNotification('Formulaire réinitialisé', 'info');
   };
 
   // Animation variants
@@ -378,6 +619,340 @@ const BecomeAPartner = () => {
     }
   };
 
+  // Component helpers
+  const getFieldError = (fieldName) => {
+    return formErrors[fieldName] || '';
+  };
+
+  const isFieldTouched = (fieldName) => {
+    return touchedFields[fieldName] || false;
+  };
+
+  const shouldShowError = (fieldName) => {
+    return isFieldTouched(fieldName) && getFieldError(fieldName);
+  };
+
+  // Components
+
+  // Network status indicator
+  const NetworkStatus = () => (
+    !isConnected && (
+      <motion.div
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg"
+      >
+        <div className="flex items-center space-x-2">
+          <WifiOff size={16} />
+          <span>{t('partner.offline')}</span>
+          </div>
+      </motion.div>
+    )
+  );
+
+  // Service health indicator
+  const ServiceHealthIndicator = () => (
+    serviceHealth && !serviceHealth.success && (
+      <motion.div
+        initial={{ opacity: 0, y: -50 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="fixed top-32 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg"
+      >
+        <div className="flex items-center space-x-2">
+          <AlertCircle size={16} />
+          <span>{t('partner.serviceUnavailable')}</span>
+        </div>
+      </motion.div>
+    )
+  );
+
+  // Notification component
+  const NotificationComponent = () => (
+    <AnimatePresence>
+      {notification && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: -20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: -20 }}
+          className={`fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md ${
+            notification.type === 'success' ? 'bg-green-500' :
+            notification.type === 'error' ? 'bg-red-500' :
+            notification.type === 'warning' ? 'bg-yellow-500' :
+            'bg-blue-500'
+          } text-white`}
+        >
+          <div className="flex items-start space-x-2">
+            {notification.type === 'success' && <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />}
+            {notification.type === 'error' && <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />}
+            {notification.type === 'warning' && <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />}
+            {notification.type === 'info' && <TrendingUp size={20} className="flex-shrink-0 mt-0.5" />}
+            <div className="flex-1">
+              <p className="text-sm whitespace-pre-line">{notification.message}</p>
+            </div>
+            <button
+              onClick={() => setNotification(null)}
+              className="text-white/80 hover:text-white"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  // Error notification
+  const ErrorNotification = () => (
+    <AnimatePresence>
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="fixed bottom-4 right-4 z-50 bg-red-500 text-white p-4 rounded-lg shadow-lg max-w-md"
+        >
+          <div className="flex items-start space-x-2">
+            <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h4 className="font-semibold mb-1">Erreur</h4>
+              <p className="text-sm whitespace-pre-line">{error}</p>
+              <button
+                onClick={() => setError(null)}
+                className="mt-2 text-xs underline hover:no-underline"
+              >
+                Fermer
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+
+  // File upload component
+  const FileUploadField = ({ 
+    name, 
+    label, 
+    description, 
+    required = false, 
+    accept = "image/*,application/pdf",
+    currentFile = null 
+  }) => {
+    const error = shouldShowError(name);
+    
+    return (
+      <div className="space-y-2">
+        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        
+        <div className="relative">
+          {currentFile ? (
+            // File uploaded state
+            <div className="w-full p-4 border-2 border-green-300 dark:border-green-600 rounded-xl bg-green-50 dark:bg-green-900/20">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <FileCheck className="text-green-600 dark:text-green-400" size={20} />
+                  <div>
+                    <p className="text-sm font-medium text-green-700 dark:text-green-300">
+                      {currentFile.name}
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-400">
+                      {formatFileSize(currentFile.size)}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removeFile(name)}
+                  className="text-red-500 hover:text-red-600 transition-colors"
+                  title={t('partner.removeFile')}
+                >
+                  <X size={16} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Upload state
+            <label className="cursor-pointer group">
+              <div className={`w-full p-6 border-2 border-dashed rounded-xl transition-all ${
+                error 
+                  ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' 
+                  : 'border-gray-300 dark:border-gray-600 hover:border-emerald-500 dark:hover:border-emerald-400 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20'
+              }`}>
+                <div className="flex flex-col items-center text-center">
+                  <Upload className={`mb-3 ${
+                    error 
+                      ? 'text-red-400' 
+                      : 'text-gray-400 group-hover:text-emerald-500'
+                  }`} size={24} />
+                  <p className={`text-sm mb-1 ${
+                    error 
+                      ? 'text-red-600 dark:text-red-400' 
+                      : 'text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
+                  }`}>
+                    {t('partner.dragDropFiles')}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {t('partner.maxFileSize')}: 10MB
+                  </p>
+                </div>
+              </div>
+              <input
+                type="file"
+                name={name}
+                className="hidden"
+                accept={accept}
+                onChange={handleInputChange}
+              />
+            </label>
+          )}
+        </div>
+        
+        {description && (
+          <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+        )}
+        
+        {error && (
+          <p className="text-red-500 text-sm">{error}</p>
+        )}
+      </div>
+    );
+  };
+
+  // Input field component
+  const InputField = ({ 
+    name, 
+    label, 
+    type = "text", 
+    required = false, 
+    placeholder = "", 
+    options = null,
+    description = null 
+  }) => {
+    const error = shouldShowError(name);
+    const value = formData[name] || '';
+    
+    return (
+      <div>
+        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={name}>
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        
+        {options ? (
+          <select
+            id={name}
+            name={name}
+            value={value}
+            onChange={handleInputChange}
+            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+              error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            }`}
+          >
+            <option value="">{t('partner.selectOption')}</option>
+            {options.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <input
+            type={type}
+            id={name}
+            name={name}
+            value={value}
+            onChange={handleInputChange}
+            placeholder={placeholder}
+            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+              error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+            }`}
+          />
+        )}
+        
+        {description && (
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
+        )}
+        
+        {error && (
+          <p className="text-red-500 text-sm mt-1">{error}</p>
+        )}
+      </div>
+    );
+  };
+
+  // Photo upload component
+  const PhotoUploadSection = () => (
+    <div className="md:col-span-2">
+      <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+        {t('partner.restaurantPhotos')} ({formData.photos.length}/5)
+      </label>
+      
+      <div className="space-y-4">
+        {/* Upload area */}
+        <div className="relative">
+          <label className="cursor-pointer group">
+            <div className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+              <div className="flex flex-col items-center text-center">
+                <Camera className="mb-3 text-gray-400 group-hover:text-emerald-500" size={32} />
+                <p className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 mb-1">
+                  {t('partner.chooseFile')}
+                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  JPG, PNG - Max 10MB chacune
+                </p>
+              </div>
+            </div>
+            <input
+              type="file"
+              name="photos"
+              className="hidden"
+              multiple
+              accept="image/*"
+              onChange={handlePhotoUpload}
+            />
+          </label>
+        </div>
+
+        {/* Photo preview */}
+        {formData.photos.length > 0 && (
+          <div className="grid grid-cols-5 gap-3">
+            {formData.photos.map((photo, index) => (
+              <div key={index} className="relative group">
+                <div className="w-full h-20 bg-gray-200 dark:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden">
+                  {photo instanceof File ? (
+                    <div className="text-center">
+                      <FileImage size={16} className="text-gray-500 mx-auto mb-1" />
+                      <span className="text-xs text-gray-500 truncate block px-1">
+                        {photo.name.split('.')[0].substring(0, 8)}...
+                      </span>
+                    </div>
+                  ) : (
+                    <img 
+                      src={URL.createObjectURL(photo)} 
+                      alt={`Preview ${index + 1}`}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => removePhoto(index)}
+                  className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+        
+        <p className="text-sm text-gray-500 dark:text-gray-400">{t('partner.photosDesc')}</p>
+      </div>
+    </div>
+  );
+
+  // Form content based on partner type
   const renderFormContent = () => {
     const { partnerType } = formData;
     
@@ -408,249 +983,88 @@ const BecomeAPartner = () => {
             {/* Restaurant Fields */}
             {partnerType === 'restaurant' && (
               <>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="businessName">
-                    {t('partner.businessName')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="businessName"
-                    name="businessName"
-                    value={formData.businessName}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.businessName ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  />
-                  {formErrors.businessName && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.businessName}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="cuisineType">
-                    {t('partner.cuisineType')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="cuisineType"
-                    name="cuisineType"
-                    value={formData.cuisineType}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.cuisineType ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  />
-                  {formErrors.cuisineType && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.cuisineType}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="capacity">
-                    {t('partner.capacity')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    id="capacity"
-                    name="capacity"
-                    value={formData.capacity}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.capacity ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  />
-                  {formErrors.capacity && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.capacity}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="openingHours">
-                    {t('partner.openingHours')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="openingHours"
-                    name="openingHours"
-                    value={formData.openingHours}
-                    onChange={handleInputChange}
-                    placeholder="Ex: 8h00 - 22h00"
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.openingHours ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  />
-                  {formErrors.openingHours && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.openingHours}</p>
-                  )}
-                </div>
+                <InputField
+                  name="businessName"
+                  label={t('partner.businessName')}
+                  required={isFieldRequired('businessName', partnerType)}
+                />
+                <InputField
+                  name="cuisineType"
+                  label={t('partner.cuisineType')}
+                  required={isFieldRequired('cuisineType', partnerType)}
+                />
+                <InputField
+                  name="capacity"
+                  label={t('partner.capacity')}
+                  type="number"
+                  required={isFieldRequired('capacity', partnerType)}
+                />
+                <InputField
+                  name="openingHours"
+                  label={t('partner.openingHours')}
+                  placeholder="Ex: 8h00 - 22h00"
+                  required={isFieldRequired('openingHours', partnerType)}
+                />
               </>
             )}
 
             {/* Delivery Agent Fields */}
             {partnerType === 'delivery-agent' && (
               <>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="vehicleType">
-                    {t('partner.vehicleType')} <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="vehicleType"
-                    name="vehicleType"
-                    value={formData.vehicleType}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.vehicleType ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  >
-                    <option value="">{t('partner.selectOption')}</option>
-                    <option value="motorcycle">{t('partner.motorcycle')}</option>
-                    <option value="bicycle">{t('partner.bicycle')}</option>
-                    <option value="car">{t('partner.car')}</option>
-                    <option value="scooter">{t('partner.scooter')}</option>
-                  </select>
-                  {formErrors.vehicleType && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.vehicleType}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="drivingLicense">
-                    {t('partner.drivingLicense')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="drivingLicense"
-                    name="drivingLicense"
-                    value={formData.drivingLicense}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.drivingLicense ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  />
-                  {formErrors.drivingLicense && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.drivingLicense}</p>
-                  )}
-                </div>
+                <InputField
+                  name="vehicleType"
+                  label={t('partner.vehicleType')}
+                  options={VEHICLE_TYPE_OPTIONS}
+                  required={isFieldRequired('vehicleType', partnerType)}
+                />
+                <InputField
+                  name="drivingLicense"
+                  label={t('partner.drivingLicense')}
+                  required={isFieldRequired('drivingLicense', partnerType)}
+                />
               </>
             )}
 
             {/* Investor Fields */}
             {partnerType === 'investor' && (
               <>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="investmentAmount">
-                    {t('partner.investmentAmount')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    id="investmentAmount"
-                    name="investmentAmount"
-                    value={formData.investmentAmount}
-                    onChange={handleInputChange}
-                    placeholder="1000000"
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.investmentAmount ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  />
-                  {formErrors.investmentAmount && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.investmentAmount}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="investmentType">
-                    {t('partner.investmentType')} <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="investmentType"
-                    name="investmentType"
-                    value={formData.investmentType}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.investmentType ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  >
-                    <option value="">{t('partner.selectOption')}</option>
-                    <option value="franchise">{t('partner.franchise')}</option>
-                    <option value="equity">{t('partner.equity')}</option>
-                    <option value="debt">{t('partner.debt')}</option>
-                  </select>
-                  {formErrors.investmentType && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.investmentType}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="businessExperience">
-                    {t('partner.businessExperience')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    id="businessExperience"
-                    name="businessExperience"
-                    value={formData.businessExperience}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.businessExperience ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  />
-                  {formErrors.businessExperience && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.businessExperience}</p>
-                  )}
-                </div>
+                <InputField
+                  name="investmentAmount"
+                  label={t('partner.investmentAmount')}
+                  type="number"
+                  placeholder="1000000"
+                  required={isFieldRequired('investmentAmount', partnerType)}
+                />
+                <InputField
+                  name="investmentType"
+                  label={t('partner.investmentType')}
+                  options={INVESTMENT_TYPE_OPTIONS}
+                  required={isFieldRequired('investmentType', partnerType)}
+                />
+                <InputField
+                  name="businessExperience"
+                  label={t('partner.businessExperience')}
+                  type="number"
+                  required={isFieldRequired('businessExperience', partnerType)}
+                />
               </>
             )}
 
             {/* Other Fields */}
             {partnerType === 'other' && (
               <>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="serviceType">
-                    {t('partner.serviceType')} <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="serviceType"
-                    name="serviceType"
-                    value={formData.serviceType}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.serviceType ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  >
-                    <option value="">{t('partner.selectOption')}</option>
-                    <option value="consulting">{t('partner.consulting')}</option>
-                    <option value="technology">{t('partner.technology')}</option>
-                    <option value="marketing">{t('partner.marketing')}</option>
-                    <option value="logistics">{t('partner.logistics')}</option>
-                  </select>
-                  {formErrors.serviceType && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.serviceType}</p>
-                  )}
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="businessExperience">
-                    {t('partner.businessExperience')} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="number"
-                    id="businessExperience"
-                    name="businessExperience"
-                    value={formData.businessExperience}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors.businessExperience ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  />
-                  {formErrors.businessExperience && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.businessExperience}</p>
-                  )}
-                </div>
+                <InputField
+                  name="serviceType"
+                  label={t('partner.serviceType')}
+                  options={SERVICE_TYPE_OPTIONS}
+                  required={isFieldRequired('serviceType', partnerType)}
+                />
+                <InputField
+                  name="businessExperience"
+                  label={t('partner.businessExperience')}
+                  type="number"
+                  required={isFieldRequired('businessExperience', partnerType)}
+                />
               </>
             )}
           </div>
@@ -670,35 +1084,27 @@ const BecomeAPartner = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {[
-              { name: 'contactName', label: t('partner.contactName'), type: 'text' },
-              { name: 'email', label: t('partner.email'), type: 'email' },
-              { name: 'phone', label: t('partner.phone'), type: 'tel' }
-            ].map((field) => (
-              <div key={field.name}>
-                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={field.name}>
-                  {field.label} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type={field.type}
-                  id={field.name}
-                  name={field.name}
-                  value={formData[field.name]}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                    formErrors[field.name] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                  required
-                />
-                {formErrors[field.name] && (
-                  <p className="text-red-500 text-sm mt-1">{formErrors[field.name]}</p>
-                )}
-              </div>
-            ))}
+            <InputField
+              name="contactName"
+              label={t('partner.contactName')}
+              required={true}
+            />
+            <InputField
+              name="email"
+              label={t('partner.email')}
+              type="email"
+              required={true}
+            />
+            <InputField
+              name="phone"
+              label={t('partner.phone')}
+              type="tel"
+              required={true}
+            />
           </div>
         </motion.section>
 
-        {/* Location Information - Only for restaurant and delivery agents */}
+        {/* Location Information */}
         {(partnerType === 'restaurant' || partnerType === 'delivery-agent') && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
@@ -713,35 +1119,21 @@ const BecomeAPartner = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {[
-                { name: 'address', label: t('partner.address'), type: 'text' },
-                { name: 'city', label: t('partner.city'), type: 'text' }
-              ].map((field) => (
-                <div key={field.name}>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={field.name}>
-                    {field.label} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type={field.type}
-                    id={field.name}
-                    name={field.name}
-                    value={formData[field.name]}
-                    onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                      formErrors[field.name] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                    }`}
-                    required
-                  />
-                  {formErrors[field.name] && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors[field.name]}</p>
-                  )}
-                </div>
-              ))}
+              <InputField
+                name="address"
+                label={t('partner.address')}
+                required={isFieldRequired('address', partnerType)}
+              />
+              <InputField
+                name="city"
+                label={t('partner.city')}
+                required={isFieldRequired('city', partnerType)}
+              />
             </div>
           </motion.section>
         )}
 
-        {/* Legal Information - Only for restaurant */}
+        {/* Legal Information */}
         {partnerType === 'restaurant' && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
@@ -756,50 +1148,17 @@ const BecomeAPartner = () => {
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="legalStatus">
-                  {t('partner.legalStatus')} <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="legalStatus"
-                  name="legalStatus"
-                  value={formData.legalStatus}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                    formErrors.legalStatus ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                  required
-                >
-                  <option value="">{t('partner.selectOption')}</option>
-                  <option value="sole_proprietor">{t('partner.soleProprietor')}</option>
-                  <option value="llc">{t('partner.llc')}</option>
-                  <option value="corporation">{t('partner.corporation')}</option>
-                  <option value="other">{t('partner.other')}</option>
-                </select>
-                {formErrors.legalStatus && (
-                  <p className="text-red-500 text-sm mt-1">{formErrors.legalStatus}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="taxId">
-                  {t('partner.taxId')} <span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="taxId"
-                  name="taxId"
-                  value={formData.taxId}
-                  onChange={handleInputChange}
-                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                    formErrors.taxId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                  }`}
-                  required
-                />
-                {formErrors.taxId && (
-                  <p className="text-red-500 text-sm mt-1">{formErrors.taxId}</p>
-                )}
-              </div>
+              <InputField
+                name="legalStatus"
+                label={t('partner.legalStatus')}
+                options={LEGAL_STATUS_OPTIONS}
+                required={isFieldRequired('legalStatus', partnerType)}
+              />
+              <InputField
+                name="taxId"
+                label={t('partner.taxId')}
+                required={isFieldRequired('taxId', partnerType)}
+              />
             </div>
           </motion.section>
         )}
@@ -819,304 +1178,209 @@ const BecomeAPartner = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Common documents */}
-            <div>
-              <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                {t('partner.idDocument')} <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <label className="cursor-pointer group">
-                  <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                    <div className="flex items-center justify-center">
-                      <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                      <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                        {formData.idDocument ? formData.idDocument.name : t('partner.chooseFile')}
-                      </span>
-                    </div>
-                  </div>
-                  <input
-                    type="file"
-                    name="idDocument"
-                    className="hidden"
-                    onChange={handleInputChange}
-                    required
-                  />
-                </label>
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.idDocumentDesc')}</p>
-            </div>
+            <FileUploadField
+              name="idDocument"
+              label={t('partner.idDocument')}
+              description={t('partner.idDocumentDesc')}
+              required={isDocumentRequired('idDocument', partnerType)}
+              currentFile={formData.idDocument}
+            />
 
             {/* Partner type specific documents */}
             {partnerType === 'restaurant' && (
               <>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                    {t('partner.healthCertificate')} <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <label className="cursor-pointer group">
-                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                        <div className="flex items-center justify-center">
-                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                            {formData.healthCertificate ? formData.healthCertificate.name : t('partner.chooseFile')}
-                          </span>
-                        </div>
-                      </div>
-                      <input
-                        type="file"
-                        name="healthCertificate"
-                        className="hidden"
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.healthCertificateDesc')}</p>
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                    {t('partner.menu')} <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <label className="cursor-pointer group">
-                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                        <div className="flex items-center justify-center">
-                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                            {formData.menu ? formData.menu.name : t('partner.chooseFile')}
-                          </span>
-                        </div>
-                      </div>
-                      <input
-                        type="file"
-                        name="menu"
-                        className="hidden"
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.menuDesc')}</p>
-                </div>
+                <FileUploadField
+                  name="healthCertificate"
+                  label={t('partner.healthCertificate')}
+                  description={t('partner.healthCertificateDesc')}
+                  required={isDocumentRequired('healthCertificate', partnerType)}
+                  currentFile={formData.healthCertificate}
+                />
+                <FileUploadField
+                  name="menu"
+                  label={t('partner.menu')}
+                  description={t('partner.menuDesc')}
+                  required={isDocumentRequired('menu', partnerType)}
+                  currentFile={formData.menu}
+                />
               </>
             )}
 
             {partnerType === 'delivery-agent' && (
               <>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                    {t('partner.drivingLicenseDoc')} <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <label className="cursor-pointer group">
-                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                        <div className="flex items-center justify-center">
-                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                            {formData.drivingLicenseDoc ? formData.drivingLicenseDoc.name : t('partner.chooseFile')}
-                          </span>
-                        </div>
-                      </div>
-                      <input
-                        type="file"
-                        name="drivingLicenseDoc"
-                        className="hidden"
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.drivingLicenseDesc')}</p>
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                    {t('partner.vehicleRegistration')}
-                  </label>
-                  <div className="relative">
-                    <label className="cursor-pointer group">
-                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                        <div className="flex items-center justify-center">
-                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                            {formData.vehicleRegistration ? formData.vehicleRegistration.name : t('partner.chooseFile')}
-                          </span>
-                        </div>
-                      </div>
-                      <input
-                        type="file"
-                        name="vehicleRegistration"
-                        className="hidden"
-                        onChange={handleInputChange}
-                      />
-                    </label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.vehicleRegistrationDesc')}</p>
-                </div>
+                <FileUploadField
+                  name="drivingLicenseDoc"
+                  label={t('partner.drivingLicenseDoc')}
+                  description={t('partner.drivingLicenseDesc')}
+                  required={isDocumentRequired('drivingLicenseDoc', partnerType)}
+                  currentFile={formData.drivingLicenseDoc}
+                />
+                <FileUploadField
+                  name="vehicleRegistration"
+                  label={t('partner.vehicleRegistration')}
+                  description={t('partner.vehicleRegistrationDesc')}
+                  required={false}
+                  currentFile={formData.vehicleRegistration}
+                />
               </>
             )}
 
             {partnerType === 'investor' && (
               <>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                    {t('partner.businessPlan')} <span className="text-red-500">*</span>
-                  </label>
-                  <div className="relative">
-                    <label className="cursor-pointer group">
-                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                        <div className="flex items-center justify-center">
-                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                            {formData.businessPlan ? formData.businessPlan.name : t('partner.chooseFile')}
-                          </span>
-                        </div>
-                      </div>
-                      <input
-                        type="file"
-                        name="businessPlan"
-                        className="hidden"
-                        onChange={handleInputChange}
-                        required
-                      />
-                    </label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.businessPlanDesc')}</p>
-                </div>
-                <div>
-                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                    {t('partner.financialStatements')}
-                  </label>
-                  <div className="relative">
-                    <label className="cursor-pointer group">
-                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                        <div className="flex items-center justify-center">
-                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                            {formData.financialStatements ? formData.financialStatements.name : t('partner.chooseFile')}
-                          </span>
-                        </div>
-                      </div>
-                      <input
-                        type="file"
-                        name="financialStatements"
-                        className="hidden"
-                        onChange={handleInputChange}
-                      />
-                    </label>
-                  </div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.financialStatementsDesc')}</p>
-                </div>
+                <FileUploadField
+                  name="businessPlan"
+                  label={t('partner.businessPlan')}
+                  description={t('partner.businessPlanDesc')}
+                  required={isDocumentRequired('businessPlan', partnerType)}
+                  currentFile={formData.businessPlan}
+                />
+                <FileUploadField
+                  name="financialStatements"
+                  label={t('partner.financialStatements')}
+                  description={t('partner.financialStatementsDesc')}
+                  required={false}
+                  currentFile={formData.financialStatements}
+                />
               </>
             )}
 
             {/* Photos for all partner types */}
-            <div className="md:col-span-2">
-              <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                {t('partner.restaurantPhotos')} ({formData.photos.length}/5)
-              </label>
-              <div className="relative">
-                <label className="cursor-pointer group">
-                  <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                    <div className="flex items-center justify-center">
-                      <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                      <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                        {t('partner.chooseFile')}
-                      </span>
-                    </div>
-                  </div>
-                  <input
-                    type="file"
-                    name="photos"
-                    className="hidden"
-                    multiple
-                    accept="image/*"
-                    onChange={handlePhotoUpload}
-                  />
-                </label>
-              </div>
-              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.photosDesc')}</p>
-
-              {/* Photo Preview */}
-              {formData.photos.length > 0 && (
-                <div className="mt-4 grid grid-cols-5 gap-3">
-                  {formData.photos.map((photo, index) => (
-                    <div key={index} className="relative group">
-                      <div className="w-full h-20 bg-gray-200 dark:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center">
-                        <span className="text-xs text-gray-500">Photo {index + 1}</span>
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => removePhoto(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
-                      >
-                        <X size={12} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+            <PhotoUploadSection />
           </div>
-        </motion.section>
-
-        {/* Terms & Submit */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="pt-8 border-t border-gray-200 dark:border-gray-700"
-        >
-          <div className="mb-8">
-            <label className="flex items-start">
-              <input
-                type="checkbox"
-                name="termsAccepted"
-                checked={formData.termsAccepted}
-                onChange={handleInputChange}
-                className="mt-1 mr-3 w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
-                required
-              />
-              <span className="text-gray-700 dark:text-gray-300">
-                {t('partner.agreeToTerms1')}{' '}
-                <a href="#" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline">
-                  {t('partner.terms')}
-                </a>{' '}
-                {t('partner.and')}{' '}
-                <a href="#" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline">
-                  {t('partner.privacyPolicy')}
-                </a>{' '}
-                {t('partner.agreeToTerms2')}
-              </span>
-            </label>
-            {formErrors.terms && (
-              <p className="text-red-500 text-sm mt-2">{formErrors.terms}</p>
-            )}
-          </div>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            type="button"
-            onClick={handleSubmit}
-            disabled={submissionState === 'submitting'}
-            className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-emerald-400 disabled:to-emerald-500 text-white rounded-xl font-semibold text-lg transition-all shadow-lg flex items-center justify-center"
-          >
-            {submissionState === 'submitting' ? (
-              <>
-                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
-                {t('partner.processing')}
-              </>
-            ) : (
-              t('partner.submitApplication')
-            )}
-          </motion.button>
         </motion.section>
       </div>
     );
   };
+
+  // Success state component
+  const SuccessState = () => (
+    <motion.div 
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="text-center py-16"
+    >
+      <motion.div
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ type: "spring", delay: 0.2 }}
+        className="w-24 h-24 mx-auto mb-8 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center"
+      >
+        <Check className="text-emerald-600 dark:text-emerald-400" size={40} />
+      </motion.div>
+      
+      <h3 className="text-3xl font-bold mb-4">{t('partner.successTitle')}</h3>
+      <p className="text-gray-600 dark:text-gray-300 mb-6 max-w-lg mx-auto text-lg">
+        {t('partner.successMessage')}
+      </p>
+      
+      {applicationId && (
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-lg p-4 mb-6 max-w-md mx-auto">
+          <p className="text-sm text-emerald-700 dark:text-emerald-300">
+            <strong>{t('partner.applicationId')}:</strong> 
+          </p>
+          <p className="font-mono text-emerald-800 dark:text-emerald-200 text-sm break-all">
+            {applicationId}
+          </p>
+          <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-2">
+            Gardez cet ID pour vérifier votre statut
+          </p>
+        </div>
+      )}
+      
+      {applicationStatus && (
+        <div className={`rounded-lg p-4 mb-6 max-w-md mx-auto ${applicationStatus.displayInfo.bgColor}`}>
+          <div className="flex items-center justify-center space-x-2 mb-2">
+            <span className="text-lg">{applicationStatus.displayInfo.icon}</span>
+            <span className={`font-semibold ${applicationStatus.displayInfo.textColor}`}>
+              {applicationStatus.displayInfo.label}
+            </span>
+          </div>
+          <p className={`text-sm ${applicationStatus.displayInfo.textColor}`}>
+            {applicationStatus.displayInfo.description}
+          </p>
+          {applicationStatus.reviewed_at && (
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+              Dernière mise à jour: {formatDate(applicationStatus.reviewed_at)}
+            </p>
+          )}
+        </div>
+      )}
+      
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleCheckStatus}
+          disabled={!applicationId || !formData.email}
+          className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 text-white rounded-xl font-semibold transition shadow-lg flex items-center justify-center space-x-2"
+        >
+          <RefreshCw size={16} />
+          <span>{t('partner.checkStatus')}</span>
+        </motion.button>
+        
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={resetForm}
+          className="px-6 py-3 border-2 border-emerald-600 text-emerald-600 hover:bg-emerald-600 hover:text-white rounded-xl font-semibold transition"
+        >
+          {t('partner.submitAnother')}
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+
+  // Submit button component
+  const SubmitButton = () => (
+    <motion.button
+      whileHover={{ scale: submissionState === 'submitting' ? 1 : 1.02 }}
+      whileTap={{ scale: submissionState === 'submitting' ? 1 : 0.98 }}
+      type="submit"
+      disabled={submissionState === 'submitting' || !isConnected || (serviceHealth && !serviceHealth.success)}
+      className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-emerald-400 disabled:to-emerald-500 text-white rounded-xl font-semibold text-lg transition-all shadow-lg flex items-center justify-center space-x-2"
+    >
+      {submissionState === 'submitting' ? (
+        <>
+          <Loader2 className="animate-spin h-5 w-5" />
+          <span>
+            {uploadProgress > 0 ? `${uploadProgress}% - ` : ''}{t('partner.processing')}
+          </span>
+        </>
+      ) : (
+        <>
+          <Upload size={20} />
+          <span>{t('partner.submitApplication')}</span>
+        </>
+      )}
+    </motion.button>
+  );
+
+  // Upload progress component
+  const UploadProgress = () => (
+    submissionState === 'submitting' && uploadProgress > 0 && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="mt-4 space-y-2"
+      >
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-gray-600 dark:text-gray-400">{t('partner.uploadProgress')}</span>
+          <span className="font-semibold text-emerald-600 dark:text-emerald-400">{uploadProgress}%</span>
+        </div>
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <motion.div
+            className="bg-emerald-600 h-2 rounded-full"
+            initial={{ width: 0 }}
+            animate={{ width: `${uploadProgress}%` }}
+            transition={{ duration: 0.3 }}
+          />
+        </div>
+        <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+          Veuillez ne pas fermer cette page pendant le téléchargement
+        </p>
+      </motion.div>
+    )
+  );
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -1124,6 +1388,12 @@ const BecomeAPartner = () => {
                 : 'bg-gradient-to-br from-gray-50 via-white to-gray-50 text-gray-900'
     }`}>
       
+      {/* Status Indicators */}
+      <NetworkStatus />
+      <ServiceHealthIndicator />
+      <NotificationComponent />
+      <ErrorNotification />
+
       {/* Enhanced Navigation */}
       <header className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled 
@@ -1284,7 +1554,7 @@ const BecomeAPartner = () => {
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-64 text-white">
-                  <p>{t('partner.noVideoSelected')}</p>
+                  <p>Aucune vidéo sélectionnée</p>
                 </div>
               )}
             </motion.div>
@@ -1334,6 +1604,11 @@ const BecomeAPartner = () => {
               >
                 <Zap size={16} className="mr-2" />
                 Réseau en croissance rapide
+                {serviceHealth && (
+                  <div className={`ml-2 w-2 h-2 rounded-full ${
+                    serviceHealth.success ? 'bg-green-500' : 'bg-red-500'
+                  }`} />
+                )}
               </motion.div>
 
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
@@ -1400,7 +1675,8 @@ const BecomeAPartner = () => {
                   <Play size={20} />
                   <span>{t('partner.watchDemo')}</span>
                 </motion.button>
-              </motion.div>
+                          </motion.div>
+
             </motion.div>
             
             {/* Visual Element */}
@@ -1514,7 +1790,7 @@ const BecomeAPartner = () => {
                   }}
                 >
                   {type.icon}
-                  <span>{type.label}</span>
+                  <span className="hidden sm:inline">{type.label}</span>
                 </motion.button>
               ))}
             </div>
@@ -1522,66 +1798,52 @@ const BecomeAPartner = () => {
             {/* Form Content */}
             <div className="p-8 md:p-12">
               {submissionState === 'success' ? (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center py-16"
-                >
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ type: "spring", delay: 0.2 }}
-                    className="w-24 h-24 mx-auto mb-8 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center"
-                  >
-                    <Check className="text-emerald-600 dark:text-emerald-400" size={40} />
-                  </motion.div>
-                  <h3 className="text-3xl font-bold mb-4">{t('partner.successTitle')}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-8 max-w-lg mx-auto text-lg">
-                    {t('partner.successMessage')}
-                  </p>
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    type="button"
-                    onClick={() => {
-                      setSubmissionState('idle');
-                      setFormData({
-                        partnerType: 'restaurant',
-                        businessName: '',
-                        contactName: '',
-                        email: '',
-                        phone: '',
-                        address: '',
-                        city: '',
-                        cuisineType: '',
-                        capacity: '',
-                        openingHours: '',
-                        legalStatus: '',
-                        taxId: '',
-                        vehicleType: '',
-                        drivingLicense: '',
-                        investmentAmount: '',
-                        investmentType: '',
-                        businessExperience: '',
-                        serviceType: '',
-                        healthCertificate: null,
-                        idDocument: null,
-                        menu: null,
-                        drivingLicenseDoc: null,
-                        vehicleRegistration: null,
-                        businessPlan: null,
-                        financialStatements: null,
-                        photos: [],
-                        termsAccepted: false
-                      });
-                    }}
-                    className="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold transition shadow-lg"
-                  >
-                    {t('partner.submitAnother')}
-                  </motion.button>
-                </motion.div>
+                <SuccessState />
               ) : (
-                renderFormContent()
+                <form onSubmit={handleSubmit}>
+                  {renderFormContent()}
+                  
+                  {/* Terms and Conditions */}
+                  <motion.section
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.6 }}
+                    className="pt-8 border-t border-gray-200 dark:border-gray-700 space-y-6"
+                  >
+                    <div>
+                      <label className="flex items-start">
+                        <input
+                          type="checkbox"
+                          name="termsAccepted"
+                          checked={formData.termsAccepted}
+                          onChange={handleInputChange}
+                          className="mt-1 mr-3 w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                          required
+                        />
+                        <span className="text-gray-700 dark:text-gray-300">
+                          {t('partner.agreeToTerms1')}{' '}
+                          <a href="#" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline">
+                            {t('partner.terms')}
+                          </a>{' '}
+                          {t('partner.and')}{' '}
+                          <a href="#" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline">
+                            {t('partner.privacyPolicy')}
+                          </a>{' '}
+                          {t('partner.agreeToTerms2')}
+                        </span>
+                      </label>
+                      {shouldShowError('termsAccepted') && (
+                        <p className="text-red-500 text-sm mt-2">{getFieldError('termsAccepted')}</p>
+                      )}
+                    </div>
+
+                    {/* Progress Bar */}
+                    <UploadProgress />
+
+                    {/* Submit Button */}
+                    <SubmitButton />
+                  </motion.section>
+                </form>
               )}
             </div>
           </motion.div>
@@ -1613,20 +1875,23 @@ const BecomeAPartner = () => {
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => document.getElementById('application-form').scrollIntoView({ behavior: 'smooth' })}
-                className="px-8 py-4 bg-white text-emerald-700 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+                className="px-8 py-4 bg-white text-emerald-700 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center space-x-2"
               >
-                Postuler maintenant - C'est gratuit !
+                <span>Postuler maintenant - C'est gratuit !</span>
+                <ExternalLink size={16} />
               </motion.button>
               
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-4 border-2 border-white/30 hover:border-white/50 rounded-xl font-semibold transition-colors"
+                className="px-8 py-4 border-2 border-white/30 hover:border-white/50 rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
               >
-                Contacter l'équipe commerciale
+                <Phone size={16} />
+                <span>Contacter l'équipe commerciale</span>
               </motion.button>
             </div>
           </motion.div>
+          
         </div>
       </section>
     </div>
