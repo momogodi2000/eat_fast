@@ -4,7 +4,8 @@ import {
   Sun, Moon, Menu, X, ChevronDown, User, ShoppingBag,
   MapPin, Clock, Star, Shield, Check, Upload, FileText, 
   HelpCircle, Home, Phone, Mail, Users, TrendingUp,
-  Award, Zap, Globe, Heart, MessageCircle, Play, Pause, Volume2
+  Award, Zap, Globe, Heart, MessageCircle, Play, Pause, Volume2,
+  Truck, DollarSign, Building
 } from 'lucide-react';
 
 const BecomeAPartner = () => {
@@ -21,7 +22,7 @@ const BecomeAPartner = () => {
   
   // Form state
   const [formData, setFormData] = useState({
-    businessType: 'restaurant',
+    partnerType: 'restaurant',
     businessName: '',
     contactName: '',
     email: '',
@@ -33,9 +34,19 @@ const BecomeAPartner = () => {
     openingHours: '',
     legalStatus: '',
     taxId: '',
+    vehicleType: '',
+    drivingLicense: '',
+    investmentAmount: '',
+    investmentType: '',
+    businessExperience: '',
+    serviceType: '',
     healthCertificate: null,
     idDocument: null,
     menu: null,
+    drivingLicenseDoc: null,
+    vehicleRegistration: null,
+    businessPlan: null,
+    financialStatements: null,
     photos: [],
     termsAccepted: false
   });
@@ -61,7 +72,7 @@ const BecomeAPartner = () => {
       'nav.account': 'Compte',
       'nav.cart': 'Panier',
       'partner.heroTitle': 'Partenaire avec',
-      'partner.heroSubtitle': 'Rejoignez des milliers de partenaires restaurateurs prospères et développez votre entreprise avec notre plateforme de livraison de repas complète.',
+      'partner.heroSubtitle': 'Rejoignez des milliers de partenaires prospères et développez votre entreprise avec notre plateforme de livraison de repas complète.',
       'partner.applyNow': 'Postuler maintenant',
       'partner.watchDemo': 'Regarder la démo',
       'partner.fastOnboarding': 'Intégration rapide',
@@ -92,9 +103,13 @@ const BecomeAPartner = () => {
       'partner.applicationFormTitle': 'Formulaire de candidature partenaire',
       'partner.applicationFormSubtitle': 'Remplissez ce formulaire pour commencer votre parcours de partenariat avec nous.',
       'partner.restaurant': 'Restaurant',
-      'partner.cloudKitchen': 'Cuisine Cloud',
-      'partner.caterer': 'Service traiteur',
+      'partner.deliveryAgent': 'Agent Livreur',
+      'partner.investor': 'Investisseur',
+      'partner.other': 'Autre',
       'partner.businessInfo': 'Informations sur l\'entreprise',
+      'partner.personalInfo': 'Informations personnelles',
+      'partner.investmentInfo': 'Informations d\'investissement',
+      'partner.serviceInfo': 'Informations sur le service',
       'partner.contactInfo': 'Informations de contact',
       'partner.locationInfo': 'Informations de localisation',
       'partner.legalInfo': 'Informations légales',
@@ -103,6 +118,12 @@ const BecomeAPartner = () => {
       'partner.cuisineType': 'Type de cuisine',
       'partner.capacity': 'Capacité quotidienne (commandes)',
       'partner.openingHours': 'Heures d\'ouverture',
+      'partner.vehicleType': 'Type de véhicule',
+      'partner.drivingLicense': 'Numéro de permis de conduire',
+      'partner.investmentAmount': 'Montant d\'investissement (FCFA)',
+      'partner.investmentType': 'Type d\'investissement',
+      'partner.businessExperience': 'Expérience commerciale (années)',
+      'partner.serviceType': 'Type de service',
       'partner.contactName': 'Personne de contact',
       'partner.email': 'Adresse e-mail',
       'partner.phone': 'Numéro de téléphone',
@@ -114,16 +135,34 @@ const BecomeAPartner = () => {
       'partner.soleProprietor': 'Entreprise individuelle',
       'partner.llc': 'Société à responsabilité limitée',
       'partner.corporation': 'Corporation',
-      'partner.other': 'Autre',
+      'partner.motorcycle': 'Moto',
+      'partner.bicycle': 'Vélo',
+      'partner.car': 'Voiture',
+      'partner.scooter': 'Scooter',
+      'partner.franchise': 'Franchise',
+      'partner.equity': 'Participation au capital',
+      'partner.debt': 'Financement par dette',
+      'partner.consulting': 'Services de conseil',
+      'partner.technology': 'Services technologiques',
+      'partner.marketing': 'Services marketing',
+      'partner.logistics': 'Services logistiques',
       'partner.healthCertificate': 'Certificat de santé',
       'partner.idDocument': 'Document d\'identité',
       'partner.menu': 'Menu/Liste de prix',
-      'partner.restaurantPhotos': 'Photos du restaurant',
+      'partner.drivingLicenseDoc': 'Permis de conduire',
+      'partner.vehicleRegistration': 'Carte grise du véhicule',
+      'partner.businessPlan': 'Plan d\'affaires',
+      'partner.financialStatements': 'États financiers',
+      'partner.restaurantPhotos': 'Photos du restaurant/véhicule',
       'partner.chooseFile': 'Choisir un fichier',
       'partner.healthCertificateDesc': 'Certificat valide du département de la santé',
       'partner.idDocumentDesc': 'Pièce d\'identité émise par le gouvernement',
       'partner.menuDesc': 'Menu actuel avec prix',
-      'partner.photosDesc': 'Photos de haute qualité de votre établissement',
+      'partner.drivingLicenseDesc': 'Permis de conduire valide',
+      'partner.vehicleRegistrationDesc': 'Carte grise du véhicule de livraison',
+      'partner.businessPlanDesc': 'Plan d\'affaires détaillé',
+      'partner.financialStatementsDesc': 'États financiers récents',
+      'partner.photosDesc': 'Photos de haute qualité de votre établissement/véhicule',
       'partner.agreeToTerms1': 'J\'accepte les',
       'partner.terms': 'Conditions de service',
       'partner.and': 'et la',
@@ -263,9 +302,26 @@ const BecomeAPartner = () => {
     }));
   };
 
+  const getRequiredFields = () => {
+    const baseFields = ['contactName', 'email', 'phone'];
+    
+    switch (formData.partnerType) {
+      case 'restaurant':
+        return [...baseFields, 'businessName', 'address', 'city', 'cuisineType', 'capacity', 'openingHours', 'legalStatus', 'taxId'];
+      case 'delivery-agent':
+        return [...baseFields, 'address', 'city', 'vehicleType', 'drivingLicense'];
+      case 'investor':
+        return [...baseFields, 'investmentAmount', 'investmentType', 'businessExperience'];
+      case 'other':
+        return [...baseFields, 'serviceType', 'businessExperience'];
+      default:
+        return baseFields;
+    }
+  };
+
   const validateForm = () => {
     const errors = {};
-    const required = ['businessName', 'contactName', 'email', 'phone', 'address', 'city', 'cuisineType', 'capacity', 'openingHours', 'legalStatus', 'taxId'];
+    const required = getRequiredFields();
     
     required.forEach(field => {
       if (!formData[field]) {
@@ -320,6 +376,746 @@ const BecomeAPartner = () => {
       scale: 1,
       transition: { type: "spring", stiffness: 100, damping: 15 }
     }
+  };
+
+  const renderFormContent = () => {
+    const { partnerType } = formData;
+    
+    return (
+      <div className="space-y-12">
+        {/* Main Information Section */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="flex items-center mb-8">
+            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-xl flex items-center justify-center mr-4">
+              {partnerType === 'restaurant' && <Home className="text-emerald-600 dark:text-emerald-400" size={20} />}
+              {partnerType === 'delivery-agent' && <Truck className="text-emerald-600 dark:text-emerald-400" size={20} />}
+              {partnerType === 'investor' && <DollarSign className="text-emerald-600 dark:text-emerald-400" size={20} />}
+              {partnerType === 'other' && <Building className="text-emerald-600 dark:text-emerald-400" size={20} />}
+            </div>
+            <h3 className="text-2xl font-bold">
+              {partnerType === 'restaurant' && t('partner.businessInfo')}
+              {partnerType === 'delivery-agent' && t('partner.personalInfo')}
+              {partnerType === 'investor' && t('partner.investmentInfo')}
+              {partnerType === 'other' && t('partner.serviceInfo')}
+            </h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Restaurant Fields */}
+            {partnerType === 'restaurant' && (
+              <>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="businessName">
+                    {t('partner.businessName')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="businessName"
+                    name="businessName"
+                    value={formData.businessName}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.businessName ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  />
+                  {formErrors.businessName && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.businessName}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="cuisineType">
+                    {t('partner.cuisineType')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="cuisineType"
+                    name="cuisineType"
+                    value={formData.cuisineType}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.cuisineType ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  />
+                  {formErrors.cuisineType && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.cuisineType}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="capacity">
+                    {t('partner.capacity')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="capacity"
+                    name="capacity"
+                    value={formData.capacity}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.capacity ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  />
+                  {formErrors.capacity && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.capacity}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="openingHours">
+                    {t('partner.openingHours')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="openingHours"
+                    name="openingHours"
+                    value={formData.openingHours}
+                    onChange={handleInputChange}
+                    placeholder="Ex: 8h00 - 22h00"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.openingHours ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  />
+                  {formErrors.openingHours && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.openingHours}</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Delivery Agent Fields */}
+            {partnerType === 'delivery-agent' && (
+              <>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="vehicleType">
+                    {t('partner.vehicleType')} <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="vehicleType"
+                    name="vehicleType"
+                    value={formData.vehicleType}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.vehicleType ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  >
+                    <option value="">{t('partner.selectOption')}</option>
+                    <option value="motorcycle">{t('partner.motorcycle')}</option>
+                    <option value="bicycle">{t('partner.bicycle')}</option>
+                    <option value="car">{t('partner.car')}</option>
+                    <option value="scooter">{t('partner.scooter')}</option>
+                  </select>
+                  {formErrors.vehicleType && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.vehicleType}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="drivingLicense">
+                    {t('partner.drivingLicense')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    id="drivingLicense"
+                    name="drivingLicense"
+                    value={formData.drivingLicense}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.drivingLicense ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  />
+                  {formErrors.drivingLicense && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.drivingLicense}</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Investor Fields */}
+            {partnerType === 'investor' && (
+              <>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="investmentAmount">
+                    {t('partner.investmentAmount')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="investmentAmount"
+                    name="investmentAmount"
+                    value={formData.investmentAmount}
+                    onChange={handleInputChange}
+                    placeholder="1000000"
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.investmentAmount ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  />
+                  {formErrors.investmentAmount && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.investmentAmount}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="investmentType">
+                    {t('partner.investmentType')} <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="investmentType"
+                    name="investmentType"
+                    value={formData.investmentType}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.investmentType ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  >
+                    <option value="">{t('partner.selectOption')}</option>
+                    <option value="franchise">{t('partner.franchise')}</option>
+                    <option value="equity">{t('partner.equity')}</option>
+                    <option value="debt">{t('partner.debt')}</option>
+                  </select>
+                  {formErrors.investmentType && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.investmentType}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="businessExperience">
+                    {t('partner.businessExperience')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="businessExperience"
+                    name="businessExperience"
+                    value={formData.businessExperience}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.businessExperience ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  />
+                  {formErrors.businessExperience && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.businessExperience}</p>
+                  )}
+                </div>
+              </>
+            )}
+
+            {/* Other Fields */}
+            {partnerType === 'other' && (
+              <>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="serviceType">
+                    {t('partner.serviceType')} <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    id="serviceType"
+                    name="serviceType"
+                    value={formData.serviceType}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.serviceType ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  >
+                    <option value="">{t('partner.selectOption')}</option>
+                    <option value="consulting">{t('partner.consulting')}</option>
+                    <option value="technology">{t('partner.technology')}</option>
+                    <option value="marketing">{t('partner.marketing')}</option>
+                    <option value="logistics">{t('partner.logistics')}</option>
+                  </select>
+                  {formErrors.serviceType && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.serviceType}</p>
+                  )}
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="businessExperience">
+                    {t('partner.businessExperience')} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="businessExperience"
+                    name="businessExperience"
+                    value={formData.businessExperience}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors.businessExperience ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  />
+                  {formErrors.businessExperience && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors.businessExperience}</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </motion.section>
+
+        {/* Contact Information */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <div className="flex items-center mb-8">
+            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center mr-4">
+              <User className="text-blue-600 dark:text-blue-400" size={20} />
+            </div>
+            <h3 className="text-2xl font-bold">{t('partner.contactInfo')}</h3>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {[
+              { name: 'contactName', label: t('partner.contactName'), type: 'text' },
+              { name: 'email', label: t('partner.email'), type: 'email' },
+              { name: 'phone', label: t('partner.phone'), type: 'tel' }
+            ].map((field) => (
+              <div key={field.name}>
+                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={field.name}>
+                  {field.label} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type={field.type}
+                  id={field.name}
+                  name={field.name}
+                  value={formData[field.name]}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                    formErrors[field.name] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                  required
+                />
+                {formErrors[field.name] && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors[field.name]}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </motion.section>
+
+        {/* Location Information - Only for restaurant and delivery agents */}
+        {(partnerType === 'restaurant' || partnerType === 'delivery-agent') && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <div className="flex items-center mb-8">
+              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-xl flex items-center justify-center mr-4">
+                <MapPin className="text-orange-600 dark:text-orange-400" size={20} />
+              </div>
+              <h3 className="text-2xl font-bold">{t('partner.locationInfo')}</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                { name: 'address', label: t('partner.address'), type: 'text' },
+                { name: 'city', label: t('partner.city'), type: 'text' }
+              ].map((field) => (
+                <div key={field.name}>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={field.name}>
+                    {field.label} <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type={field.type}
+                    id={field.name}
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                      formErrors[field.name] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                    }`}
+                    required
+                  />
+                  {formErrors[field.name] && (
+                    <p className="text-red-500 text-sm mt-1">{formErrors[field.name]}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* Legal Information - Only for restaurant */}
+        {partnerType === 'restaurant' && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+          >
+            <div className="flex items-center mb-8">
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center mr-4">
+                <FileText className="text-purple-600 dark:text-purple-400" size={20} />
+              </div>
+              <h3 className="text-2xl font-bold">{t('partner.legalInfo')}</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="legalStatus">
+                  {t('partner.legalStatus')} <span className="text-red-500">*</span>
+                </label>
+                <select
+                  id="legalStatus"
+                  name="legalStatus"
+                  value={formData.legalStatus}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                    formErrors.legalStatus ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                  required
+                >
+                  <option value="">{t('partner.selectOption')}</option>
+                  <option value="sole_proprietor">{t('partner.soleProprietor')}</option>
+                  <option value="llc">{t('partner.llc')}</option>
+                  <option value="corporation">{t('partner.corporation')}</option>
+                  <option value="other">{t('partner.other')}</option>
+                </select>
+                {formErrors.legalStatus && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.legalStatus}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="taxId">
+                  {t('partner.taxId')} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  id="taxId"
+                  name="taxId"
+                  value={formData.taxId}
+                  onChange={handleInputChange}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
+                    formErrors.taxId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                  }`}
+                  required
+                />
+                {formErrors.taxId && (
+                  <p className="text-red-500 text-sm mt-1">{formErrors.taxId}</p>
+                )}
+              </div>
+            </div>
+          </motion.section>
+        )}
+
+        {/* Document Uploads */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+        >
+          <div className="flex items-center mb-8">
+            <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-xl flex items-center justify-center mr-4">
+              <Upload className="text-indigo-600 dark:text-indigo-400" size={20} />
+            </div>
+            <h3 className="text-2xl font-bold">{t('partner.documentUploads')}</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Common documents */}
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                {t('partner.idDocument')} <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <label className="cursor-pointer group">
+                  <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+                    <div className="flex items-center justify-center">
+                      <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
+                      <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                        {formData.idDocument ? formData.idDocument.name : t('partner.chooseFile')}
+                      </span>
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    name="idDocument"
+                    className="hidden"
+                    onChange={handleInputChange}
+                    required
+                  />
+                </label>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.idDocumentDesc')}</p>
+            </div>
+
+            {/* Partner type specific documents */}
+            {partnerType === 'restaurant' && (
+              <>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                    {t('partner.healthCertificate')} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <label className="cursor-pointer group">
+                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+                        <div className="flex items-center justify-center">
+                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
+                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                            {formData.healthCertificate ? formData.healthCertificate.name : t('partner.chooseFile')}
+                          </span>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        name="healthCertificate"
+                        className="hidden"
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </label>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.healthCertificateDesc')}</p>
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                    {t('partner.menu')} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <label className="cursor-pointer group">
+                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+                        <div className="flex items-center justify-center">
+                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
+                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                            {formData.menu ? formData.menu.name : t('partner.chooseFile')}
+                          </span>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        name="menu"
+                        className="hidden"
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </label>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.menuDesc')}</p>
+                </div>
+              </>
+            )}
+
+            {partnerType === 'delivery-agent' && (
+              <>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                    {t('partner.drivingLicenseDoc')} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <label className="cursor-pointer group">
+                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+                        <div className="flex items-center justify-center">
+                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
+                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                            {formData.drivingLicenseDoc ? formData.drivingLicenseDoc.name : t('partner.chooseFile')}
+                          </span>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        name="drivingLicenseDoc"
+                        className="hidden"
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </label>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.drivingLicenseDesc')}</p>
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                    {t('partner.vehicleRegistration')}
+                  </label>
+                  <div className="relative">
+                    <label className="cursor-pointer group">
+                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+                        <div className="flex items-center justify-center">
+                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
+                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                            {formData.vehicleRegistration ? formData.vehicleRegistration.name : t('partner.chooseFile')}
+                          </span>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        name="vehicleRegistration"
+                        className="hidden"
+                        onChange={handleInputChange}
+                      />
+                    </label>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.vehicleRegistrationDesc')}</p>
+                </div>
+              </>
+            )}
+
+            {partnerType === 'investor' && (
+              <>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                    {t('partner.businessPlan')} <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <label className="cursor-pointer group">
+                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+                        <div className="flex items-center justify-center">
+                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
+                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                            {formData.businessPlan ? formData.businessPlan.name : t('partner.chooseFile')}
+                          </span>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        name="businessPlan"
+                        className="hidden"
+                        onChange={handleInputChange}
+                        required
+                      />
+                    </label>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.businessPlanDesc')}</p>
+                </div>
+                <div>
+                  <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                    {t('partner.financialStatements')}
+                  </label>
+                  <div className="relative">
+                    <label className="cursor-pointer group">
+                      <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+                        <div className="flex items-center justify-center">
+                          <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
+                          <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                            {formData.financialStatements ? formData.financialStatements.name : t('partner.chooseFile')}
+                          </span>
+                        </div>
+                      </div>
+                      <input
+                        type="file"
+                        name="financialStatements"
+                        className="hidden"
+                        onChange={handleInputChange}
+                      />
+                    </label>
+                  </div>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.financialStatementsDesc')}</p>
+                </div>
+              </>
+            )}
+
+            {/* Photos for all partner types */}
+            <div className="md:col-span-2">
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                {t('partner.restaurantPhotos')} ({formData.photos.length}/5)
+              </label>
+              <div className="relative">
+                <label className="cursor-pointer group">
+                  <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+                    <div className="flex items-center justify-center">
+                      <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
+                      <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
+                        {t('partner.chooseFile')}
+                      </span>
+                    </div>
+                  </div>
+                  <input
+                    type="file"
+                    name="photos"
+                    className="hidden"
+                    multiple
+                    accept="image/*"
+                    onChange={handlePhotoUpload}
+                  />
+                </label>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.photosDesc')}</p>
+
+              {/* Photo Preview */}
+              {formData.photos.length > 0 && (
+                <div className="mt-4 grid grid-cols-5 gap-3">
+                  {formData.photos.map((photo, index) => (
+                    <div key={index} className="relative group">
+                      <div className="w-full h-20 bg-gray-200 dark:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center">
+                        <span className="text-xs text-gray-500">Photo {index + 1}</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removePhoto(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </motion.section>
+
+        {/* Terms & Submit */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="pt-8 border-t border-gray-200 dark:border-gray-700"
+        >
+          <div className="mb-8">
+            <label className="flex items-start">
+              <input
+                type="checkbox"
+                name="termsAccepted"
+                checked={formData.termsAccepted}
+                onChange={handleInputChange}
+                className="mt-1 mr-3 w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                required
+              />
+              <span className="text-gray-700 dark:text-gray-300">
+                {t('partner.agreeToTerms1')}{' '}
+                <a href="#" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline">
+                  {t('partner.terms')}
+                </a>{' '}
+                {t('partner.and')}{' '}
+                <a href="#" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline">
+                  {t('partner.privacyPolicy')}
+                </a>{' '}
+                {t('partner.agreeToTerms2')}
+              </span>
+            </label>
+            {formErrors.terms && (
+              <p className="text-red-500 text-sm mt-2">{formErrors.terms}</p>
+            )}
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            type="button"
+            onClick={handleSubmit}
+            disabled={submissionState === 'submitting'}
+            className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-emerald-400 disabled:to-emerald-500 text-white rounded-xl font-semibold text-lg transition-all shadow-lg flex items-center justify-center"
+          >
+            {submissionState === 'submitting' ? (
+              <>
+                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                {t('partner.processing')}
+              </>
+            ) : (
+              t('partner.submitApplication')
+            )}
+          </motion.button>
+        </motion.section>
+      </div>
+    );
   };
 
   return (
@@ -672,187 +1468,6 @@ const BecomeAPartner = () => {
         </div>
       </section>
 
-      {/* Enhanced Benefits Section */}
-      <section className="py-20 relative" ref={benefitsRef}>
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">{t('partner.whyJoin')}</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              {t('partner.whyJoinSubtitle')}
-            </p>
-          </motion.div>
-
-          <motion.div
-            variants={staggerChildren}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-          >
-            {[
-              {
-                icon: <TrendingUp size={32} className="text-emerald-500" />,
-                title: t('partner.benefit1Title'),
-                description: t('partner.benefit1Desc'),
-                color: 'emerald'
-              },
-              {
-                icon: <Shield size={32} className="text-blue-500" />,
-                title: t('partner.benefit2Title'),
-                description: t('partner.benefit2Desc'),
-                color: 'blue'
-              },
-              {
-                icon: <Heart size={32} className="text-red-500" />,
-                title: t('partner.benefit3Title'),
-                description: t('partner.benefit3Desc'),
-                color: 'red'
-              },
-              {
-                icon: <Award size={32} className="text-yellow-500" />,
-                title: 'Support marketing',
-                description: 'Soyez mis en avant dans nos campagnes promotionnelles et bénéficiez de nos efforts marketing.',
-                color: 'yellow'
-              },
-              {
-                icon: <Users size={32} className="text-purple-500" />,
-                title: 'Réseau communautaire',
-                description: 'Rejoignez une communauté de partenaires prospères et partagez les meilleures pratiques.',
-                color: 'purple'
-              },
-              {
-                icon: <MessageCircle size={32} className="text-indigo-500" />,
-                title: 'Analyses en temps réel',
-                description: 'Suivez vos performances avec des informations détaillées et un tableau de bord analytique.',
-                color: 'indigo'
-              }
-            ].map((benefit, index) => (
-              <motion.div
-                key={index}
-                variants={fadeInUp}
-                whileHover={{ y: -8, scale: 1.02 }}
-                className={`group relative overflow-hidden rounded-2xl bg-white dark:bg-gray-800 p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700`}
-              >
-                {/* Background gradient */}
-                <div className={`absolute inset-0 bg-gradient-to-br from-${benefit.color}-50 to-transparent dark:from-${benefit.color}-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
-                
-                <div className="relative z-10">
-                  <div className={`w-16 h-16 mx-auto mb-6 bg-${benefit.color}-100 dark:bg-${benefit.color}-900/30 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
-                    {benefit.icon}
-                  </div>
-                  <h3 className="text-xl font-bold mb-4 text-center">{benefit.title}</h3>
-                  <p className="text-gray-600 dark:text-gray-300 text-center leading-relaxed">
-                    {benefit.description}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Enhanced Requirements Section */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 via-gray-100 to-gray-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">{t('partner.requirementsTitle')}</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              {t('partner.requirementsSubtitle')}
-            </p>
-          </motion.div>
-
-          <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <motion.div 
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-700"
-            >
-              <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-xl flex items-center justify-center mr-4">
-                  <Shield className="text-emerald-600 dark:text-emerald-400" size={24} />
-                </div>
-                <h3 className="text-2xl font-bold">{t('partner.legalRequirements')}</h3>
-              </div>
-              <ul className="space-y-4">
-                {[
-                  t('partner.requirement1'),
-                  t('partner.requirement2'),
-                  t('partner.requirement3'),
-                  t('partner.requirement4'),
-                  t('partner.requirement5')
-                ].map((item, index) => (
-                  <motion.li 
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.4 }}
-                    viewport={{ once: true }}
-                    className="flex items-start group"
-                  >
-                    <div className="w-6 h-6 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mr-3 mt-0.5 group-hover:scale-110 transition-transform">
-                      <Check className="text-emerald-600 dark:text-emerald-400" size={14} />
-                    </div>
-                    <span className="text-gray-700 dark:text-gray-300">{item}</span>
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
-
-            <motion.div 
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-              className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-200 dark:border-gray-700"
-            >
-              <div className="flex items-center mb-6">
-                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center mr-4">
-                  <Star className="text-blue-600 dark:text-blue-400" size={24} />
-                </div>
-                <h3 className="text-2xl font-bold">{t('partner.operationalRequirements')}</h3>
-              </div>
-              <ul className="space-y-4">
-                {[
-                  t('partner.operational1'),
-                  t('partner.operational2'),
-                  t('partner.operational3'),
-                  t('partner.operational4'),
-                  t('partner.operational5')
-                ].map((item, index) => (
-                  <motion.li 
-                    key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1, duration: 0.4 }}
-                    viewport={{ once: true }}
-                    className="flex items-start group"
-                  >
-                    <div className="w-6 h-6 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center mr-3 mt-0.5 group-hover:scale-110 transition-transform">
-                      <Check className="text-blue-600 dark:text-blue-400" size={14} />
-                    </div>
-                    <span className="text-gray-700 dark:text-gray-300">{item}</span>
-                  </motion.li>
-                ))}
-              </ul>
-            </motion.div>
-          </div>
-        </div>
-      </section>
-
       {/* Enhanced Application Form */}
       <section id="application-form" className="py-20">
         <div className="container mx-auto px-4">
@@ -880,8 +1495,9 @@ const BecomeAPartner = () => {
             <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               {[
                 { key: 'restaurant', icon: <Home size={18} />, label: t('partner.restaurant') },
-                { key: 'cloudKitchen', icon: <Zap size={18} />, label: t('partner.cloudKitchen') },
-                { key: 'caterer', icon: <Users size={18} />, label: t('partner.caterer') }
+                { key: 'delivery-agent', icon: <Truck size={18} />, label: t('partner.deliveryAgent') },
+                { key: 'investor', icon: <DollarSign size={18} />, label: t('partner.investor') },
+                { key: 'other', icon: <Building size={18} />, label: t('partner.other') }
               ].map((type) => (
                 <motion.button
                   key={type.key}
@@ -894,7 +1510,7 @@ const BecomeAPartner = () => {
                   }`}
                   onClick={() => {
                     setActiveTab(type.key);
-                    setFormData(prev => ({ ...prev, businessType: type.key }));
+                    setFormData(prev => ({ ...prev, partnerType: type.key }));
                   }}
                 >
                   {type.icon}
@@ -930,7 +1546,7 @@ const BecomeAPartner = () => {
                     onClick={() => {
                       setSubmissionState('idle');
                       setFormData({
-                        businessType: 'restaurant',
+                        partnerType: 'restaurant',
                         businessName: '',
                         contactName: '',
                         email: '',
@@ -942,9 +1558,19 @@ const BecomeAPartner = () => {
                         openingHours: '',
                         legalStatus: '',
                         taxId: '',
+                        vehicleType: '',
+                        drivingLicense: '',
+                        investmentAmount: '',
+                        investmentType: '',
+                        businessExperience: '',
+                        serviceType: '',
                         healthCertificate: null,
                         idDocument: null,
                         menu: null,
+                        drivingLicenseDoc: null,
+                        vehicleRegistration: null,
+                        businessPlan: null,
+                        financialStatements: null,
                         photos: [],
                         termsAccepted: false
                       });
@@ -955,522 +1581,10 @@ const BecomeAPartner = () => {
                   </motion.button>
                 </motion.div>
               ) : (
-                <div className="space-y-12">
-                  {/* Business Information */}
-                  <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <div className="flex items-center mb-8">
-                      <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-xl flex items-center justify-center mr-4">
-                        <Home className="text-emerald-600 dark:text-emerald-400" size={20} />
-                      </div>
-                      <h3 className="text-2xl font-bold">{t('partner.businessInfo')}</h3>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {[
-                        { name: 'businessName', label: t('partner.businessName'), type: 'text' },
-                        { name: 'cuisineType', label: t('partner.cuisineType'), type: 'text' },
-                        { name: 'capacity', label: t('partner.capacity'), type: 'number' },
-                        { name: 'openingHours', label: t('partner.openingHours'), type: 'text' }
-                      ].map((field) => (
-                        <div key={field.name}>
-                          <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={field.name}>
-                            {field.label} <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type={field.type}
-                            id={field.name}
-                            name={field.name}
-                            value={formData[field.name]}
-                            onChange={handleInputChange}
-                            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                              formErrors[field.name] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                            }`}
-                            required
-                          />
-                          {formErrors[field.name] && (
-                            <p className="text-red-500 text-sm mt-1">{formErrors[field.name]}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </motion.section>
-
-                  {/* Contact Information */}
-                  <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                  >
-                    <div className="flex items-center mb-8">
-                      <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center mr-4">
-                        <User className="text-blue-600 dark:text-blue-400" size={20} />
-                      </div>
-                      <h3 className="text-2xl font-bold">{t('partner.contactInfo')}</h3>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {[
-                        { name: 'contactName', label: t('partner.contactName'), type: 'text' },
-                        { name: 'email', label: t('partner.email'), type: 'email' },
-                        { name: 'phone', label: t('partner.phone'), type: 'tel' }
-                      ].map((field) => (
-                        <div key={field.name}>
-                          <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={field.name}>
-                            {field.label} <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type={field.type}
-                            id={field.name}
-                            name={field.name}
-                            value={formData[field.name]}
-                            onChange={handleInputChange}
-                            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                              formErrors[field.name] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                            }`}
-                            required
-                          />
-                          {formErrors[field.name] && (
-                            <p className="text-red-500 text-sm mt-1">{formErrors[field.name]}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </motion.section>
-
-                  {/* Location Information */}
-                  <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <div className="flex items-center mb-8">
-                      <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900 rounded-xl flex items-center justify-center mr-4">
-                        <MapPin className="text-orange-600 dark:text-orange-400" size={20} />
-                      </div>
-                      <h3 className="text-2xl font-bold">{t('partner.locationInfo')}</h3>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {[
-                        { name: 'address', label: t('partner.address'), type: 'text' },
-                        { name: 'city', label: t('partner.city'), type: 'text' }
-                      ].map((field) => (
-                        <div key={field.name}>
-                          <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={field.name}>
-                            {field.label} <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type={field.type}
-                            id={field.name}
-                            name={field.name}
-                            value={formData[field.name]}
-                            onChange={handleInputChange}
-                            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                              formErrors[field.name] ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                            }`}
-                            required
-                          />
-                          {formErrors[field.name] && (
-                            <p className="text-red-500 text-sm mt-1">{formErrors[field.name]}</p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </motion.section>
-
-                  {/* Legal Information */}
-                  <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <div className="flex items-center mb-8">
-                      <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center mr-4">
-                        <FileText className="text-purple-600 dark:text-purple-400" size={20} />
-                      </div>
-                      <h3 className="text-2xl font-bold">{t('partner.legalInfo')}</h3>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="legalStatus">
-                          {t('partner.legalStatus')} <span className="text-red-500">*</span>
-                        </label>
-                        <select
-                          id="legalStatus"
-                          name="legalStatus"
-                          value={formData.legalStatus}
-                          onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                            formErrors.legalStatus ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                          }`}
-                          required
-                        >
-                          <option value="">{t('partner.selectOption')}</option>
-                          <option value="sole_proprietor">{t('partner.soleProprietor')}</option>
-                          <option value="llc">{t('partner.llc')}</option>
-                          <option value="corporation">{t('partner.corporation')}</option>
-                          <option value="other">{t('partner.other')}</option>
-                        </select>
-                        {formErrors.legalStatus && (
-                          <p className="text-red-500 text-sm mt-1">{formErrors.legalStatus}</p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor="taxId">
-                          {t('partner.taxId')} <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          id="taxId"
-                          name="taxId"
-                          value={formData.taxId}
-                          onChange={handleInputChange}
-                          className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-                            formErrors.taxId ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                          }`}
-                          required
-                        />
-                        {formErrors.taxId && (
-                          <p className="text-red-500 text-sm mt-1">{formErrors.taxId}</p>
-                        )}
-                      </div>
-                    </div>
-                  </motion.section>
-
-                  {/* Document Uploads */}
-                  <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
-                  >
-                    <div className="flex items-center mb-8">
-                      <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900 rounded-xl flex items-center justify-center mr-4">
-                        <Upload className="text-indigo-600 dark:text-indigo-400" size={20} />
-                      </div>
-                      <h3 className="text-2xl font-bold">{t('partner.documentUploads')}</h3>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {[
-                        { 
-                          name: 'healthCertificate', 
-                          label: t('partner.healthCertificate'), 
-                          desc: t('partner.healthCertificateDesc') 
-                        },
-                        { 
-                          name: 'idDocument', 
-                          label: t('partner.idDocument'), 
-                          desc: t('partner.idDocumentDesc') 
-                        },
-                        { 
-                          name: 'menu', 
-                          label: t('partner.menu'), 
-                          desc: t('partner.menuDesc') 
-                        }
-                      ].map((doc) => (
-                        <div key={doc.name}>
-                          <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                            {doc.label} <span className="text-red-500">*</span>
-                          </label>
-                          <div className="relative">
-                            <label className="cursor-pointer group">
-                              <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                                <div className="flex items-center justify-center">
-                                  <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                                  <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                                    {formData[doc.name] ? formData[doc.name].name : t('partner.chooseFile')}
-                                  </span>
-                                </div>
-                              </div>
-                              <input
-                                type="file"
-                                name={doc.name}
-                                className="hidden"
-                                onChange={handleInputChange}
-                                required
-                              />
-                            </label>
-                          </div>
-                          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{doc.desc}</p>
-                        </div>
-                      ))}
-
-                      {/* Restaurant Photos */}
-                      <div className="md:col-span-2">
-                        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-                          {t('partner.restaurantPhotos')} ({formData.photos.length}/5)
-                        </label>
-                        <div className="relative">
-                          <label className="cursor-pointer group">
-                            <div className="w-full p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-                              <div className="flex items-center justify-center">
-                                <Upload className="mr-3 text-gray-400 group-hover:text-emerald-500" size={20} />
-                                <span className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-                                  {t('partner.chooseFile')}
-                                </span>
-                              </div>
-                            </div>
-                            <input
-                              type="file"
-                              name="photos"
-                              className="hidden"
-                              multiple
-                              accept="image/*"
-                              onChange={handlePhotoUpload}
-                            />
-                          </label>
-                        </div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">{t('partner.photosDesc')}</p>
-
-                        {/* Photo Preview */}
-                        {formData.photos.length > 0 && (
-                          <div className="mt-4 grid grid-cols-5 gap-3">
-                            {formData.photos.map((photo, index) => (
-                              <div key={index} className="relative group">
-                                <div className="w-full h-20 bg-gray-200 dark:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center">
-                                  <span className="text-xs text-gray-500">Photo {index + 1}</span>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => removePhoto(index)}
-                                  className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
-                                >
-                                  <X size={12} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </motion.section>
-
-                  {/* Terms & Submit */}
-                  <motion.section
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.6 }}
-                    className="pt-8 border-t border-gray-200 dark:border-gray-700"
-                  >
-                    <div className="mb-8">
-                      <label className="flex items-start">
-                        <input
-                          type="checkbox"
-                          name="termsAccepted"
-                          checked={formData.termsAccepted}
-                          onChange={handleInputChange}
-                          className="mt-1 mr-3 w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
-                          required
-                        />
-                        <span className="text-gray-700 dark:text-gray-300">
-                          {t('partner.agreeToTerms1')}{' '}
-                          <a href="#" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline">
-                            {t('partner.terms')}
-                          </a>{' '}
-                          {t('partner.and')}{' '}
-                          <a href="#" className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 underline">
-                            {t('partner.privacyPolicy')}
-                          </a>{' '}
-                          {t('partner.agreeToTerms2')}
-                        </span>
-                      </label>
-                      {formErrors.terms && (
-                        <p className="text-red-500 text-sm mt-2">{formErrors.terms}</p>
-                      )}
-                    </div>
-
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      type="button"
-                      onClick={handleSubmit}
-                      disabled={submissionState === 'submitting'}
-                      className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-emerald-400 disabled:to-emerald-500 text-white rounded-xl font-semibold text-lg transition-all shadow-lg flex items-center justify-center"
-                    >
-                      {submissionState === 'submitting' ? (
-                        <>
-                          <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          {t('partner.processing')}
-                        </>
-                      ) : (
-                        t('partner.submitApplication')
-                      )}
-                    </motion.button>
-                  </motion.section>
-                </div>
+                renderFormContent()
               )}
             </div>
           </motion.div>
-        </div>
-      </section>
-
-      {/* Enhanced Process Section */}
-      <section className="py-20 bg-gradient-to-br from-emerald-50 via-white to-emerald-50 dark:from-gray-800 dark:via-gray-900 dark:to-gray-800">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">{t('partner.processTitle')}</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              {t('partner.processSubtitle')}
-            </p>
-          </motion.div>
-
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-              {[
-                {
-                  icon: <FileText size={32} />,
-                  title: t('partner.step1Title'),
-                  description: t('partner.step1Desc'),
-                  color: 'emerald',
-                  step: 1
-                },
-                {
-                  icon: <Clock size={32} />,
-                  title: t('partner.step2Title'),
-                  description: t('partner.step2Desc'),
-                  color: 'blue',
-                  step: 2
-                },
-                {
-                  icon: <Users size={32} />,
-                  title: t('partner.step3Title'),
-                  description: t('partner.step3Desc'),
-                  color: 'purple',
-                  step: 3
-                },
-                {
-                  icon: <Check size={32} />,
-                  title: t('partner.step4Title'),
-                  description: t('partner.step4Desc'),
-                  color: 'green',
-                  step: 4
-                }
-              ].map((step, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.2, duration: 0.6 }}
-                  viewport={{ once: true }}
-                  className={`relative text-center ${
-                    activeProcess === index ? 'scale-105' : ''
-                  } transition-transform duration-300`}
-                >
-                  {/* Connection line */}
-                  {index < 3 && (
-                    <div className="hidden lg:block absolute top-12 left-full w-full h-0.5 bg-gray-300 dark:bg-gray-600 z-0">
-                      <motion.div
-                        className="h-full bg-emerald-500"
-                        initial={{ width: '0%' }}
-                        whileInView={{ width: activeProcess > index ? '100%' : '0%' }}
-                        transition={{ duration: 1, delay: index * 0.5 }}
-                        viewport={{ once: true }}
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="relative z-10">
-                    <motion.div 
-                      className={`w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center text-white shadow-lg ${
-                        activeProcess === index 
-                          ? `bg-gradient-to-r from-${step.color}-500 to-${step.color}-600 scale-110 shadow-xl` 
-                          : `bg-gradient-to-r from-${step.color}-400 to-${step.color}-500`
-                      }`}
-                      whileHover={{ scale: 1.1 }}
-                      transition={{ type: "spring", stiffness: 300 }}
-                    >
-                      {React.cloneElement(step.icon, { 
-                        className: `text-white ${activeProcess === index ? 'animate-pulse' : ''}` 
-                      })}
-                    </motion.div>
-                    
-                    <h3 className="text-xl font-bold mb-4">{step.title}</h3>
-                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                      {step.description}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Enhanced FAQ Section */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div 
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">{t('partner.faqTitle')}</h2>
-          </motion.div>
-
-          <div className="max-w-4xl mx-auto space-y-6">
-            {[
-              {
-                question: t('partner.faq1Question'),
-                answer: t('partner.faq1Answer')
-              },
-              {
-                question: t('partner.faq2Question'),
-                answer: t('partner.faq2Answer')
-              },
-              {
-                question: t('partner.faq3Question'),
-                answer: t('partner.faq3Answer')
-              },
-              {
-                question: t('partner.faq4Question'),
-                answer: t('partner.faq4Answer')
-              },
-              {
-                question: t('partner.faq5Question'),
-                answer: t('partner.faq5Answer')
-              }
-            ].map((faq, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-xl transition-shadow"
-              >
-                <div className="p-8">
-                  <div className="flex items-start">
-                    <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900 rounded-xl flex items-center justify-center mr-4 flex-shrink-0">
-                      <HelpCircle className="text-emerald-600 dark:text-emerald-400" size={20} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-bold mb-3">{faq.question}</h3>
-                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                        {faq.answer}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
         </div>
       </section>
 
