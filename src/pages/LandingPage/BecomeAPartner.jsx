@@ -1,5 +1,4 @@
-// src/components/BecomeAPartner.jsx - Complete Updated Version
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { 
   Sun, Moon, Menu, X, ChevronDown, User, ShoppingBag,
@@ -10,7 +9,7 @@ import {
   WifiOff, RefreshCw, ExternalLink, Camera, FileImage, FileCheck
 } from 'lucide-react';
 
-// Import services
+// Import services and utilities
 import partnerServices from '../../Services/Public/BecomeAPartnerServices';
 import { formatPartnerError, getPartnerTypeDisplay, getStatusDisplay } from '../../Services/Public/BecomeAPartnerServices';
 import dbConnection, { isOnline } from '../../Services/db_connection';
@@ -34,28 +33,220 @@ import {
   isDocumentRequired
 } from '../../utils/constants';
 
+// Optimized child components
+const NetworkStatus = React.memo(({ isConnected }) => (
+  !isConnected && (
+    <motion.div
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg"
+    >
+      <div className="flex items-center space-x-2">
+        <WifiOff size={16} />
+        <span>Connexion perdue</span>
+      </div>
+    </motion.div>
+  )
+));
+
+const ServiceHealthIndicator = React.memo(({ serviceHealth }) => (
+  serviceHealth && !serviceHealth.success && (
+    <motion.div
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="fixed top-32 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg"
+    >
+      <div className="flex items-center space-x-2">
+        <AlertCircle size={16} />
+        <span>Service temporairement indisponible</span>
+      </div>
+    </motion.div>
+  )
+));
+
+const NotificationComponent = React.memo(({ notification, onClose }) => (
+  <AnimatePresence>
+    {notification && (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: -20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: -20 }}
+        className={`fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md ${
+          notification.type === 'success' ? 'bg-green-500' :
+          notification.type === 'error' ? 'bg-red-500' :
+          notification.type === 'warning' ? 'bg-yellow-500' :
+          'bg-blue-500'
+        } text-white`}
+      >
+        <div className="flex items-start space-x-2">
+          {notification.type === 'success' && <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />}
+          {notification.type === 'error' && <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />}
+          {notification.type === 'warning' && <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />}
+          {notification.type === 'info' && <TrendingUp size={20} className="flex-shrink-0 mt-0.5" />}
+          <div className="flex-1">
+            <p className="text-sm whitespace-pre-line">{notification.message}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/80 hover:text-white"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+));
+
+const FileDisplay = React.memo(({ file, onRemove, label }) => {
+  if (!file) return null;
+  
+  return (
+    <div className="w-full p-4 border-2 border-green-300 dark:border-green-600 rounded-xl bg-green-50 dark:bg-green-900/20">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <FileCheck className="text-green-600 dark:text-green-400" size={20} />
+          <div>
+            <p className="text-sm font-medium text-green-700 dark:text-green-300">
+              {file.name}
+            </p>
+            <p className="text-xs text-green-600 dark:text-green-400">
+              {formatFileSize(file.size)}
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-red-500 hover:text-red-600 transition-colors"
+          title="Supprimer le fichier"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+  );
+});
+
+const SimpleFileUpload = React.memo(({ name, label, description, required, currentFile, onChange, error }) => (
+  <div className="space-y-2">
+    <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    
+    {currentFile ? (
+      <FileDisplay 
+        file={currentFile} 
+        onRemove={() => onChange({ target: { name, value: null } })}
+        label={label}
+      />
+    ) : (
+      <label className="cursor-pointer group">
+        <div className={`w-full p-6 border-2 border-dashed rounded-xl transition-all ${
+          error 
+            ? 'border-red-300 bg-red-50 dark:border-red-600 dark:bg-red-900/20' 
+            : 'border-gray-300 dark:border-gray-600 hover:border-emerald-500 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20'
+        }`}>
+          <div className="flex flex-col items-center text-center">
+            <Upload className={`mb-3 ${error ? 'text-red-400' : 'text-gray-400 group-hover:text-emerald-500'}`} size={24} />
+            <p className="text-sm mb-1">Choisir un fichier</p>
+            <p className="text-xs text-gray-500">PDF, DOC, JPG, PNG - Max 10MB</p>
+          </div>
+        </div>
+        <input
+          type="file"
+          name={name}
+          className="hidden"
+          accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+          onChange={onChange}
+        />
+      </label>
+    )}
+    
+    {description && (
+      <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
+    )}
+    
+    {error && (
+      <p className="text-red-500 text-sm">{error}</p>
+    )}
+  </div>
+));
+
+const InputField = React.memo(({ 
+  name, 
+  label, 
+  type = "text", 
+  required = false, 
+  placeholder = "", 
+  options = null,
+  description = null,
+  value,
+  onChange,
+  error
+}) => (
+  <div>
+    <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={name}>
+      {label} {required && <span className="text-red-500">*</span>}
+    </label>
+    
+    {options ? (
+      <select
+        id={name}
+        name={name}
+        value={value || ''}
+        onChange={onChange}
+        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+          error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+        }`}
+      >
+        <option value="">Sélectionner une option</option>
+        {options.map(option => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    ) : (
+      <input
+        type={type}
+        id={name}
+        name={name}
+        value={value || ''}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 dark:text-white ${
+          error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+        }`}
+      />
+    )}
+    
+    {description && (
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
+    )}
+    
+    {error && (
+      <p className="text-red-500 text-sm mt-1">{error}</p>
+    )}
+  </div>
+));
+
 const BecomeAPartner = () => {
   // Core state management
   const [darkMode, setDarkMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeTab, setActiveTab] = useState('restaurant');
-  const [submissionState, setSubmissionState] = useState('idle'); // idle, submitting, success, error
-  const [activeProcess, setActiveProcess] = useState(0);
-  const [isVideoModalOpen, setIsVideoModalOpen] = useState(false);
-  const [selectedVideo, setSelectedVideo] = useState(null);
-  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  
-  // Service integration states
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [error, setError] = useState(null);
+  const [submissionState, setSubmissionState] = useState('idle');
   const [isConnected, setIsConnected] = useState(isOnline());
-  const [applicationId, setApplicationId] = useState(null);
-  const [applicationStatus, setApplicationStatus] = useState(null);
   const [serviceHealth, setServiceHealth] = useState(null);
   const [notification, setNotification] = useState(null);
-  
-  // Form state
+  const [error, setError] = useState(null);
+  const [applicationId, setApplicationId] = useState(null);
+  const [applicationStatus, setApplicationStatus] = useState(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Form state - optimized with single object
   const [formData, setFormData] = useState({
     partnerType: 'restaurant',
     businessName: '',
@@ -86,155 +277,95 @@ const BecomeAPartner = () => {
     termsAccepted: false
   });
 
-  // Form validation
   const [formErrors, setFormErrors] = useState({});
   const [touchedFields, setTouchedFields] = useState({});
 
-  // Refs for scroll animations and video
+  // Refs
   const heroRef = useRef(null);
-  const benefitsRef = useRef(null);
   const videoRef = useRef(null);
-  const fileInputRef = useRef(null);
   const { scrollYProgress } = useScroll();
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '30%']);
 
-  // French translations
-  const t = (key) => {
-    const translations = {
-      'nav.home': 'Accueil',
-      'nav.restaurants': 'Restaurants',
-      'nav.about': 'À propos',
-      'nav.contact': 'Contact',
-      'nav.account': 'Compte',
-      'nav.cart': 'Panier',
-      'partner.heroTitle': 'Partenaire avec',
-      'partner.heroSubtitle': 'Rejoignez des milliers de partenaires prospères et développez votre entreprise avec notre plateforme de livraison de repas complète.',
-      'partner.applyNow': 'Postuler maintenant',
-      'partner.watchDemo': 'Regarder la démo',
-      'partner.fastOnboarding': 'Intégration rapide',
-      'partner.days': 'jours ouvrables',
-      'partner.location': 'Localisation',
-      'partner.whyJoin': 'Pourquoi s\'associer avec Eat-Fast ?',
-      'partner.whyJoinSubtitle': 'Découvrez les avantages de rejoindre notre réseau croissant de partenaires alimentaires.',
-      'partner.benefit1Title': 'Augmenter les revenus',
-      'partner.benefit1Desc': 'Atteignez de nouveaux clients et boostez vos ventes avec notre vaste réseau de livraison.',
-      'partner.benefit2Title': 'Gestion facile',
-      'partner.benefit2Desc': 'Gérez les commandes, le menu et les analyses via notre tableau de bord partenaire intuitif.',
-      'partner.benefit3Title': 'Support 24/7',
-      'partner.benefit3Desc': 'Obtenez un support dédié de notre équipe de succès partenaire quand vous en avez besoin.',
-      'partner.requirementsTitle': 'Exigences de partenariat',
-      'partner.requirementsSubtitle': 'Assurez-vous que votre entreprise répond à nos normes de qualité et de conformité.',
-      'partner.legalRequirements': 'Exigences légales',
-      'partner.operationalRequirements': 'Normes opérationnelles',
-      'partner.requirement1': 'Licence commerciale et enregistrement valides',
-      'partner.requirement2': 'Certification de sécurité alimentaire',
-      'partner.requirement3': 'Numéro d\'identification fiscale',
-      'partner.requirement4': 'Documentation d\'identité valide',
-      'partner.requirement5': 'Preuve d\'assurance commerciale',
-      'partner.operational1': 'Capacité minimale de 50 commandes par semaine',
-      'partner.operational2': 'Temps de préparation moyen sous 25 minutes',
-      'partner.operational3': 'Emballage de qualité pour la livraison',
-      'partner.operational4': 'Photographie alimentaire professionnelle',
-      'partner.operational5': 'Service client réactif',
-      'partner.applicationFormTitle': 'Formulaire de candidature partenaire',
-      'partner.applicationFormSubtitle': 'Remplissez ce formulaire pour commencer votre parcours de partenariat avec nous.',
-      'partner.restaurant': 'Restaurant',
-      'partner.deliveryAgent': 'Agent Livreur',
-      'partner.investor': 'Investisseur',
-      'partner.other': 'Autre',
-      'partner.businessInfo': 'Informations sur l\'entreprise',
-      'partner.personalInfo': 'Informations personnelles',
-      'partner.investmentInfo': 'Informations d\'investissement',
-      'partner.serviceInfo': 'Informations sur le service',
-      'partner.contactInfo': 'Informations de contact',
-      'partner.locationInfo': 'Informations de localisation',
-      'partner.legalInfo': 'Informations légales',
-      'partner.documentUploads': 'Documents requis',
-      'partner.businessName': 'Nom de l\'entreprise',
-      'partner.cuisineType': 'Type de cuisine',
-      'partner.capacity': 'Capacité quotidienne (commandes)',
-      'partner.openingHours': 'Heures d\'ouverture',
-      'partner.vehicleType': 'Type de véhicule',
-      'partner.drivingLicense': 'Numéro de permis de conduire',
-      'partner.investmentAmount': 'Montant d\'investissement (FCFA)',
-      'partner.investmentType': 'Type d\'investissement',
-      'partner.businessExperience': 'Expérience commerciale (années)',
-      'partner.serviceType': 'Type de service',
-      'partner.contactName': 'Personne de contact',
-      'partner.email': 'Adresse e-mail',
-      'partner.phone': 'Numéro de téléphone',
-      'partner.address': 'Adresse complète',
-      'partner.city': 'Ville',
-      'partner.legalStatus': 'Statut juridique',
-      'partner.taxId': 'Numéro d\'identification fiscale',
-      'partner.selectOption': 'Sélectionner une option',
-      'partner.soleProprietor': 'Entreprise individuelle',
-      'partner.llc': 'Société à responsabilité limitée',
-      'partner.corporation': 'Corporation',
-      'partner.motorcycle': 'Moto',
-      'partner.bicycle': 'Vélo',
-      'partner.car': 'Voiture',
-      'partner.scooter': 'Scooter',
-      'partner.franchise': 'Franchise',
-      'partner.equity': 'Participation au capital',
-      'partner.debt': 'Financement par dette',
-      'partner.consulting': 'Services de conseil',
-      'partner.technology': 'Services technologiques',
-      'partner.marketing': 'Services marketing',
-      'partner.logistics': 'Services logistiques',
-      'partner.healthCertificate': 'Certificat de santé',
-      'partner.idDocument': 'Document d\'identité',
-      'partner.menu': 'Menu/Liste de prix',
-      'partner.drivingLicenseDoc': 'Permis de conduire',
-      'partner.vehicleRegistration': 'Carte grise du véhicule',
-      'partner.businessPlan': 'Plan d\'affaires',
-      'partner.financialStatements': 'États financiers',
-      'partner.restaurantPhotos': 'Photos du restaurant/véhicule',
-      'partner.chooseFile': 'Choisir un fichier',
-      'partner.healthCertificateDesc': 'Certificat valide du département de la santé',
-      'partner.idDocumentDesc': 'Pièce d\'identité émise par le gouvernement',
-      'partner.menuDesc': 'Menu actuel avec prix',
-      'partner.drivingLicenseDesc': 'Permis de conduire valide',
-      'partner.vehicleRegistrationDesc': 'Carte grise du véhicule de livraison',
-      'partner.businessPlanDesc': 'Plan d\'affaires détaillé',
-      'partner.financialStatementsDesc': 'États financiers récents',
-      'partner.photosDesc': 'Photos de haute qualité de votre établissement/véhicule',
-      'partner.agreeToTerms1': 'J\'accepte les',
-      'partner.terms': 'Conditions de service',
-      'partner.and': 'et la',
-      'partner.privacyPolicy': 'Politique de confidentialité',
-      'partner.agreeToTerms2': 'de la plateforme Eat-Fast.',
-      'partner.processing': 'Traitement en cours...',
-      'partner.submitApplication': 'Soumettre la candidature',
-      'partner.successTitle': 'Candidature soumise !',
-      'partner.successMessage': 'Merci pour votre intérêt à vous associer avec nous. Nous examinerons votre candidature et vous recontacterons sous 3-5 jours ouvrables.',
-      'partner.submitAnother': 'Soumettre une autre candidature',
-      'partner.checkStatus': 'Vérifier le statut',
-      'partner.applicationId': 'ID de candidature',
-      'partner.retry': 'Réessayer',
-      'partner.offline': 'Vous êtes hors ligne',
-      'partner.offlineMessage': 'Vérifiez votre connexion internet et réessayez.',
-      'partner.uploadProgress': 'Progression du téléchargement',
-      'partner.fileUploaded': 'Fichier téléchargé',
-      'partner.removeFile': 'Supprimer le fichier',
-      'partner.dragDropFiles': 'Glissez-déposez vos fichiers ici ou cliquez pour sélectionner',
-      'partner.maxFileSize': 'Taille maximale',
-      'partner.acceptedFormats': 'Formats acceptés',
-      'partner.validating': 'Validation en cours...',
-      'partner.networkError': 'Erreur de connexion',
-      'partner.serviceUnavailable': 'Service temporairement indisponible',
-      'partner.tryAgain': 'Réessayer',
-    };
-    return translations[key] || key;
-  };
+  // Memoized translations
+  const translations = useMemo(() => ({
+    'nav.home': 'Accueil',
+    'nav.restaurants': 'Restaurants',
+    'nav.about': 'À propos',
+    'nav.contact': 'Contact',
+    'partner.heroTitle': 'Partenaire avec',
+    'partner.heroSubtitle': 'Rejoignez des milliers de partenaires prospères et développez votre entreprise avec notre plateforme.',
+    'partner.applyNow': 'Postuler maintenant',
+    'partner.watchDemo': 'Regarder la démo',
+    'partner.applicationFormTitle': 'Formulaire de candidature partenaire',
+    'partner.applicationFormSubtitle': 'Remplissez ce formulaire pour commencer votre parcours de partenariat.',
+    'partner.restaurant': 'Restaurant',
+    'partner.deliveryAgent': 'Agent Livreur',
+    'partner.investor': 'Investisseur',
+    'partner.other': 'Autre',
+    'partner.businessInfo': 'Informations sur l\'entreprise',
+    'partner.personalInfo': 'Informations personnelles',
+    'partner.investmentInfo': 'Informations d\'investissement',
+    'partner.serviceInfo': 'Informations sur le service',
+    'partner.contactInfo': 'Informations de contact',
+    'partner.locationInfo': 'Informations de localisation',
+    'partner.legalInfo': 'Informations légales',
+    'partner.documentUploads': 'Documents requis',
+    'partner.businessName': 'Nom de l\'entreprise',
+    'partner.cuisineType': 'Type de cuisine',
+    'partner.capacity': 'Capacité quotidienne (commandes)',
+    'partner.openingHours': 'Heures d\'ouverture',
+    'partner.vehicleType': 'Type de véhicule',
+    'partner.drivingLicense': 'Numéro de permis de conduire',
+    'partner.investmentAmount': 'Montant d\'investissement (FCFA)',
+    'partner.investmentType': 'Type d\'investissement',
+    'partner.businessExperience': 'Expérience commerciale (années)',
+    'partner.serviceType': 'Type de service',
+    'partner.contactName': 'Personne de contact',
+    'partner.email': 'Adresse e-mail',
+    'partner.phone': 'Numéro de téléphone',
+    'partner.address': 'Adresse complète',
+    'partner.city': 'Ville',
+    'partner.legalStatus': 'Statut juridique',
+    'partner.taxId': 'Numéro d\'identification fiscale',
+    'partner.healthCertificate': 'Certificat de santé',
+    'partner.idDocument': 'Document d\'identité',
+    'partner.menu': 'Menu/Liste de prix',
+    'partner.drivingLicenseDoc': 'Permis de conduire',
+    'partner.vehicleRegistration': 'Carte grise du véhicule',
+    'partner.businessPlan': 'Plan d\'affaires',
+    'partner.financialStatements': 'États financiers',
+    'partner.restaurantPhotos': 'Photos du restaurant/véhicule',
+    'partner.healthCertificateDesc': 'Certificat valide du département de la santé',
+    'partner.idDocumentDesc': 'Pièce d\'identité émise par le gouvernement',
+    'partner.menuDesc': 'Menu actuel avec prix',
+    'partner.drivingLicenseDesc': 'Permis de conduire valide',
+    'partner.vehicleRegistrationDesc': 'Carte grise du véhicule de livraison',
+    'partner.businessPlanDesc': 'Plan d\'affaires détaillé',
+    'partner.financialStatementsDesc': 'États financiers récents',
+    'partner.photosDesc': 'Photos de haute qualité de votre établissement/véhicule',
+    'partner.agreeToTerms1': 'J\'accepte les',
+    'partner.terms': 'Conditions de service',
+    'partner.and': 'et la',
+    'partner.privacyPolicy': 'Politique de confidentialité',
+    'partner.agreeToTerms2': 'de la plateforme Eat-Fast.',
+    'partner.processing': 'Traitement en cours...',
+    'partner.submitApplication': 'Soumettre la candidature',
+    'partner.successTitle': 'Candidature soumise !',
+    'partner.successMessage': 'Merci pour votre intérêt. Nous examinerons votre candidature et vous recontacterons sous 3-5 jours ouvrables.',
+    'partner.submitAnother': 'Soumettre une autre candidature',
+    'partner.checkStatus': 'Vérifier le statut',
+    'partner.applicationId': 'ID de candidature'
+  }), []);
 
-  // Initialize dark mode from system preference
+  const t = useCallback((key) => translations[key] || key, [translations]);
+
+  // Initialize dark mode
   useEffect(() => {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     setDarkMode(isDarkMode);
   }, []);
 
-  // Monitor network connectivity
+  // Network connectivity monitoring
   useEffect(() => {
     const handleOnline = () => {
       setIsConnected(true);
@@ -254,7 +385,7 @@ const BecomeAPartner = () => {
     };
   }, []);
 
-  // Check service health on mount
+  // Service health check
   useEffect(() => {
     const checkHealth = async () => {
       try {
@@ -266,30 +397,27 @@ const BecomeAPartner = () => {
     };
     
     checkHealth();
-    const interval = setInterval(checkHealth, 60000); // Check every minute
+    const interval = setInterval(checkHealth, 60000);
     
     return () => clearInterval(interval);
   }, []);
 
-  // Scroll event handler
+  // Scroll handler
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Auto-advance process steps
+  // Auto-hide notifications
   useEffect(() => {
-    const interval = setInterval(() => {
-      setActiveProcess(prev => (prev + 1) % 4);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
-  // Check for existing application ID on mount
+  // Check for existing application
   useEffect(() => {
     const storedApplicationId = localStorage.getItem('applicationId');
     if (storedApplicationId) {
@@ -297,239 +425,179 @@ const BecomeAPartner = () => {
     }
   }, []);
 
-  // Auto-hide notifications
-  useEffect(() => {
-    if (notification) {
-      const timer = setTimeout(() => {
-        setNotification(null);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [notification]);
+  // Optimized event handlers
+  const toggleDarkMode = useCallback(() => setDarkMode(prev => !prev), []);
+  const toggleMenu = useCallback(() => setIsMenuOpen(prev => !prev), []);
 
-  // Auto-hide errors
-  useEffect(() => {
-    if (error) {
-      const timer = setTimeout(() => {
-        setError(null);
-      }, 10000);
-      return () => clearTimeout(timer);
-    }
-  }, [error]);
-
-  // Event handlers
-  const toggleDarkMode = () => setDarkMode(!darkMode);
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-
-  // Notification handler
-  const showNotification = (message, type = 'info') => {
+  const showNotification = useCallback((message, type = 'info') => {
     setNotification({ message, type });
-  };
+  }, []);
 
-  // Video handlers
-  const handleVideoSelect = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleVideoFile = (e) => {
-    const file = e.target.files?.[0];
-    if (file && file.type.startsWith('video/')) {
-      const videoUrl = URL.createObjectURL(file);
-      setSelectedVideo(videoUrl);
-      setIsVideoModalOpen(true);
-    }
-  };
-
-  const closeVideoModal = () => {
-    setIsVideoModalOpen(false);
-    setIsVideoPlaying(false);
-    if (videoRef.current) {
-      videoRef.current.pause();
-      videoRef.current.currentTime = 0;
-    }
-    if (selectedVideo) {
-      URL.revokeObjectURL(selectedVideo);
-      setSelectedVideo(null);
-    }
-  };
-
-  const toggleVideoPlayback = () => {
-    if (videoRef.current) {
-      if (isVideoPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsVideoPlaying(!isVideoPlaying);
-    }
-  };
-
-  // Form handlers
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value, files, type, checked } = e.target;
     
-    // Mark field as touched
-    setTouchedFields(prev => ({ ...prev, [name]: true }));
-    
-    if (files) {
-      const file = files[0];
+    setFormData(prevData => {
+      const newData = { ...prevData };
       
-      if (file) {
-        // Validate file using service
-        const validation = partnerServices.validateFile(file, 'document');
+      if (files && files[0]) {
+        const file = files[0];
         
-        if (validation.isValid) {
-          setFormData(prev => ({ ...prev, [name]: file }));
-          // Clear any previous file errors
-          if (formErrors[name]) {
-            setFormErrors(prev => ({ ...prev, [name]: '' }));
-          }
-          showNotification(`${getFieldLabel(name)} téléchargé avec succès`, 'success');
-        } else {
-          // Show file validation errors
-          setFormErrors(prev => ({ 
-            ...prev, 
-            [name]: validation.errors.join(', ') 
-          }));
-          showNotification(`Erreur de fichier: ${validation.errors.join(', ')}`, 'error');
+        // Simple file validation
+        const maxSize = 10 * 1024 * 1024; // 10MB
+        const allowedTypes = [
+          'application/pdf', 
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          'image/jpeg', 
+          'image/jpg', 
+          'image/png'
+        ];
+        
+        if (file.size > maxSize) {
+          showNotification(`Fichier trop volumineux. Maximum ${formatFileSize(maxSize)}`, 'error');
+          return prevData;
         }
-      }
-    } else if (type === 'checkbox') {
-      setFormData(prev => ({ ...prev, [name]: checked }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
-
-    // Clear field error when user starts typing
-    if (formErrors[name]) {
-      setFormErrors(prev => ({ ...prev, [name]: '' }));
-    }
-
-    // Real-time validation for critical fields
-    if (name === 'email' && value && !isValidEmail(value)) {
-      setFormErrors(prev => ({ ...prev, [name]: 'Format d\'email invalide' }));
-    } else if (name === 'phone' && value && !isValidPhone(value)) {
-      setFormErrors(prev => ({ ...prev, [name]: 'Format de téléphone invalide' }));
-    }
-  };
-
-  const handlePhotoUpload = (e) => {
-    if (e.target.files?.length > 0) {
-      const files = Array.from(e.target.files);
-      const validFiles = [];
-      const errors = [];
-      
-      files.forEach((file, index) => {
-        const validation = partnerServices.validateFile(file, 'image');
-        if (validation.isValid) {
-          validFiles.push(file);
-        } else {
-          errors.push(`Photo ${index + 1}: ${validation.errors.join(', ')}`);
+        
+        if (!allowedTypes.includes(file.type)) {
+          showNotification('Type de fichier non supporté', 'error');
+          return prevData;
         }
-      });
-      
-      if (validFiles.length > 0) {
-        setFormData(prev => ({
-          ...prev,
-          photos: [...prev.photos, ...validFiles].slice(0, 5)
-        }));
-        showNotification(`${validFiles.length} photo(s) ajoutée(s)`, 'success');
+        
+        newData[name] = file;
+        setFormErrors(prev => ({ ...prev, [name]: '' }));
+        showNotification(`${getFieldLabel(name)} ajouté avec succès`, 'success');
+        
+      } else if (type === 'checkbox') {
+        newData[name] = checked;
+      } else {
+        newData[name] = value;
+        setFormErrors(prev => ({ ...prev, [name]: '' }));
       }
       
-      if (errors.length > 0) {
-        showNotification(errors.join('\n'), 'error');
-      }
-    }
-  };
+      return newData;
+    });
 
-  const removePhoto = (index) => {
+    setTouchedFields(prev => ({ ...prev, [name]: true }));
+  }, [showNotification]);
+
+  const handlePhotoUpload = useCallback((e) => {
+    if (!e.target.files?.length) return;
+    
+    const files = Array.from(e.target.files);
+    const validFiles = [];
+    const maxSize = 10 * 1024 * 1024;
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    
+    files.forEach(file => {
+      if (file.size <= maxSize && allowedTypes.includes(file.type)) {
+        validFiles.push(file);
+      } else {
+        showNotification(`${file.name}: Fichier invalide`, 'error');
+      }
+    });
+    
+    if (validFiles.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        photos: [...prev.photos, ...validFiles].slice(0, 5)
+      }));
+      showNotification(`${validFiles.length} photo(s) ajoutée(s)`, 'success');
+    }
+    
+    e.target.value = '';
+  }, [showNotification]);
+
+  const removePhoto = useCallback((index) => {
     setFormData(prev => ({
       ...prev,
       photos: prev.photos.filter((_, i) => i !== index)
     }));
     showNotification('Photo supprimée', 'info');
-  };
+  }, [showNotification]);
 
-  const removeFile = (fieldName) => {
-    setFormData(prev => ({ ...prev, [fieldName]: null }));
-    setFormErrors(prev => ({ ...prev, [fieldName]: '' }));
-    showNotification(`${getFieldLabel(fieldName)} supprimé`, 'info');
-  };
+  const validateForm = useCallback((data) => {
+    const errors = {};
+    const { partnerType } = data;
+    
+    // Basic validation
+    if (!data.contactName?.trim()) errors.contactName = 'Nom requis';
+    if (!data.email?.trim() || !isValidEmail(data.email)) errors.email = 'Email valide requis';
+    if (!data.phone?.trim() || !isValidPhone(data.phone)) errors.phone = 'Téléphone valide requis';
+    if (!data.termsAccepted) errors.termsAccepted = 'Vous devez accepter les conditions';
+    
+    // Partner-specific validation
+    if (partnerType === 'restaurant') {
+      if (!data.businessName?.trim()) errors.businessName = 'Nom d\'entreprise requis';
+      if (!data.cuisineType?.trim()) errors.cuisineType = 'Type de cuisine requis';
+      if (!data.address?.trim()) errors.address = 'Adresse requise';
+      if (!data.city?.trim()) errors.city = 'Ville requise';
+    }
+    
+    if (partnerType === 'delivery-agent') {
+      if (!data.vehicleType?.trim()) errors.vehicleType = 'Type de véhicule requis';
+      if (!data.address?.trim()) errors.address = 'Adresse requise';
+      if (!data.city?.trim()) errors.city = 'Ville requise';
+    }
+    
+    if (partnerType === 'investor') {
+      if (!data.investmentAmount || data.investmentAmount <= 0) {
+        errors.investmentAmount = 'Montant d\'investissement requis';
+      }
+      if (!data.investmentType?.trim()) errors.investmentType = 'Type d\'investissement requis';
+    }
+    
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+  }, []);
 
-  // Form submission handler
-  const handleSubmit = async (e) => {
+  const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
-    // Check network connectivity
     if (!isConnected) {
-      showNotification(t('partner.offlineMessage'), 'error');
+      showNotification('Pas de connexion internet', 'error');
       return;
     }
     
-    // Reset states
+    const validation = validateForm(formData);
+    if (!validation.isValid) {
+      setFormErrors(validation.errors);
+      showNotification('Veuillez corriger les erreurs', 'error');
+      return;
+    }
+    
     setSubmissionState('submitting');
     setError(null);
-    setFormErrors({});
     setUploadProgress(0);
-
+    
     try {
-      console.log('Submitting application with data:', {
-        partnerType: formData.partnerType,
-        contactName: formData.contactName,
-        email: formData.email,
-      });
-
       const result = await partnerServices.submitPartnerApplication(
         formData,
-        (progress) => {
-          setUploadProgress(progress);
-          console.log(`Upload progress: ${progress}%`);
-        }
+        (progress) => setUploadProgress(progress)
       );
-
+      
       if (result.success) {
         setSubmissionState('success');
         setApplicationId(result.data.id);
         localStorage.setItem('applicationId', result.data.id);
-        setUploadProgress(100);
         showNotification('Candidature soumise avec succès !', 'success');
-        
-        console.log('Application submitted successfully:', result.data);
-        
-        // Scroll to top to show success message
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
-        setSubmissionState('error');
-        setError(result.message);
-        
-        // Set field-specific errors if available
-        if (result.errors && Array.isArray(result.errors)) {
-          const fieldErrors = {};
-          result.errors.forEach(error => {
-            if (error.field) {
-              fieldErrors[error.field] = error.message;
-            }
-          });
-          setFormErrors(fieldErrors);
-        }
-        
-        showNotification('Erreur lors de la soumission', 'error');
-        console.error('Application submission failed:', result);
+        throw new Error(result.message || 'Erreur de soumission');
       }
-    } catch (error) {
-      setSubmissionState('error');
-      const formattedError = formatPartnerError(error);
-      setError(formattedError);
-      showNotification('Erreur de soumission', 'error');
       
-      console.error('Application submission error:', error);
+    } catch (error) {
+      console.error('Submission error:', error);
+      setSubmissionState('error');
+      setError(error.message || 'Erreur lors de la soumission');
+      showNotification('Erreur de soumission', 'error');
     }
-  };
+  }, [formData, isConnected, validateForm, showNotification]);
 
-  // Check application status
-  const handleCheckStatus = async () => {
+  const handleCheckStatus = useCallback(async () => {
     if (!applicationId || !formData.email) {
-      showNotification('ID de candidature et email requis pour vérifier le statut', 'error');
+      showNotification('ID de candidature et email requis', 'error');
       return;
     }
 
@@ -550,10 +618,9 @@ const BecomeAPartner = () => {
     } catch (error) {
       showNotification(formatPartnerError(error), 'error');
     }
-  };
+  }, [applicationId, formData.email, showNotification]);
 
-  // Reset form
-  const resetForm = () => {
+  const resetForm = useCallback(() => {
     setSubmissionState('idle');
     setError(null);
     setFormErrors({});
@@ -594,366 +661,24 @@ const BecomeAPartner = () => {
     });
     
     showNotification('Formulaire réinitialisé', 'info');
-  };
+  }, [showNotification]);
 
   // Animation variants
-  const fadeInUp = {
+  const fadeInUp = useMemo(() => ({
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
-  };
+  }), []);
 
-  const staggerChildren = {
+  const staggerChildren = useMemo(() => ({
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
       transition: { staggerChildren: 0.2 }
     }
-  };
+  }), []);
 
-  const scaleIn = {
-    hidden: { opacity: 0, scale: 0.95 },
-    visible: { 
-      opacity: 1, 
-      scale: 1,
-      transition: { type: "spring", stiffness: 100, damping: 15 }
-    }
-  };
-
-  // Component helpers
-  const getFieldError = (fieldName) => {
-    return formErrors[fieldName] || '';
-  };
-
-  const isFieldTouched = (fieldName) => {
-    return touchedFields[fieldName] || false;
-  };
-
-  const shouldShowError = (fieldName) => {
-    return isFieldTouched(fieldName) && getFieldError(fieldName);
-  };
-
-  // Components
-
-  // Network status indicator
-  const NetworkStatus = () => (
-    !isConnected && (
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg"
-      >
-        <div className="flex items-center space-x-2">
-          <WifiOff size={16} />
-          <span>{t('partner.offline')}</span>
-          </div>
-      </motion.div>
-    )
-  );
-
-  // Service health indicator
-  const ServiceHealthIndicator = () => (
-    serviceHealth && !serviceHealth.success && (
-      <motion.div
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="fixed top-32 left-1/2 transform -translate-x-1/2 z-50 bg-yellow-500 text-white px-4 py-2 rounded-lg shadow-lg"
-      >
-        <div className="flex items-center space-x-2">
-          <AlertCircle size={16} />
-          <span>{t('partner.serviceUnavailable')}</span>
-        </div>
-      </motion.div>
-    )
-  );
-
-  // Notification component
-  const NotificationComponent = () => (
-    <AnimatePresence>
-      {notification && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: -20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: -20 }}
-          className={`fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md ${
-            notification.type === 'success' ? 'bg-green-500' :
-            notification.type === 'error' ? 'bg-red-500' :
-            notification.type === 'warning' ? 'bg-yellow-500' :
-            'bg-blue-500'
-          } text-white`}
-        >
-          <div className="flex items-start space-x-2">
-            {notification.type === 'success' && <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />}
-            {notification.type === 'error' && <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />}
-            {notification.type === 'warning' && <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />}
-            {notification.type === 'info' && <TrendingUp size={20} className="flex-shrink-0 mt-0.5" />}
-            <div className="flex-1">
-              <p className="text-sm whitespace-pre-line">{notification.message}</p>
-            </div>
-            <button
-              onClick={() => setNotification(null)}
-              className="text-white/80 hover:text-white"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-
-  // Error notification
-  const ErrorNotification = () => (
-    <AnimatePresence>
-      {error && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          className="fixed bottom-4 right-4 z-50 bg-red-500 text-white p-4 rounded-lg shadow-lg max-w-md"
-        >
-          <div className="flex items-start space-x-2">
-            <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <h4 className="font-semibold mb-1">Erreur</h4>
-              <p className="text-sm whitespace-pre-line">{error}</p>
-              <button
-                onClick={() => setError(null)}
-                className="mt-2 text-xs underline hover:no-underline"
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-
-  // File upload component
-  const FileUploadField = ({ 
-    name, 
-    label, 
-    description, 
-    required = false, 
-    accept = "image/*,application/pdf",
-    currentFile = null 
-  }) => {
-    const error = shouldShowError(name);
-    
-    return (
-      <div className="space-y-2">
-        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        
-        <div className="relative">
-          {currentFile ? (
-            // File uploaded state
-            <div className="w-full p-4 border-2 border-green-300 dark:border-green-600 rounded-xl bg-green-50 dark:bg-green-900/20">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <FileCheck className="text-green-600 dark:text-green-400" size={20} />
-                  <div>
-                    <p className="text-sm font-medium text-green-700 dark:text-green-300">
-                      {currentFile.name}
-                    </p>
-                    <p className="text-xs text-green-600 dark:text-green-400">
-                      {formatFileSize(currentFile.size)}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removeFile(name)}
-                  className="text-red-500 hover:text-red-600 transition-colors"
-                  title={t('partner.removeFile')}
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
-          ) : (
-            // Upload state
-            <label className="cursor-pointer group">
-              <div className={`w-full p-6 border-2 border-dashed rounded-xl transition-all ${
-                error 
-                  ? 'border-red-300 dark:border-red-600 bg-red-50 dark:bg-red-900/20' 
-                  : 'border-gray-300 dark:border-gray-600 hover:border-emerald-500 dark:hover:border-emerald-400 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20'
-              }`}>
-                <div className="flex flex-col items-center text-center">
-                  <Upload className={`mb-3 ${
-                    error 
-                      ? 'text-red-400' 
-                      : 'text-gray-400 group-hover:text-emerald-500'
-                  }`} size={24} />
-                  <p className={`text-sm mb-1 ${
-                    error 
-                      ? 'text-red-600 dark:text-red-400' 
-                      : 'text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400'
-                  }`}>
-                    {t('partner.dragDropFiles')}
-                  </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {t('partner.maxFileSize')}: 10MB
-                  </p>
-                </div>
-              </div>
-              <input
-                type="file"
-                name={name}
-                className="hidden"
-                accept={accept}
-                onChange={handleInputChange}
-              />
-            </label>
-          )}
-        </div>
-        
-        {description && (
-          <p className="text-sm text-gray-500 dark:text-gray-400">{description}</p>
-        )}
-        
-        {error && (
-          <p className="text-red-500 text-sm">{error}</p>
-        )}
-      </div>
-    );
-  };
-
-  // Input field component
-  const InputField = ({ 
-    name, 
-    label, 
-    type = "text", 
-    required = false, 
-    placeholder = "", 
-    options = null,
-    description = null 
-  }) => {
-    const error = shouldShowError(name);
-    const value = formData[name] || '';
-    
-    return (
-      <div>
-        <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium" htmlFor={name}>
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
-        
-        {options ? (
-          <select
-            id={name}
-            name={name}
-            value={value}
-            onChange={handleInputChange}
-            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-              error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-            }`}
-          >
-            <option value="">{t('partner.selectOption')}</option>
-            {options.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <input
-            type={type}
-            id={name}
-            name={name}
-            value={value}
-            onChange={handleInputChange}
-            placeholder={placeholder}
-            className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors dark:bg-gray-700 dark:border-gray-600 ${
-              error ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-            }`}
-          />
-        )}
-        
-        {description && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>
-        )}
-        
-        {error && (
-          <p className="text-red-500 text-sm mt-1">{error}</p>
-        )}
-      </div>
-    );
-  };
-
-  // Photo upload component
-  const PhotoUploadSection = () => (
-    <div className="md:col-span-2">
-      <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
-        {t('partner.restaurantPhotos')} ({formData.photos.length}/5)
-      </label>
-      
-      <div className="space-y-4">
-        {/* Upload area */}
-        <div className="relative">
-          <label className="cursor-pointer group">
-            <div className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
-              <div className="flex flex-col items-center text-center">
-                <Camera className="mb-3 text-gray-400 group-hover:text-emerald-500" size={32} />
-                <p className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 mb-1">
-                  {t('partner.chooseFile')}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  JPG, PNG - Max 10MB chacune
-                </p>
-              </div>
-            </div>
-            <input
-              type="file"
-              name="photos"
-              className="hidden"
-              multiple
-              accept="image/*"
-              onChange={handlePhotoUpload}
-            />
-          </label>
-        </div>
-
-        {/* Photo preview */}
-        {formData.photos.length > 0 && (
-          <div className="grid grid-cols-5 gap-3">
-            {formData.photos.map((photo, index) => (
-              <div key={index} className="relative group">
-                <div className="w-full h-20 bg-gray-200 dark:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden">
-                  {photo instanceof File ? (
-                    <div className="text-center">
-                      <FileImage size={16} className="text-gray-500 mx-auto mb-1" />
-                      <span className="text-xs text-gray-500 truncate block px-1">
-                        {photo.name.split('.')[0].substring(0, 8)}...
-                      </span>
-                    </div>
-                  ) : (
-                    <img 
-                      src={URL.createObjectURL(photo)} 
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => removePhoto(index)}
-                  className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
-                >
-                  <X size={12} />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-        
-        <p className="text-sm text-gray-500 dark:text-gray-400">{t('partner.photosDesc')}</p>
-      </div>
-    </div>
-  );
-
-  // Form content based on partner type
-  const renderFormContent = () => {
+  // Form content renderer
+  const renderFormContent = useCallback(() => {
     const { partnerType } = formData;
     
     return (
@@ -980,52 +705,67 @@ const BecomeAPartner = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Restaurant Fields */}
             {partnerType === 'restaurant' && (
               <>
                 <InputField
                   name="businessName"
                   label={t('partner.businessName')}
-                  required={isFieldRequired('businessName', partnerType)}
+                  required={true}
+                  value={formData.businessName}
+                  onChange={handleInputChange}
+                  error={formErrors.businessName}
                 />
                 <InputField
                   name="cuisineType"
                   label={t('partner.cuisineType')}
-                  required={isFieldRequired('cuisineType', partnerType)}
+                  required={true}
+                  value={formData.cuisineType}
+                  onChange={handleInputChange}
+                  error={formErrors.cuisineType}
                 />
                 <InputField
                   name="capacity"
                   label={t('partner.capacity')}
                   type="number"
-                  required={isFieldRequired('capacity', partnerType)}
+                  required={true}
+                  value={formData.capacity}
+                  onChange={handleInputChange}
+                  error={formErrors.capacity}
                 />
                 <InputField
                   name="openingHours"
                   label={t('partner.openingHours')}
                   placeholder="Ex: 8h00 - 22h00"
-                  required={isFieldRequired('openingHours', partnerType)}
+                  required={true}
+                  value={formData.openingHours}
+                  onChange={handleInputChange}
+                  error={formErrors.openingHours}
                 />
               </>
             )}
 
-            {/* Delivery Agent Fields */}
             {partnerType === 'delivery-agent' && (
               <>
                 <InputField
                   name="vehicleType"
                   label={t('partner.vehicleType')}
                   options={VEHICLE_TYPE_OPTIONS}
-                  required={isFieldRequired('vehicleType', partnerType)}
+                  required={true}
+                  value={formData.vehicleType}
+                  onChange={handleInputChange}
+                  error={formErrors.vehicleType}
                 />
                 <InputField
                   name="drivingLicense"
                   label={t('partner.drivingLicense')}
-                  required={isFieldRequired('drivingLicense', partnerType)}
+                  required={true}
+                  value={formData.drivingLicense}
+                  onChange={handleInputChange}
+                  error={formErrors.drivingLicense}
                 />
               </>
             )}
 
-            {/* Investor Fields */}
             {partnerType === 'investor' && (
               <>
                 <InputField
@@ -1033,37 +773,51 @@ const BecomeAPartner = () => {
                   label={t('partner.investmentAmount')}
                   type="number"
                   placeholder="1000000"
-                  required={isFieldRequired('investmentAmount', partnerType)}
+                  required={true}
+                  value={formData.investmentAmount}
+                  onChange={handleInputChange}
+                  error={formErrors.investmentAmount}
                 />
                 <InputField
                   name="investmentType"
                   label={t('partner.investmentType')}
                   options={INVESTMENT_TYPE_OPTIONS}
-                  required={isFieldRequired('investmentType', partnerType)}
+                  required={true}
+                  value={formData.investmentType}
+                  onChange={handleInputChange}
+                  error={formErrors.investmentType}
                 />
                 <InputField
                   name="businessExperience"
                   label={t('partner.businessExperience')}
                   type="number"
-                  required={isFieldRequired('businessExperience', partnerType)}
+                  required={true}
+                  value={formData.businessExperience}
+                  onChange={handleInputChange}
+                  error={formErrors.businessExperience}
                 />
               </>
             )}
 
-            {/* Other Fields */}
             {partnerType === 'other' && (
               <>
                 <InputField
                   name="serviceType"
                   label={t('partner.serviceType')}
                   options={SERVICE_TYPE_OPTIONS}
-                  required={isFieldRequired('serviceType', partnerType)}
+                  required={true}
+                  value={formData.serviceType}
+                  onChange={handleInputChange}
+                  error={formErrors.serviceType}
                 />
                 <InputField
                   name="businessExperience"
                   label={t('partner.businessExperience')}
                   type="number"
-                  required={isFieldRequired('businessExperience', partnerType)}
+                  required={true}
+                  value={formData.businessExperience}
+                  onChange={handleInputChange}
+                  error={formErrors.businessExperience}
                 />
               </>
             )}
@@ -1088,18 +842,27 @@ const BecomeAPartner = () => {
               name="contactName"
               label={t('partner.contactName')}
               required={true}
+              value={formData.contactName}
+              onChange={handleInputChange}
+              error={formErrors.contactName}
             />
             <InputField
               name="email"
               label={t('partner.email')}
               type="email"
               required={true}
+              value={formData.email}
+              onChange={handleInputChange}
+              error={formErrors.email}
             />
             <InputField
               name="phone"
               label={t('partner.phone')}
               type="tel"
               required={true}
+              value={formData.phone}
+              onChange={handleInputChange}
+              error={formErrors.phone}
             />
           </div>
         </motion.section>
@@ -1122,12 +885,18 @@ const BecomeAPartner = () => {
               <InputField
                 name="address"
                 label={t('partner.address')}
-                required={isFieldRequired('address', partnerType)}
+                required={true}
+                value={formData.address}
+                onChange={handleInputChange}
+                error={formErrors.address}
               />
               <InputField
                 name="city"
                 label={t('partner.city')}
-                required={isFieldRequired('city', partnerType)}
+                required={true}
+                value={formData.city}
+                onChange={handleInputChange}
+                error={formErrors.city}
               />
             </div>
           </motion.section>
@@ -1152,12 +921,18 @@ const BecomeAPartner = () => {
                 name="legalStatus"
                 label={t('partner.legalStatus')}
                 options={LEGAL_STATUS_OPTIONS}
-                required={isFieldRequired('legalStatus', partnerType)}
+                required={true}
+                value={formData.legalStatus}
+                onChange={handleInputChange}
+                error={formErrors.legalStatus}
               />
               <InputField
                 name="taxId"
                 label={t('partner.taxId')}
-                required={isFieldRequired('taxId', partnerType)}
+                required={true}
+                value={formData.taxId}
+                onChange={handleInputChange}
+                error={formErrors.taxId}
               />
             </div>
           </motion.section>
@@ -1177,83 +952,151 @@ const BecomeAPartner = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Common documents */}
-            <FileUploadField
+            <SimpleFileUpload
               name="idDocument"
               label={t('partner.idDocument')}
               description={t('partner.idDocumentDesc')}
-              required={isDocumentRequired('idDocument', partnerType)}
+              required={true}
               currentFile={formData.idDocument}
+              onChange={handleInputChange}
+              error={formErrors.idDocument}
             />
 
-            {/* Partner type specific documents */}
             {partnerType === 'restaurant' && (
               <>
-                <FileUploadField
+                <SimpleFileUpload
                   name="healthCertificate"
                   label={t('partner.healthCertificate')}
                   description={t('partner.healthCertificateDesc')}
-                  required={isDocumentRequired('healthCertificate', partnerType)}
+                  required={true}
                   currentFile={formData.healthCertificate}
+                  onChange={handleInputChange}
+                  error={formErrors.healthCertificate}
                 />
-                <FileUploadField
+                <SimpleFileUpload
                   name="menu"
                   label={t('partner.menu')}
                   description={t('partner.menuDesc')}
-                  required={isDocumentRequired('menu', partnerType)}
+                  required={true}
                   currentFile={formData.menu}
+                  onChange={handleInputChange}
+                  error={formErrors.menu}
                 />
               </>
             )}
 
             {partnerType === 'delivery-agent' && (
               <>
-                <FileUploadField
+                <SimpleFileUpload
                   name="drivingLicenseDoc"
                   label={t('partner.drivingLicenseDoc')}
                   description={t('partner.drivingLicenseDesc')}
-                  required={isDocumentRequired('drivingLicenseDoc', partnerType)}
+                  required={true}
                   currentFile={formData.drivingLicenseDoc}
+                  onChange={handleInputChange}
+                  error={formErrors.drivingLicenseDoc}
                 />
-                <FileUploadField
+                <SimpleFileUpload
                   name="vehicleRegistration"
                   label={t('partner.vehicleRegistration')}
                   description={t('partner.vehicleRegistrationDesc')}
                   required={false}
                   currentFile={formData.vehicleRegistration}
+                  onChange={handleInputChange}
+                  error={formErrors.vehicleRegistration}
                 />
               </>
             )}
 
             {partnerType === 'investor' && (
               <>
-                <FileUploadField
+                <SimpleFileUpload
                   name="businessPlan"
                   label={t('partner.businessPlan')}
                   description={t('partner.businessPlanDesc')}
-                  required={isDocumentRequired('businessPlan', partnerType)}
+                  required={true}
                   currentFile={formData.businessPlan}
+                  onChange={handleInputChange}
+                  error={formErrors.businessPlan}
                 />
-                <FileUploadField
+                <SimpleFileUpload
                   name="financialStatements"
                   label={t('partner.financialStatements')}
                   description={t('partner.financialStatementsDesc')}
                   required={false}
                   currentFile={formData.financialStatements}
+                  onChange={handleInputChange}
+                  error={formErrors.financialStatements}
                 />
               </>
             )}
 
-            {/* Photos for all partner types */}
-            <PhotoUploadSection />
+            {/* Photos upload */}
+            <div className="md:col-span-2">
+              <label className="block text-gray-700 dark:text-gray-300 mb-2 font-medium">
+                {t('partner.restaurantPhotos')} ({formData.photos.length}/5)
+              </label>
+              
+              <div className="space-y-4">
+                <div className="relative">
+                  <label className="cursor-pointer group">
+                    <div className="w-full p-6 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl hover:border-emerald-500 dark:hover:border-emerald-400 transition-colors group-hover:bg-emerald-50 dark:group-hover:bg-emerald-900/20">
+                      <div className="flex flex-col items-center text-center">
+                        <Camera className="mb-3 text-gray-400 group-hover:text-emerald-500" size={32} />
+                        <p className="text-gray-600 dark:text-gray-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 mb-1">
+                          Choisir des photos
+                        </p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          JPG, PNG - Max 10MB chacune
+                        </p>
+                      </div>
+                    </div>
+                    <input
+                      type="file"
+                      name="photos"
+                      className="hidden"
+                      multiple
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                    />
+                  </label>
+                </div>
+
+                {formData.photos.length > 0 && (
+                  <div className="grid grid-cols-5 gap-3">
+                    {formData.photos.map((photo, index) => (
+                      <div key={index} className="relative group">
+                        <div className="w-full h-20 bg-gray-200 dark:bg-gray-600 rounded-lg border border-gray-300 dark:border-gray-600 flex items-center justify-center overflow-hidden">
+                          <div className="text-center">
+                            <FileImage size={16} className="text-gray-500 mx-auto mb-1" />
+                            <span className="text-xs text-gray-500 truncate block px-1">
+                              {photo.name.split('.')[0].substring(0, 8)}...
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 rounded-full p-1 text-white hover:bg-red-600 transition opacity-0 group-hover:opacity-100"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                <p className="text-sm text-gray-500 dark:text-gray-400">{t('partner.photosDesc')}</p>
+              </div>
+            </div>
           </div>
         </motion.section>
       </div>
     );
-  };
+  }, [formData, formErrors, handleInputChange, handlePhotoUpload, removePhoto, t]);
 
   // Success state component
-  const SuccessState = () => (
+  const SuccessState = useCallback(() => (
     <motion.div 
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
@@ -1328,59 +1171,7 @@ const BecomeAPartner = () => {
         </motion.button>
       </div>
     </motion.div>
-  );
-
-  // Submit button component
-  const SubmitButton = () => (
-    <motion.button
-      whileHover={{ scale: submissionState === 'submitting' ? 1 : 1.02 }}
-      whileTap={{ scale: submissionState === 'submitting' ? 1 : 0.98 }}
-      type="submit"
-      disabled={submissionState === 'submitting' || !isConnected || (serviceHealth && !serviceHealth.success)}
-      className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-emerald-400 disabled:to-emerald-500 text-white rounded-xl font-semibold text-lg transition-all shadow-lg flex items-center justify-center space-x-2"
-    >
-      {submissionState === 'submitting' ? (
-        <>
-          <Loader2 className="animate-spin h-5 w-5" />
-          <span>
-            {uploadProgress > 0 ? `${uploadProgress}% - ` : ''}{t('partner.processing')}
-          </span>
-        </>
-      ) : (
-        <>
-          <Upload size={20} />
-          <span>{t('partner.submitApplication')}</span>
-        </>
-      )}
-    </motion.button>
-  );
-
-  // Upload progress component
-  const UploadProgress = () => (
-    submissionState === 'submitting' && uploadProgress > 0 && (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="mt-4 space-y-2"
-      >
-        <div className="flex justify-between items-center text-sm">
-          <span className="text-gray-600 dark:text-gray-400">{t('partner.uploadProgress')}</span>
-          <span className="font-semibold text-emerald-600 dark:text-emerald-400">{uploadProgress}%</span>
-        </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-          <motion.div
-            className="bg-emerald-600 h-2 rounded-full"
-            initial={{ width: 0 }}
-            animate={{ width: `${uploadProgress}%` }}
-            transition={{ duration: 0.3 }}
-          />
-        </div>
-        <p className="text-xs text-center text-gray-500 dark:text-gray-400">
-          Veuillez ne pas fermer cette page pendant le téléchargement
-        </p>
-      </motion.div>
-    )
-  );
+  ), [applicationId, applicationStatus, formData.email, handleCheckStatus, resetForm, t]);
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
@@ -1389,10 +1180,9 @@ const BecomeAPartner = () => {
     }`}>
       
       {/* Status Indicators */}
-      <NetworkStatus />
-      <ServiceHealthIndicator />
-      <NotificationComponent />
-      <ErrorNotification />
+      <NetworkStatus isConnected={isConnected} />
+      <ServiceHealthIndicator serviceHealth={serviceHealth} />
+      <NotificationComponent notification={notification} onClose={() => setNotification(null)} />
 
       {/* Enhanced Navigation */}
       <header className={`fixed w-full z-50 transition-all duration-300 ${
@@ -1492,88 +1282,8 @@ const BecomeAPartner = () => {
         </AnimatePresence>
       </header>
 
-      {/* Video Modal */}
-      <AnimatePresence>
-        {isVideoModalOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-            onClick={closeVideoModal}
-          >
-            <motion.div
-              initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.8, opacity: 0 }}
-              className="relative w-full max-w-4xl mx-4 bg-black rounded-2xl overflow-hidden shadow-2xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Video Header */}
-              <div className="absolute top-0 left-0 right-0 z-10 bg-gradient-to-b from-black/60 to-transparent p-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-white text-xl font-semibold">Démo Eat-Fast</h3>
-                  <button
-                    onClick={closeVideoModal}
-                    className="text-white hover:text-gray-300 transition-colors"
-                  >
-                    <X size={24} />
-                  </button>
-                </div>
-              </div>
-
-              {/* Video Player */}
-              {selectedVideo ? (
-                <div className="relative">
-                  <video
-                    ref={videoRef}
-                    src={selectedVideo}
-                    className="w-full h-auto max-h-[70vh]"
-                    controls={false}
-                    onPlay={() => setIsVideoPlaying(true)}
-                    onPause={() => setIsVideoPlaying(false)}
-                  />
-                  
-                  {/* Custom Video Controls */}
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-6">
-                    <div className="flex items-center space-x-4">
-                      <button
-                        onClick={toggleVideoPlayback}
-                        className="text-white hover:text-emerald-400 transition-colors"
-                      >
-                        {isVideoPlaying ? <Pause size={24} /> : <Play size={24} />}
-                      </button>
-                      <div className="flex-1 bg-white/20 rounded-full h-1">
-                        <div className="bg-emerald-500 h-1 rounded-full w-1/3"></div>
-                      </div>
-                      <button className="text-white hover:text-emerald-400 transition-colors">
-                        <Volume2 size={20} />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center justify-center h-64 text-white">
-                  <p>Aucune vidéo sélectionnée</p>
-                </div>
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Hidden file input for video selection */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="video/*"
-        className="hidden"
-        onChange={handleVideoFile}
-      />
-
       {/* Enhanced Hero Section */}
       <section className="pt-24 md:pt-32 pb-20 relative overflow-hidden" ref={heroRef}>
-        {/* Animated background elements */}
         <motion.div 
           style={{ y: backgroundY }} 
           className="absolute -top-20 -right-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"
@@ -1589,7 +1299,6 @@ const BecomeAPartner = () => {
         
         <div className="container mx-auto px-4">
           <div className="flex flex-col lg:flex-row items-center gap-12">
-            {/* Content */}
             <motion.div 
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
@@ -1627,7 +1336,6 @@ const BecomeAPartner = () => {
                 {t('partner.heroSubtitle')}
               </motion.p>
 
-              {/* Stats */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -1669,17 +1377,14 @@ const BecomeAPartner = () => {
                 <motion.button 
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={handleVideoSelect}
                   className="px-8 py-4 border-2 border-gray-300 dark:border-gray-600 hover:border-emerald-500 dark:hover:border-emerald-400 rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
                 >
                   <Play size={20} />
                   <span>{t('partner.watchDemo')}</span>
                 </motion.button>
-                          </motion.div>
-
+              </motion.div>
             </motion.div>
             
-            {/* Visual Element */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.8, rotateY: 15 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
@@ -1694,7 +1399,6 @@ const BecomeAPartner = () => {
                     <p className="text-emerald-100">Connectez-vous avec des clients affamés dans le monde entier</p>
                   </div>
                   
-                  {/* Floating elements */}
                   <motion.div 
                     animate={{ y: [-10, 10, -10] }}
                     transition={{ duration: 4, repeat: Infinity }}
@@ -1704,7 +1408,6 @@ const BecomeAPartner = () => {
                   </motion.div>
                 </div>
                 
-                {/* Floating cards */}
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -1716,8 +1419,8 @@ const BecomeAPartner = () => {
                       <Clock className="text-emerald-600 dark:text-emerald-400" size={20} />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm">{t('partner.fastOnboarding')}</p>
-                      <p className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">3-5 {t('partner.days')}</p>
+                      <p className="font-semibold text-sm">Intégration rapide</p>
+                      <p className="text-emerald-600 dark:text-emerald-400 font-bold text-sm">3-5 jours</p>
                     </div>
                   </div>
                 </motion.div>
@@ -1733,7 +1436,7 @@ const BecomeAPartner = () => {
                       <MapPin className="text-orange-600 dark:text-orange-400" size={20} />
                     </div>
                     <div>
-                      <p className="font-semibold text-sm">{t('partner.location')}</p>
+                      <p className="font-semibold text-sm">Localisation</p>
                       <p className="text-gray-600 dark:text-gray-400 font-medium text-sm">Yaoundé, Cameroun</p>
                     </div>
                   </div>
@@ -1767,7 +1470,7 @@ const BecomeAPartner = () => {
             viewport={{ once: true }}
             className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden border border-gray-200 dark:border-gray-700"
           >
-            {/* Enhanced Form Tabs */}
+            {/* Form Tabs */}
             <div className="flex border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
               {[
                 { key: 'restaurant', icon: <Home size={18} />, label: t('partner.restaurant') },
@@ -1832,16 +1535,58 @@ const BecomeAPartner = () => {
                           {t('partner.agreeToTerms2')}
                         </span>
                       </label>
-                      {shouldShowError('termsAccepted') && (
-                        <p className="text-red-500 text-sm mt-2">{getFieldError('termsAccepted')}</p>
+                      {formErrors.termsAccepted && (
+                        <p className="text-red-500 text-sm mt-2">{formErrors.termsAccepted}</p>
                       )}
                     </div>
 
                     {/* Progress Bar */}
-                    <UploadProgress />
+                    {submissionState === 'submitting' && uploadProgress > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="mt-4 space-y-2"
+                      >
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-gray-600 dark:text-gray-400">Progression du téléchargement</span>
+                          <span className="font-semibold text-emerald-600 dark:text-emerald-400">{uploadProgress}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <motion.div
+                            className="bg-emerald-600 h-2 rounded-full"
+                            initial={{ width: 0 }}
+                            animate={{ width: `${uploadProgress}%` }}
+                            transition={{ duration: 0.3 }}
+                          />
+                        </div>
+                        <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                          Veuillez ne pas fermer cette page pendant le téléchargement
+                        </p>
+                      </motion.div>
+                    )}
 
                     {/* Submit Button */}
-                    <SubmitButton />
+                    <motion.button
+                      whileHover={{ scale: submissionState === 'submitting' ? 1 : 1.02 }}
+                      whileTap={{ scale: submissionState === 'submitting' ? 1 : 0.98 }}
+                      type="submit"
+                      disabled={submissionState === 'submitting' || !isConnected || (serviceHealth && !serviceHealth.success)}
+                      className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 disabled:from-emerald-400 disabled:to-emerald-500 text-white rounded-xl font-semibold text-lg transition-all shadow-lg flex items-center justify-center space-x-2"
+                    >
+                      {submissionState === 'submitting' ? (
+                        <>
+                          <Loader2 className="animate-spin h-5 w-5" />
+                          <span>
+                            {uploadProgress > 0 ? `${uploadProgress}% - ` : ''}{t('partner.processing')}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <Upload size={20} />
+                          <span>{t('partner.submitApplication')}</span>
+                        </>
+                      )}
+                    </motion.button>
                   </motion.section>
                 </form>
               )}
@@ -1887,11 +1632,10 @@ const BecomeAPartner = () => {
                 className="px-8 py-4 border-2 border-white/30 hover:border-white/50 rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
               >
                 <Phone size={16} />
-                <span>Contacter l'équipe commerciale</span>
+                <span>Contacter l'équéquipe commerciale</span>
               </motion.button>
             </div>
           </motion.div>
-          
         </div>
       </section>
     </div>
