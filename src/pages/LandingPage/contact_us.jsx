@@ -25,6 +25,9 @@ import {
   Headphones
 } from 'lucide-react';
 
+// Import the contact services
+import contactServices, { getContactFormConfig } from '../../Services/Public/ContactServices';
+
 // FAQ Data - moved outside component to prevent recreation on each render
 const FAQ_DATA = [
   {
@@ -118,14 +121,19 @@ const ContactPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openFAQ, setOpenFAQ] = useState(1); // Track which FAQ is open
+  
+  // Updated form data to match contactServices expectations
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
     subject: 'general',
     message: '',
-    priority: 'normal'
+    company: '',
+    website: '',
+    preferred_contact_method: 'email'
   });
+  
   const [formStatus, setFormStatus] = useState({
     submitting: false,
     success: false,
@@ -133,6 +141,15 @@ const ContactPage = () => {
     message: ''
   });
   const [formErrors, setFormErrors] = useState({});
+
+  // Get form configuration from service
+  const [formConfig, setFormConfig] = useState({});
+
+  // Initialize form configuration
+  useEffect(() => {
+    const config = getContactFormConfig();
+    setFormConfig(config);
+  }, []);
 
   // Initialize dark mode from system preference
   useEffect(() => {
@@ -164,64 +181,84 @@ const ContactPage = () => {
     }
   }, [formErrors]);
 
-  const validateForm = useCallback(() => {
-    const errors = {};
-    
-    if (!formData.name.trim()) errors.name = 'Le nom est requis';
-    if (!formData.email.trim()) errors.email = 'L\'email est requis';
-    else if (!/\S+@\S+\.\S+/.test(formData.email)) errors.email = 'Email invalide';
-    if (!formData.message.trim()) errors.message = 'Le message est requis';
-    else if (formData.message.length < 10) errors.message = 'Le message doit contenir au moins 10 caractères';
-    
-    return errors;
-  }, [formData]);
-
+  // Updated form submission to use contactServices
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
-    const errors = validateForm();
-    if (Object.keys(errors).length > 0) {
-      setFormErrors(errors);
-      return;
-    }
-
+    // Clear previous status
     setFormStatus({ submitting: true, success: false, error: false, message: '' });
+    setFormErrors({});
     
     try {
-      // Simulate API call with more realistic delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // Use contactServices to submit the form
+      const result = await contactServices.submitContactForm(formData);
       
-      setFormStatus({ 
-        submitting: false, 
-        success: true, 
-        error: false, 
-        message: 'Merci de nous avoir contactés ! Nous vous répondrons dans les 24 heures.' 
-      });
-      
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: 'general',
-        message: '',
-        priority: 'normal'
-      });
-      setFormErrors({});
-      
-      // Reset success message after 6 seconds
-      setTimeout(() => {
-        setFormStatus(prev => ({ ...prev, success: false, message: '' }));
-      }, 6000);
+      if (result.success) {
+        setFormStatus({ 
+          submitting: false, 
+          success: true, 
+          error: false, 
+          message: result.message
+        });
+        
+        // Reset form on success
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: 'general',
+          message: '',
+          company: '',
+          website: '',
+          preferred_contact_method: 'email'
+        });
+        
+        // Reset success message after 6 seconds
+        setTimeout(() => {
+          setFormStatus(prev => ({ ...prev, success: false, message: '' }));
+        }, 6000);
+        
+      } else {
+        // Handle validation errors
+        if (result.errors && result.errors.length > 0) {
+          const errorObj = {};
+          result.errors.forEach(error => {
+            // Map common error patterns to form fields
+            if (error.includes('nom') || error.includes('Nom')) {
+              errorObj.name = error;
+            } else if (error.includes('email') || error.includes('Email')) {
+              errorObj.email = error;
+            } else if (error.includes('message') || error.includes('Message')) {
+              errorObj.message = error;
+            } else if (error.includes('téléphone') || error.includes('phone')) {
+              errorObj.phone = error;
+            } else if (error.includes('site web') || error.includes('URL')) {
+              errorObj.website = error;
+            } else {
+              // General error
+              errorObj.general = error;
+            }
+          });
+          setFormErrors(errorObj);
+        }
+        
+        setFormStatus({ 
+          submitting: false, 
+          success: false, 
+          error: true, 
+          message: result.message || 'Erreur lors de l\'envoi du message'
+        });
+      }
     } catch (error) {
+      console.error('Form submission error:', error);
       setFormStatus({ 
         submitting: false, 
         success: false, 
         error: true, 
-        message: 'Quelque chose s\'est mal passé. Veuillez réessayer ou nous appeler directement.' 
+        message: 'Une erreur inattendue s\'est produite. Veuillez réessayer ou nous contacter directement.'
       });
     }
-  }, [formData, validateForm]);
+  }, [formData]);
 
   const toggleFAQ = useCallback((id) => {
     setOpenFAQ(prev => prev === id ? null : id);
@@ -467,9 +504,22 @@ const ContactPage = () => {
                       </div>
                     </motion.div>
                   )}
+
+                  {/* General form errors */}
+                  {formErrors.general && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 text-yellow-800 dark:text-yellow-200 rounded-lg flex items-start"
+                    >
+                      <AlertCircle size={20} className="mr-3 mt-0.5 flex-shrink-0" />
+                      <div className="text-sm">{formErrors.general}</div>
+                    </motion.div>
+                  )}
                 </AnimatePresence>
                 
-                <div className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6">
                   {/* Name Field */}
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
@@ -487,6 +537,7 @@ const ContactPage = () => {
                           : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500'
                       } ${darkMode ? 'bg-gray-700' : 'bg-white'} focus:outline-none focus:ring-2`}
                       placeholder="Entrez votre nom complet"
+                      required
                     />
                     {formErrors.name && (
                       <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
@@ -510,6 +561,7 @@ const ContactPage = () => {
                           : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500'
                       } ${darkMode ? 'bg-gray-700' : 'bg-white'} focus:outline-none focus:ring-2`}
                       placeholder="votre.email@exemple.com"
+                      required
                     />
                     {formErrors.email && (
                       <p className="text-red-500 text-sm mt-1">{formErrors.email}</p>
@@ -529,12 +581,58 @@ const ContactPage = () => {
                       onChange={handleChange}
                       className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 ${
                         darkMode ? 'bg-gray-700' : 'bg-white'
-                      } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors`}
+                      } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
+                        formErrors.phone ? 'border-red-500 focus:ring-red-500' : ''
+                      }`}
                       placeholder="+237 6XX XXX XXX"
                     />
+                    {formErrors.phone && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>
+                    )}
+                  </div>
+
+                  {/* Company Field */}
+                  <div>
+                    <label htmlFor="company" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      Entreprise / Organisation
+                    </label>
+                    <input
+                      type="text"
+                      id="company"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 ${
+                        darkMode ? 'bg-gray-700' : 'bg-white'
+                      } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors`}
+                      placeholder="Nom de votre entreprise (optionnel)"
+                    />
+                  </div>
+
+                  {/* Website Field */}
+                  <div>
+                    <label htmlFor="website" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                      Site web
+                    </label>
+                    <input
+                      type="url"
+                      id="website"
+                      name="website"
+                      value={formData.website}
+                      onChange={handleChange}
+                      className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 ${
+                        darkMode ? 'bg-gray-700' : 'bg-white'
+                      } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
+                        formErrors.website ? 'border-red-500 focus:ring-red-500' : ''
+                      }`}
+                      placeholder="https://votre-site.com (optionnel)"
+                    />
+                    {formErrors.website && (
+                      <p className="text-red-500 text-sm mt-1">{formErrors.website}</p>
+                    )}
                   </div>
                   
-                  {/* Subject and Priority Row */}
+                  {/* Subject and Contact Method Row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label htmlFor="subject" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
@@ -549,34 +647,32 @@ const ContactPage = () => {
                           darkMode ? 'bg-gray-700' : 'bg-white'
                         } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors`}
                       >
-                        <option value="general">Demande générale</option>
-                        <option value="partnership">Partenariat restaurant</option>
-                        <option value="delivery">Partenaire de livraison</option>
-                        <option value="support">Support technique</option>
-                        <option value="billing">Facturation & Paiements</option>
-                        <option value="careers">Opportunités de carrière</option>
-                        <option value="feedback">Retours & Suggestions</option>
-                        <option value="other">Autre</option>
+                        {formConfig.subjects?.map((subject) => (
+                          <option key={subject.value} value={subject.value}>
+                            {subject.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     
                     <div>
-                      <label htmlFor="priority" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                        Priorité
+                      <label htmlFor="preferred_contact_method" className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
+                        Méthode de contact préférée
                       </label>
                       <select
-                        id="priority"
-                        name="priority"
-                        value={formData.priority}
+                        id="preferred_contact_method"
+                        name="preferred_contact_method"
+                        value={formData.preferred_contact_method}
                         onChange={handleChange}
                         className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 ${
                           darkMode ? 'bg-gray-700' : 'bg-white'
                         } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors`}
                       >
-                        <option value="low">Basse</option>
-                        <option value="normal">Normale</option>
-                        <option value="high">Haute</option>
-                        <option value="urgent">Urgente</option>
+                        {formConfig.contactMethods?.map((method) => (
+                          <option key={method.value} value={method.value}>
+                            {method.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -598,19 +694,21 @@ const ContactPage = () => {
                           : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500'
                       } ${darkMode ? 'bg-gray-700' : 'bg-white'} focus:outline-none focus:ring-2`}
                       placeholder="Veuillez fournir des détails sur votre demande..."
+                      required
+                      minLength={10}
+                      maxLength={5000}
                     />
                     {formErrors.message && (
                       <p className="text-red-500 text-sm mt-1">{formErrors.message}</p>
                     )}
                     <div className="text-xs text-gray-500 mt-1">
-                      {formData.message.length}/500 caractères
+                      {formData.message.length}/5000 caractères
                     </div>
                   </div>
                   
                   {/* Submit Button */}
                   <motion.button
-                    type="button"
-                    onClick={handleSubmit}
+                    type="submit"
                     disabled={formStatus.submitting}
                     whileHover={{ scale: formStatus.submitting ? 1 : 1.02 }}
                     whileTap={{ scale: formStatus.submitting ? 1 : 0.98 }}
@@ -632,7 +730,7 @@ const ContactPage = () => {
                       </>
                     )}
                   </motion.button>
-                </div>
+                </form>
               </div>
             </motion.div>
             

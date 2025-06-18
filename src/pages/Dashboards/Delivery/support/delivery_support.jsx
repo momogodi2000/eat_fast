@@ -28,6 +28,7 @@ import {
   Zap
 } from 'lucide-react';
 import DeliveryLayout from '../../../../layouts/delivery_layout';
+import { Link, useNavigate } from 'react-router-dom';
 
 /**
  * DeliverySupport Component
@@ -35,7 +36,9 @@ import DeliveryLayout from '../../../../layouts/delivery_layout';
  */
 const DeliverySupport = () => {
   // State management
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('tickets');
+
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [showNewTicketForm, setShowNewTicketForm] = useState(false);
@@ -515,108 +518,112 @@ const DeliverySupport = () => {
 
         {/* Chat Tab */}
         {activeTab === 'chat' && (
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 20 }}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 h-[calc(100vh-220px)] md:h-[600px] flex flex-col"
-          >
-            {/* Chat Header */}
-            <div className="p-3 md:p-4 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 md:w-10 md:h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
-                  <MessageCircle className="w-4 h-4 md:w-5 md:h-5 text-orange-600 dark:text-orange-400" />
-                </div>
-                <div>
-                  <h3 className="font-medium md:font-semibold text-gray-900 dark:text-white text-sm md:text-base">
-                    Support en Direct
-                  </h3>
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full ${agentStatus === 'online' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
-                    <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                      {agentStatus === 'online' ? 'Agent disponible' : 'Agent hors ligne'}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+        //   <motion.div
+        //     initial={{ opacity: 0, x: -20 }}
+        //     animate={{ opacity: 1, x: 0 }}
+        //     exit={{ opacity: 0, x: 20 }}
+        //     className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 h-[calc(100vh-220px)] md:h-[600px] flex flex-col"
+        //   >
+        //     {/* Chat Header */}
+        //     <div className="p-3 md:p-4 border-b border-gray-200 dark:border-gray-700">
+        //       <div className="flex items-center space-x-3">
+        //         <div className="w-8 h-8 md:w-10 md:h-10 bg-orange-100 dark:bg-orange-900 rounded-full flex items-center justify-center">
+        //           <MessageCircle className="w-4 h-4 md:w-5 md:h-5 text-orange-600 dark:text-orange-400" />
+        //         </div>
+        //         <div>
+        //           <h3 className="font-medium md:font-semibold text-gray-900 dark:text-white text-sm md:text-base">
+        //             Support en Direct
+        //           </h3>
+        //           <div className="flex items-center space-x-2">
+        //             <div className={`w-2 h-2 rounded-full ${agentStatus === 'online' ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+        //             <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
+        //               {agentStatus === 'online' ? 'Agent disponible' : 'Agent hors ligne'}
+        //             </span>
+        //           </div>
+        //         </div>
+        //       </div>
+        //     </div>
 
-            {/* Chat Messages */}
-            <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
-              <AnimatePresence>
-                {chatMessages.map((message) => (
-                  <motion.div
-                    key={message.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className={`flex ${message.sender === 'driver' ? 'justify-end' : 'justify-start'}`}
-                  >
-                    <div className={`max-w-[80%] md:max-w-xs lg:max-w-md px-3 py-2 rounded-lg text-sm ${
-                      message.sender === 'driver'
-                        ? 'bg-orange-600 text-white'
-                        : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
-                    }`}>
-                      {message.sender === 'agent' && message.agentName && (
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
-                          {message.agentName}
-                        </p>
-                      )}
-                      <p>{message.message}</p>
-                      <p className={`text-xs mt-1 ${
-                        message.sender === 'driver' 
-                          ? 'text-orange-200' 
-                          : 'text-gray-500 dark:text-gray-400'
-                      }`}>
-                        {message.timestamp.toLocaleTimeString('fr-FR', { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </p>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-              <div ref={chatEndRef} />
-            </div>
+        //     {/* Chat Messages */}
+        //     <div className="flex-1 overflow-y-auto p-3 md:p-4 space-y-3 md:space-y-4">
+        //       <AnimatePresence>
+        //         {chatMessages.map((message) => (
+        //           <motion.div
+        //             key={message.id}
+        //             initial={{ opacity: 0, y: 20 }}
+        //             animate={{ opacity: 1, y: 0 }}
+        //             className={`flex ${message.sender === 'driver' ? 'justify-end' : 'justify-start'}`}
+        //           >
+        //             <div className={`max-w-[80%] md:max-w-xs lg:max-w-md px-3 py-2 rounded-lg text-sm ${
+        //               message.sender === 'driver'
+        //                 ? 'bg-orange-600 text-white'
+        //                 : 'bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white'
+        //             }`}>
+        //               {message.sender === 'agent' && message.agentName && (
+        //                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+        //                   {message.agentName}
+        //                 </p>
+        //               )}
+        //               <p>{message.message}</p>
+        //               <p className={`text-xs mt-1 ${
+        //                 message.sender === 'driver' 
+        //                   ? 'text-orange-200' 
+        //                   : 'text-gray-500 dark:text-gray-400'
+        //               }`}>
+        //                 {message.timestamp.toLocaleTimeString('fr-FR', { 
+        //                   hour: '2-digit', 
+        //                   minute: '2-digit' 
+        //                 })}
+        //               </p>
+        //             </div>
+        //           </motion.div>
+        //         ))}
+        //       </AnimatePresence>
+        //       <div ref={chatEndRef} />
+        //     </div>
 
-            {/* Chat Input */}
-            <form onSubmit={handleSendMessage} className="p-3 md:p-4 border-t border-gray-200 dark:border-gray-700">
-              <div className="flex items-center space-x-2">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="p-1 md:p-2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
-                </button>
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  className="hidden"
-                  multiple
-                  accept="image/*,.pdf,.doc,.docx"
-                />
-                <input
-                  type="text"
-                  value={newMessage}
-                  onChange={(e) => setNewMessage(e.target.value)}
-                  placeholder="Tapez votre message..."
-                  className="flex-1 px-3 py-2 md:px-4 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm md:text-base"
-                  disabled={agentStatus === 'offline'}
-                />
-                <motion.button
-                  type="submit"
-                  disabled={!newMessage.trim() || agentStatus === 'offline'}
-                  className="p-1 md:p-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  <Send className="w-4 h-4 md:w-5 md:h-5" />
-                </motion.button>
-              </div>
-            </form>
-          </motion.div>
-        )}
+        //     {/* Chat Input */}
+        //     <form onSubmit={handleSendMessage} className="p-3 md:p-4 border-t border-gray-200 dark:border-gray-700">
+        //       <div className="flex items-center space-x-2">
+        //         <button
+        //           type="button"
+        //           onClick={() => fileInputRef.current?.click()}
+        //           className="p-1 md:p-2 text-gray-400 hover:text-gray-600 transition-colors"
+        //         >
+        //           <Paperclip className="w-4 h-4 md:w-5 md:h-5" />
+        //         </button>
+        //         <input
+        //           type="file"
+        //           ref={fileInputRef}
+        //           className="hidden"
+        //           multiple
+        //           accept="image/*,.pdf,.doc,.docx"
+        //         />
+        //         <input
+        //           type="text"
+        //           value={newMessage}
+        //           onChange={(e) => setNewMessage(e.target.value)}
+        //           placeholder="Tapez votre message..."
+        //           className="flex-1 px-3 py-2 md:px-4 md:py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-gray-700 dark:text-white text-sm md:text-base"
+        //           disabled={agentStatus === 'offline'}
+        //         />
+        //         <motion.button
+        //           type="submit"
+        //           disabled={!newMessage.trim() || agentStatus === 'offline'}
+        //           className="p-1 md:p-2 bg-orange-600 hover:bg-orange-700 disabled:bg-gray-400 text-white rounded-lg transition-colors"
+        //           whileHover={{ scale: 1.05 }}
+        //           whileTap={{ scale: 0.95 }}
+        //         >
+        //           <Send className="w-4 h-4 md:w-5 md:h-5" />
+        //         </motion.button>
+        //       </div>
+        //     </form>
+        //   </motion.div>
+        // )} 
+
+         navigate("/delivery/support/chat")
+
+      )}
 
         {/* FAQ Tab */}
         {activeTab === 'faq' && (
