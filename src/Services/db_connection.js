@@ -2,14 +2,17 @@
 import axios from 'axios';
 
 // API Configuration
-const API_CONFIG = {
+ const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
   TIMEOUT: 30000, // 30 seconds for file uploads
   VERSION: 'v1',
+ 
 };
 
+export  const baseURI =  `${API_CONFIG.BASE_URL}/api/${API_CONFIG.VERSION}`
+
 // Create axios instance with default configuration
-const apiClient = axios.create({
+export const apiClient = axios.create({
   baseURL: `${API_CONFIG.BASE_URL}/api/${API_CONFIG.VERSION}`,
   timeout: API_CONFIG.TIMEOUT,
   headers: {
