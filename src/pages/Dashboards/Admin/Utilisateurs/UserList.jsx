@@ -995,7 +995,7 @@ const UserForm = ({ user, isOpen, onClose, onSubmit, showNotification }) => {
                         </select>
                       </div>
 
-                      <div>
+                      {/* <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                           Statut
                         </label>
@@ -1014,7 +1014,7 @@ const UserForm = ({ user, isOpen, onClose, onSubmit, showNotification }) => {
                             </option>
                           ))}
                         </select>
-                      </div>
+                      </div> */}
                     </div>
 
                     {!user && (

@@ -9,8 +9,8 @@ class UserService{
   }
 
   async createClientUser(userData) {
-
-    try{
+    
+try{
   const options = {
   method: "POST",
   headers: {
@@ -28,6 +28,21 @@ class UserService{
         console.error('Erreur lors de la création du plat:', error);
     }
   }
+
+  async getClientUserLogin(userData){
+    try{
+      
+    const userLoginPath="by-login";
+     const response = await fetch(`${this.baseEndpoint}/${userLoginPath}/${userData.email}`);
+     return await  response.json() ;
+
+    }
+    catch(error){
+        console.error('Erreur lors de la recuperation de l"utilisateur:', error);
+    }
+  }
+
+  
 }
 
 const UserServices = new UserService();
