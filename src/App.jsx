@@ -19,7 +19,6 @@ import RestaurantManagement, { AdminRestaurantProvider } from './pages/Dashboard
 import AdminContactMessages from './pages/Dashboards/Admin/ContactMessages/Contact';
 import AdminOrdersPage from './pages/Dashboards/Admin/Orders/orders';
 import StatisticsPage from './pages/Dashboards/Admin/Statistics/StatisticsPage';
-import AdminSettingsPage from './pages/Dashboards/Admin/Settings/AdminSettingsPage.jsx';
 import AdminDeliveryManagement from './pages/Dashboards/Admin/Delivery/delivery_managemnet.jsx';
 import PromotionManagement from './pages/Dashboards/Admin/Promotion/promotion.jsx';
 
@@ -98,7 +97,6 @@ function App() {
           <Route path="/admin/contact-messages" element={<AdminContactMessages />} />
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
           <Route path="/admin/statistics" element={<StatisticsPage />} />
-          <Route path="/admin/settings" element={<AdminSettingsPage />} />
           <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
           <Route path="/admin/promotion" element={<PromotionManagement />} />
 

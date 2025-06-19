@@ -171,7 +171,6 @@ const AdminLayout = ({ children }) => {
     { name: t('contactMessages'), icon: <FiMail size={20} />, path: '/admin/contact-messages' },
     { name: t('statistics'), icon: <FiPieChart size={20} />, path: '/admin/statistics' },
     { name: t('promotions'), icon: <FiTag size={20} />, path: '/admin/promotion' },
-    { name: t('settings'), icon: <FiSettings size={20} />, path: '/admin/settings' },
   ];
   
   // Close sidebar when clicking outside on mobile
