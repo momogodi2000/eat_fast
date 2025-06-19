@@ -29,6 +29,7 @@ import {
   TrendingUp,
   Camera
 } from 'lucide-react';
+import { UserServices } from '../../Services/userLogin/userLogin';
 
 // Constants
 const CAMEROON_COLORS = {
@@ -373,18 +374,37 @@ const Register = () => {
     }));
 
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // // Simulate API call
+      // await new Promise(resolve => setTimeout(resolve, 2500));
       
-      setFormState(prev => ({ 
-        ...prev, 
-        isLoading: false, 
-        success: true 
-      }));
+      // setFormState(prev => ({ 
+      //   ...prev, 
+      //   isLoading: false, 
+      //   success: true 
+      // }));
       
       // Reset form after success
-      setTimeout(() => {
-        setFormData({
+      // setTimeout(() => {
+      //   setFormData({
+      //     firstName: '',
+      //     lastName: '',
+      //     email: '',
+      //     phone: '',
+      //     password: '',
+      //     confirmPassword: '',
+      //     acceptTerms: false
+      //   });
+      //   setFormState(prev => ({ ...prev, success: false }));
+
+      const userInfo = {...formData, role : "client"};
+      delete userInfo.confirmPassword ;
+      delete userInfo.acceptTerms;
+
+      const  user = await UserServices.createClientUser(userInfo);
+
+      
+      // }, 3000);
+      setFormData({
           firstName: '',
           lastName: '',
           email: '',
@@ -393,8 +413,11 @@ const Register = () => {
           confirmPassword: '',
           acceptTerms: false
         });
-        setFormState(prev => ({ ...prev, success: false }));
-      }, 3000);
+        setFormState(prev => ({ ...prev, success: false }))
+
+        window.location.href = '/clients';
+
+
       
     } catch (error) {
       setFormState(prev => ({
