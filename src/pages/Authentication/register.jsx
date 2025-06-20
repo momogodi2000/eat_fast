@@ -400,7 +400,7 @@ const Register = () => {
       delete userInfo.confirmPassword ;
       delete userInfo.acceptTerms;
 
-      const  user = await UserServices.createClientUser(userInfo);
+      const  user = await UserServices.createUser(userInfo);
 
       
       // }, 3000);

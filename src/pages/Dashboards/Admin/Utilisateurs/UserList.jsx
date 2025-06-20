@@ -11,6 +11,7 @@ import {
   FiUser, FiLock, FiCamera, FiImage, FiFile, FiCheckCircle, FiXCircle,
   FiAlertCircle, FiInfo, FiTrendingUp, FiTrendingDown, FiZap, FiGlobe
 } from 'react-icons/fi';
+import { UserServices } from '../../../../Services/userLogin/userLogin';
 
 // Constants
 const USER_ROLES = {
@@ -770,7 +771,7 @@ const UserForm = ({ user, isOpen, onClose, onSubmit, showNotification }) => {
         orders: user?.orders || 0
       };
       
-      onSubmit(userData);
+      const userInsertion = await onSubmit(userData);
       showNotification?.(
         user ? 'Utilisateur modifié avec succès' : 'Nouvel utilisateur créé avec succès',
         'success'
@@ -1649,10 +1650,14 @@ const UserListPage = () => {
   const fetchUsers = useCallback(async () => {
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 800));
-      const mockUsers = generateMockUsers();
-      setUsers(mockUsers);
-      setFilteredUsers(mockUsers);
+      // await new Promise(resolve => setTimeout(resolve, 800));
+      // const mockUsers = generateMockUsers();
+      // setUsers(mockUsers);
+      // setFilteredUsers(mockUsers);
+      const usersFromTheDataBase = await UserServices.getAllUSer(); 
+ 
+      setUsers(usersFromTheDataBase);
+      setFilteredUsers(users);
       showNotification('Utilisateurs chargés avec succès', 'success');
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -1723,7 +1728,7 @@ const UserListPage = () => {
     setSortConfig({ key, direction });
   };
 
-  const handleUserAction = (action, user) => {
+  const handleUserAction =  async (action, user) => {
     switch (action) {
       case 'view':
         setSelectedUser(user);
@@ -1738,7 +1743,9 @@ const UserListPage = () => {
         setIsDocumentModalOpen(true);
         break;
       case 'delete':
-        if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${user.name} ?`)) {
+        if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${user.firstName} ${user.lastName}?`)) {
+          
+          const deleteUser = await UserServices.deleteUserInfo(user.id);
           setUsers(prev => prev.filter(u => u.id !== user.id));
           showNotification('Utilisateur supprimé avec succès', 'success');
         }
@@ -1758,14 +1765,26 @@ const UserListPage = () => {
     }
   };
 
-  const handleFormSubmit = (userData) => {
-    if (selectedUser) {
+  const handleFormSubmit = async (userData) => {
+    
+    if (selectedUser) { // Mode Edition pour modifier des donnees 
+      const newUser = await UserServices.updateUserInfo(userData);
       setUsers(prev => prev.map(user => 
         user.id === selectedUser.id ? { ...user, ...userData } : user
       ));
-    } else {
-      setUsers(prev => [...prev, userData]);
+    } else { // Mode ajout pour un nouveau Utilisateur 
+      const parts = userData.name.trim().split(" ");
+      const newUserData = {...userData, 
+        firstName : parts[0] || "" ,
+      lastName:parts.length > 1 ? parts.slice(1).join(" ") : ""};
+      delete newUserData.id;
+      delete newUserData.name;
+      const newUser = await UserServices.createUser(newUserData);
+      setUsers(prev => [...prev, newUser]);
     }
+
+    
+
     setIsFormOpen(false);
     setSelectedUser(null);
   };
@@ -1873,8 +1892,9 @@ const UserListPage = () => {
         >
           {Object.values(USER_ROLES).map(role => {
             const roleConfig = getRoleConfig(role);
-            const count = users.filter(user => user.role === role).length;
-            const activeCount = users.filter(user => user.role === role && user.status === USER_STATUS.ACTIVE).length;
+            const newusers=[...users];
+            const count = newusers.filter(user => user.role === role).length;
+            const activeCount = newusers.filter(user => user.role === role && user.status === USER_STATUS.ACTIVE).length;
             const RoleIcon = roleConfig.icon;
             const percentage = count > 0 ? Math.round((activeCount / count) * 100) : 0;
             
@@ -2025,7 +2045,10 @@ const UserListPage = () => {
                           </div>
                           <div>
                             <h3 className="font-semibold text-gray-900 dark:text-white">
-                              {user.name}
+                              {/*
+                              {user.firstName + user.lastName}
+                              */}
+                              {`${user.firstName} ${user.lastName}`}
                             </h3>
                             <p className="text-sm text-gray-600 dark:text-gray-400">
                               {user.email}
@@ -2039,7 +2062,7 @@ const UserListPage = () => {
                           <motion.button
                             whileHover={{ scale: 1.1 }}
                             whileTap={{ scale: 0.9 }}
-                            onClick={() => handleUserAction('view', user)}
+                            onClick={() =>   handleUserAction('view', user)}
                             className="p-2 text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900 rounded-lg transition-colors"
                           >
                             <FiEye size={16} />
@@ -2160,7 +2183,7 @@ const UserListPage = () => {
                             </div>
                             <div>
                               <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {user.name}
+                                {/* {user.name} */} {`${user.firstName} ${user.lastName}`}
                               </div>
                               <div className="text-sm text-gray-500 dark:text-gray-400">
                                 {user.phone}
