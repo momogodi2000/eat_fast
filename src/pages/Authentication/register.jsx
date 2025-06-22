@@ -396,11 +396,11 @@ const Register = () => {
       //   });
       //   setFormState(prev => ({ ...prev, success: false }));
 
-      const userInfo = {...formData, role : "client"};
+      const userInfo = {...formData, role : "client", status : "active"};
       delete userInfo.confirmPassword ;
       delete userInfo.acceptTerms;
 
-      const  user = await UserServices.createClientUser(userInfo);
+      const  user = await UserServices.createUser(userInfo);
 
       
       // }, 3000);

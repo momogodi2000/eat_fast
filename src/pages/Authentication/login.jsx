@@ -25,6 +25,7 @@ import {
   Heart,
   TrendingUp
 } from 'lucide-react';
+import { UserServices } from '../../Services/userLogin/userLogin';
 
 // Constants
 const CAMEROON_COLORS = {
@@ -124,6 +125,26 @@ const STATS_DATA = [
   { icon: Zap, value: '30min', key: 'delivery' }
 ];
 
+const redirection  = (role) => {
+  
+  switch (role) {
+    case "client":
+      window.location.href = "/clients";
+      break;
+    case "admin" : 
+     window.location.href = "/admin";
+      break;
+    case "restaurant_manager" : 
+     window.location.href = "/restaurants_manager";
+      break;
+    case "livreur":
+      window.location.href = "/delivery";
+      break;
+    default:
+      window.location.href = "/"
+      break;
+  }
+}
 const Login = () => {
   // State management
   const [formData, setFormData] = useState({
@@ -257,19 +278,38 @@ const Login = () => {
 
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+     // await new Promise(resolve => setTimeout(resolve, 2000));
+
+     const userData = {...formData};
+      const user = await UserServices.getClientUserLogin(userData);
+
+      if(user.status === "active"){
+        if(user.password === userData.password){
       
       // Simulate success
       setFormState(prev => ({ ...prev, success: true, isLoading: false }));
+
+      
+      redirection(user.role)
       
       // Redirect after success message
-      setTimeout(() => {
-        console.log('Redirecting to dashboard...', { 
-          email: formData.email, 
-          rememberMe: formState.rememberMe 
-        });
-      }, 1500);
-      
+      // setTimeout(() => {
+      //   console.log('Redirecting to dashboard...', { 
+      //     email: formData.email, 
+      //     rememberMe: formState.rememberMe 
+      //   });
+      // }, 1500);
+  }
+  else{
+
+  alert("Mot de Passe Incorrecte ")
+}
+    }
+    else {
+      alert("Votre compte n'est pas active ou a été désactivé")
+    }
+
+    
     } catch (error) {
       setFormState(prev => ({
         ...prev,
