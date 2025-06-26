@@ -79,6 +79,7 @@
     "rimraf": "^6.0.1",
     "rollup": "^4.44.1",
     "tailwindcss": "^4.1.6",
+    "terser": "^5.43.1",
     "vite": "^5.4.10"
   },
   "browserslist": {
