@@ -1,14 +1,29 @@
 services:
   - type: web
-    name: eat-fast
+    name: eat-fast-app
     env: node
     plan: free
-    buildCommand: NODE_OPTIONS="--max-old-space-size=1024" npm install && npm run build
-    startCommand: npm run preview
+    region: oregon # or your preferred region
+    buildCommand: >
+      NODE_OPTIONS="--max-old-space-size=1024" 
+      npm ci --only=production=false && 
+      npm run compile && 
+      npm run build:production
+    startCommand: npm run start
+    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=512
       - key: VITE_API_BASE_URL
-        value: https://your-backend-url.com/api/v1
+        value: https://your-backend-api.render.com/api/v1
+      - key: VITE_APP_ENVIRONMENT
+        value: production
     domains:
-      - eat-fast-app.onrender.com
+      - eat-fast.onrender.com
+    
+    # Resource limits for free plan
+    disk: 
+      size: 1GB
+      type: ssd

@@ -3,14 +3,25 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "NODE_OPTIONS='--max-old-space-size=1024' vite build",
+    "build:production": "NODE_OPTIONS='--max-old-space-size=1024' NODE_ENV=production vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "preview": "vite preview --port ${PORT:-4173} --host 0.0.0.0",
+    "start": "vite preview --port ${PORT:-4173} --host 0.0.0.0",
     "extract": "lingui extract",
     "compile": "lingui compile",
-    "translate": "node scripts/translate.js"
+    "translate": "node scripts/translate.js",
+    "clean": "rm -rf dist node_modules/.vite",
+    "preinstall": "npm cache clean --force || true",
+    "postinstall": "npm run compile",
+    "audit-fix": "npm audit fix --force",
+    "build:analyze": "NODE_OPTIONS='--max-old-space-size=1024' vite build --mode analyze"
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
@@ -34,7 +45,6 @@
     "leaflet": "^1.9.4",
     "lucide-react": "^0.509.0",
     "motion": "^12.12.1",
-    "npm": "^11.3.0",
     "react": "^19.1.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.1.0",
@@ -45,7 +55,6 @@
     "react-router-dom": "^7.6.2",
     "react-toastify": "^11.0.5",
     "recharts": "^2.15.3",
-    "start": "^5.1.0",
     "yup": "^1.6.1"
   },
   "devDependencies": {
@@ -65,5 +74,17 @@
     "postcss": "^8.5.3",
     "tailwindcss": "^4.1.6",
     "vite": "^6.3.5"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }
