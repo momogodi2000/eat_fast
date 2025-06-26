@@ -57,7 +57,7 @@ export default defineConfig({
     },
     
     // Reduce build concurrency to save memory
-    minify: 'esbuild',
+    minify: 'terser',
     terserOptions: {
       compress: {
         drop_console: true, // Remove console.logs in production
