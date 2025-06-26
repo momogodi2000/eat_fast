@@ -22,7 +22,7 @@ export default defineConfig({
     // Enable code splitting and optimization
     rollupOptions: {
       output: {
-        // Manual chunking to reduce bundle size
+        // Manual chunking to reduce bundle size (only for packages that exist)
         manualChunks: {
           // Vendor chunk for large dependencies
           vendor: ['react', 'react-dom'],
@@ -30,18 +30,23 @@ export default defineConfig({
           // Router chunk
           router: ['react-router-dom'],
           
-          // UI and styling chunk
-          ui: ['@headlessui/react', 'framer-motion'],
-          
           // Lingui internationalization chunk
           i18n: ['@lingui/react', '@lingui/core'],
           
-          // Charts and maps chunk (if you have them)
+          // Charts chunk
           charts: ['chart.js', 'react-chartjs-2'],
+          
+          // Maps chunk
           maps: ['leaflet', 'react-leaflet'],
           
-          // Utils chunk
-          utils: ['lodash', 'date-fns', 'uuid']
+          // Animation and motion
+          animations: ['framer-motion', 'gsap'],
+          
+          // Forms and validation
+          forms: ['react-hook-form', 'yup', '@hookform/resolvers'],
+          
+          // Utilities
+          utils: ['date-fns', 'axios', '@tanstack/react-query']
         },
         
         // Optimize chunk naming
@@ -82,12 +87,16 @@ export default defineConfig({
       'react-dom',
       'react-router-dom',
       '@lingui/react',
-      '@lingui/core'
+      '@lingui/core',
+      'react-hook-form',
+      '@tanstack/react-query'
     ],
     exclude: [
       // Exclude heavy dependencies from pre-bundling to save memory
       'chart.js',
-      'leaflet'
+      'leaflet',
+      'framer-motion',
+      'gsap'
     ]
   },
   
