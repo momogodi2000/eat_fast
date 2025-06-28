@@ -68,7 +68,6 @@ import DeliveryChatSupport from "./pages/Dashboards/Delivery/contact_support/del
 // Provider
 
 import { UserInformationProvider } from "./pages/Authentication/const_provider.jsx";
-
 // Create QueryClient
 const queryClient = new QueryClient();
 
@@ -84,7 +83,15 @@ function App() {
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/restaurants" element={<RestaurantPublicityPage />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route
+            path="/register"
+            element={
+              <UserInformationProvider>
+                <Register />
+              </UserInformationProvider>
+            }
+          />
+
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/become" element={<BecomeAPartner />} />
           <Route path="/menu" element={<MenuPage />} />

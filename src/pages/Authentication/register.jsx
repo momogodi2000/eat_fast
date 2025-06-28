@@ -1,4 +1,12 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import {
+  useState,
+  useEffect,
+  useCallback,
+  useMemo,
+  createContext,
+  useContext,
+} from "react";
+import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sun,
@@ -22,13 +30,9 @@ import {
   CreditCard,
   Upload,
 } from "lucide-react";
-import { UserServices } from "../../Services/userLogin/userLogin";
+import { AuthServices } from "../../Services/userLogin/authService";
 
-import {
-  CAMEROON_COLORS,
-  userInformation,
-  ANIMATION_DELAY_BASE,
-} from "./const";
+import { CAMEROON_COLORS, ANIMATION_DELAY_BASE } from "./const";
 
 import {
   FLOATING_PARTICLES_COUNT,
@@ -36,6 +40,16 @@ import {
   BENEFITS_DATA,
   translations,
 } from "./const_register";
+
+import { userContextInformation } from "./const_provider";
+// export const userContextRegister = createContext();
+
+// export const userInformationRegister = {
+//   first_name: " ",
+//   last_name: " ",
+//   email: " ",
+//   phone_number: " ",
+// };
 
 const Register = () => {
   // State management
@@ -48,15 +62,30 @@ const Register = () => {
   });
 
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "",
-    phone: "",
+    phone_number: "",
     password: "",
     confirmPassword: "",
-    role: "",
+    user_type: "",
     documents: [],
+    is_verified: false,
+    is_active: false,
+    status: "inactive",
     acceptTerms: false,
+    delivery_documents: {
+      id_document: null,
+      driving_license: null,
+      insurance: null, // optionnel
+    },
+    restaurant_documents: {
+      id_document: null,
+      business_license: null,
+      health_certificate: null,
+      menu: null, // optionnel
+      photos: [], // optionnel
+    },
   });
 
   const [formState, setFormState] = useState({
@@ -69,6 +98,10 @@ const Register = () => {
   });
 
   const [particles, setParticles] = useState([]);
+
+  const { setUserInformation } = useContext(userContextInformation);
+
+  const navigate = useNavigate();
 
   // Memoized translations
   const t = useMemo(() => translations[uiState.language], [uiState.language]);
@@ -155,8 +188,8 @@ const Register = () => {
       const errors = { ...formState.errors };
 
       switch (name) {
-        case "firstName":
-        case "lastName":
+        case "first_name":
+        case "last_name":
           if (!value.trim()) {
             errors[name] = t.validation.required;
           } else if (value.length < 2) {
@@ -175,14 +208,14 @@ const Register = () => {
             delete errors.email;
           }
           break;
-        case "phone":
+        case "phone_number":
           const phoneRegex = /^(\+237)?[6-9]\d{8}$/;
           if (!value.trim()) {
-            errors.phone = t.validation.required;
+            errors.phone_number = t.validation.required;
           } else if (!phoneRegex.test(value.replace(/\s/g, ""))) {
-            errors.phone = t.validation.invalidPhone;
+            errors.phone_number = t.validation.invalidPhone;
           } else {
-            delete errors.phone;
+            delete errors.phone_number;
           }
           break;
         case "password":
@@ -243,6 +276,28 @@ const Register = () => {
   const validateForm = useCallback(() => {
     const errors = {};
     Object.keys(formData).forEach((key) => {
+      // Validation des documents spécifiques
+      if (formData.user_type === "delivery") {
+        if (!formData.delivery_documents.id_document) {
+          errors.id_document = "Pièce d'identité requise";
+        }
+        if (!formData.delivery_documents.driving_license) {
+          errors.driving_license = "Permis de conduire requis";
+        }
+      }
+
+      if (formData.user_type === "restaurant_manager") {
+        if (!formData.restaurant_documents.id_document) {
+          errors.restaurant_id_document = "Pièce d'identité requise";
+        }
+        if (!formData.restaurant_documents.business_license) {
+          errors.business_license = "Licence commerciale requise";
+        }
+        if (!formData.restaurant_documents.health_certificate) {
+          errors.health_certificate = "Certificat sanitaire requis";
+        }
+      }
+
       if (key !== "acceptTerms") {
         validateField(key, formData[key]);
       }
@@ -283,35 +338,88 @@ const Register = () => {
       // Reset form after success
       // setTimeout(() => {
       //   setFormData({
-      //     firstName: '',
-      //     lastName: '',
+      //     first_name: '',
+      //     last_name: '',
       //     email: '',
-      //     phone: '',
+      //     phone_number: '',
       //     password: '',
       //     confirmPassword: '',
       //     acceptTerms: false
       //   });
       //   setFormState(prev => ({ ...prev, success: false }));
 
-      const userInfo = { ...formData, role: "client", status: "active" };
-      delete userInfo.confirmPassword;
-      delete userInfo.acceptTerms;
+      formData.is_verified = formData.user_type === "client" ? true : false;
 
-      const user = await UserServices.createUser(userInfo);
+      formData.is_active = formData.user_type === "client" ? true : false;
 
+      formData.status = formData.is_active ? "active" : "inactive";
+
+      const userInfo = { ...formData };
+
+      // const user = await UserServices.createUser(userInfo);
+
+      const newUser = await AuthServices.createUser(userInfo);
       // }, 3000);
       setFormData({
-        firstName: "",
-        lastName: "",
+        first_name: "",
+        last_name: "",
         email: "",
-        phone: "",
+        phone_number: "",
         password: "",
         confirmPassword: "",
+        user_type: "",
+        delivery_documents: {
+          id_document: null,
+          driving_license: null,
+          insurance: null,
+        },
+        restaurant_documents: {
+          id_document: null,
+          business_license: null,
+          health_certificate: null,
+          menu: null,
+          photos: [],
+        },
         acceptTerms: false,
       });
+
+      // // setUserInformationRegister(newUser);
+      // const { first_name, email, last_name, phone_number } = newUser;
+
+      // userInformationRegister.first_name = first_name;
+      // userInformationRegister.last_name = last_name;
+      // userInformationRegister.email = email;
+      // userInformationRegister.phone_number = phone_number;
+
+      // userInformationRegister = { ...newUser };
+
+      // console.log(userInformationRegister);
+
+      const userInformationDataBase = {
+        first_name: newUser.first_name,
+        last_name: newUser.last_name,
+        email: newUser.email,
+        phone_number: newUser.phone_number,
+      };
+
+      setUserInformation(userInformationDataBase);
+
+      setFormState((prev) => ({
+        ...prev,
+        isLoading: false,
+        success: true,
+      }));
+
       setFormState((prev) => ({ ...prev, success: false }));
 
-      window.location.href = "/clients";
+      if (newUser.user_type === "client") {
+        navigate("/clients");
+      } else {
+        alert(
+          "Inscription réussie ! Vos documents sont en cours de vérification."
+        );
+        navigate("/");
+      }
     } catch (error) {
       setFormState((prev) => ({
         ...prev,
@@ -319,7 +427,7 @@ const Register = () => {
         apiError: t.error,
       }));
     }
-  }, [validateForm, t.error]);
+  }, [validateForm, t.error, navigate, setUserInformation]);
 
   const handleLogoClick = useCallback(() => {
     window.location.href = "/";
@@ -362,20 +470,20 @@ const Register = () => {
     },
   };
 
-  const handleDocumentUpload = (e) => {
-    const files = Array.from(e.target.files);
-    setFormData((prev) => ({
-      ...prev,
-      documents: [...(prev.documents || []), ...files],
-    }));
-  };
+  // const handleDocumentUpload = (e) => {
+  //   const files = Array.from(e.target.files);
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     documents: [...(prev.documents || []), ...files],
+  //   }));
+  // };
 
-  const removeDocument = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      documents: prev.documents.filter((_, i) => i !== index),
-    }));
-  };
+  // const removeDocument = (index) => {
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     documents: prev.documents.filter((_, i) => i !== index),
+  //   }));
+  // };
 
   const inputFocusVariants = {
     focus: {
@@ -388,6 +496,57 @@ const Register = () => {
       boxShadow: "0 0 0px rgba(0,0,0,0)",
       transition: { duration: 0.2 },
     },
+  };
+
+  const handleSpecificDocumentUpload = (userType, documentType, file) => {
+    if (!file) return;
+
+    // Valider le fichier
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const allowedTypes = [
+      "application/pdf",
+      "image/jpeg",
+      "image/png",
+      "image/jpg",
+    ];
+
+    if (file.size > maxSize) {
+      alert("Fichier trop volumineux. Maximum 10MB.");
+      return;
+    }
+
+    if (!allowedTypes.includes(file.mimetype)) {
+      alert("Type de fichier non autorisé. Utilisez PDF, JPG ou PNG.");
+      return;
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      [`${userType}_documents`]: {
+        ...prev[`${userType}_documents`],
+        [documentType]: file,
+      },
+    }));
+
+    // Supprimer l'erreur pour ce champ
+    setFormState((prev) => ({
+      ...prev,
+      errors: {
+        ...prev.errors,
+        [documentType]: undefined,
+        [`${userType}_${documentType}`]: undefined,
+      },
+    }));
+  };
+
+  const removeSpecificDocument = (userType, documentType) => {
+    setFormData((prev) => ({
+      ...prev,
+      [`${userType}_documents`]: {
+        ...prev[`${userType}_documents`],
+        [documentType]: null,
+      },
+    }));
   };
 
   return (
@@ -858,13 +1017,13 @@ const Register = () => {
                           uiState.darkMode ? "text-gray-300" : "text-gray-700"
                         }`}
                       >
-                        {t.firstName}
+                        {t.first_name}
                       </label>
                       <motion.div
                         className="relative"
                         variants={inputFocusVariants}
                         animate={
-                          uiState.focusedField === "firstName"
+                          uiState.focusedField === "first_name"
                             ? "focus"
                             : "blur"
                         }
@@ -873,7 +1032,7 @@ const Register = () => {
                           <User
                             size={18}
                             className={`${
-                              uiState.focusedField === "firstName"
+                              uiState.focusedField === "first_name"
                                 ? "text-emerald-500"
                                 : uiState.darkMode
                                 ? "text-gray-400"
@@ -883,17 +1042,17 @@ const Register = () => {
                         </div>
                         <input
                           type="text"
-                          name="firstName"
-                          value={formData.firstName}
+                          name="first_name"
+                          value={formData.first_name}
                           onChange={handleChange}
-                          onFocus={() => handleFocus("firstName")}
+                          onFocus={() => handleFocus("first_name")}
                           onBlur={handleBlur}
                           className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
                             uiState.darkMode
                               ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
                               : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
                           } ${
-                            formState.errors.firstName
+                            formState.errors.first_name
                               ? "ring-2 ring-red-500"
                               : ""
                           }`}
@@ -901,14 +1060,14 @@ const Register = () => {
                           disabled={formState.isLoading}
                           required
                         />
-                        {formState.errors.firstName && (
+                        {formState.errors.first_name && (
                           <motion.p
                             className="text-red-500 text-xs mt-1 flex items-center"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                           >
                             <AlertCircle size={12} className="mr-1" />
-                            {formState.errors.firstName}
+                            {formState.errors.first_name}
                           </motion.p>
                         )}
                       </motion.div>
@@ -921,20 +1080,22 @@ const Register = () => {
                           uiState.darkMode ? "text-gray-300" : "text-gray-700"
                         }`}
                       >
-                        {t.lastName}
+                        {t.last_name}
                       </label>
                       <motion.div
                         className="relative"
                         variants={inputFocusVariants}
                         animate={
-                          uiState.focusedField === "lastName" ? "focus" : "blur"
+                          uiState.focusedField === "last_name"
+                            ? "focus"
+                            : "blur"
                         }
                       >
                         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                           <User
                             size={18}
                             className={`${
-                              uiState.focusedField === "lastName"
+                              uiState.focusedField === "last_name"
                                 ? "text-emerald-500"
                                 : uiState.darkMode
                                 ? "text-gray-400"
@@ -944,17 +1105,17 @@ const Register = () => {
                         </div>
                         <input
                           type="text"
-                          name="lastName"
-                          value={formData.lastName}
+                          name="last_name"
+                          value={formData.last_name}
                           onChange={handleChange}
-                          onFocus={() => handleFocus("lastName")}
+                          onFocus={() => handleFocus("last_name")}
                           onBlur={handleBlur}
                           className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
                             uiState.darkMode
                               ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
                               : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
                           } ${
-                            formState.errors.lastName
+                            formState.errors.last_name
                               ? "ring-2 ring-red-500"
                               : ""
                           }`}
@@ -962,14 +1123,14 @@ const Register = () => {
                           disabled={formState.isLoading}
                           required
                         />
-                        {formState.errors.lastName && (
+                        {formState.errors.last_name && (
                           <motion.p
                             className="text-red-500 text-xs mt-1 flex items-center"
                             initial={{ opacity: 0, y: -10 }}
                             animate={{ opacity: 1, y: 0 }}
                           >
                             <AlertCircle size={12} className="mr-1" />
-                            {formState.errors.lastName}
+                            {formState.errors.last_name}
                           </motion.p>
                         )}
                       </motion.div>
@@ -1042,20 +1203,22 @@ const Register = () => {
                         uiState.darkMode ? "text-gray-300" : "text-gray-700"
                       }`}
                     >
-                      {t.phone}
+                      {t.phone_number}
                     </label>
                     <motion.div
                       className="relative"
                       variants={inputFocusVariants}
                       animate={
-                        uiState.focusedField === "phone" ? "focus" : "blur"
+                        uiState.focusedField === "phone_number"
+                          ? "focus"
+                          : "blur"
                       }
                     >
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <Phone
                           size={18}
                           className={`${
-                            uiState.focusedField === "phone"
+                            uiState.focusedField === "phone_number"
                               ? "text-emerald-500"
                               : uiState.darkMode
                               ? "text-gray-400"
@@ -1065,30 +1228,32 @@ const Register = () => {
                       </div>
                       <input
                         type="tel"
-                        name="phone"
-                        value={formData.phone}
+                        name="phone_number"
+                        value={formData.phone_number}
                         onChange={handleChange}
-                        onFocus={() => handleFocus("phone")}
+                        onFocus={() => handleFocus("phone_number")}
                         onBlur={handleBlur}
                         className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
                           uiState.darkMode
                             ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
                             : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
                         } ${
-                          formState.errors.phone ? "ring-2 ring-red-500" : ""
+                          formState.errors.phone_number
+                            ? "ring-2 ring-red-500"
+                            : ""
                         }`}
                         placeholder={t.phonePlaceholder}
                         disabled={formState.isLoading}
                         required
                       />
-                      {formState.errors.phone && (
+                      {formState.errors.phone_number && (
                         <motion.p
                           className="text-red-500 text-xs mt-1 flex items-center"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                         >
                           <AlertCircle size={12} className="mr-1" />
-                          {formState.errors.phone}
+                          {formState.errors.phone_number}
                         </motion.p>
                       )}
                     </motion.div>
@@ -1284,27 +1449,27 @@ const Register = () => {
                     </motion.div>
                   </motion.div>
 
-                  {/* Role selection */}
+                  {/* user_type selection */}
                   <motion.div variants={itemVariants}>
                     <label
                       className={`block text-sm font-semibold mb-2 ${
                         uiState.darkMode ? "text-gray-300" : "text-gray-700"
                       }`}
                     >
-                      {t.role}
+                      {t.user_type}
                     </label>
                     <motion.div
                       className="relative"
                       variants={inputFocusVariants}
                       animate={
-                        uiState.focusedField === "role" ? "focus" : "blur"
+                        uiState.focusedField === "user_type" ? "focus" : "blur"
                       }
                     >
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <UserPlus
                           size={18}
                           className={`${
-                            uiState.focusedField === "role"
+                            uiState.focusedField === "user_type"
                               ? "text-emerald-500"
                               : uiState.darkMode
                               ? "text-gray-400"
@@ -1313,44 +1478,46 @@ const Register = () => {
                         />
                       </div>
                       <select
-                        name="role"
-                        value={formData.role}
+                        name="user_type"
+                        value={formData.user_type}
                         onChange={handleChange}
-                        onFocus={() => handleFocus("role")}
+                        onFocus={() => handleFocus("user_type")}
                         onBlur={handleBlur}
                         className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 appearance-none ${
                           uiState.darkMode
                             ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
                             : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
                         } ${
-                          formState.errors.role ? "ring-2 ring-red-500" : ""
+                          formState.errors.user_type
+                            ? "ring-2 ring-red-500"
+                            : ""
                         }`}
                         disabled={formState.isLoading}
                         required
                       >
-                        <option value="">{t.selectRolePlaceholder}</option>
-                        <option value="client">{t.roleCustomer}</option>
-                        <option value="delivery">{t.roleDelivery}</option>
+                        <option value="">{t.selectuser_typePlaceholder}</option>
+                        <option value="client">{t.user_typeCustomer}</option>
+                        <option value="delivery">{t.user_typeDelivery}</option>
                         <option value="restaurant_manager">
-                          {t.roleRestaurantManager}
+                          {t.user_typeRestaurantManager}
                         </option>
                       </select>
-                      {formState.errors.role && (
+                      {formState.errors.user_type && (
                         <motion.p
                           className="text-red-500 text-xs mt-1 flex items-center"
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                         >
                           <AlertCircle size={12} className="mr-1" />
-                          {formState.errors.role}
+                          {formState.errors.user_type}
                         </motion.p>
                       )}
                     </motion.div>
                   </motion.div>
 
-                  {/* Conditional document upload based on role */}
-                  {(formData.role === "delivery" ||
-                    formData.role === "restaurant_manager") && (
+                  {/* Conditional document upload based on user_type */}
+
+                  {formData.user_type === "delivery" && (
                     <motion.div
                       variants={itemVariants}
                       initial={{ opacity: 0, height: 0 }}
@@ -1358,116 +1525,642 @@ const Register = () => {
                       transition={{ duration: 0.3 }}
                     >
                       <label
-                        className={`block text-sm font-semibold mb-2 ${
+                        className={`block text-sm font-semibold mb-4 ${
                           uiState.darkMode ? "text-gray-300" : "text-gray-700"
                         }`}
                       >
-                        {t.requiredDocuments}
+                        Documents requis pour livreur
                       </label>
 
-                      <motion.div
-                        className={`border-2 border-dashed rounded-2xl p-6 text-center ${
-                          uiState.darkMode
-                            ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
-                            : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
-                        } transition-colors ${
-                          formState.errors.documents ? "border-red-500" : ""
-                        }`}
-                        whileHover={{ scale: 1.005 }}
-                      >
-                        <input
-                          type="file"
-                          id="document-upload"
-                          className="hidden"
-                          onChange={handleDocumentUpload}
-                          multiple
-                          accept=".pdf,.jpg,.jpeg,.png"
-                        />
+                      {/* Pièce d'identité - OBLIGATOIRE */}
+                      <div className="mb-4">
                         <label
-                          htmlFor="document-upload"
-                          className="cursor-pointer"
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
                         >
-                          <div className="flex flex-col items-center justify-center space-y-3">
-                            <Upload
-                              size={24}
-                              className={`${
-                                uiState.darkMode
-                                  ? "text-gray-400"
-                                  : "text-gray-500"
-                              }`}
-                            />
-                            <p
-                              className={`text-sm ${
-                                uiState.darkMode
-                                  ? "text-gray-300"
-                                  : "text-gray-600"
-                              }`}
-                            >
-                              {t.dragDropDocuments}{" "}
-                              <span className="text-emerald-500">
-                                {t.browseFiles}
-                              </span>
-                            </p>
-                            <p
-                              className={`text-xs ${
-                                uiState.darkMode
-                                  ? "text-gray-400"
-                                  : "text-gray-500"
-                              }`}
-                            >
-                              {formData.role === "delivery"
-                                ? t.deliveryDocumentsHint
-                                : t.managerDocumentsHint}
-                            </p>
-                          </div>
+                          Pièce d'identité (CNI ou Passeport) *
                         </label>
-
-                        {/* Display uploaded files */}
-                        {formData.documents &&
-                          formData.documents.length > 0 && (
-                            <motion.div
-                              className="mt-4 space-y-2"
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                            >
-                              {formData.documents.map((file, index) => (
-                                <div
-                                  key={index}
-                                  className={`flex items-center justify-between p-2 rounded-lg ${
+                        <motion.div
+                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                            uiState.darkMode
+                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+                          } transition-colors ${
+                            formState.errors.id_document ? "border-red-500" : ""
+                          }`}
+                          whileHover={{ scale: 1.005 }}
+                        >
+                          <input
+                            type="file"
+                            id="delivery-id-document"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleSpecificDocumentUpload(
+                                "delivery",
+                                "id_document",
+                                e.target.files[0]
+                              )
+                            }
+                            accept=".pdf,.jpg,.jpeg,.png"
+                          />
+                          <label
+                            htmlFor="delivery-id-document"
+                            className="cursor-pointer"
+                          >
+                            {formData.delivery_documents.id_document ? (
+                              <div className="flex items-center justify-between">
+                                <span className="text-green-600 font-medium">
+                                  ✓{" "}
+                                  {formData.delivery_documents.id_document.name}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    removeSpecificDocument(
+                                      "delivery",
+                                      "id_document"
+                                    );
+                                  }}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  ✗
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center space-y-2">
+                                <Upload
+                                  size={24}
+                                  className={
                                     uiState.darkMode
-                                      ? "bg-gray-700"
-                                      : "bg-gray-100"
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
+                                  }
+                                />
+                                <p
+                                  className={`text-sm ${
+                                    uiState.darkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
                                   }`}
                                 >
-                                  <div className="flex items-center">
-                                    <FileText size={16} className="mr-2" />
-                                    <span className="text-sm truncate max-w-xs">
-                                      {file.name}
-                                    </span>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => removeDocument(index)}
-                                    className="text-red-500 hover:text-red-600"
-                                  >
-                                    <X size={16} />
-                                  </button>
-                                </div>
-                              ))}
-                            </motion.div>
-                          )}
-                      </motion.div>
+                                  Cliquez pour ajouter votre pièce d'identité
+                                </p>
+                                <p
+                                  className={`text-xs ${
+                                    uiState.darkMode
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
+                                  }`}
+                                >
+                                  PDF, JPG, PNG (max 10MB)
+                                </p>
+                              </div>
+                            )}
+                          </label>
+                        </motion.div>
+                        {formState.errors.id_document && (
+                          <p className="text-red-500 text-xs mt-1 flex items-center">
+                            <AlertCircle size={12} className="mr-1" />
+                            {formState.errors.id_document}
+                          </p>
+                        )}
+                      </div>
 
-                      {formState.errors.documents && (
-                        <motion.p
-                          className="text-red-500 text-xs mt-1 flex items-center"
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
+                      {/* Permis de conduire - OBLIGATOIRE */}
+                      <div className="mb-4">
+                        <label
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
                         >
-                          <AlertCircle size={12} className="mr-1" />
-                          {formState.errors.documents}g
-                        </motion.p>
-                      )}
+                          Permis de conduire *
+                        </label>
+                        <motion.div
+                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                            uiState.darkMode
+                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+                          } transition-colors ${
+                            formState.errors.driving_license
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                          whileHover={{ scale: 1.005 }}
+                        >
+                          <input
+                            type="file"
+                            id="delivery-driving-license"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleSpecificDocumentUpload(
+                                "delivery",
+                                "driving_license",
+                                e.target.files[0]
+                              )
+                            }
+                            accept=".pdf,.jpg,.jpeg,.png"
+                          />
+                          <label
+                            htmlFor="delivery-driving-license"
+                            className="cursor-pointer"
+                          >
+                            {formData.delivery_documents.driving_license ? (
+                              <div className="flex items-center justify-between">
+                                <span className="text-green-600 font-medium">
+                                  ✓{" "}
+                                  {
+                                    formData.delivery_documents.driving_license
+                                      .name
+                                  }
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    removeSpecificDocument(
+                                      "delivery",
+                                      "driving_license"
+                                    );
+                                  }}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  ✗
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center space-y-2">
+                                <Upload
+                                  size={24}
+                                  className={
+                                    uiState.darkMode
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
+                                  }
+                                />
+                                <p
+                                  className={`text-sm ${
+                                    uiState.darkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  Cliquez pour ajouter votre permis de conduire
+                                </p>
+                                <p
+                                  className={`text-xs ${
+                                    uiState.darkMode
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
+                                  }`}
+                                >
+                                  PDF, JPG, PNG (max 10MB)
+                                </p>
+                              </div>
+                            )}
+                          </label>
+                        </motion.div>
+                        {formState.errors.driving_license && (
+                          <p className="text-red-500 text-xs mt-1 flex items-center">
+                            <AlertCircle size={12} className="mr-1" />
+                            {formState.errors.driving_license}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Assurance véhicule - OPTIONNEL */}
+                      <div className="mb-4">
+                        <label
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          Assurance véhicule (optionnel)
+                        </label>
+                        <motion.div
+                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                            uiState.darkMode
+                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+                          } transition-colors`}
+                          whileHover={{ scale: 1.005 }}
+                        >
+                          <input
+                            type="file"
+                            id="delivery-insurance"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleSpecificDocumentUpload(
+                                "delivery",
+                                "insurance",
+                                e.target.files[0]
+                              )
+                            }
+                            accept=".pdf,.jpg,.jpeg,.png"
+                          />
+                          <label
+                            htmlFor="delivery-insurance"
+                            className="cursor-pointer"
+                          >
+                            {formData.delivery_documents.insurance ? (
+                              <div className="flex items-center justify-between">
+                                <span className="text-green-600 font-medium">
+                                  ✓ {formData.delivery_documents.insurance.name}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    removeSpecificDocument(
+                                      "delivery",
+                                      "insurance"
+                                    );
+                                  }}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  ✗
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center space-y-2">
+                                <Upload
+                                  size={24}
+                                  className={
+                                    uiState.darkMode
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
+                                  }
+                                />
+                                <p
+                                  className={`text-sm ${
+                                    uiState.darkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  Cliquez pour ajouter votre assurance
+                                  (recommandé)
+                                </p>
+                              </div>
+                            )}
+                          </label>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {formData.user_type === "restaurant_manager" && (
+                    <motion.div
+                      variants={itemVariants}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <label
+                        className={`block text-sm font-semibold mb-4 ${
+                          uiState.darkMode ? "text-gray-300" : "text-gray-700"
+                        }`}
+                      >
+                        Documents requis pour gérant de restaurant
+                      </label>
+
+                      {/* Pièce d'identité - OBLIGATOIRE */}
+                      <div className="mb-4">
+                        <label
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          Pièce d'identité du gérant *
+                        </label>
+                        <motion.div
+                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                            uiState.darkMode
+                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+                          } transition-colors ${
+                            formState.errors.restaurant_id_document
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                          whileHover={{ scale: 1.005 }}
+                        >
+                          <input
+                            type="file"
+                            id="restaurant-id-document"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleSpecificDocumentUpload(
+                                "restaurant",
+                                "id_document",
+                                e.target.files[0]
+                              )
+                            }
+                            accept=".pdf,.jpg,.jpeg,.png"
+                          />
+                          <label
+                            htmlFor="restaurant-id-document"
+                            className="cursor-pointer"
+                          >
+                            {formData.restaurant_documents.id_document ? (
+                              <div className="flex items-center justify-between">
+                                <span className="text-green-600 font-medium">
+                                  ✓{" "}
+                                  {
+                                    formData.restaurant_documents.id_document
+                                      .name
+                                  }
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    removeSpecificDocument(
+                                      "restaurant",
+                                      "id_document"
+                                    );
+                                  }}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  ✗
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center space-y-2">
+                                <Upload
+                                  size={24}
+                                  className={
+                                    uiState.darkMode
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
+                                  }
+                                />
+                                <p
+                                  className={`text-sm ${
+                                    uiState.darkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  Pièce d'identité du gérant
+                                </p>
+                              </div>
+                            )}
+                          </label>
+                        </motion.div>
+                      </div>
+
+                      {/* Licence commerciale - OBLIGATOIRE */}
+                      <div className="mb-4">
+                        <label
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          Licence commerciale ou Registre du commerce *
+                        </label>
+                        <motion.div
+                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                            uiState.darkMode
+                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+                          } transition-colors ${
+                            formState.errors.business_license
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                          whileHover={{ scale: 1.005 }}
+                        >
+                          <input
+                            type="file"
+                            id="restaurant-business-license"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleSpecificDocumentUpload(
+                                "restaurant",
+                                "business_license",
+                                e.target.files[0]
+                              )
+                            }
+                            accept=".pdf,.jpg,.jpeg,.png"
+                          />
+                          <label
+                            htmlFor="restaurant-business-license"
+                            className="cursor-pointer"
+                          >
+                            {formData.restaurant_documents.business_license ? (
+                              <div className="flex items-center justify-between">
+                                <span className="text-green-600 font-medium">
+                                  ✓{" "}
+                                  {
+                                    formData.restaurant_documents
+                                      .business_license.name
+                                  }
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    removeSpecificDocument(
+                                      "restaurant",
+                                      "business_license"
+                                    );
+                                  }}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  ✗
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center space-y-2">
+                                <Upload
+                                  size={24}
+                                  className={
+                                    uiState.darkMode
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
+                                  }
+                                />
+                                <p
+                                  className={`text-sm ${
+                                    uiState.darkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  Licence commerciale du restaurant
+                                </p>
+                              </div>
+                            )}
+                          </label>
+                        </motion.div>
+                      </div>
+
+                      {/* Certificat sanitaire - OBLIGATOIRE */}
+                      <div className="mb-4">
+                        <label
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          Certificat sanitaire ou autorisation d'hygiène *
+                        </label>
+                        <motion.div
+                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                            uiState.darkMode
+                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+                          } transition-colors ${
+                            formState.errors.health_certificate
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                          whileHover={{ scale: 1.005 }}
+                        >
+                          <input
+                            type="file"
+                            id="restaurant-health-certificate"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleSpecificDocumentUpload(
+                                "restaurant",
+                                "health_certificate",
+                                e.target.files[0]
+                              )
+                            }
+                            accept=".pdf,.jpg,.jpeg,.png"
+                          />
+                          <label
+                            htmlFor="restaurant-health-certificate"
+                            className="cursor-pointer"
+                          >
+                            {formData.restaurant_documents
+                              .health_certificate ? (
+                              <div className="flex items-center justify-between">
+                                <span className="text-green-600 font-medium">
+                                  ✓{" "}
+                                  {
+                                    formData.restaurant_documents
+                                      .health_certificate.name
+                                  }
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    removeSpecificDocument(
+                                      "restaurant",
+                                      "health_certificate"
+                                    );
+                                  }}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  ✗
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center space-y-2">
+                                <Upload
+                                  size={24}
+                                  className={
+                                    uiState.darkMode
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
+                                  }
+                                />
+                                <p
+                                  className={`text-sm ${
+                                    uiState.darkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  Certificat sanitaire du restaurant
+                                </p>
+                              </div>
+                            )}
+                          </label>
+                        </motion.div>
+                      </div>
+
+                      {/* Menu - OPTIONNEL */}
+                      <div className="mb-4">
+                        <label
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          Menu du restaurant (optionnel)
+                        </label>
+                        <motion.div
+                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                            uiState.darkMode
+                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+                          } transition-colors`}
+                          whileHover={{ scale: 1.005 }}
+                        >
+                          <input
+                            type="file"
+                            id="restaurant-menu"
+                            className="hidden"
+                            onChange={(e) =>
+                              handleSpecificDocumentUpload(
+                                "restaurant",
+                                "menu",
+                                e.target.files[0]
+                              )
+                            }
+                            accept=".pdf,.jpg,.jpeg,.png"
+                          />
+                          <label
+                            htmlFor="restaurant-menu"
+                            className="cursor-pointer"
+                          >
+                            {formData.restaurant_documents.menu ? (
+                              <div className="flex items-center justify-between">
+                                <span className="text-green-600 font-medium">
+                                  ✓ {formData.restaurant_documents.menu.name}
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    removeSpecificDocument(
+                                      "restaurant",
+                                      "menu"
+                                    );
+                                  }}
+                                  className="text-red-500 hover:text-red-600"
+                                >
+                                  ✗
+                                </button>
+                              </div>
+                            ) : (
+                              <div className="flex flex-col items-center space-y-2">
+                                <Upload
+                                  size={24}
+                                  className={
+                                    uiState.darkMode
+                                      ? "text-gray-400"
+                                      : "text-gray-500"
+                                  }
+                                />
+                                <p
+                                  className={`text-sm ${
+                                    uiState.darkMode
+                                      ? "text-gray-300"
+                                      : "text-gray-600"
+                                  }`}
+                                >
+                                  Menu ou carte des plats (recommandé)
+                                </p>
+                              </div>
+                            )}
+                          </label>
+                        </motion.div>
+                      </div>
                     </motion.div>
                   )}
 
@@ -1545,7 +2238,7 @@ const Register = () => {
                     )}
                   </motion.button>
                   {/* Restaurant Input For Delivery 
-                  {formData.role === "delivery" && (
+                  {formData.user_type === "delivery" && (
                     <motion.div
                       variants={itemVariants}
                       initial={{ opacity: 0, height: 0 }}
@@ -1596,7 +2289,7 @@ const Register = () => {
                               : ""
                           }`}
                           disabled={formState.isLoading}
-                          required={formData.role === "delivery"}
+                          required={formData.user_type === "delivery"}
                         >
                           <option value="">
                             {t.selectRestaurantPlaceholder}
@@ -1852,3 +2545,23 @@ const Register = () => {
 };
 
 export default Register;
+
+// export const UserInformationRegisterProvider = ({ children }) => {
+//   const [userInformation, setUserInformation] = useState({
+//     first_name: "",
+//     last_name: "",
+//     email: "",
+//     phone_number: "",
+//   });
+
+//   const updateUserInformation = (newData) => {
+//     setUserInformation((prev) => ({ ...prev, ...newData }));
+//   };
+//   return (
+//     <userContextRegister.Provider
+//       value={{ userInformation, setUserInformation, updateUserInformation }}
+//     >
+//       {children}
+//     </userContextRegister.Provider>
+//   );
+// };

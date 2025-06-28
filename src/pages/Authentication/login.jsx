@@ -32,7 +32,14 @@ import {
   STATS_DATA,
 } from "./const_login";
 
-import { userInformation, ANIMATION_DELAY_BASE } from "./const";
+import { ANIMATION_DELAY_BASE } from "./const";
+
+// export const userInformationLogin = {
+//   first_name: "",
+//   last_name: " ",
+//   email: " ",
+//   phone_number: "",
+// };
 
 const redirection = (role) => {
   switch (role) {

@@ -24,21 +24,22 @@ import {
   Award,
 } from "lucide-react";
 
-import { UserContext } from "../../../Authentication/const";
+import { userContextInformation } from "../../../Authentication/const_provider";
 
 const ClientsProfilePage = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const userInformation = useContext(UserContext);
+  const { userInformation } = useContext(userContextInformation);
+
   const [profileData, setProfileData] = useState({
     ...userInformation,
     // firstName: "Ngozi",
     // lastName: "Ekweme",
     // email: "ngozi.ekweme@example.cm",
     // phone: "+237 6XX XXX XXX",
-    // dateOfBirth: "1995-06-15",
-    // gender: "female",
+    dateOfBirth: "xxxx-xx-xx",
+    gender: " ",
     // profileImage: "/api/placeholder/120/120",
     // addresses: [
     //   {
@@ -56,22 +57,23 @@ const ClientsProfilePage = () => {
     //     isDefault: false,
     //   },
     // ],
-    // preferences: {
-    //   cuisine: ["Camerounaise", "Européenne", "Asiatique"],
-    //   dietary: ["Halal"],
-    //   notifications: {
-    //     orders: true,
-    //     promotions: true,
-    //     newsletter: false,
-    //   },
-    //   language: "fr",
-    // },
-    // stats: {
-    //   totalOrders: 47,
-    //   favoriteRestaurants: 12,
-    //   averageRating: 4.8,
-    //   memberSince: "2024-01-15",
-    // },
+    preferences: {
+      cuisine: [" "], //["Camerounaise", "Européenne", "Asiatique"],
+      dietary: [" "],
+      notifications: {
+        orders: true,
+        promotions: true,
+        newsletter: false,
+      },
+      language: "fr",
+
+      stats: {
+        totalOrders: 0,
+        favoriteRestaurants: 0,
+        averageRating: 0.0,
+        memberSince: "2024-01-15", // Rectifier ceci
+      },
+    },
   });
 
   const [formData, setFormData] = useState({ ...profileData });

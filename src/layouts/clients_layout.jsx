@@ -19,9 +19,10 @@ import {
 } from "lucide-react";
 import { translations } from "./const";
 import { useNavigate } from "react-router-dom";
-import { UserContext } from "../pages/Authentication/const";
-
+// import { userContextLogin } from "../pages/Authentication/const_provider";
+// import { userContextRegister } from "../pages/Authentication/register";
 // Context for theme and language
+import { userContextInformation } from "../pages/Authentication/const_provider";
 export const AppContext = createContext();
 
 export const useAppContext = () => {
@@ -39,9 +40,13 @@ const ClientsLayout = ({ children, currentPage = "dashboard" }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activePage, setActivePage] = useState(currentPage);
   const navigate = useNavigate();
-  const user = useContext(UserContext);
+  const { userInformation } = useContext(userContextInformation);
+  // const userLogin = useContext(userContextLogin);
+
+  // console.log(userLogin);
+  const user = userInformation; //: userLogin;
   const initialUser =
-    user.firstName[0].toUpperCase() + user.lastName[0].toUpperCase();
+    user.first_name[0].toUpperCase() + user.last_name[0].toUpperCase();
 
   // Load settings from memory (no localStorage in artifacts)
   useEffect(() => {
@@ -246,11 +251,11 @@ const ClientsLayout = ({ children, currentPage = "dashboard" }) => {
                   <div>
                     <h3 className="font-semibold text-gray-800 dark:text-gray-200">
                       {/* Jean Dupont */}
-                      {`${user.firstName} ${user.lastName}`}
+                      {`${user.first_name} ${user.last_name}`}
                     </h3>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
                       {/* Client Premium */}
-                      {user.role}
+                      {user.user_type}
                     </p>
                   </div>
                 </div>

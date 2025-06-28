@@ -2,16 +2,16 @@ import { createContext } from "react";
 
 // UserInformation
 
-export const userInformation = {
-  firstName: "",
-  lastName: " ",
+export let userInformation = {
+  first_name: "",
+  last_name: " ",
   email: " ",
-  phoneNumber: "",
+  phone_number: "",
 };
 
-// User Context . That will contain User Informations after login such as his name ..
-
-export const UserContext = createContext();
+// export const setUserInformation = (info) => {
+//   userInformation = { ...info };
+// };
 
 // Constants
 export const CAMEROON_COLORS = {
