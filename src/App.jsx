@@ -82,7 +82,14 @@ function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/restaurants" element={<RestaurantPublicityPage />} />
-          <Route path="/login" element={<Login />} />
+          <Route
+            path="/login"
+            element={
+              <UserInformationProvider>
+                <Login />
+              </UserInformationProvider>
+            }
+          />
           <Route
             path="/register"
             element={

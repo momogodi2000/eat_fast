@@ -124,6 +124,13 @@ export const translations = {
       "Permis de conduire et carte d'identité requis (PDF, JPG, PNG)",
     managerDocumentsHint:
       "Document d'identification et justificatif requis (PDF, JPG, PNG)",
+    city: "Ville  ",
+    vehicle_type: "Type de  Vehicule *",
+    vehicle_motor: "Moto",
+    vehicle_scooter: "Scooter",
+    vehicle_bicycle: "Vélo",
+    vehicle_car: "Voiture",
+    address: "Addresse  du",
   },
 };
 

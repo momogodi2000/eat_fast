@@ -4,6 +4,7 @@ import {
   useCallback,
   useMemo,
   createContext,
+  useContext,
 } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -32,7 +33,11 @@ import {
   STATS_DATA,
 } from "./const_login";
 
-import { ANIMATION_DELAY_BASE } from "./const";
+import { userContextInformation } from "./const_provider";
+
+import { ANIMATION_DELAY_BASE, redirection } from "./const";
+import { useNavigate } from "react-router-dom";
+import { AuthServices } from "../../Services/userLogin/authService";
 
 // export const userInformationLogin = {
 //   first_name: "",
@@ -41,25 +46,6 @@ import { ANIMATION_DELAY_BASE } from "./const";
 //   phone_number: "",
 // };
 
-const redirection = (role) => {
-  switch (role) {
-    case "client":
-      window.location.href = "/clients";
-      break;
-    case "admin":
-      window.location.href = "/admin";
-      break;
-    case "restaurant_manager":
-      window.location.href = "/restaurants_manager";
-      break;
-    case "livreur":
-      window.location.href = "/delivery";
-      break;
-    default:
-      window.location.href = "/";
-      break;
-  }
-};
 const Login = () => {
   // State management
   const [formData, setFormData] = useState({
@@ -80,6 +66,13 @@ const Login = () => {
     language: "fr",
     mousePosition: { x: 0, y: 0 },
   });
+
+  //
+  const navigate = useNavigate();
+
+  // Context which would contain the user Information
+
+  const { setUserInformation } = useContext(userContextInformation);
 
   // Memoized translations
   const t = useMemo(() => translations[uiState.language], [uiState.language]);
@@ -199,7 +192,11 @@ const Login = () => {
       // await new Promise(resolve => setTimeout(resolve, 2000));
 
       const userData = { ...formData };
-      const user = await UserServices.getClientUserLogin(userData);
+      //  const user = await UserServices.getClientUserLogin(userData);
+
+      const user = await AuthServices.getUserByLogin(userData);
+
+      setUserInformation(user);
 
       if (user.status === "active") {
         if (user.password === userData.password) {
@@ -210,7 +207,7 @@ const Login = () => {
             isLoading: false,
           }));
 
-          redirection(user.role);
+          redirection(user.role, navigate);
 
           // Redirect after success message
           // setTimeout(() => {
@@ -219,8 +216,6 @@ const Login = () => {
           //     rememberMe: formState.rememberMe
           //   });
           // }, 1500);
-        } else {
-          alert("Mot de Passe Incorrecte ");
         }
       } else {
         alert("Votre compte n'est pas active ou a été désactivé");

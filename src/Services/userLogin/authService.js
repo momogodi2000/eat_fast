@@ -143,9 +143,9 @@ class AuthService {
     // Mapper selon le type d'utilisateur
     if (userData.user_type === "delivery") {
       formData.append("partner_type", "delivery-agent");
-      formData.append("address", "À compléter lors de l'activation");
-      formData.append("city", "Yaoundé");
-      formData.append("vehicle_type", "motorcycle");
+      formData.append("address", userData.address);
+      formData.append("city", userData.city);
+      formData.append("vehicle_type", userData.vehicle_type);
       formData.append("driving_license", "Voir document joint");
 
       // MAPPER LES DOCUMENTS SPÉCIFIQUES vers les champs attendus par votre backend
@@ -172,8 +172,8 @@ class AuthService {
       formData.append("cuisine_type", "Cuisine locale");
       formData.append("capacity", "50");
       formData.append("opening_hours", "08:00-22:00");
-      formData.append("address", "À compléter lors de l'activation");
-      formData.append("city", "Yaoundé");
+      formData.append("address", userData.address);
+      formData.append("city", userData.city);
       formData.append("legal_status", "sole_proprietor");
       formData.append("tax_id", "À fournir lors de l'activation");
 
@@ -294,6 +294,56 @@ class AuthService {
       isValid: Object.keys(errors).length === 0,
       errors,
     };
+  }
+
+  async getUserByLogin(userData) {
+    try {
+      const options = {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      };
+
+      const response = await fetch(`${this.baseEndpoint}/login`, options);
+
+      const responseData = await response.json();
+
+      if (!response.ok) {
+        // Erreurs spécifiques selon le code de statut
+        switch (response.status) {
+          case 404:
+            throw new Error(responseData.error || "Utilisateur non trouvé");
+          case 401:
+            throw new Error(responseData.error || "Mot de passe incorrect");
+          case 500:
+            throw new Error(
+              responseData.error || "Erreur de connexion au serveur"
+            );
+          default:
+            throw new Error(responseData.error || "Erreur de connexion");
+        }
+      }
+
+      // Succès - retourner les données
+      return {
+        success: true,
+        message: responseData.message,
+        firebase_uid: responseData.firebase_uid,
+        requiresMFA: true, // Indique qu'une vérification 2FA est nécessaire
+      };
+    } catch (error) {
+      // Gérer les erreurs réseau ou autres
+      if (error.name === "TypeError" && error.message.includes("fetch")) {
+        throw new Error(
+          "Problème de connexion réseau. Vérifiez votre connexion internet."
+        );
+      }
+
+      // Propager l'erreur avec un message utilisateur-friendly
+      throw new Error(error.message || "Erreur de connexion");
+    }
   }
 }
 

@@ -18,6 +18,7 @@ import {
 } from "react-icons/fi";
 import { HiOutlineMoon, HiOutlineSun } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
+import { userContextInformation } from "../pages/Authentication/const_provider";
 
 // Create contexts for theme and language
 const ThemeContext = createContext();
@@ -121,6 +122,8 @@ const AdminLayout = ({ children }) => {
   const location = useLocation();
   const { darkMode, toggleTheme } = useTheme();
   const { currentLanguage, changeLanguage } = useLanguage();
+
+  const { userInformation } = useContext(userContextInformation);
 
   const [sidebarOpen, setSidebarOpen] = useState(() => {
     // Restore sidebar state from localStorage
@@ -326,9 +329,14 @@ const AdminLayout = ({ children }) => {
                 <FiUser className="text-white" size={20} />
               </div>
               <div className="ml-3">
-                <p className="font-medium">Admin User</p>
+                <p className="font-medium">
+                  {/*Admin User*/}
+                  {`Admin User
+                  ${userInformation.first_name} ${userInformation.last_name}`}
+                </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  admin@eatfast.cm
+                  {/* admin@eatfast.cm */}
+                  {userInformation.email}
                 </p>
               </div>
             </div>

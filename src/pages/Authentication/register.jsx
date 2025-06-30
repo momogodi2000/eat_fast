@@ -86,6 +86,9 @@ const Register = () => {
       menu: null, // optionnel
       photos: [], // optionnel
     },
+    city: " ",
+    vehicle_type: " ",
+    address: " ",
   });
 
   const [formState, setFormState] = useState({
@@ -239,6 +242,26 @@ const Register = () => {
             delete errors.confirmPassword;
           }
           break;
+        case "city":
+          if (!value.trim()) {
+            errors.city = t.validation.required;
+          } else if (value.length < 2) {
+            errors.city =
+              "Le nom de la ville doit contenir au moins 2 caractères";
+          } else {
+            delete errors.city;
+          }
+          break;
+
+        case "address":
+          if (!value.trim()) {
+            errors.address = t.validation.required;
+          } else if (value.length < 10) {
+            errors.address = "L'adresse doit être plus précise";
+          } else {
+            delete errors.address;
+          }
+          break;
         default:
           break;
       }
@@ -277,7 +300,13 @@ const Register = () => {
     const errors = {};
     Object.keys(formData).forEach((key) => {
       // Validation des documents spécifiques
+
+      // Validation des champs communs
+      if (!formData.city) errors.city = "La ville est requise";
+      if (!formData.address) errors.address = "L'adresse est requise";
       if (formData.user_type === "delivery") {
+        if (!formData.vehicle_type)
+          errors.vehicle_type = "Le type de véhicule est requis";
         if (!formData.delivery_documents.id_document) {
           errors.id_document = "Pièce d'identité requise";
         }
@@ -1517,6 +1546,89 @@ const Register = () => {
 
                   {/* Conditional document upload based on user_type */}
 
+                  {(formData.user_type === "delivery" ||
+                    formData.user_type === "restaurant_manager") && (
+                    <motion.div
+                      variants={itemVariants}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <div className="mb-4">
+                        <label
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          {translations.fr.city}
+                          {formData.user_type === "delivery"
+                            ? " de livraison"
+                            : " du restaurant"}
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.city || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              city: e.target.value,
+                            })
+                          }
+                          className={`w-full px-3 py-2 rounded-lg border ${
+                            uiState.darkMode
+                              ? "bg-gray-700 border-gray-600 text-white"
+                              : "bg-white border-gray-300"
+                          } ${formState.errors.city ? "border-red-500" : ""}`}
+                          placeholder="Dans quelle ville allez-vous livrer ?"
+                        />
+                        {formState.errors.city && (
+                          <p className="text-red-500 text-xs mt-1 flex items-center">
+                            <AlertCircle size={12} className="mr-1" />
+                            {formState.errors.city}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Adresse du livreur ou Restaurant */}
+                      <div className="mb-4">
+                        <label
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          {translations.fr.address}
+                          {formData.user_type === "delivery"
+                            ? " Livreur"
+                            : " Restaurant"}
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.address || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              address: e.target.value,
+                            })
+                          }
+                          className={`w-full px-3 py-2 rounded-lg border ${
+                            uiState.darkMode
+                              ? "bg-gray-700 border-gray-600 text-white"
+                              : "bg-white border-gray-300"
+                          } ${
+                            formState.errors.address ? "border-red-500" : ""
+                          }`}
+                          placeholder="Votre adresse complète"
+                        />
+                        {formState.errors.address && (
+                          <p className="text-red-500 text-xs mt-1 flex items-center">
+                            <AlertCircle size={12} className="mr-1" />
+                            {formState.errors.address}
+                          </p>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+
                   {formData.user_type === "delivery" && (
                     <motion.div
                       variants={itemVariants}
@@ -1524,6 +1636,54 @@ const Register = () => {
                       animate={{ opacity: 1, height: "auto" }}
                       transition={{ duration: 0.3 }}
                     >
+                      {/* Type de véhicule */}
+                      <div className="mb-4">
+                        <label
+                          className={`block text-sm font-medium mb-2 ${
+                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
+                          }`}
+                        >
+                          {translations.fr.vehicle_type}
+                        </label>
+                        <select
+                          value={formData.vehicle_type || ""}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              vehicle_type: e.target.value,
+                            })
+                          }
+                          className={`w-full px-3 py-2 rounded-lg border ${
+                            uiState.darkMode
+                              ? "bg-gray-700 border-gray-600 text-white"
+                              : "bg-white border-gray-300"
+                          } ${
+                            formState.errors.vehicle_type
+                              ? "border-red-500"
+                              : ""
+                          }`}
+                        >
+                          <option value="">Sélectionnez votre véhicule</option>
+                          <option value="motorcycle">
+                            {translations.fr.vehicle_motor}
+                          </option>
+                          <option value="scooter">
+                            {translations.fr.vehicle_scooter}
+                          </option>
+                          <option value="bicycle">
+                            {translations.fr.vehicle_bicycle}
+                          </option>
+                          <option value="car">
+                            {translations.fr.vehicle_car}
+                          </option>
+                        </select>
+                        {formState.errors.vehicle_type && (
+                          <p className="text-red-500 text-xs mt-1 flex items-center">
+                            <AlertCircle size={12} className="mr-1" />
+                            {formState.errors.vehicle_type}
+                          </p>
+                        )}
+                      </div>
                       <label
                         className={`block text-sm font-semibold mb-4 ${
                           uiState.darkMode ? "text-gray-300" : "text-gray-700"
