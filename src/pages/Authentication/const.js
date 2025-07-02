@@ -21,3 +21,23 @@ export const CAMEROON_COLORS = {
 };
 
 export const ANIMATION_DELAY_BASE = 100;
+
+export const redirection = (role, navigate) => {
+  switch (role) {
+    case "client":
+      navigate("/clients");
+      break;
+    case "admin":
+      navigate("/admin");
+      break;
+    case "restaurant_manager":
+      navigate("/restaurants_manager");
+      break;
+    case "livreur":
+      navigate("/delivery");
+      break;
+    default:
+      navigate("/");
+      break;
+  }
+};
