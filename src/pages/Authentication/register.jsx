@@ -18,6 +18,7 @@ import {
   User,
   Phone,
   ChevronRight,
+  ChevronLeft,
   ShoppingBag,
   Star,
   Sparkles,
@@ -29,6 +30,8 @@ import {
   Smartphone,
   CreditCard,
   Upload,
+  ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 import { AuthServices } from "../../Services/userLogin/authService";
 
@@ -42,14 +45,6 @@ import {
 } from "./const_register";
 
 import { userContextInformation } from "./const_provider";
-// export const userContextRegister = createContext();
-
-// export const userInformationRegister = {
-//   first_name: " ",
-//   last_name: " ",
-//   email: " ",
-//   phone_number: " ",
-// };
 
 const Register = () => {
   // State management
@@ -59,6 +54,8 @@ const Register = () => {
     language: "fr",
     focusedField: "",
     mousePosition: { x: 0, y: 0 },
+    currentStep: 1, // New state for current step
+    totalSteps: 2, // Total number of steps
   });
 
   const [formData, setFormData] = useState({
@@ -77,18 +74,18 @@ const Register = () => {
     delivery_documents: {
       id_document: null,
       driving_license: null,
-      insurance: null, // optionnel
+      insurance: null,
     },
     restaurant_documents: {
       id_document: null,
       business_license: null,
       health_certificate: null,
-      menu: null, // optionnel
-      photos: [], // optionnel
+      menu: null,
+      photos: [],
     },
-    city: " ",
-    vehicle_type: " ",
-    address: " ",
+    city: "",
+    vehicle_type: "",
+    address: "",
   });
 
   const [formState, setFormState] = useState({
@@ -151,7 +148,7 @@ const Register = () => {
             y: (e.clientY / window.innerHeight - 0.5) * 2,
           },
         }));
-      }, 16); // ~60fps
+      }, 16);
     };
 
     window.addEventListener("mousemove", handleMouseMove);
@@ -252,7 +249,6 @@ const Register = () => {
             delete errors.city;
           }
           break;
-
         case "address":
           if (!value.trim()) {
             errors.address = t.validation.required;
@@ -296,14 +292,33 @@ const Register = () => {
     setUiState((prev) => ({ ...prev, focusedField: "" }));
   }, []);
 
+  // Step navigation
+  const nextStep = useCallback(() => {
+    // Validate current step before proceeding
+    if (uiState.currentStep === 1) {
+      const step1Fields = ["first_name", "last_name", "email", "phone_number", "password", "confirmPassword"];
+      const hasErrors = step1Fields.some(field => {
+        validateField(field, formData[field]);
+        return formState.errors[field];
+      });
+      
+      if (!hasErrors && formData.user_type) {
+        setUiState(prev => ({ ...prev, currentStep: prev.currentStep + 1 }));
+      }
+    }
+  }, [uiState.currentStep, formData, formState.errors, validateField]);
+
+  const prevStep = useCallback(() => {
+    if (uiState.currentStep > 1) {
+      setUiState(prev => ({ ...prev, currentStep: prev.currentStep - 1 }));
+    }
+  }, [uiState.currentStep]);
+
   const validateForm = useCallback(() => {
     const errors = {};
+    
+    // Validate basic fields
     Object.keys(formData).forEach((key) => {
-      // Validation des documents spécifiques
-
-      // Validation des champs communs
-      if (!formData.city) errors.city = "La ville est requise";
-      if (!formData.address) errors.address = "L'adresse est requise";
       if (formData.user_type === "delivery") {
         if (!formData.vehicle_type)
           errors.vehicle_type = "Le type de véhicule est requis";
@@ -326,10 +341,6 @@ const Register = () => {
           errors.health_certificate = "Certificat sanitaire requis";
         }
       }
-
-      if (key !== "acceptTerms") {
-        validateField(key, formData[key]);
-      }
     });
 
     if (!formData.acceptTerms) {
@@ -340,7 +351,7 @@ const Register = () => {
       Object.keys(formState.errors).length === 0 &&
       Object.keys(errors).length === 0
     );
-  }, [formData, formState.errors, validateField]);
+  }, [formData, formState.errors]);
 
   const handleSubmit = useCallback(async () => {
     if (!validateForm()) {
@@ -355,40 +366,13 @@ const Register = () => {
     }));
 
     try {
-      // // Simulate API call
-      // await new Promise(resolve => setTimeout(resolve, 2500));
-
-      // setFormState(prev => ({
-      //   ...prev,
-      //   isLoading: false,
-      //   success: true
-      // }));
-
-      // Reset form after success
-      // setTimeout(() => {
-      //   setFormData({
-      //     first_name: '',
-      //     last_name: '',
-      //     email: '',
-      //     phone_number: '',
-      //     password: '',
-      //     confirmPassword: '',
-      //     acceptTerms: false
-      //   });
-      //   setFormState(prev => ({ ...prev, success: false }));
-
       formData.is_verified = formData.user_type === "client" ? true : false;
-
       formData.is_active = formData.user_type === "client" ? true : false;
-
       formData.status = formData.is_active ? "active" : "inactive";
 
       const userInfo = { ...formData };
-
-      // const user = await UserServices.createUser(userInfo);
-
       const newUser = await AuthServices.createUser(userInfo);
-      // }, 3000);
+      
       setFormData({
         first_name: "",
         last_name: "",
@@ -411,18 +395,6 @@ const Register = () => {
         },
         acceptTerms: false,
       });
-
-      // // setUserInformationRegister(newUser);
-      // const { first_name, email, last_name, phone_number } = newUser;
-
-      // userInformationRegister.first_name = first_name;
-      // userInformationRegister.last_name = last_name;
-      // userInformationRegister.email = email;
-      // userInformationRegister.phone_number = phone_number;
-
-      // userInformationRegister = { ...newUser };
-
-      // console.log(userInformationRegister);
 
       const userInformationDataBase = {
         first_name: newUser.first_name,
@@ -499,21 +471,6 @@ const Register = () => {
     },
   };
 
-  // const handleDocumentUpload = (e) => {
-  //   const files = Array.from(e.target.files);
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     documents: [...(prev.documents || []), ...files],
-  //   }));
-  // };
-
-  // const removeDocument = (index) => {
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     documents: prev.documents.filter((_, i) => i !== index),
-  //   }));
-  // };
-
   const inputFocusVariants = {
     focus: {
       scale: 1.02,
@@ -530,7 +487,6 @@ const Register = () => {
   const handleSpecificDocumentUpload = (userType, documentType, file) => {
     if (!file) return;
 
-    // Valider le fichier
     const maxSize = 10 * 1024 * 1024; // 10MB
     const allowedTypes = [
       "application/pdf",
@@ -544,7 +500,7 @@ const Register = () => {
       return;
     }
 
-    if (!allowedTypes.includes(file.mimetype)) {
+    if (!allowedTypes.includes(file.type)) {
       alert("Type de fichier non autorisé. Utilisez PDF, JPG ou PNG.");
       return;
     }
@@ -557,7 +513,6 @@ const Register = () => {
       },
     }));
 
-    // Supprimer l'erreur pour ce champ
     setFormState((prev) => ({
       ...prev,
       errors: {
@@ -577,6 +532,1326 @@ const Register = () => {
       },
     }));
   };
+
+  // Render Step 1: Basic Information
+  const renderStep1 = () => (
+    <div className="space-y-6">
+      {/* Name inputs */}
+      <motion.div
+        className="grid grid-cols-2 gap-4"
+        variants={itemVariants}
+      >
+        {/* First Name */}
+        <div>
+          <label
+            className={`block text-sm font-semibold mb-2 ${
+              uiState.darkMode ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            {t.first_name}
+          </label>
+          <motion.div
+            className="relative"
+            variants={inputFocusVariants}
+            animate={
+              uiState.focusedField === "first_name" ? "focus" : "blur"
+            }
+          >
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <User
+                size={18}
+                className={`${
+                  uiState.focusedField === "first_name"
+                    ? "text-emerald-500"
+                    : uiState.darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                } transition-colors`}
+              />
+            </div>
+            <input
+              type="text"
+              name="first_name"
+              value={formData.first_name}
+              onChange={handleChange}
+              onFocus={() => handleFocus("first_name")}
+              onBlur={handleBlur}
+              className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
+                uiState.darkMode
+                  ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
+                  : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
+              } ${
+                formState.errors.first_name ? "ring-2 ring-red-500" : ""
+              }`}
+              placeholder={t.firstNamePlaceholder}
+              disabled={formState.isLoading}
+              required
+            />
+            {formState.errors.first_name && (
+              <motion.p
+                className="text-red-500 text-xs mt-1 flex items-center"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <AlertCircle size={12} className="mr-1" />
+                {formState.errors.first_name}
+              </motion.p>
+            )}
+          </motion.div>
+        </div>
+
+        {/* Last Name */}
+        <div>
+          <label
+            className={`block text-sm font-semibold mb-2 ${
+              uiState.darkMode ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            {t.last_name}
+          </label>
+          <motion.div
+            className="relative"
+            variants={inputFocusVariants}
+            animate={
+              uiState.focusedField === "last_name" ? "focus" : "blur"
+            }
+          >
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <User
+                size={18}
+                className={`${
+                  uiState.focusedField === "last_name"
+                    ? "text-emerald-500"
+                    : uiState.darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                } transition-colors`}
+              />
+            </div>
+            <input
+              type="text"
+              name="last_name"
+              value={formData.last_name}
+              onChange={handleChange}
+              onFocus={() => handleFocus("last_name")}
+              onBlur={handleBlur}
+              className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
+                uiState.darkMode
+                  ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
+                  : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
+              } ${
+                formState.errors.last_name ? "ring-2 ring-red-500" : ""
+              }`}
+              placeholder={t.lastNamePlaceholder}
+              disabled={formState.isLoading}
+              required
+            />
+            {formState.errors.last_name && (
+              <motion.p
+                className="text-red-500 text-xs mt-1 flex items-center"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <AlertCircle size={12} className="mr-1" />
+                {formState.errors.last_name}
+              </motion.p>
+            )}
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Email input */}
+      <motion.div variants={itemVariants}>
+        <label
+          className={`block text-sm font-semibold mb-2 ${
+            uiState.darkMode ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          {t.email}
+        </label>
+        <motion.div
+          className="relative"
+          variants={inputFocusVariants}
+          animate={uiState.focusedField === "email" ? "focus" : "blur"}
+        >
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Mail
+              size={18}
+              className={`${
+                uiState.focusedField === "email"
+                  ? "text-emerald-500"
+                  : uiState.darkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
+              } transition-colors`}
+            />
+          </div>
+          <input
+            type="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            onFocus={() => handleFocus("email")}
+            onBlur={handleBlur}
+            className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
+              uiState.darkMode
+                ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
+                : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
+            } ${formState.errors.email ? "ring-2 ring-red-500" : ""}`}
+            placeholder={t.emailPlaceholder}
+            disabled={formState.isLoading}
+            required
+          />
+          {formState.errors.email && (
+            <motion.p
+              className="text-red-500 text-xs mt-1 flex items-center"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <AlertCircle size={12} className="mr-1" />
+              {formState.errors.email}
+            </motion.p>
+          )}
+        </motion.div>
+      </motion.div>
+
+      {/* Phone input */}
+      <motion.div variants={itemVariants}>
+        <label
+          className={`block text-sm font-semibold mb-2 ${
+            uiState.darkMode ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          {t.phone_number}
+        </label>
+        <motion.div
+          className="relative"
+          variants={inputFocusVariants}
+          animate={
+            uiState.focusedField === "phone_number" ? "focus" : "blur"
+          }
+        >
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Phone
+              size={18}
+              className={`${
+                uiState.focusedField === "phone_number"
+                  ? "text-emerald-500"
+                  : uiState.darkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
+              } transition-colors`}
+            />
+          </div>
+          <input
+            type="tel"
+            name="phone_number"
+            value={formData.phone_number}
+            onChange={handleChange}
+            onFocus={() => handleFocus("phone_number")}
+            onBlur={handleBlur}
+            className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
+              uiState.darkMode
+                ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
+                : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
+            } ${
+              formState.errors.phone_number ? "ring-2 ring-red-500" : ""
+            }`}
+            placeholder={t.phonePlaceholder}
+            disabled={formState.isLoading}
+            required
+          />
+          {formState.errors.phone_number && (
+            <motion.p
+              className="text-red-500 text-xs mt-1 flex items-center"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <AlertCircle size={12} className="mr-1" />
+              {formState.errors.phone_number}
+            </motion.p>
+          )}
+        </motion.div>
+      </motion.div>
+
+      {/* Password input */}
+      <motion.div variants={itemVariants}>
+        <label
+          className={`block text-sm font-semibold mb-2 ${
+            uiState.darkMode ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          {t.password}
+        </label>
+        <motion.div
+          className="relative"
+          variants={inputFocusVariants}
+          animate={
+            uiState.focusedField === "password" ? "focus" : "blur"
+          }
+        >
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Lock
+              size={18}
+              className={`${
+                uiState.focusedField === "password"
+                  ? "text-emerald-500"
+                  : uiState.darkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
+              } transition-colors`}
+            />
+          </div>
+          <input
+            type={formState.showPassword ? "text" : "password"}
+            name="password"
+            value={formData.password}
+            onChange={handleChange}
+            onFocus={() => handleFocus("password")}
+            onBlur={handleBlur}
+            className={`block w-full pl-12 pr-12 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
+              uiState.darkMode
+                ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
+                : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
+            } ${
+              formState.errors.password ? "ring-2 ring-red-500" : ""
+            }`}
+            placeholder={t.passwordPlaceholder}
+            disabled={formState.isLoading}
+            required
+          />
+          <motion.button
+            type="button"
+            className="absolute inset-y-0 right-0 pr-4 flex items-center"
+            onClick={() =>
+              setFormState((prev) => ({
+                ...prev,
+                showPassword: !prev.showPassword,
+              }))
+            }
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            disabled={formState.isLoading}
+          >
+            {formState.showPassword ? (
+              <EyeOff
+                size={18}
+                className={`${
+                  uiState.darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                } hover:text-emerald-500 transition-colors`}
+              />
+            ) : (
+              <Eye
+                size={18}
+                className={`${
+                  uiState.darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                } hover:text-emerald-500 transition-colors`}
+              />
+            )}
+          </motion.button>
+          {formState.errors.password && (
+            <motion.p
+              className="text-red-500 text-xs mt-1 flex items-center"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <AlertCircle size={12} className="mr-1" />
+              {formState.errors.password}
+            </motion.p>
+          )}
+        </motion.div>
+      </motion.div>
+
+      {/* Confirm Password input */}
+      <motion.div variants={itemVariants}>
+        <label
+          className={`block text-sm font-semibold mb-2 ${
+            uiState.darkMode ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          {t.confirmPassword}
+        </label>
+        <motion.div
+          className="relative"
+          variants={inputFocusVariants}
+          animate={
+            uiState.focusedField === "confirmPassword"
+              ? "focus"
+              : "blur"
+          }
+        >
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Lock
+              size={18}
+              className={`${
+                uiState.focusedField === "confirmPassword"
+                  ? "text-emerald-500"
+                  : uiState.darkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
+              } transition-colors`}
+            />
+          </div>
+          <input
+            type={formState.showConfirmPassword ? "text" : "password"}
+            name="confirmPassword"
+            value={formData.confirmPassword}
+            onChange={handleChange}
+            onFocus={() => handleFocus("confirmPassword")}
+            onBlur={handleBlur}
+            className={`block w-full pl-12 pr-12 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
+              uiState.darkMode
+                ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
+                : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
+            } ${
+              formState.errors.confirmPassword
+                ? "ring-2 ring-red-500"
+                : ""
+            }`}
+            placeholder={t.confirmPasswordPlaceholder}
+            disabled={formState.isLoading}
+            required
+          />
+          <motion.button
+            type="button"
+            className="absolute inset-y-0 right-0 pr-4 flex items-center"
+            onClick={() =>
+              setFormState((prev) => ({
+                ...prev,
+                showConfirmPassword: !prev.showConfirmPassword,
+              }))
+            }
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            disabled={formState.isLoading}
+          >
+            {formState.showConfirmPassword ? (
+              <EyeOff
+                size={18}
+                className={`${
+                  uiState.darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                } hover:text-emerald-500 transition-colors`}
+              />
+            ) : (
+              <Eye
+                size={18}
+                className={`${
+                  uiState.darkMode
+                    ? "text-gray-400"
+                    : "text-gray-500"
+                } hover:text-emerald-500 transition-colors`}
+              />
+            )}
+          </motion.button>
+          {formState.errors.confirmPassword && (
+            <motion.p
+              className="text-red-500 text-xs mt-1 flex items-center"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <AlertCircle size={12} className="mr-1" />
+              {formState.errors.confirmPassword}
+            </motion.p>
+          )}
+        </motion.div>
+      </motion.div>
+
+      {/* user_type selection */}
+      <motion.div variants={itemVariants}>
+        <label
+          className={`block text-sm font-semibold mb-2 ${
+            uiState.darkMode ? "text-gray-300" : "text-gray-700"
+          }`}
+        >
+          {t.user_type}
+        </label>
+        <motion.div
+          className="relative"
+          variants={inputFocusVariants}
+          animate={
+            uiState.focusedField === "user_type" ? "focus" : "blur"
+          }
+        >
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <UserPlus
+              size={18}
+              className={`${
+                uiState.focusedField === "user_type"
+                  ? "text-emerald-500"
+                  : uiState.darkMode
+                  ? "text-gray-400"
+                  : "text-gray-500"
+              } transition-colors`}
+            />
+          </div>
+          <select
+            name="user_type"
+            value={formData.user_type}
+            onChange={handleChange}
+            onFocus={() => handleFocus("user_type")}
+            onBlur={handleBlur}
+            className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 appearance-none ${
+              uiState.darkMode
+                ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
+                : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
+            } ${
+              formState.errors.user_type
+                ? "ring-2 ring-red-500"
+                : ""
+            }`}
+            disabled={formState.isLoading}
+            required
+          >
+            <option value="">{t.selectuser_typePlaceholder}</option>
+            <option value="client">{t.user_typeCustomer}</option>
+            <option value="delivery">{t.user_typeDelivery}</option>
+            <option value="restaurant_manager">
+              {t.user_typeRestaurantManager}
+            </option>
+          </select>
+          {formState.errors.user_type && (
+            <motion.p
+              className="text-red-500 text-xs mt-1 flex items-center"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <AlertCircle size={12} className="mr-1" />
+              {formState.errors.user_type}
+            </motion.p>
+          )}
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+
+  // Render Step 2: Additional Information & Documents
+  const renderStep2 = () => (
+    <div className="space-y-6">
+      {/* Common fields for delivery and restaurant_manager */}
+      {(formData.user_type === "delivery" ||
+        formData.user_type === "restaurant_manager") && (
+        <motion.div
+          variants={itemVariants}
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              {translations.fr.city}
+              {formData.user_type === "delivery"
+                ? " de livraison"
+                : " du restaurant"}
+            </label>
+            <input
+              type="text"
+              value={formData.city || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  city: e.target.value,
+                })
+              }
+              className={`w-full px-3 py-2 rounded-lg border ${
+                uiState.darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300"
+              } ${formState.errors.city ? "border-red-500" : ""}`}
+              placeholder="Dans quelle ville allez-vous livrer ?"
+            />
+            {formState.errors.city && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertCircle size={12} className="mr-1" />
+                {formState.errors.city}
+              </p>
+            )}
+          </div>
+
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              {translations.fr.address}
+              {formData.user_type === "delivery"
+                ? " Livreur"
+                : " Restaurant"}
+            </label>
+            <input
+              type="text"
+              value={formData.address || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  address: e.target.value,
+                })
+              }
+              className={`w-full px-3 py-2 rounded-lg border ${
+                uiState.darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300"
+              } ${
+                formState.errors.address ? "border-red-500" : ""
+              }`}
+              placeholder="Votre adresse complète"
+            />
+            {formState.errors.address && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertCircle size={12} className="mr-1" />
+                {formState.errors.address}
+              </p>
+            )}
+          </div>
+        </motion.div>
+      )}
+
+      {/* Delivery specific fields */}
+      {formData.user_type === "delivery" && (
+        <motion.div
+          variants={itemVariants}
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              {translations.fr.vehicle_type}
+            </label>
+            <select
+              value={formData.vehicle_type || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  vehicle_type: e.target.value,
+                })
+              }
+              className={`w-full px-3 py-2 rounded-lg border ${
+                uiState.darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300"
+              } ${
+                formState.errors.vehicle_type
+                  ? "border-red-500"
+                  : ""
+              }`}
+            >
+              <option value="">Sélectionnez votre véhicule</option>
+              <option value="motorcycle">
+                {translations.fr.vehicle_motor}
+              </option>
+              <option value="scooter">
+                {translations.fr.vehicle_scooter}
+              </option>
+              <option value="bicycle">
+                {translations.fr.vehicle_bicycle}
+              </option>
+              <option value="car">
+                {translations.fr.vehicle_car}
+              </option>
+            </select>
+            {formState.errors.vehicle_type && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertCircle size={12} className="mr-1" />
+                {formState.errors.vehicle_type}
+              </p>
+            )}
+          </div>
+
+          <label
+            className={`block text-sm font-semibold mb-4 ${
+              uiState.darkMode ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            Documents requis pour livreur
+          </label>
+
+          {/* ID Document */}
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              Pièce d'identité (CNI ou Passeport) *
+            </label>
+            <motion.div
+              className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                uiState.darkMode
+                  ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                  : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+              } transition-colors ${
+                formState.errors.id_document ? "border-red-500" : ""
+              }`}
+              whileHover={{ scale: 1.005 }}
+            >
+              <input
+                type="file"
+                id="delivery-id-document"
+                className="hidden"
+                onChange={(e) =>
+                  handleSpecificDocumentUpload(
+                    "delivery",
+                    "id_document",
+                    e.target.files[0]
+                  )
+                }
+                accept=".pdf,.jpg,.jpeg,.png"
+              />
+              <label
+                htmlFor="delivery-id-document"
+                className="cursor-pointer"
+              >
+                {formData.delivery_documents.id_document ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-600 font-medium">
+                      ✓{" "}
+                      {formData.delivery_documents.id_document.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeSpecificDocument(
+                          "delivery",
+                          "id_document"
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      ✗
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-2">
+                    <Upload
+                      size={24}
+                      className={
+                        uiState.darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }
+                    />
+                    <p
+                      className={`text-sm ${
+                        uiState.darkMode
+                          ? "text-gray-300"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      Cliquez pour ajouter votre pièce d'identité
+                    </p>
+                    <p
+                      className={`text-xs ${
+                        uiState.darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      PDF, JPG, PNG (max 10MB)
+                    </p>
+                  </div>
+                )}
+              </label>
+            </motion.div>
+            {formState.errors.id_document && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertCircle size={12} className="mr-1" />
+                {formState.errors.id_document}
+              </p>
+            )}
+          </div>
+
+          {/* Driving License */}
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              Permis de conduire *
+            </label>
+            <motion.div
+              className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                uiState.darkMode
+                  ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                  : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+              } transition-colors ${
+                formState.errors.driving_license
+                  ? "border-red-500"
+                  : ""
+              }`}
+              whileHover={{ scale: 1.005 }}
+            >
+              <input
+                type="file"
+                id="delivery-driving-license"
+                className="hidden"
+                onChange={(e) =>
+                  handleSpecificDocumentUpload(
+                    "delivery",
+                    "driving_license",
+                    e.target.files[0]
+                  )
+                }
+                accept=".pdf,.jpg,.jpeg,.png"
+              />
+              <label
+                htmlFor="delivery-driving-license"
+                className="cursor-pointer"
+              >
+                {formData.delivery_documents.driving_license ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-600 font-medium">
+                      ✓{" "}
+                      {
+                        formData.delivery_documents.driving_license
+                          .name
+                      }
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeSpecificDocument(
+                          "delivery",
+                          "driving_license"
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      ✗
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-2">
+                    <Upload
+                      size={24}
+                      className={
+                        uiState.darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }
+                    />
+                    <p
+                      className={`text-sm ${
+                        uiState.darkMode
+                          ? "text-gray-300"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      Cliquez pour ajouter votre permis de conduire
+                    </p>
+                    <p
+                      className={`text-xs ${
+                        uiState.darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }`}
+                    >
+                      PDF, JPG, PNG (max 10MB)
+                    </p>
+                  </div>
+                )}
+              </label>
+            </motion.div>
+            {formState.errors.driving_license && (
+              <p className="text-red-500 text-xs mt-1 flex items-center">
+                <AlertCircle size={12} className="mr-1" />
+                {formState.errors.driving_license}
+              </p>
+            )}
+          </div>
+
+          {/* Insurance (Optional) */}
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              Assurance véhicule (optionnel)
+            </label>
+            <motion.div
+              className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                uiState.darkMode
+                  ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                  : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+              } transition-colors`}
+              whileHover={{ scale: 1.005 }}
+            >
+              <input
+                type="file"
+                id="delivery-insurance"
+                className="hidden"
+                onChange={(e) =>
+                  handleSpecificDocumentUpload(
+                    "delivery",
+                    "insurance",
+                    e.target.files[0]
+                  )
+                }
+                accept=".pdf,.jpg,.jpeg,.png"
+              />
+              <label
+                htmlFor="delivery-insurance"
+                className="cursor-pointer"
+              >
+                {formData.delivery_documents.insurance ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-600 font-medium">
+                      ✓ {formData.delivery_documents.insurance.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeSpecificDocument(
+                          "delivery",
+                          "insurance"
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      ✗
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-2">
+                    <Upload
+                      size={24}
+                      className={
+                        uiState.darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }
+                    />
+                    <p
+                      className={`text-sm ${
+                        uiState.darkMode
+                          ? "text-gray-300"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      Cliquez pour ajouter votre assurance (recommandé)
+                    </p>
+                  </div>
+                )}
+              </label>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Restaurant Manager specific fields */}
+      {formData.user_type === "restaurant_manager" && (
+        <motion.div
+          variants={itemVariants}
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          transition={{ duration: 0.3 }}
+        >
+          <label
+            className={`block text-sm font-semibold mb-4 ${
+              uiState.darkMode ? "text-gray-300" : "text-gray-700"
+            }`}
+          >
+            Documents requis pour gérant de restaurant
+          </label>
+
+          {/* Restaurant Manager ID */}
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              Pièce d'identité du gérant *
+            </label>
+            <motion.div
+              className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                uiState.darkMode
+                  ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                  : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+              } transition-colors ${
+                formState.errors.restaurant_id_document
+                  ? "border-red-500"
+                  : ""
+              }`}
+              whileHover={{ scale: 1.005 }}
+            >
+              <input
+                type="file"
+                id="restaurant-id-document"
+                className="hidden"
+                onChange={(e) =>
+                  handleSpecificDocumentUpload(
+                    "restaurant",
+                    "id_document",
+                    e.target.files[0]
+                  )
+                }
+                accept=".pdf,.jpg,.jpeg,.png"
+              />
+              <label
+                htmlFor="restaurant-id-document"
+                className="cursor-pointer"
+              >
+                {formData.restaurant_documents.id_document ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-600 font-medium">
+                      ✓{" "}
+                      {
+                        formData.restaurant_documents.id_document
+                          .name
+                      }
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeSpecificDocument(
+                          "restaurant",
+                          "id_document"
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      ✗
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-2">
+                    <Upload
+                      size={24}
+                      className={
+                        uiState.darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }
+                    />
+                    <p
+                      className={`text-sm ${
+                        uiState.darkMode
+                          ? "text-gray-300"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      Pièce d'identité du gérant
+                    </p>
+                  </div>
+                )}
+              </label>
+            </motion.div>
+          </div>
+
+          {/* Business License */}
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              Licence commerciale ou Registre du commerce *
+            </label>
+            <motion.div
+              className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                uiState.darkMode
+                  ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                  : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+              } transition-colors ${
+                formState.errors.business_license
+                  ? "border-red-500"
+                  : ""
+              }`}
+              whileHover={{ scale: 1.005 }}
+            >
+              <input
+                type="file"
+                id="restaurant-business-license"
+                className="hidden"
+                onChange={(e) =>
+                  handleSpecificDocumentUpload(
+                    "restaurant",
+                    "business_license",
+                    e.target.files[0]
+                  )
+                }
+                accept=".pdf,.jpg,.jpeg,.png"
+              />
+              <label
+                htmlFor="restaurant-business-license"
+                className="cursor-pointer"
+              >
+                {formData.restaurant_documents.business_license ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-600 font-medium">
+                      ✓{" "}
+                      {
+                        formData.restaurant_documents
+                          .business_license.name
+                      }
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeSpecificDocument(
+                          "restaurant",
+                          "business_license"
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      ✗
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-2">
+                    <Upload
+                      size={24}
+                      className={
+                        uiState.darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }
+                    />
+                    <p
+                      className={`text-sm ${
+                        uiState.darkMode
+                          ? "text-gray-300"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      Licence commerciale du restaurant
+                    </p>
+                  </div>
+                )}
+              </label>
+            </motion.div>
+          </div>
+
+          {/* Health Certificate */}
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              Certificat sanitaire ou autorisation d'hygiène *
+            </label>
+            <motion.div
+              className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                uiState.darkMode
+                  ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                  : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+              } transition-colors ${
+                formState.errors.health_certificate
+                  ? "border-red-500"
+                  : ""
+              }`}
+              whileHover={{ scale: 1.005 }}
+            >
+              <input
+                type="file"
+                id="restaurant-health-certificate"
+                className="hidden"
+                onChange={(e) =>
+                  handleSpecificDocumentUpload(
+                    "restaurant",
+                    "health_certificate",
+                    e.target.files[0]
+                  )
+                }
+                accept=".pdf,.jpg,.jpeg,.png"
+              />
+              <label
+                htmlFor="restaurant-health-certificate"
+                className="cursor-pointer"
+              >
+                {formData.restaurant_documents.health_certificate ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-600 font-medium">
+                      ✓{" "}
+                      {
+                        formData.restaurant_documents
+                          .health_certificate.name
+                      }
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeSpecificDocument(
+                          "restaurant",
+                          "health_certificate"
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      ✗
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-2">
+                    <Upload
+                      size={24}
+                      className={
+                        uiState.darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }
+                    />
+                    <p
+                      className={`text-sm ${
+                        uiState.darkMode
+                          ? "text-gray-300"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      Certificat sanitaire du restaurant
+                    </p>
+                  </div>
+                )}
+              </label>
+            </motion.div>
+          </div>
+
+          {/* Menu (Optional) */}
+          <div className="mb-4">
+            <label
+              className={`block text-sm font-medium mb-2 ${
+                uiState.darkMode ? "text-gray-400" : "text-gray-600"
+              }`}
+            >
+              Menu du restaurant (optionnel)
+            </label>
+            <motion.div
+              className={`border-2 border-dashed rounded-xl p-4 text-center ${
+                uiState.darkMode
+                  ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
+                  : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
+              } transition-colors`}
+              whileHover={{ scale: 1.005 }}
+            >
+              <input
+                type="file"
+                id="restaurant-menu"
+                className="hidden"
+                onChange={(e) =>
+                  handleSpecificDocumentUpload(
+                    "restaurant",
+                    "menu",
+                    e.target.files[0]
+                  )
+                }
+                accept=".pdf,.jpg,.jpeg,.png"
+              />
+              <label
+                htmlFor="restaurant-menu"
+                className="cursor-pointer"
+              >
+                {formData.restaurant_documents.menu ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-green-600 font-medium">
+                      ✓ {formData.restaurant_documents.menu.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        removeSpecificDocument(
+                          "restaurant",
+                          "menu"
+                        );
+                      }}
+                      className="text-red-500 hover:text-red-600"
+                    >
+                      ✗
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center space-y-2">
+                    <Upload
+                      size={24}
+                      className={
+                        uiState.darkMode
+                          ? "text-gray-400"
+                          : "text-gray-500"
+                      }
+                    />
+                    <p
+                      className={`text-sm ${
+                        uiState.darkMode
+                          ? "text-gray-300"
+                          : "text-gray-600"
+                      }`}
+                    >
+                      Menu ou carte des plats (recommandé)
+                    </p>
+                  </div>
+                )}
+              </label>
+            </motion.div>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Terms checkbox - Always shown in step 2 */}
+      <motion.div
+        className="flex items-start space-x-3"
+        variants={itemVariants}
+      >
+        <input
+          type="checkbox"
+          name="acceptTerms"
+          checked={formData.acceptTerms}
+          onChange={handleChange}
+          className={`w-5 h-5 rounded-md focus:ring-emerald-500 border-2 transition-all duration-200 ${
+            uiState.darkMode
+              ? "bg-gray-700 border-gray-600 text-emerald-500"
+              : "bg-gray-100 border-gray-300 text-emerald-500"
+          }`}
+          disabled={formState.isLoading}
+          required
+        />
+        <label
+          className={`text-sm leading-relaxed ${
+            uiState.darkMode ? "text-gray-300" : "text-gray-600"
+          }`}
+        >
+          {t.acceptTerms}{" "}
+          <a
+            href="/terms"
+            className="text-emerald-600 hover:text-emerald-500 font-medium underline transition-colors"
+          >
+            {t.termsLink}
+          </a>{" "}
+          et la{" "}
+          <a
+            href="/privacy"
+            className="text-emerald-600 hover:text-emerald-500 font-medium underline transition-colors"
+          >
+            {t.privacyLink}
+          </a>
+        </label>
+      </motion.div>
+    </div>
+  );
 
   return (
     <div
@@ -980,7 +2255,7 @@ const Register = () => {
                   transition: { duration: 0.3 },
                 }}
               >
-                {/* Header */}
+                {/* Header with Step Indicator */}
                 <motion.div
                   className="text-center mb-8"
                   variants={itemVariants}
@@ -994,12 +2269,30 @@ const Register = () => {
                       {t.title}
                     </h1>
                   </motion.div>
+                  
+                  {/* Step Indicator */}
+                  <div className="flex items-center justify-center space-x-4 mb-4">
+                    <div className={`flex items-center space-x-2 ${uiState.currentStep >= 1 ? 'text-emerald-600' : 'text-gray-400'}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${uiState.currentStep >= 1 ? 'bg-emerald-600 text-white' : 'bg-gray-300 text-gray-600'}`}>
+                        1
+                      </div>
+                      <span className="text-sm font-medium">Infos personnelles</span>
+                    </div>
+                    <div className="w-8 h-px bg-gray-300"></div>
+                    <div className={`flex items-center space-x-2 ${uiState.currentStep >= 2 ? 'text-emerald-600' : 'text-gray-400'}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${uiState.currentStep >= 2 ? 'bg-emerald-600 text-white' : 'bg-gray-300 text-gray-600'}`}>
+                        2
+                      </div>
+                      <span className="text-sm font-medium">Documents</span>
+                    </div>
+                  </div>
+                  
                   <p
                     className={`${
                       uiState.darkMode ? "text-gray-300" : "text-gray-600"
                     }`}
                   >
-                    {t.subtitle}
+                    {uiState.currentStep === 1 ? "Commençons par vos informations de base" : "Ajoutons vos documents et finalisons"}
                   </p>
                 </motion.div>
 
@@ -1032,1439 +2325,95 @@ const Register = () => {
                   )}
                 </AnimatePresence>
 
-                {/* Registration Form */}
-                <div className="space-y-6">
-                  {/* Name inputs */}
+                {/* Multi-step Form */}
+                <AnimatePresence mode="wait">
                   <motion.div
-                    className="grid grid-cols-2 gap-4"
-                    variants={itemVariants}
+                    key={uiState.currentStep}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.3 }}
                   >
-                    {/* First Name */}
-                    <div>
-                      <label
-                        className={`block text-sm font-semibold mb-2 ${
-                          uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        {t.first_name}
-                      </label>
-                      <motion.div
-                        className="relative"
-                        variants={inputFocusVariants}
-                        animate={
-                          uiState.focusedField === "first_name"
-                            ? "focus"
-                            : "blur"
-                        }
-                      >
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <User
-                            size={18}
-                            className={`${
-                              uiState.focusedField === "first_name"
-                                ? "text-emerald-500"
-                                : uiState.darkMode
-                                ? "text-gray-400"
-                                : "text-gray-500"
-                            } transition-colors`}
-                          />
-                        </div>
-                        <input
-                          type="text"
-                          name="first_name"
-                          value={formData.first_name}
-                          onChange={handleChange}
-                          onFocus={() => handleFocus("first_name")}
-                          onBlur={handleBlur}
-                          className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                            uiState.darkMode
-                              ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
-                              : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
-                          } ${
-                            formState.errors.first_name
-                              ? "ring-2 ring-red-500"
-                              : ""
-                          }`}
-                          placeholder={t.firstNamePlaceholder}
-                          disabled={formState.isLoading}
-                          required
-                        />
-                        {formState.errors.first_name && (
-                          <motion.p
-                            className="text-red-500 text-xs mt-1 flex items-center"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                          >
-                            <AlertCircle size={12} className="mr-1" />
-                            {formState.errors.first_name}
-                          </motion.p>
-                        )}
-                      </motion.div>
-                    </div>
-
-                    {/* Last Name */}
-                    <div>
-                      <label
-                        className={`block text-sm font-semibold mb-2 ${
-                          uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        {t.last_name}
-                      </label>
-                      <motion.div
-                        className="relative"
-                        variants={inputFocusVariants}
-                        animate={
-                          uiState.focusedField === "last_name"
-                            ? "focus"
-                            : "blur"
-                        }
-                      >
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <User
-                            size={18}
-                            className={`${
-                              uiState.focusedField === "last_name"
-                                ? "text-emerald-500"
-                                : uiState.darkMode
-                                ? "text-gray-400"
-                                : "text-gray-500"
-                            } transition-colors`}
-                          />
-                        </div>
-                        <input
-                          type="text"
-                          name="last_name"
-                          value={formData.last_name}
-                          onChange={handleChange}
-                          onFocus={() => handleFocus("last_name")}
-                          onBlur={handleBlur}
-                          className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                            uiState.darkMode
-                              ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
-                              : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
-                          } ${
-                            formState.errors.last_name
-                              ? "ring-2 ring-red-500"
-                              : ""
-                          }`}
-                          placeholder={t.lastNamePlaceholder}
-                          disabled={formState.isLoading}
-                          required
-                        />
-                        {formState.errors.last_name && (
-                          <motion.p
-                            className="text-red-500 text-xs mt-1 flex items-center"
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                          >
-                            <AlertCircle size={12} className="mr-1" />
-                            {formState.errors.last_name}
-                          </motion.p>
-                        )}
-                      </motion.div>
-                    </div>
+                    {uiState.currentStep === 1 ? renderStep1() : renderStep2()}
                   </motion.div>
+                </AnimatePresence>
 
-                  {/* Email input */}
-                  <motion.div variants={itemVariants}>
-                    <label
-                      className={`block text-sm font-semibold mb-2 ${
-                        uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                      }`}
-                    >
-                      {t.email}
-                    </label>
-                    <motion.div
-                      className="relative"
-                      variants={inputFocusVariants}
-                      animate={
-                        uiState.focusedField === "email" ? "focus" : "blur"
-                      }
-                    >
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Mail
-                          size={18}
-                          className={`${
-                            uiState.focusedField === "email"
-                              ? "text-emerald-500"
-                              : uiState.darkMode
-                              ? "text-gray-400"
-                              : "text-gray-500"
-                          } transition-colors`}
-                        />
-                      </div>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        onFocus={() => handleFocus("email")}
-                        onBlur={handleBlur}
-                        className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                          uiState.darkMode
-                            ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
-                            : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
-                        } ${
-                          formState.errors.email ? "ring-2 ring-red-500" : ""
-                        }`}
-                        placeholder={t.emailPlaceholder}
-                        disabled={formState.isLoading}
-                        required
-                      />
-                      {formState.errors.email && (
-                        <motion.p
-                          className="text-red-500 text-xs mt-1 flex items-center"
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                        >
-                          <AlertCircle size={12} className="mr-1" />
-                          {formState.errors.email}
-                        </motion.p>
-                      )}
-                    </motion.div>
-                  </motion.div>
-
-                  {/* Phone input */}
-                  <motion.div variants={itemVariants}>
-                    <label
-                      className={`block text-sm font-semibold mb-2 ${
-                        uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                      }`}
-                    >
-                      {t.phone_number}
-                    </label>
-                    <motion.div
-                      className="relative"
-                      variants={inputFocusVariants}
-                      animate={
-                        uiState.focusedField === "phone_number"
-                          ? "focus"
-                          : "blur"
-                      }
-                    >
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Phone
-                          size={18}
-                          className={`${
-                            uiState.focusedField === "phone_number"
-                              ? "text-emerald-500"
-                              : uiState.darkMode
-                              ? "text-gray-400"
-                              : "text-gray-500"
-                          } transition-colors`}
-                        />
-                      </div>
-                      <input
-                        type="tel"
-                        name="phone_number"
-                        value={formData.phone_number}
-                        onChange={handleChange}
-                        onFocus={() => handleFocus("phone_number")}
-                        onBlur={handleBlur}
-                        className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                          uiState.darkMode
-                            ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
-                            : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
-                        } ${
-                          formState.errors.phone_number
-                            ? "ring-2 ring-red-500"
-                            : ""
-                        }`}
-                        placeholder={t.phonePlaceholder}
-                        disabled={formState.isLoading}
-                        required
-                      />
-                      {formState.errors.phone_number && (
-                        <motion.p
-                          className="text-red-500 text-xs mt-1 flex items-center"
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                        >
-                          <AlertCircle size={12} className="mr-1" />
-                          {formState.errors.phone_number}
-                        </motion.p>
-                      )}
-                    </motion.div>
-                  </motion.div>
-
-                  {/* Password input */}
-                  <motion.div variants={itemVariants}>
-                    <label
-                      className={`block text-sm font-semibold mb-2 ${
-                        uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                      }`}
-                    >
-                      {t.password}
-                    </label>
-                    <motion.div
-                      className="relative"
-                      variants={inputFocusVariants}
-                      animate={
-                        uiState.focusedField === "password" ? "focus" : "blur"
-                      }
-                    >
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Lock
-                          size={18}
-                          className={`${
-                            uiState.focusedField === "password"
-                              ? "text-emerald-500"
-                              : uiState.darkMode
-                              ? "text-gray-400"
-                              : "text-gray-500"
-                          } transition-colors`}
-                        />
-                      </div>
-                      <input
-                        type={formState.showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        onFocus={() => handleFocus("password")}
-                        onBlur={handleBlur}
-                        className={`block w-full pl-12 pr-12 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                          uiState.darkMode
-                            ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
-                            : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
-                        } ${
-                          formState.errors.password ? "ring-2 ring-red-500" : ""
-                        }`}
-                        placeholder={t.passwordPlaceholder}
-                        disabled={formState.isLoading}
-                        required
-                      />
-                      <motion.button
-                        type="button"
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                        onClick={() =>
-                          setFormState((prev) => ({
-                            ...prev,
-                            showPassword: !prev.showPassword,
-                          }))
-                        }
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        disabled={formState.isLoading}
-                      >
-                        {formState.showPassword ? (
-                          <EyeOff
-                            size={18}
-                            className={`${
-                              uiState.darkMode
-                                ? "text-gray-400"
-                                : "text-gray-500"
-                            } hover:text-emerald-500 transition-colors`}
-                          />
-                        ) : (
-                          <Eye
-                            size={18}
-                            className={`${
-                              uiState.darkMode
-                                ? "text-gray-400"
-                                : "text-gray-500"
-                            } hover:text-emerald-500 transition-colors`}
-                          />
-                        )}
-                      </motion.button>
-                      {formState.errors.password && (
-                        <motion.p
-                          className="text-red-500 text-xs mt-1 flex items-center"
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                        >
-                          <AlertCircle size={12} className="mr-1" />
-                          {formState.errors.password}
-                        </motion.p>
-                      )}
-                    </motion.div>
-                  </motion.div>
-
-                  {/* Confirm Password input */}
-                  <motion.div variants={itemVariants}>
-                    <label
-                      className={`block text-sm font-semibold mb-2 ${
-                        uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                      }`}
-                    >
-                      {t.confirmPassword}
-                    </label>
-                    <motion.div
-                      className="relative"
-                      variants={inputFocusVariants}
-                      animate={
-                        uiState.focusedField === "confirmPassword"
-                          ? "focus"
-                          : "blur"
-                      }
-                    >
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <Lock
-                          size={18}
-                          className={`${
-                            uiState.focusedField === "confirmPassword"
-                              ? "text-emerald-500"
-                              : uiState.darkMode
-                              ? "text-gray-400"
-                              : "text-gray-500"
-                          } transition-colors`}
-                        />
-                      </div>
-                      <input
-                        type={
-                          formState.showConfirmPassword ? "text" : "password"
-                        }
-                        name="confirmPassword"
-                        value={formData.confirmPassword}
-                        onChange={handleChange}
-                        onFocus={() => handleFocus("confirmPassword")}
-                        onBlur={handleBlur}
-                        className={`block w-full pl-12 pr-12 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 ${
-                          uiState.darkMode
-                            ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
-                            : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
-                        } ${
-                          formState.errors.confirmPassword
-                            ? "ring-2 ring-red-500"
-                            : ""
-                        }`}
-                        placeholder={t.confirmPasswordPlaceholder}
-                        disabled={formState.isLoading}
-                        required
-                      />
-                      <motion.button
-                        type="button"
-                        className="absolute inset-y-0 right-0 pr-4 flex items-center"
-                        onClick={() =>
-                          setFormState((prev) => ({
-                            ...prev,
-                            showConfirmPassword: !prev.showConfirmPassword,
-                          }))
-                        }
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        disabled={formState.isLoading}
-                      >
-                        {formState.showConfirmPassword ? (
-                          <EyeOff
-                            size={18}
-                            className={`${
-                              uiState.darkMode
-                                ? "text-gray-400"
-                                : "text-gray-500"
-                            } hover:text-emerald-500 transition-colors`}
-                          />
-                        ) : (
-                          <Eye
-                            size={18}
-                            className={`${
-                              uiState.darkMode
-                                ? "text-gray-400"
-                                : "text-gray-500"
-                            } hover:text-emerald-500 transition-colors`}
-                          />
-                        )}
-                      </motion.button>
-                      {formState.errors.confirmPassword && (
-                        <motion.p
-                          className="text-red-500 text-xs mt-1 flex items-center"
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                        >
-                          <AlertCircle size={12} className="mr-1" />
-                          {formState.errors.confirmPassword}
-                        </motion.p>
-                      )}
-                    </motion.div>
-                  </motion.div>
-
-                  {/* user_type selection */}
-                  <motion.div variants={itemVariants}>
-                    <label
-                      className={`block text-sm font-semibold mb-2 ${
-                        uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                      }`}
-                    >
-                      {t.user_type}
-                    </label>
-                    <motion.div
-                      className="relative"
-                      variants={inputFocusVariants}
-                      animate={
-                        uiState.focusedField === "user_type" ? "focus" : "blur"
-                      }
-                    >
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <UserPlus
-                          size={18}
-                          className={`${
-                            uiState.focusedField === "user_type"
-                              ? "text-emerald-500"
-                              : uiState.darkMode
-                              ? "text-gray-400"
-                              : "text-gray-500"
-                          } transition-colors`}
-                        />
-                      </div>
-                      <select
-                        name="user_type"
-                        value={formData.user_type}
-                        onChange={handleChange}
-                        onFocus={() => handleFocus("user_type")}
-                        onBlur={handleBlur}
-                        className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 appearance-none ${
-                          uiState.darkMode
-                            ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
-                            : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
-                        } ${
-                          formState.errors.user_type
-                            ? "ring-2 ring-red-500"
-                            : ""
-                        }`}
-                        disabled={formState.isLoading}
-                        required
-                      >
-                        <option value="">{t.selectuser_typePlaceholder}</option>
-                        <option value="client">{t.user_typeCustomer}</option>
-                        <option value="delivery">{t.user_typeDelivery}</option>
-                        <option value="restaurant_manager">
-                          {t.user_typeRestaurantManager}
-                        </option>
-                      </select>
-                      {formState.errors.user_type && (
-                        <motion.p
-                          className="text-red-500 text-xs mt-1 flex items-center"
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                        >
-                          <AlertCircle size={12} className="mr-1" />
-                          {formState.errors.user_type}
-                        </motion.p>
-                      )}
-                    </motion.div>
-                  </motion.div>
-
-                  {/* Conditional document upload based on user_type */}
-
-                  {(formData.user_type === "delivery" ||
-                    formData.user_type === "restaurant_manager") && (
-                    <motion.div
-                      variants={itemVariants}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          {translations.fr.city}
-                          {formData.user_type === "delivery"
-                            ? " de livraison"
-                            : " du restaurant"}
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.city || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              city: e.target.value,
-                            })
-                          }
-                          className={`w-full px-3 py-2 rounded-lg border ${
-                            uiState.darkMode
-                              ? "bg-gray-700 border-gray-600 text-white"
-                              : "bg-white border-gray-300"
-                          } ${formState.errors.city ? "border-red-500" : ""}`}
-                          placeholder="Dans quelle ville allez-vous livrer ?"
-                        />
-                        {formState.errors.city && (
-                          <p className="text-red-500 text-xs mt-1 flex items-center">
-                            <AlertCircle size={12} className="mr-1" />
-                            {formState.errors.city}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Adresse du livreur ou Restaurant */}
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          {translations.fr.address}
-                          {formData.user_type === "delivery"
-                            ? " Livreur"
-                            : " Restaurant"}
-                        </label>
-                        <input
-                          type="text"
-                          value={formData.address || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              address: e.target.value,
-                            })
-                          }
-                          className={`w-full px-3 py-2 rounded-lg border ${
-                            uiState.darkMode
-                              ? "bg-gray-700 border-gray-600 text-white"
-                              : "bg-white border-gray-300"
-                          } ${
-                            formState.errors.address ? "border-red-500" : ""
-                          }`}
-                          placeholder="Votre adresse complète"
-                        />
-                        {formState.errors.address && (
-                          <p className="text-red-500 text-xs mt-1 flex items-center">
-                            <AlertCircle size={12} className="mr-1" />
-                            {formState.errors.address}
-                          </p>
-                        )}
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {formData.user_type === "delivery" && (
-                    <motion.div
-                      variants={itemVariants}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {/* Type de véhicule */}
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          {translations.fr.vehicle_type}
-                        </label>
-                        <select
-                          value={formData.vehicle_type || ""}
-                          onChange={(e) =>
-                            setFormData({
-                              ...formData,
-                              vehicle_type: e.target.value,
-                            })
-                          }
-                          className={`w-full px-3 py-2 rounded-lg border ${
-                            uiState.darkMode
-                              ? "bg-gray-700 border-gray-600 text-white"
-                              : "bg-white border-gray-300"
-                          } ${
-                            formState.errors.vehicle_type
-                              ? "border-red-500"
-                              : ""
-                          }`}
-                        >
-                          <option value="">Sélectionnez votre véhicule</option>
-                          <option value="motorcycle">
-                            {translations.fr.vehicle_motor}
-                          </option>
-                          <option value="scooter">
-                            {translations.fr.vehicle_scooter}
-                          </option>
-                          <option value="bicycle">
-                            {translations.fr.vehicle_bicycle}
-                          </option>
-                          <option value="car">
-                            {translations.fr.vehicle_car}
-                          </option>
-                        </select>
-                        {formState.errors.vehicle_type && (
-                          <p className="text-red-500 text-xs mt-1 flex items-center">
-                            <AlertCircle size={12} className="mr-1" />
-                            {formState.errors.vehicle_type}
-                          </p>
-                        )}
-                      </div>
-                      <label
-                        className={`block text-sm font-semibold mb-4 ${
-                          uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        Documents requis pour livreur
-                      </label>
-
-                      {/* Pièce d'identité - OBLIGATOIRE */}
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          Pièce d'identité (CNI ou Passeport) *
-                        </label>
-                        <motion.div
-                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
-                            uiState.darkMode
-                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
-                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
-                          } transition-colors ${
-                            formState.errors.id_document ? "border-red-500" : ""
-                          }`}
-                          whileHover={{ scale: 1.005 }}
-                        >
-                          <input
-                            type="file"
-                            id="delivery-id-document"
-                            className="hidden"
-                            onChange={(e) =>
-                              handleSpecificDocumentUpload(
-                                "delivery",
-                                "id_document",
-                                e.target.files[0]
-                              )
-                            }
-                            accept=".pdf,.jpg,.jpeg,.png"
-                          />
-                          <label
-                            htmlFor="delivery-id-document"
-                            className="cursor-pointer"
-                          >
-                            {formData.delivery_documents.id_document ? (
-                              <div className="flex items-center justify-between">
-                                <span className="text-green-600 font-medium">
-                                  ✓{" "}
-                                  {formData.delivery_documents.id_document.name}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    removeSpecificDocument(
-                                      "delivery",
-                                      "id_document"
-                                    );
-                                  }}
-                                  className="text-red-500 hover:text-red-600"
-                                >
-                                  ✗
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center space-y-2">
-                                <Upload
-                                  size={24}
-                                  className={
-                                    uiState.darkMode
-                                      ? "text-gray-400"
-                                      : "text-gray-500"
-                                  }
-                                />
-                                <p
-                                  className={`text-sm ${
-                                    uiState.darkMode
-                                      ? "text-gray-300"
-                                      : "text-gray-600"
-                                  }`}
-                                >
-                                  Cliquez pour ajouter votre pièce d'identité
-                                </p>
-                                <p
-                                  className={`text-xs ${
-                                    uiState.darkMode
-                                      ? "text-gray-400"
-                                      : "text-gray-500"
-                                  }`}
-                                >
-                                  PDF, JPG, PNG (max 10MB)
-                                </p>
-                              </div>
-                            )}
-                          </label>
-                        </motion.div>
-                        {formState.errors.id_document && (
-                          <p className="text-red-500 text-xs mt-1 flex items-center">
-                            <AlertCircle size={12} className="mr-1" />
-                            {formState.errors.id_document}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Permis de conduire - OBLIGATOIRE */}
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          Permis de conduire *
-                        </label>
-                        <motion.div
-                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
-                            uiState.darkMode
-                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
-                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
-                          } transition-colors ${
-                            formState.errors.driving_license
-                              ? "border-red-500"
-                              : ""
-                          }`}
-                          whileHover={{ scale: 1.005 }}
-                        >
-                          <input
-                            type="file"
-                            id="delivery-driving-license"
-                            className="hidden"
-                            onChange={(e) =>
-                              handleSpecificDocumentUpload(
-                                "delivery",
-                                "driving_license",
-                                e.target.files[0]
-                              )
-                            }
-                            accept=".pdf,.jpg,.jpeg,.png"
-                          />
-                          <label
-                            htmlFor="delivery-driving-license"
-                            className="cursor-pointer"
-                          >
-                            {formData.delivery_documents.driving_license ? (
-                              <div className="flex items-center justify-between">
-                                <span className="text-green-600 font-medium">
-                                  ✓{" "}
-                                  {
-                                    formData.delivery_documents.driving_license
-                                      .name
-                                  }
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    removeSpecificDocument(
-                                      "delivery",
-                                      "driving_license"
-                                    );
-                                  }}
-                                  className="text-red-500 hover:text-red-600"
-                                >
-                                  ✗
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center space-y-2">
-                                <Upload
-                                  size={24}
-                                  className={
-                                    uiState.darkMode
-                                      ? "text-gray-400"
-                                      : "text-gray-500"
-                                  }
-                                />
-                                <p
-                                  className={`text-sm ${
-                                    uiState.darkMode
-                                      ? "text-gray-300"
-                                      : "text-gray-600"
-                                  }`}
-                                >
-                                  Cliquez pour ajouter votre permis de conduire
-                                </p>
-                                <p
-                                  className={`text-xs ${
-                                    uiState.darkMode
-                                      ? "text-gray-400"
-                                      : "text-gray-500"
-                                  }`}
-                                >
-                                  PDF, JPG, PNG (max 10MB)
-                                </p>
-                              </div>
-                            )}
-                          </label>
-                        </motion.div>
-                        {formState.errors.driving_license && (
-                          <p className="text-red-500 text-xs mt-1 flex items-center">
-                            <AlertCircle size={12} className="mr-1" />
-                            {formState.errors.driving_license}
-                          </p>
-                        )}
-                      </div>
-
-                      {/* Assurance véhicule - OPTIONNEL */}
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          Assurance véhicule (optionnel)
-                        </label>
-                        <motion.div
-                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
-                            uiState.darkMode
-                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
-                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
-                          } transition-colors`}
-                          whileHover={{ scale: 1.005 }}
-                        >
-                          <input
-                            type="file"
-                            id="delivery-insurance"
-                            className="hidden"
-                            onChange={(e) =>
-                              handleSpecificDocumentUpload(
-                                "delivery",
-                                "insurance",
-                                e.target.files[0]
-                              )
-                            }
-                            accept=".pdf,.jpg,.jpeg,.png"
-                          />
-                          <label
-                            htmlFor="delivery-insurance"
-                            className="cursor-pointer"
-                          >
-                            {formData.delivery_documents.insurance ? (
-                              <div className="flex items-center justify-between">
-                                <span className="text-green-600 font-medium">
-                                  ✓ {formData.delivery_documents.insurance.name}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    removeSpecificDocument(
-                                      "delivery",
-                                      "insurance"
-                                    );
-                                  }}
-                                  className="text-red-500 hover:text-red-600"
-                                >
-                                  ✗
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center space-y-2">
-                                <Upload
-                                  size={24}
-                                  className={
-                                    uiState.darkMode
-                                      ? "text-gray-400"
-                                      : "text-gray-500"
-                                  }
-                                />
-                                <p
-                                  className={`text-sm ${
-                                    uiState.darkMode
-                                      ? "text-gray-300"
-                                      : "text-gray-600"
-                                  }`}
-                                >
-                                  Cliquez pour ajouter votre assurance
-                                  (recommandé)
-                                </p>
-                              </div>
-                            )}
-                          </label>
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {formData.user_type === "restaurant_manager" && (
-                    <motion.div
-                      variants={itemVariants}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <label
-                        className={`block text-sm font-semibold mb-4 ${
-                          uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        Documents requis pour gérant de restaurant
-                      </label>
-
-                      {/* Pièce d'identité - OBLIGATOIRE */}
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          Pièce d'identité du gérant *
-                        </label>
-                        <motion.div
-                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
-                            uiState.darkMode
-                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
-                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
-                          } transition-colors ${
-                            formState.errors.restaurant_id_document
-                              ? "border-red-500"
-                              : ""
-                          }`}
-                          whileHover={{ scale: 1.005 }}
-                        >
-                          <input
-                            type="file"
-                            id="restaurant-id-document"
-                            className="hidden"
-                            onChange={(e) =>
-                              handleSpecificDocumentUpload(
-                                "restaurant",
-                                "id_document",
-                                e.target.files[0]
-                              )
-                            }
-                            accept=".pdf,.jpg,.jpeg,.png"
-                          />
-                          <label
-                            htmlFor="restaurant-id-document"
-                            className="cursor-pointer"
-                          >
-                            {formData.restaurant_documents.id_document ? (
-                              <div className="flex items-center justify-between">
-                                <span className="text-green-600 font-medium">
-                                  ✓{" "}
-                                  {
-                                    formData.restaurant_documents.id_document
-                                      .name
-                                  }
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    removeSpecificDocument(
-                                      "restaurant",
-                                      "id_document"
-                                    );
-                                  }}
-                                  className="text-red-500 hover:text-red-600"
-                                >
-                                  ✗
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center space-y-2">
-                                <Upload
-                                  size={24}
-                                  className={
-                                    uiState.darkMode
-                                      ? "text-gray-400"
-                                      : "text-gray-500"
-                                  }
-                                />
-                                <p
-                                  className={`text-sm ${
-                                    uiState.darkMode
-                                      ? "text-gray-300"
-                                      : "text-gray-600"
-                                  }`}
-                                >
-                                  Pièce d'identité du gérant
-                                </p>
-                              </div>
-                            )}
-                          </label>
-                        </motion.div>
-                      </div>
-
-                      {/* Licence commerciale - OBLIGATOIRE */}
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          Licence commerciale ou Registre du commerce *
-                        </label>
-                        <motion.div
-                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
-                            uiState.darkMode
-                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
-                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
-                          } transition-colors ${
-                            formState.errors.business_license
-                              ? "border-red-500"
-                              : ""
-                          }`}
-                          whileHover={{ scale: 1.005 }}
-                        >
-                          <input
-                            type="file"
-                            id="restaurant-business-license"
-                            className="hidden"
-                            onChange={(e) =>
-                              handleSpecificDocumentUpload(
-                                "restaurant",
-                                "business_license",
-                                e.target.files[0]
-                              )
-                            }
-                            accept=".pdf,.jpg,.jpeg,.png"
-                          />
-                          <label
-                            htmlFor="restaurant-business-license"
-                            className="cursor-pointer"
-                          >
-                            {formData.restaurant_documents.business_license ? (
-                              <div className="flex items-center justify-between">
-                                <span className="text-green-600 font-medium">
-                                  ✓{" "}
-                                  {
-                                    formData.restaurant_documents
-                                      .business_license.name
-                                  }
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    removeSpecificDocument(
-                                      "restaurant",
-                                      "business_license"
-                                    );
-                                  }}
-                                  className="text-red-500 hover:text-red-600"
-                                >
-                                  ✗
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center space-y-2">
-                                <Upload
-                                  size={24}
-                                  className={
-                                    uiState.darkMode
-                                      ? "text-gray-400"
-                                      : "text-gray-500"
-                                  }
-                                />
-                                <p
-                                  className={`text-sm ${
-                                    uiState.darkMode
-                                      ? "text-gray-300"
-                                      : "text-gray-600"
-                                  }`}
-                                >
-                                  Licence commerciale du restaurant
-                                </p>
-                              </div>
-                            )}
-                          </label>
-                        </motion.div>
-                      </div>
-
-                      {/* Certificat sanitaire - OBLIGATOIRE */}
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          Certificat sanitaire ou autorisation d'hygiène *
-                        </label>
-                        <motion.div
-                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
-                            uiState.darkMode
-                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
-                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
-                          } transition-colors ${
-                            formState.errors.health_certificate
-                              ? "border-red-500"
-                              : ""
-                          }`}
-                          whileHover={{ scale: 1.005 }}
-                        >
-                          <input
-                            type="file"
-                            id="restaurant-health-certificate"
-                            className="hidden"
-                            onChange={(e) =>
-                              handleSpecificDocumentUpload(
-                                "restaurant",
-                                "health_certificate",
-                                e.target.files[0]
-                              )
-                            }
-                            accept=".pdf,.jpg,.jpeg,.png"
-                          />
-                          <label
-                            htmlFor="restaurant-health-certificate"
-                            className="cursor-pointer"
-                          >
-                            {formData.restaurant_documents
-                              .health_certificate ? (
-                              <div className="flex items-center justify-between">
-                                <span className="text-green-600 font-medium">
-                                  ✓{" "}
-                                  {
-                                    formData.restaurant_documents
-                                      .health_certificate.name
-                                  }
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    removeSpecificDocument(
-                                      "restaurant",
-                                      "health_certificate"
-                                    );
-                                  }}
-                                  className="text-red-500 hover:text-red-600"
-                                >
-                                  ✗
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center space-y-2">
-                                <Upload
-                                  size={24}
-                                  className={
-                                    uiState.darkMode
-                                      ? "text-gray-400"
-                                      : "text-gray-500"
-                                  }
-                                />
-                                <p
-                                  className={`text-sm ${
-                                    uiState.darkMode
-                                      ? "text-gray-300"
-                                      : "text-gray-600"
-                                  }`}
-                                >
-                                  Certificat sanitaire du restaurant
-                                </p>
-                              </div>
-                            )}
-                          </label>
-                        </motion.div>
-                      </div>
-
-                      {/* Menu - OPTIONNEL */}
-                      <div className="mb-4">
-                        <label
-                          className={`block text-sm font-medium mb-2 ${
-                            uiState.darkMode ? "text-gray-400" : "text-gray-600"
-                          }`}
-                        >
-                          Menu du restaurant (optionnel)
-                        </label>
-                        <motion.div
-                          className={`border-2 border-dashed rounded-xl p-4 text-center ${
-                            uiState.darkMode
-                              ? "border-gray-600 bg-gray-700/30 hover:border-emerald-500"
-                              : "border-gray-300 bg-gray-50/50 hover:border-emerald-500"
-                          } transition-colors`}
-                          whileHover={{ scale: 1.005 }}
-                        >
-                          <input
-                            type="file"
-                            id="restaurant-menu"
-                            className="hidden"
-                            onChange={(e) =>
-                              handleSpecificDocumentUpload(
-                                "restaurant",
-                                "menu",
-                                e.target.files[0]
-                              )
-                            }
-                            accept=".pdf,.jpg,.jpeg,.png"
-                          />
-                          <label
-                            htmlFor="restaurant-menu"
-                            className="cursor-pointer"
-                          >
-                            {formData.restaurant_documents.menu ? (
-                              <div className="flex items-center justify-between">
-                                <span className="text-green-600 font-medium">
-                                  ✓ {formData.restaurant_documents.menu.name}
-                                </span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    removeSpecificDocument(
-                                      "restaurant",
-                                      "menu"
-                                    );
-                                  }}
-                                  className="text-red-500 hover:text-red-600"
-                                >
-                                  ✗
-                                </button>
-                              </div>
-                            ) : (
-                              <div className="flex flex-col items-center space-y-2">
-                                <Upload
-                                  size={24}
-                                  className={
-                                    uiState.darkMode
-                                      ? "text-gray-400"
-                                      : "text-gray-500"
-                                  }
-                                />
-                                <p
-                                  className={`text-sm ${
-                                    uiState.darkMode
-                                      ? "text-gray-300"
-                                      : "text-gray-600"
-                                  }`}
-                                >
-                                  Menu ou carte des plats (recommandé)
-                                </p>
-                              </div>
-                            )}
-                          </label>
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  )}
-
-                  {/* Terms checkbox */}
-                  <motion.div
-                    className="flex items-start space-x-3"
-                    variants={itemVariants}
-                  >
-                    <input
-                      type="checkbox"
-                      name="acceptTerms"
-                      checked={formData.acceptTerms}
-                      onChange={handleChange}
-                      className={`w-5 h-5 rounded-md focus:ring-emerald-500 border-2 transition-all duration-200 ${
+                {/* Navigation Buttons */}
+                <div className="flex justify-between mt-8">
+                  {uiState.currentStep > 1 ? (
+                    <motion.button
+                      type="button"
+                      onClick={prevStep}
+                      className={`flex items-center space-x-2 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
                         uiState.darkMode
-                          ? "bg-gray-700 border-gray-600 text-emerald-500"
-                          : "bg-gray-100 border-gray-300 text-emerald-500"
+                          ? "bg-gray-700 hover:bg-gray-600 text-white"
+                          : "bg-gray-200 hover:bg-gray-300 text-gray-700"
                       }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
                       disabled={formState.isLoading}
-                      required
-                    />
-                    <label
-                      className={`text-sm leading-relaxed ${
-                        uiState.darkMode ? "text-gray-300" : "text-gray-600"
-                      }`}
                     >
-                      {t.acceptTerms}{" "}
-                      <a
-                        href="/terms"
-                        className="text-emerald-600 hover:text-emerald-500 font-medium underline transition-colors"
-                      >
-                        {t.termsLink}
-                      </a>{" "}
-                      et la{" "}
-                      <a
-                        href="/privacy"
-                        className="text-emerald-600 hover:text-emerald-500 font-medium underline transition-colors"
-                      >
-                        {t.privacyLink}
-                      </a>
-                    </label>
-                  </motion.div>
+                      <ArrowLeft size={20} />
+                      <span>Précédent</span>
+                    </motion.button>
+                  ) : (
+                    <div></div>
+                  )}
 
-                  {/* Submit button */}
-                  <motion.button
-                    type="button"
-                    onClick={handleSubmit}
-                    className={`w-full py-4 px-6 rounded-2xl font-semibold text-lg transition-all duration-300 flex items-center justify-center space-x-2 ${
-                      formState.isLoading
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-lg hover:shadow-emerald-500/30 transform hover:scale-105"
-                    } text-white`}
-                    disabled={formState.isLoading}
-                    whileTap={{ scale: formState.isLoading ? 1 : 0.95 }}
-                    variants={itemVariants}
-                  >
-                    {formState.isLoading ? (
-                      <>
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{
-                            duration: 1,
-                            repeat: Infinity,
-                            ease: "linear",
-                          }}
-                          className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                        />
-                        <span>{t.creating}</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>{t.submitButton}</span>
-                        <ChevronRight size={20} />
-                      </>
-                    )}
-                  </motion.button>
-                  {/* Restaurant Input For Delivery 
-                  {formData.user_type === "delivery" && (
-                    <motion.div
-                      variants={itemVariants}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      transition={{ duration: 0.3 }}
+                  {uiState.currentStep < uiState.totalSteps ? (
+                    <motion.button
+                      type="button"
+                      onClick={nextStep}
+                      className={`flex items-center space-x-2 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
+                        formState.isLoading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-lg hover:shadow-emerald-500/30 transform hover:scale-105"
+                      } text-white`}
+                      whileHover={{ scale: formState.isLoading ? 1 : 1.05 }}
+                      whileTap={{ scale: formState.isLoading ? 1 : 0.95 }}
+                      disabled={formState.isLoading}
                     >
-                      <label
-                        className={`block text-sm font-semibold mb-2 ${
-                          uiState.darkMode ? "text-gray-300" : "text-gray-700"
-                        }`}
-                      >
-                        {t.restaurantAffiliation}
-                      </label>
-                      <motion.div
-                        className="relative"
-                        variants={inputFocusVariants}
-                        animate={
-                          uiState.focusedField === "restaurantId"
-                            ? "focus"
-                            : "blur"
-                        }
-                      >
-                        <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                          <Utensils
-                            size={18}
-                            className={`${
-                              uiState.focusedField === "restaurantId"
-                                ? "text-emerald-500"
-                                : uiState.darkMode
-                                ? "text-gray-400"
-                                : "text-gray-500"
-                            } transition-colors`}
+                      <span>Suivant</span>
+                      <ArrowRight size={20} />
+                    </motion.button>
+                  ) : (
+                    <motion.button
+                      type="button"
+                      onClick={handleSubmit}
+                      className={`flex items-center space-x-2 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
+                        formState.isLoading
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 shadow-lg hover:shadow-emerald-500/30 transform hover:scale-105"
+                      } text-white`}
+                      whileHover={{ scale: formState.isLoading ? 1 : 1.05 }}
+                      whileTap={{ scale: formState.isLoading ? 1 : 0.95 }}
+                      disabled={formState.isLoading}
+                    >
+                      {formState.isLoading ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{
+                              duration: 1,
+                              repeat: Infinity,
+                              ease: "linear",
+                            }}
+                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                           />
-                        </div>
-                        <select
-                          name="restaurantId"
-                          value={formData.restaurantId || ""}
-                          onChange={handleChange}
-                          onFocus={() => handleFocus("restaurantId")}
-                          onBlur={handleBlur}
-                          className={`block w-full pl-12 pr-4 py-4 border-0 rounded-2xl focus:ring-2 focus:outline-none transition-all duration-300 appearance-none ${
-                            uiState.darkMode
-                              ? "bg-gray-700/50 text-white focus:ring-emerald-500 placeholder-gray-400"
-                              : "bg-gray-50/50 text-gray-900 focus:ring-emerald-500 placeholder-gray-500"
-                          } ${
-                            formState.errors.restaurantId
-                              ? "ring-2 ring-red-500"
-                              : ""
-                          }`}
-                          disabled={formState.isLoading}
-                          required={formData.user_type === "delivery"}
-                        >
-                          <option value="">
-                            {t.selectRestaurantPlaceholder}
-                          </option>
-                          {restaurants.map((restaurant) => (
-                            <option key={restaurant.id} value={restaurant.id}>
-                              {restaurant.name}
-                            </option>
-                          ))}
-                        </select>
-                      </motion.div>
-                    </motion.div>
-                  )} */}
+                          <span>{t.creating}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>{t.submitButton}</span>
+                          <CheckCircle size={20} />
+                        </>
+                      )}
+                    </motion.button>
+                  )}
+                </div>
 
-                  {/* Mobile Money Options */}
+                {/* Mobile Money Options - Only show in final step */}
+                {uiState.currentStep === uiState.totalSteps && (
                   <motion.div className="mt-6" variants={itemVariants}>
                     <div className="relative mb-4">
                       <div className="absolute inset-0 flex items-center">
@@ -2525,25 +2474,25 @@ const Register = () => {
                       </motion.button>
                     </div>
                   </motion.div>
+                )}
 
-                  {/* Login link */}
-                  <motion.div className="text-center" variants={itemVariants}>
-                    <p
-                      className={`text-sm ${
-                        uiState.darkMode ? "text-gray-300" : "text-gray-600"
-                      }`}
+                {/* Login link */}
+                <motion.div className="text-center mt-6" variants={itemVariants}>
+                  <p
+                    className={`text-sm ${
+                      uiState.darkMode ? "text-gray-300" : "text-gray-600"
+                    }`}
+                  >
+                    {t.alreadyHaveAccount}{" "}
+                    <motion.button
+                      onClick={() => (window.location.href = "/login")}
+                      className="text-emerald-600 font-semibold hover:text-emerald-500 underline transition-colors"
+                      whileHover={{ scale: 1.05 }}
                     >
-                      {t.alreadyHaveAccount}{" "}
-                      <motion.button
-                        onClick={() => (window.location.href = "/login")}
-                        className="text-emerald-600 font-semibold hover:text-emerald-500 underline transition-colors"
-                        whileHover={{ scale: 1.05 }}
-                      >
-                        {t.loginLink}
-                      </motion.button>
-                    </p>
-                  </motion.div>
-                </div>
+                      {t.loginLink}
+                    </motion.button>
+                  </p>
+                </motion.div>
               </motion.div>
             </motion.div>
           </motion.div>
@@ -2653,18 +2602,18 @@ const Register = () => {
                 </li>
                 <li>
                   <a
-                    href="/faq"
+                    href="/refund"
                     className="hover:text-emerald-500 transition-colors"
                   >
-                    FAQ
+                    {uiState.language === "fr" ? "Remboursement" : "Refund"}
                   </a>
                 </li>
                 <li>
                   <a
-                    href="/partner"
+                    href="/safety"
                     className="hover:text-emerald-500 transition-colors"
                   >
-                    {uiState.language === "fr" ? "Partenaire" : "Partner"}
+                    {uiState.language === "fr" ? "Sécurité alimentaire" : "Food Safety"}
                   </a>
                 </li>
               </ul>
@@ -2705,23 +2654,3 @@ const Register = () => {
 };
 
 export default Register;
-
-// export const UserInformationRegisterProvider = ({ children }) => {
-//   const [userInformation, setUserInformation] = useState({
-//     first_name: "",
-//     last_name: "",
-//     email: "",
-//     phone_number: "",
-//   });
-
-//   const updateUserInformation = (newData) => {
-//     setUserInformation((prev) => ({ ...prev, ...newData }));
-//   };
-//   return (
-//     <userContextRegister.Provider
-//       value={{ userInformation, setUserInformation, updateUserInformation }}
-//     >
-//       {children}
-//     </userContextRegister.Provider>
-//   );
-// };

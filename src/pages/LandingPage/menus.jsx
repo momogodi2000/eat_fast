@@ -6,6 +6,8 @@ import {
   Heart, MessageCircle, Send, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown,
   Award, Users, TrendingUp, Filter, SortAsc
 } from 'lucide-react';
+import Footer from '../../components/CommonShare/Footer';
+
 
 // Import images
 import ndole from '../../assets/images/ndoles.jpeg';
@@ -1529,133 +1531,7 @@ const MenuPage = () => {
       </main>
 
       {/* Footer avec thème camerounais */}
-      <footer className={`py-16 ${
-        darkMode 
-          ? 'bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900' 
-          : 'bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800'
-      } text-white`}>
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {/* À propos avec couleurs camerounaises */}
-            <div>
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-600 to-yellow-500 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">🍽️</span>
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-green-400 to-yellow-400 bg-clip-text text-transparent">
-                  Eat-Fast
-                </span>
-              </div>
-              <p className="text-gray-300 mb-6 leading-relaxed">
-                Votre plateforme de référence pour la livraison de cuisine camerounaise authentique. 
-                Nous connectons les amoureux de la gastronomie locale avec les meilleurs restaurants du Cameroun.
-              </p>
-              <div className="flex space-x-4">
-                {['facebook', 'instagram', 'twitter', 'whatsapp'].map((social) => (
-                  <a 
-                    key={social}
-                    href="#" 
-                    className="w-10 h-10 bg-gray-700 hover:bg-gradient-to-r hover:from-green-600 hover:to-yellow-500 rounded-full flex items-center justify-center transition-all transform hover:scale-110"
-                  >
-                    <span className="text-sm">📱</span>
-                  </a>
-                ))}
-              </div>
-            </div>
-            
-            {/* Navigation */}
-            <div>
-              <h3 className="text-lg font-bold mb-6 text-green-400">Navigation</h3>
-              <ul className="space-y-3">
-                {[
-                  'Accueil', 'Nos Menus', 'Restaurants Partenaires', 
-                  'À Propos', 'Contact', 'FAQ'
-                ].map((item) => (
-                  <li key={item}>
-                    <a 
-                      href="#" 
-                      className="text-gray-300 hover:text-green-400 transition-colors flex items-center group"
-                    >
-                      <span className="w-0 group-hover:w-2 h-0.5 bg-green-400 transition-all mr-0 group-hover:mr-2"></span>
-                      {item}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            {/* Catégories */}
-            <div>
-              <h3 className="text-lg font-bold mb-6 text-yellow-400">Nos Spécialités</h3>
-              <ul className="space-y-3">
-                {[
-                  'Plats Traditionnels', 'Grillades & Brochettes', 'Boissons Locales',
-                  'Desserts Camerounais', 'Packages Familiaux', 'Menu Express'
-                ].map((category) => (
-                  <li key={category}>
-                    <a 
-                      href="#" 
-                      className="text-gray-300 hover:text-yellow-400 transition-colors flex items-center group"
-                    >
-                      <span className="w-0 group-hover:w-2 h-0.5 bg-yellow-400 transition-all mr-0 group-hover:mr-2"></span>
-                      {category}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            {/* Contact */}
-            <div>
-              <h3 className="text-lg font-bold mb-6 text-red-400">Contactez-nous</h3>
-              <div className="space-y-4">
-                <div className="flex items-start space-x-3">
-                  <MapPin size={20} className="text-green-400 mt-1 flex-shrink-0" />
-                  <div>
-                    <p className="text-gray-300">123 Avenue Kennedy</p>
-                    <p className="text-gray-300">Bastos, Yaoundé - Cameroun</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs">📞</span>
-                  </div>
-                  <span className="text-gray-300">+237 6XX XXX XXX</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-5 h-5 bg-red-400 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-xs">✉️</span>
-                  </div>
-                  <span className="text-gray-300">contact@eat-fast.cm</span>
-                </div>
-                <div className="mt-6 p-4 bg-gradient-to-r from-green-600/10 to-yellow-500/10 rounded-xl border border-green-500/20">
-                  <p className="text-sm text-green-300 font-medium">Horaires de livraison</p>
-                  <p className="text-xs text-gray-300 mt-1">Lun-Dim: 8h00 - 23h00</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-700 pt-8">
-            <div className="flex flex-col md:flex-row justify-between items-center">
-              <p className="text-gray-400 mb-4 md:mb-0">
-                © {new Date().getFullYear()} Eat-Fast. Tous droits réservés.
-              </p>
-              <div className="flex space-x-6 text-sm">
-                <a href="#" className="text-gray-400 hover:text-green-400 transition-colors">
-                  Conditions d'utilisation
-                </a>
-                <a href="#" className="text-gray-400 hover:text-yellow-400 transition-colors">
-                  Politique de confidentialité
-                </a>
-                <a href="#" className="text-gray-400 hover:text-red-400 transition-colors">
-                  Mentions légales
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+    <Footer darkMode={darkMode} />
 
       {/* Modal de commande avec thème camerounais */}
       <AnimatePresence>

@@ -12,6 +12,13 @@ import ForgotPassword from "./pages/Authentication/forgot_password";
 import BecomeAPartner from "./pages/LandingPage/BecomeAPartner.jsx";
 import MenuPage from "./pages/LandingPage/menus.jsx";
 
+
+// Privacy and policy pages
+import PrivacyPolicy from "./components/CommonShare/privacy.jsx";
+import RefundPolicy from "./components/CommonShare/refund.jsx";
+import TermsAndConditions from "./components/CommonShare/term.jsx";
+import SafetyPage from "./components/CommonShare/safety.jsx";
+
 // Admin pages
 import AdminDashboard from "./pages/Dashboards/Admin/admin_dashboard";
 import UserListPage from "./pages/Dashboards/Admin/Utilisateurs/UserList";
@@ -104,7 +111,16 @@ function App() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/test" element={<DashboardRedirect />} />
 
-          {/* Admin Router */}
+
+
+          {/* term and condiction */}
+
+          <Route path="/terms" element={<PrivacyPolicy />} />
+          <Route path="/privacy" element={<RefundPolicy />} />
+          <Route path="/refund" element={<TermsAndConditions />} />
+          <Route path="/safety" element={<SafetyPage />} />
+
+
 
           {/* Admin Routes */}
           <Route

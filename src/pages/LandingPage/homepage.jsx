@@ -6,6 +6,9 @@ import {
   Truck, Phone, Mail, Facebook, Twitter, Instagram, Youtube
 } from 'lucide-react';
 
+import Footer from '../../components/CommonShare/Footer';
+
+
 import koki from '../../assets/images/koki.jpeg';
 import achu from '../../assets/images/achue.jpeg';
 import ndole from '../../assets/images/ndoles.jpeg';
@@ -1144,111 +1147,7 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-      <footer className={`py-16 ${darkMode ? 'bg-gray-900' : 'bg-gray-100'}`}>
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {/* Brand */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-xl">E</span>
-                </div>
-                <span className="text-2xl font-bold bg-gradient-to-r from-emerald-600 via-amber-500 to-rose-500 bg-clip-text text-transparent">
-                  EatFast
-                </span>
-              </div>
-              <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                Votre passerelle vers les délices culinaires du Cameroun. 
-                Savourez l'authenticité, une commande à la fois.
-              </p>
-              <div className="flex gap-4">
-                {[Facebook, Twitter, Instagram, Youtube].map((Icon, index) => (
-                  <motion.a
-                    key={index}
-                    href="#"
-                    whileHover={{ scale: 1.1 }}
-                    className="w-10 h-10 bg-gray-200 dark:bg-gray-800 rounded-lg flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all"
-                  >
-                    <Icon size={20} />
-                  </motion.a>
-                ))}
-              </div>
-            </div>
-            
-            {/* Quick Links */}
-            <div>
-              <h3 className="font-bold text-lg mb-6">{t('footer.quickLinks')}</h3>
-              <ul className="space-y-3">
-                {['footer.aboutUs', 'footer.restaurants', 'footer.becomePartner', 'footer.careers', 'footer.contactUs'].map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-emerald-500 transition-colors">
-                      {t(link)}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            {/* Legal */}
-            <div>
-              <h3 className="font-bold text-lg mb-6">{t('footer.legal')}</h3>
-              <ul className="space-y-3">
-                {['footer.terms', 'footer.privacy', 'footer.cookies', 'footer.licensing'].map((link) => (
-                  <li key={link}>
-                    <a href="#" className="text-gray-600 dark:text-gray-400 hover:text-emerald-500 transition-colors">
-                      {t(link)}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            
-            {/* Contact */}
-            <div>
-              <h3 className="font-bold text-lg mb-6">{t('footer.contact')}</h3>
-              <div className="space-y-4">
-                <div className="flex items-center gap-3">
-                  <MapPin size={18} className="text-emerald-500" />
-                  <span className="text-gray-600 dark:text-gray-400">Yaoundé, Cameroun</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Phone size={18} className="text-emerald-500" />
-                  <span className="text-gray-600 dark:text-gray-400">+237 6XX XXX XXX</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail size={18} className="text-emerald-500" />
-                  <span className="text-gray-600 dark:text-gray-400">contact@eatfast.cm</span>
-                </div>
-              </div>
-              
-              <div className="mt-6">
-                <h4 className="font-semibold mb-3">{t('footer.newsletter')}</h4>
-                <div className="flex">
-                  <input 
-                    type="email" 
-                    placeholder={t('footer.emailPlaceholder')}
-                    className={`flex-1 px-4 py-2 rounded-l-lg border ${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300'} focus:outline-none focus:ring-2 focus:ring-emerald-500`}
-                  />
-                  <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-r-lg transition-colors">
-                    {t('footer.subscribe')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="pt-8 border-t border-gray-200 dark:border-gray-800">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-gray-600 dark:text-gray-400 text-center md:text-left">
-                © {new Date().getFullYear()} EatFast. {t('footer.allRightsReserved')}
-              </p>
-              <p className="text-gray-600 dark:text-gray-400 text-center md:text-right">
-                Phase 1: Yaoundé • Phase 2: Douala & Bafoussam • Phase 3: Tout le Cameroun
-              </p>
-            </div>
-          </div>
-        </div>
-      </footer>
+     <Footer darkMode={darkMode} />
     </div>
   );
 };

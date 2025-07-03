@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sun, 
@@ -22,8 +22,13 @@ import {
   Star,
   Users,
   Truck,
-  Headphones
+  Headphones,
+  WifiOff,
+  RefreshCw
 } from 'lucide-react';
+
+import Footer from '../../components/CommonShare/Footer';
+
 
 // Import the contact services
 import contactServices, { getContactFormConfig } from '../../Services/Public/ContactServices';
@@ -116,13 +121,67 @@ const STATS_DATA = [
   { label: "Note moyenne", value: "4.8", icon: Star }
 ];
 
+// Network Status Component
+const NetworkStatus = React.memo(({ isConnected }) => (
+  !isConnected && (
+    <motion.div
+      initial={{ opacity: 0, y: -50 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg"
+    >
+      <div className="flex items-center space-x-2">
+        <WifiOff size={16} />
+        <span>Connexion perdue</span>
+      </div>
+    </motion.div>
+  )
+));
+
+// Notification Component
+const NotificationComponent = React.memo(({ notification, onClose }) => (
+  <AnimatePresence>
+    {notification && (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9, y: -20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9, y: -20 }}
+        className={`fixed top-20 right-4 z-50 p-4 rounded-lg shadow-lg max-w-md ${
+          notification.type === 'success' ? 'bg-green-500' :
+          notification.type === 'error' ? 'bg-red-500' :
+          notification.type === 'warning' ? 'bg-yellow-500' :
+          'bg-blue-500'
+        } text-white`}
+      >
+        <div className="flex items-start space-x-2">
+          {notification.type === 'success' && <CheckCircle size={20} className="flex-shrink-0 mt-0.5" />}
+          {notification.type === 'error' && <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />}
+          {notification.type === 'warning' && <AlertCircle size={20} className="flex-shrink-0 mt-0.5" />}
+          {notification.type === 'info' && <MessageCircle size={20} className="flex-shrink-0 mt-0.5" />}
+          <div className="flex-1">
+            <p className="text-sm whitespace-pre-line">{notification.message}</p>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-white/80 hover:text-white transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+));
+
 const ContactPage = () => {
+  // Core state management
   const [darkMode, setDarkMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
-  const [openFAQ, setOpenFAQ] = useState(1); // Track which FAQ is open
+  const [openFAQ, setOpenFAQ] = useState(1);
+  const [isConnected, setIsConnected] = useState(navigator?.onLine ?? true);
+  const [notification, setNotification] = useState(null);
   
-  // Updated form data to match contactServices expectations
+  // Form data state
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -140,57 +199,172 @@ const ContactPage = () => {
     error: false,
     message: ''
   });
+  
   const [formErrors, setFormErrors] = useState({});
-
-  // Get form configuration from service
   const [formConfig, setFormConfig] = useState({});
 
-  // Initialize form configuration
+  // Memoized config initialization
   useEffect(() => {
-    const config = getContactFormConfig();
-    setFormConfig(config);
+    try {
+      const config = {
+        subjects: [
+          { value: 'general', label: 'Demande générale' },
+          { value: 'order', label: 'Problème de commande' },
+          { value: 'delivery', label: 'Problème de livraison' },
+          { value: 'payment', label: 'Problème de paiement' },
+          { value: 'restaurant', label: 'Demande restaurant partenaire' },
+          { value: 'driver', label: 'Devenir livreur' },
+          { value: 'business', label: 'Partenariat commercial' },
+          { value: 'feedback', label: 'Retour d\'expérience' },
+          { value: 'complaint', label: 'Plainte' },
+          { value: 'other', label: 'Autre' }
+        ],
+        contactMethods: [
+          { value: 'email', label: 'Email' },
+          { value: 'phone', label: 'Appel téléphonique' },
+          { value: 'whatsapp', label: 'WhatsApp' },
+          { value: 'sms', label: 'SMS' }
+        ]
+      };
+      setFormConfig(config);
+    } catch (error) {
+      console.error('Failed to load form config:', error);
+      setFormConfig({
+        subjects: [{ value: 'general', label: 'Demande générale' }],
+        contactMethods: [{ value: 'email', label: 'Email' }]
+      });
+    }
   }, []);
 
-  // Initialize dark mode from system preference
+  // Network connectivity monitoring
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsConnected(true);
+      showNotification('Connexion rétablie', 'success');
+    };
+    
+    const handleOffline = () => {
+      setIsConnected(false);
+      showNotification('Connexion perdue', 'error');
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  // Dark mode initialization
   useEffect(() => {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     setDarkMode(isDarkMode);
   }, []);
 
-  // Handle scroll effect for header
+  // Scroll handler
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleDarkMode = useCallback(() => {
-    setDarkMode(prev => !prev);
-  }, []);
+  // Auto-hide notifications
+  useEffect(() => {
+    if (notification) {
+      const timer = setTimeout(() => setNotification(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [notification]);
 
-  const toggleMenu = useCallback(() => {
-    setIsMenuOpen(prev => !prev);
+  // Optimized event handlers
+  const toggleDarkMode = useCallback(() => setDarkMode(prev => !prev), []);
+  const toggleMenu = useCallback(() => setIsMenuOpen(prev => !prev), []);
+  const toggleFAQ = useCallback((id) => setOpenFAQ(prev => prev === id ? null : id), []);
+
+  const showNotification = useCallback((message, type = 'info') => {
+    setNotification({ message, type });
   }, []);
 
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+    
     // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors(prev => ({ ...prev, [name]: '' }));
     }
   }, [formErrors]);
 
-  // Updated form submission to use contactServices
+  // Enhanced form validation
+  const validateForm = useCallback((data) => {
+    const errors = {};
+    
+    // Required field validation
+    if (!data.name?.trim()) {
+      errors.name = 'Le nom est requis';
+    } else if (data.name.trim().length < 2) {
+      errors.name = 'Le nom doit contenir au moins 2 caractères';
+    }
+    
+    // Email validation
+    if (!data.email?.trim()) {
+      errors.email = 'L\'email est requis';
+    } else if (!contactServices.isValidEmail(data.email)) {
+      errors.email = 'Adresse email invalide';
+    }
+    
+    // Phone validation (optional but must be valid if provided)
+    if (data.phone?.trim() && !contactServices.isValidPhone(data.phone)) {
+      errors.phone = 'Numéro de téléphone invalide';
+    }
+    
+    // Website validation (optional but must be valid if provided)
+    if (data.website?.trim() && !contactServices.isValidUrl(data.website)) {
+      errors.website = 'URL de site web invalide';
+    }
+    
+    // Message validation
+    if (!data.message?.trim()) {
+      errors.message = 'Le message est requis';
+    } else if (data.message.trim().length < 10) {
+      errors.message = 'Le message doit contenir au moins 10 caractères';
+    } else if (data.message.trim().length > 5000) {
+      errors.message = 'Le message ne peut pas dépasser 5000 caractères';
+    }
+    
+    return {
+      isValid: Object.keys(errors).length === 0,
+      errors
+    };
+  }, []);
+
+  // Enhanced form submission
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
+    
+    // Check network connectivity
+    if (!isConnected) {
+      showNotification('Pas de connexion internet. Veuillez vérifier votre connexion.', 'error');
+      return;
+    }
+    
+    // Validate form
+    const validation = validateForm(formData);
+    if (!validation.isValid) {
+      setFormErrors(validation.errors);
+      const firstError = Object.values(validation.errors)[0];
+      showNotification(`Erreur de validation: ${firstError}`, 'error');
+      return;
+    }
     
     // Clear previous status
     setFormStatus({ submitting: true, success: false, error: false, message: '' });
     setFormErrors({});
     
     try {
-      // Use contactServices to submit the form
+      // Submit form using contact services
       const result = await contactServices.submitContactForm(formData);
       
       if (result.success) {
@@ -198,7 +372,7 @@ const ContactPage = () => {
           submitting: false, 
           success: true, 
           error: false, 
-          message: result.message
+          message: result.message || 'Message envoyé avec succès !'
         });
         
         // Reset form on success
@@ -213,29 +387,30 @@ const ContactPage = () => {
           preferred_contact_method: 'email'
         });
         
+        showNotification('Message envoyé avec succès !', 'success');
+        
         // Reset success message after 6 seconds
         setTimeout(() => {
           setFormStatus(prev => ({ ...prev, success: false, message: '' }));
         }, 6000);
         
       } else {
-        // Handle validation errors
-        if (result.errors && result.errors.length > 0) {
+        // Handle validation errors from server
+        if (result.errors && Array.isArray(result.errors)) {
           const errorObj = {};
           result.errors.forEach(error => {
-            // Map common error patterns to form fields
-            if (error.includes('nom') || error.includes('Nom')) {
+            const errorStr = error.toString().toLowerCase();
+            if (errorStr.includes('nom') || errorStr.includes('name')) {
               errorObj.name = error;
-            } else if (error.includes('email') || error.includes('Email')) {
+            } else if (errorStr.includes('email')) {
               errorObj.email = error;
-            } else if (error.includes('message') || error.includes('Message')) {
+            } else if (errorStr.includes('message')) {
               errorObj.message = error;
-            } else if (error.includes('téléphone') || error.includes('phone')) {
+            } else if (errorStr.includes('téléphone') || errorStr.includes('phone')) {
               errorObj.phone = error;
-            } else if (error.includes('site web') || error.includes('URL')) {
+            } else if (errorStr.includes('site web') || errorStr.includes('website')) {
               errorObj.website = error;
             } else {
-              // General error
               errorObj.general = error;
             }
           });
@@ -248,48 +423,51 @@ const ContactPage = () => {
           error: true, 
           message: result.message || 'Erreur lors de l\'envoi du message'
         });
+        
+        showNotification(result.message || 'Erreur lors de l\'envoi', 'error');
       }
+      
     } catch (error) {
       console.error('Form submission error:', error);
+      
       setFormStatus({ 
         submitting: false, 
         success: false, 
         error: true, 
-        message: 'Une erreur inattendue s\'est produite. Veuillez réessayer ou nous contacter directement.'
+        message: 'Une erreur inattendue s\'est produite. Veuillez réessayer.'
       });
+      
+      showNotification('Erreur de connexion. Veuillez réessayer.', 'error');
     }
-  }, [formData]);
-
-  const toggleFAQ = useCallback((id) => {
-    setOpenFAQ(prev => prev === id ? null : id);
-  }, []);
+  }, [formData, isConnected, validateForm, showNotification]);
 
   // Animation variants
-  const containerVariants = {
+  const containerVariants = useMemo(() => ({
     hidden: { opacity: 0 },
     visible: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
+      transition: { staggerChildren: 0.1 }
     }
-  };
+  }), []);
 
-  const itemVariants = {
+  const itemVariants = useMemo(() => ({
     hidden: { opacity: 0, y: 20 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: {
-        duration: 0.5
-      }
+      transition: { duration: 0.5 }
     }
-  };
+  }), []);
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${
       darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
     }`}>
+      
+      {/* Status indicators */}
+      <NetworkStatus isConnected={isConnected} />
+      <NotificationComponent notification={notification} onClose={() => setNotification(null)} />
+
       {/* Enhanced Navigation */}
       <header className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled 
@@ -336,7 +514,7 @@ const ContactPage = () => {
                 {darkMode ? <Sun size={18} /> : <Moon size={18} />}
               </button>
               
-              <a href="/test" className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <a href="/login" className="flex items-center space-x-2 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 <User size={18} />
                 <span className="text-sm">Compte</span>
               </a>
@@ -393,7 +571,7 @@ const ContactPage = () => {
               <a href="/contact" className="font-medium p-3 bg-emerald-100 dark:bg-emerald-900 rounded-lg">
                 Contact
               </a>
-              <a href="/test" className="font-medium p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
+              <a href="/login" className="font-medium p-3 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors">
                 Compte
               </a>
             </nav>
@@ -415,6 +593,7 @@ const ContactPage = () => {
               <div className="inline-flex items-center px-4 py-2 bg-emerald-100 dark:bg-emerald-900 rounded-full text-emerald-800 dark:text-emerald-200 text-sm font-medium mb-4">
                 <MessageCircle size={16} className="mr-2" />
                 Support disponible 24h/24
+                {isConnected && <div className="ml-2 w-2 h-2 bg-green-500 rounded-full" />}
               </div>
             </motion.div>
 
@@ -579,11 +758,9 @@ const ContactPage = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 ${
-                        darkMode ? 'bg-gray-700' : 'bg-white'
-                      } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                        formErrors.phone ? 'border-red-500 focus:ring-red-500' : ''
-                      }`}
+                      className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+                        formErrors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500'
+                      } ${darkMode ? 'bg-gray-700' : 'bg-white'} focus:outline-none focus:ring-2`}
                       placeholder="+237 6XX XXX XXX"
                     />
                     {formErrors.phone && (
@@ -620,11 +797,9 @@ const ContactPage = () => {
                       name="website"
                       value={formData.website}
                       onChange={handleChange}
-                      className={`w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 ${
-                        darkMode ? 'bg-gray-700' : 'bg-white'
-                      } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors ${
-                        formErrors.website ? 'border-red-500 focus:ring-red-500' : ''
-                      }`}
+                      className={`w-full px-4 py-3 rounded-lg border transition-colors ${
+                        formErrors.website ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500'
+                      } ${darkMode ? 'bg-gray-700' : 'bg-white'} focus:outline-none focus:ring-2`}
                       placeholder="https://votre-site.com (optionnel)"
                     />
                     {formErrors.website && (
@@ -709,11 +884,11 @@ const ContactPage = () => {
                   {/* Submit Button */}
                   <motion.button
                     type="submit"
-                    disabled={formStatus.submitting}
+                    disabled={formStatus.submitting || !isConnected}
                     whileHover={{ scale: formStatus.submitting ? 1 : 1.02 }}
                     whileTap={{ scale: formStatus.submitting ? 1 : 0.98 }}
                     className={`w-full font-medium py-4 px-6 rounded-lg flex items-center justify-center gap-3 transition-all duration-200 ${
-                      formStatus.submitting
+                      formStatus.submitting || !isConnected
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transform hover:shadow-lg'
                     } text-white`}
@@ -722,6 +897,11 @@ const ContactPage = () => {
                       <>
                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
                         <span>Envoi en cours...</span>
+                      </>
+                    ) : !isConnected ? (
+                      <>
+                        <WifiOff size={18} />
+                        <span>Hors ligne</span>
                       </>
                     ) : (
                       <>
@@ -923,116 +1103,7 @@ const ContactPage = () => {
       </section>
 
       {/* Enhanced Footer */}
-      <footer className={`py-16 ${darkMode ? 'bg-gray-900 text-gray-300' : 'bg-gray-800 text-gray-300'}`}>
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
-            {/* Company Info */}
-            <div>
-              <div className="flex items-center mb-4">
-                <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 via-yellow-500 to-orange-500 rounded-lg flex items-center justify-center mr-2">
-                  <span className="text-white font-bold text-sm">E</span>
-                </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-emerald-500 via-yellow-500 to-orange-500 bg-clip-text text-transparent">
-                  EatFast
-                </span>
-              </div>
-              <p className="mb-6 text-sm leading-relaxed">
-                La principale plateforme de livraison de nourriture au Cameroun, vous connectant à vos restaurants préférés
-                et livrant le bonheur à votre porte depuis 2024.
-              </p>
-              <div className="flex space-x-4">
-                <a href="#" className="w-10 h-10 bg-gray-700 hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
-                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" /></svg>
-                </a>
-                <a href="#" className="w-10 h-10 bg-gray-700 hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
-                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069z" /><path d="M12 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4z" /></svg>
-                </a>
-                <a href="#" className="w-10 h-10 bg-gray-700 hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
-                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z" /></svg>
-                </a>
-                <a href="#" className="w-10 h-10 bg-gray-700 hover:bg-emerald-500 rounded-lg flex items-center justify-center transition-colors">
-                  <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
-                </a>
-              </div>
-            </div>
-            
-            {/* Quick Links */}
-            <div>
-              <h3 className="text-lg font-bold mb-4 text-white">Liens rapides</h3>
-              <ul className="space-y-3 text-sm">
-                <li><a href="/about" className="hover:text-emerald-400 transition-colors">À propos d'EatFast</a></li>
-                <li><a href="/restaurants" className="hover:text-emerald-400 transition-colors">Parcourir les restaurants</a></li>
-                <li><a href="/partner" className="hover:text-emerald-400 transition-colors">Devenir partenaire</a></li>
-                <li><a href="/delivery" className="hover:text-emerald-400 transition-colors">Emplois de livraison</a></li>
-                <li><a href="/careers" className="hover:text-emerald-400 transition-colors">Carrières</a></li>
-                <li><a href="/contact" className="hover:text-emerald-400 transition-colors">Contactez-nous</a></li>
-              </ul>
-            </div>
-            
-            {/* Support */}
-            <div>
-              <h3 className="text-lg font-bold mb-4 text-white">Support client</h3>
-              <ul className="space-y-3 text-sm">
-                <li><a href="/help" className="hover:text-emerald-400 transition-colors">Centre d'aide</a></li>
-                <li><a href="/terms" className="hover:text-emerald-400 transition-colors">Conditions d'utilisation</a></li>
-                <li><a href="/privacy" className="hover:text-emerald-400 transition-colors">Politique de confidentialité</a></li>
-                <li><a href="/refund" className="hover:text-emerald-400 transition-colors">Politique de remboursement</a></li>
-                <li><a href="/safety" className="hover:text-emerald-400 transition-colors">Sécurité alimentaire</a></li>
-              </ul>
-            </div>
-            
-            {/* Contact Info */}
-            <div>
-              <h3 className="text-lg font-bold mb-4 text-white">Contactez-nous</h3>
-              <ul className="space-y-3 text-sm">
-                <li className="flex items-start">
-                  <MapPin size={16} className="mr-3 mt-0.5 text-emerald-400 flex-shrink-0" />
-                  <span>Quartier Bastos, Yaoundé<br />Cameroun</span>
-                </li>
-                <li className="flex items-center">
-                  <Phone size={16} className="mr-3 text-emerald-400 flex-shrink-0" />
-                  <span>+237 698 765 432</span>
-                </li>
-                <li className="flex items-center">
-                  <Mail size={16} className="mr-3 text-emerald-400 flex-shrink-0" />
-                  <span>support@eatfast.cm</span>
-                </li>
-                <li className="flex items-center">
-                  <Clock size={16} className="mr-3 text-emerald-400 flex-shrink-0" />
-                  <span>Support client 24h/24</span>
-                </li>
-              </ul>
-              
-              {/* Newsletter */}
-              <div className="mt-6">
-                <h4 className="font-medium mb-3 text-white">Restez informé</h4>
-                <div className="flex">
-                  <input 
-                    type="email" 
-                    placeholder="Votre adresse email"
-                    className="px-4 py-2 rounded-l-lg w-full text-sm bg-gray-700 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                  />
-                  <button className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-r-lg transition-colors">
-                    <Send size={16} />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="pt-8 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center text-sm">
-            <p>&copy; {new Date().getFullYear()} EatFast Cameroun. Tous droits réservés.</p>
-            <div className="mt-4 md:mt-0 flex items-center space-x-4">
-              <span>Disponible sur :</span>
-              <div className="flex space-x-2">
-                <div className="bg-gray-700 px-3 py-1 rounded text-xs">iOS</div>
-                <div className="bg-gray-700 px-3 py-1 rounded text-xs">Android</div>
-                <div className="bg-gray-700 px-3 py-1 rounded text-xs">Web</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </footer>
+     <Footer darkMode={darkMode} />
     </div>
   );
 };

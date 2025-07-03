@@ -12,7 +12,6 @@ import {
 // Import services and utilities
 import partnerServices from '../../Services/Public/BecomeAPartnerServices';
 import { formatPartnerError, getPartnerTypeDisplay, getStatusDisplay } from '../../Services/Public/BecomeAPartnerServices';
-import dbConnection, { isOnline } from '../../Services/db_connection';
 
 // Import constants
 import {
@@ -515,6 +514,7 @@ const BecomeAPartner = () => {
     showNotification('Photo supprimée', 'info');
   }, [showNotification]);
 
+  // Updated validation function to work with Django backend
   const validateForm = useCallback((data) => {
     const errors = {};
     const { partnerType } = data;
@@ -552,6 +552,7 @@ const BecomeAPartner = () => {
     };
   }, []);
 
+  // Updated handleSubmit to work with Django backend
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
@@ -590,8 +591,15 @@ const BecomeAPartner = () => {
     } catch (error) {
       console.error('Submission error:', error);
       setSubmissionState('error');
-      setError(error.message || 'Erreur lors de la soumission');
-      showNotification('Erreur de soumission', 'error');
+      
+      // Handle Django field errors
+      if (error.field_errors) {
+        setFormErrors(error.field_errors);
+      }
+      
+      const errorMessage = formatPartnerError(error);
+      setError(errorMessage);
+      showNotification(errorMessage, 'error');
     }
   }, [formData, isConnected, validateForm, showNotification]);
 
@@ -1565,6 +1573,23 @@ const BecomeAPartner = () => {
                       </motion.div>
                     )}
 
+                    {/* Error Display */}
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg p-4"
+                      >
+                        <div className="flex items-start space-x-2">
+                          <AlertCircle className="text-red-500 flex-shrink-0 mt-0.5" size={16} />
+                          <div>
+                            <h4 className="text-red-800 dark:text-red-200 font-medium text-sm">Erreur de soumission</h4>
+                            <p className="text-red-700 dark:text-red-300 text-sm mt-1">{error}</p>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+
                     {/* Submit Button */}
                     <motion.button
                       whileHover={{ scale: submissionState === 'submitting' ? 1 : 1.02 }}
@@ -1632,7 +1657,7 @@ const BecomeAPartner = () => {
                 className="px-8 py-4 border-2 border-white/30 hover:border-white/50 rounded-xl font-semibold transition-colors flex items-center justify-center space-x-2"
               >
                 <Phone size={16} />
-                <span>Contacter l'équéquipe commerciale</span>
+                <span>Contacter l'équipe commerciale</span>
               </motion.button>
             </div>
           </motion.div>

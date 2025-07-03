@@ -44,7 +44,7 @@ export default defineConfig({
     port: 5173,
     allowedHosts: [
       "localhost",
-      "c683-70-51-31-56.ngrok-free.app", // Replace with your current Ngrok domain
+      "c1a0-154-72-162-132.ngrok-free.app", // Replace with your current Ngrok domain
     ],
   },
   
