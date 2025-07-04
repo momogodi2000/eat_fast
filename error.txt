@@ -1,0 +1,87 @@
+# Eat Fast - Installation and Troubleshooting Guide
+
+## Quick Installation
+
+### For Windows Users:
+1. Run `install.bat` (double-click the file)
+2. Or manually run: `npm run reinstall`
+
+### For Mac/Linux Users:
+1. Run `./install.sh` (make sure it's executable: `chmod +x install.sh`)
+2. Or manually run: `npm run reinstall`
+
+## Manual Installation Steps
+
+### 1. Clean Installation
+```bash
+# Remove existing files
+rm -rf node_modules package-lock.json dist
+
+# Install dependencies
+npm install
+
+# Compile translations
+npm run compile
+
+# Build project
+npm run build
+```
+
+### 2. Development Server
+```bash
+npm run dev
+```
+
+### 3. Production Build
+```bash
+npm run build
+npm run preview
+```
+
+## Common Issues and Solutions
+
+### Issue: Blank Page
+- **Solution**: Check browser console for errors
+- **Fix**: Run `npm run reinstall` to clean and reinstall
+
+### Issue: Build Errors
+- **Solution**: Ensure Node.js 18+ is installed
+- **Fix**: Run `npm run clean && npm install`
+
+### Issue: Translation Errors
+- **Solution**: Run `npm run compile` to rebuild translations
+
+### Issue: Port Already in Use
+- **Solution**: Kill process on port 5173 or change port in vite.config.js
+
+## Docker Deployment
+
+### Development:
+```bash
+docker-compose up eat-fast-dev
+```
+
+### Production:
+```bash
+docker-compose --profile production up
+```
+
+## Netlify Deployment
+
+1. Connect your repository to Netlify
+2. Build command: `npm run build`
+3. Publish directory: `dist`
+4. Deploy automatically
+
+## Environment Variables
+
+Create a `.env` file in the root directory:
+```env
+VITE_API_BASE_URL=http://localhost:8000/api/v1
+VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+```
+
+
+
+
+
