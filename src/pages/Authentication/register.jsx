@@ -33,7 +33,6 @@ import {
   ArrowRight,
   ArrowLeft,
 } from "lucide-react";
-import { AuthServices } from "../../Services/userLogin/authService";
 
 import { CAMEROON_COLORS, ANIMATION_DELAY_BASE } from "./const";
 

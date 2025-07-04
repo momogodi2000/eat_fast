@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Public pages
 import HomePage from "./pages/LandingPage/homepage";
@@ -76,7 +77,27 @@ import DeliveryChatSupport from "./pages/Dashboards/Delivery/contact_support/del
 
 import { UserInformationProvider } from "./pages/Authentication/const_provider.jsx";
 // Create QueryClient
-const queryClient = new QueryClient();
+
+
+// Loading component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+);
+
+// Create QueryClient with error handling
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+
 
 function App() {
   return (

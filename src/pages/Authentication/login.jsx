@@ -24,7 +24,6 @@ import {
   CreditCard,
   Globe,
 } from "lucide-react";
-import { UserServices } from "../../Services/userLogin/userLogin";
 
 import {
   translations,
@@ -37,7 +36,6 @@ import { userContextInformation } from "./const_provider";
 
 import { ANIMATION_DELAY_BASE, redirection } from "./const";
 import { useNavigate } from "react-router-dom";
-import { AuthServices } from "../../Services/userLogin/authService";
 
 // export const userInformationLogin = {
 //   first_name: "",
