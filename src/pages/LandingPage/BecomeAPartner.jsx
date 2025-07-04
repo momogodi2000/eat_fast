@@ -9,28 +9,28 @@ import {
   WifiOff, RefreshCw, ExternalLink, Camera, FileImage, FileCheck
 } from 'lucide-react';
 
-// Import services and utilities
+// Import services with proper integration
 import partnerServices from '../../Services/Public/BecomeAPartnerServices';
-import { formatPartnerError, getPartnerTypeDisplay, getStatusDisplay } from '../../Services/Public/BecomeAPartnerServices';
 
-// Import constants
-import {
-  PARTNER_TYPES,
-  APPLICATION_STATUS,
-  LEGAL_STATUS_OPTIONS,
-  VEHICLE_TYPE_OPTIONS,
-  INVESTMENT_TYPE_OPTIONS,
-  SERVICE_TYPE_OPTIONS,
-  formatFileSize,
-  formatCurrency,
+// Utility functions from services
+const { 
+  validateFile, 
+  isValidCameroonPhone, 
+  isValidEmail, 
+  formatFileSize, 
+  formatCurrency, 
   formatDate,
-  getPartnerTypeIcon,
-  isValidEmail,
-  isValidPhone,
-  getFieldLabel,
-  isFieldRequired,
-  isDocumentRequired
-} from '../../utils/constants';
+  getPartnerTypeDisplay,
+  getStatusDisplay,
+  formatPartnerError,
+  getDefaultPartnerConfig
+} = partnerServices;
+
+// Get default configuration
+const defaultConfig = getDefaultPartnerConfig();
+
+// Helper function to check online status
+const isOnline = () => typeof navigator !== 'undefined' && navigator.onLine;
 
 // Optimized child components
 const NetworkStatus = React.memo(({ isConnected }) => (
@@ -245,7 +245,7 @@ const BecomeAPartner = () => {
   const [applicationStatus, setApplicationStatus] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
 
-  // Form state - optimized with single object
+  // Form state - optimized with proper service integration
   const [formData, setFormData] = useState({
     partnerType: 'restaurant',
     businessName: '',
@@ -384,7 +384,7 @@ const BecomeAPartner = () => {
     };
   }, []);
 
-  // Service health check
+  // Service health check using services
   useEffect(() => {
     const checkHealth = async () => {
       try {
@@ -441,30 +441,17 @@ const BecomeAPartner = () => {
       if (files && files[0]) {
         const file = files[0];
         
-        // Simple file validation
-        const maxSize = 10 * 1024 * 1024; // 10MB
-        const allowedTypes = [
-          'application/pdf', 
-          'application/msword',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'image/jpeg', 
-          'image/jpg', 
-          'image/png'
-        ];
+        // Use service validation
+        const validation = validateFile(file, name === 'photos' ? 'image' : 'document');
         
-        if (file.size > maxSize) {
-          showNotification(`Fichier trop volumineux. Maximum ${formatFileSize(maxSize)}`, 'error');
-          return prevData;
-        }
-        
-        if (!allowedTypes.includes(file.type)) {
-          showNotification('Type de fichier non supporté', 'error');
+        if (!validation.isValid) {
+          showNotification(validation.errors.join(', '), 'error');
           return prevData;
         }
         
         newData[name] = file;
         setFormErrors(prev => ({ ...prev, [name]: '' }));
-        showNotification(`${getFieldLabel(name)} ajouté avec succès`, 'success');
+        showNotification(`${name} ajouté avec succès`, 'success');
         
       } else if (type === 'checkbox') {
         newData[name] = checked;
@@ -484,14 +471,13 @@ const BecomeAPartner = () => {
     
     const files = Array.from(e.target.files);
     const validFiles = [];
-    const maxSize = 10 * 1024 * 1024;
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
     
     files.forEach(file => {
-      if (file.size <= maxSize && allowedTypes.includes(file.type)) {
+      const validation = validateFile(file, 'image');
+      if (validation.isValid) {
         validFiles.push(file);
       } else {
-        showNotification(`${file.name}: Fichier invalide`, 'error');
+        showNotification(`${file.name}: ${validation.errors.join(', ')}`, 'error');
       }
     });
     
@@ -514,7 +500,7 @@ const BecomeAPartner = () => {
     showNotification('Photo supprimée', 'info');
   }, [showNotification]);
 
-  // Updated validation function to work with Django backend
+  // Form validation using service
   const validateForm = useCallback((data) => {
     const errors = {};
     const { partnerType } = data;
@@ -522,7 +508,7 @@ const BecomeAPartner = () => {
     // Basic validation
     if (!data.contactName?.trim()) errors.contactName = 'Nom requis';
     if (!data.email?.trim() || !isValidEmail(data.email)) errors.email = 'Email valide requis';
-    if (!data.phone?.trim() || !isValidPhone(data.phone)) errors.phone = 'Téléphone valide requis';
+    if (!data.phone?.trim() || !isValidCameroonPhone(data.phone)) errors.phone = 'Téléphone valide requis';
     if (!data.termsAccepted) errors.termsAccepted = 'Vous devez accepter les conditions';
     
     // Partner-specific validation
@@ -531,12 +517,17 @@ const BecomeAPartner = () => {
       if (!data.cuisineType?.trim()) errors.cuisineType = 'Type de cuisine requis';
       if (!data.address?.trim()) errors.address = 'Adresse requise';
       if (!data.city?.trim()) errors.city = 'Ville requise';
+      if (!data.idDocument) errors.idDocument = 'Document d\'identité requis';
+      if (!data.healthCertificate) errors.healthCertificate = 'Certificat de santé requis';
+      if (!data.menu) errors.menu = 'Menu requis';
     }
     
     if (partnerType === 'delivery-agent') {
       if (!data.vehicleType?.trim()) errors.vehicleType = 'Type de véhicule requis';
       if (!data.address?.trim()) errors.address = 'Adresse requise';
       if (!data.city?.trim()) errors.city = 'Ville requise';
+      if (!data.idDocument) errors.idDocument = 'Document d\'identité requis';
+      if (!data.drivingLicenseDoc) errors.drivingLicenseDoc = 'Permis de conduire requis';
     }
     
     if (partnerType === 'investor') {
@@ -544,6 +535,13 @@ const BecomeAPartner = () => {
         errors.investmentAmount = 'Montant d\'investissement requis';
       }
       if (!data.investmentType?.trim()) errors.investmentType = 'Type d\'investissement requis';
+      if (!data.idDocument) errors.idDocument = 'Document d\'identité requis';
+      if (!data.businessPlan) errors.businessPlan = 'Plan d\'affaires requis';
+    }
+    
+    if (partnerType === 'other') {
+      if (!data.serviceType?.trim()) errors.serviceType = 'Type de service requis';
+      if (!data.idDocument) errors.idDocument = 'Document d\'identité requis';
     }
     
     return {
@@ -552,7 +550,7 @@ const BecomeAPartner = () => {
     };
   }, []);
 
-  // Updated handleSubmit to work with Django backend
+  // Form submission using service
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
@@ -580,8 +578,8 @@ const BecomeAPartner = () => {
       
       if (result.success) {
         setSubmissionState('success');
-        setApplicationId(result.data.id);
-        localStorage.setItem('applicationId', result.data.id);
+        setApplicationId(result.data.application_id || result.data.id);
+        localStorage.setItem('applicationId', result.data.application_id || result.data.id);
         showNotification('Candidature soumise avec succès !', 'success');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
@@ -592,7 +590,7 @@ const BecomeAPartner = () => {
       console.error('Submission error:', error);
       setSubmissionState('error');
       
-      // Handle Django field errors
+      // Handle service field errors
       if (error.field_errors) {
         setFormErrors(error.field_errors);
       }
@@ -757,7 +755,7 @@ const BecomeAPartner = () => {
                 <InputField
                   name="vehicleType"
                   label={t('partner.vehicleType')}
-                  options={VEHICLE_TYPE_OPTIONS}
+                  options={defaultConfig.vehicle_types}
                   required={true}
                   value={formData.vehicleType}
                   onChange={handleInputChange}
@@ -789,7 +787,7 @@ const BecomeAPartner = () => {
                 <InputField
                   name="investmentType"
                   label={t('partner.investmentType')}
-                  options={INVESTMENT_TYPE_OPTIONS}
+                  options={defaultConfig.investment_types}
                   required={true}
                   value={formData.investmentType}
                   onChange={handleInputChange}
@@ -812,7 +810,7 @@ const BecomeAPartner = () => {
                 <InputField
                   name="serviceType"
                   label={t('partner.serviceType')}
-                  options={SERVICE_TYPE_OPTIONS}
+                  options={defaultConfig.service_types}
                   required={true}
                   value={formData.serviceType}
                   onChange={handleInputChange}
@@ -867,10 +865,12 @@ const BecomeAPartner = () => {
               name="phone"
               label={t('partner.phone')}
               type="tel"
+              placeholder="+237 6XX XXX XXX"
               required={true}
               value={formData.phone}
               onChange={handleInputChange}
               error={formErrors.phone}
+              description="Format: +237 6XX XXX XXX pour les mobiles"
             />
           </div>
         </motion.section>
@@ -928,7 +928,7 @@ const BecomeAPartner = () => {
               <InputField
                 name="legalStatus"
                 label={t('partner.legalStatus')}
-                options={LEGAL_STATUS_OPTIONS}
+                options={defaultConfig.legal_statuses}
                 required={true}
                 value={formData.legalStatus}
                 onChange={handleInputChange}
@@ -1101,7 +1101,7 @@ const BecomeAPartner = () => {
         </motion.section>
       </div>
     );
-  }, [formData, formErrors, handleInputChange, handlePhotoUpload, removePhoto, t]);
+  }, [formData, formErrors, handleInputChange, handlePhotoUpload, removePhoto, t, defaultConfig]);
 
   // Success state component
   const SuccessState = useCallback(() => (
@@ -1663,6 +1663,101 @@ const BecomeAPartner = () => {
           </motion.div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="flex items-center space-x-2 mb-4">
+                <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 via-yellow-500 to-orange-500 rounded-lg flex items-center justify-center">
+                  <span className="text-white font-bold text-sm">E</span>
+                </div>
+                <span className="text-xl font-bold">Eat-Fast</span>
+              </div>
+              <p className="text-gray-400 mb-4">
+                La plateforme de livraison de nourriture la plus rapide et la plus fiable au Cameroun.
+              </p>
+              <div className="flex space-x-4">
+                <motion.a
+                  href="#"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <MessageCircle size={20} />
+                </motion.a>
+                <motion.a
+                  href="#"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <Heart size={20} />
+                </motion.a>
+                <motion.a
+                  href="#"
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className="text-gray-400 hover:text-white transition-colors"
+                >
+                  <Globe size={20} />
+                </motion.a>
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Liens rapides</h4>
+              <ul className="space-y-2">
+                {['Accueil', 'Restaurants', 'À propos', 'Contact'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Partenaires</h4>
+              <ul className="space-y-2">
+                {['Devenir partenaire', 'Livreur', 'Investisseur', 'Support'].map((item) => (
+                  <li key={item}>
+                    <a href="#" className="text-gray-400 hover:text-white transition-colors">
+                      {item}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="text-lg font-semibold mb-4">Contact</h4>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <Phone size={16} className="text-emerald-400" />
+                  <span className="text-gray-400">+237 6XX XXX XXX</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Mail size={16} className="text-emerald-400" />
+                  <span className="text-gray-400">contact@eat-fast.cm</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <MapPin size={16} className="text-emerald-400" />
+                  <span className="text-gray-400">Yaoundé, Cameroun</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-800 mt-8 pt-8 text-center">
+            <p className="text-gray-400">
+              © 2024 Eat-Fast. Tous droits réservés. Développé avec ❤️ au Cameroun.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

@@ -1,473 +1,398 @@
 // src/services/db_connection.js
-import axios from 'axios';
+/**
+ * Database connection service for EatFast React frontend
+ * Handles all API communications with Django backend
+ */
 
-// API Configuration - Updated for Django backend
-const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000',
-  TIMEOUT: 60000, // 60 seconds for file uploads
-  VERSION: 'v1',
-};
-
-export const baseURI = `${API_CONFIG.BASE_URL}/api/${API_CONFIG.VERSION}`;
-
-// Create axios instance with default configuration
-export const apiClient = axios.create({
-  baseURL: `${API_CONFIG.BASE_URL}/api/${API_CONFIG.VERSION}`,
-  timeout: API_CONFIG.TIMEOUT,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
-
-// Request interceptor - Add auth token if available
-apiClient.interceptors.request.use(
-  (config) => {
-    // Add authentication token if available
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+class DatabaseConnection {
+  constructor() {
+    // API base URL - automatically detects environment
+    this.baseURL = this.getBaseURL();
+    this.timeout = 30000; // 30 seconds timeout
+    
+    // Default headers for all requests
+    this.defaultHeaders = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    
+    // Track request/response for debugging
+    this.enableLogging = import.meta.env.VITE_API_LOGGING === 'true';
+    
+    if (this.enableLogging) {
+      console.log('🔌 DatabaseConnection initialized with base URL:', this.baseURL);
     }
-
-    // Add CSRF token for Django (if available)
-    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-    if (csrfToken) {
+  }
+  
+  /**
+   * Determine the correct API base URL based on environment
+   */
+  getBaseURL() {
+    // Production URL (when deployed)
+    const prodURL = import.meta.env.VITE_API_BASE_URL;
+    
+    // Development URLs
+    const devURL = 'http://localhost:8000/api';
+    const altDevURL = 'http://127.0.0.1:8000/api';
+    
+    // Return production URL if available, otherwise development
+    if (prodURL) {
+      return prodURL.endsWith('/') ? prodURL.slice(0, -1) : prodURL;
+    }
+    
+    return devURL;
+  }
+  
+  /**
+   * Get client IP address for tracking
+   */
+  async getClientIP() {
+    try {
+      const response = await fetch('https://api.ipify.org?format=json');
+      const data = await response.json();
+      return data.ip;
+    } catch (error) {
+      return null;
+    }
+  }
+  
+  /**
+   * Generic request method with error handling and retries
+   */
+  async request(endpoint, options = {}) {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    // Prepare request configuration
+    const config = {
+      timeout: this.timeout,
+      headers: {
+        ...this.defaultHeaders,
+        ...options.headers,
+      },
+      ...options,
+    };
+    
+    // Add CSRF token if available (for authenticated requests)
+    const csrfToken = this.getCSRFToken();
+    if (csrfToken && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(config.method?.toUpperCase())) {
       config.headers['X-CSRFToken'] = csrfToken;
     }
-
-    // Add request timestamp for debugging
-    config.metadata = { startTime: new Date() };
     
-    // Log request in development
-    if (import.meta.env.DEV) {
-      console.log('🚀 API Request:', {
-        method: config.method?.toUpperCase(),
-        url: config.url,
-        baseURL: config.baseURL,
-        headers: config.headers,
-        data: config.data instanceof FormData ? 'FormData' : config.data,
-      });
+    // Handle request body
+    if (config.body && config.headers['Content-Type'] === 'application/json') {
+      config.body = JSON.stringify(config.body);
     }
-
-    return config;
-  },
-  (error) => {
-    console.error('❌ Request interceptor error:', error);
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor - Handle Django REST framework responses
-apiClient.interceptors.response.use(
-  (response) => {
-    // Calculate request duration
-    const duration = new Date() - response.config.metadata.startTime;
     
-    // Log response in development
-    if (import.meta.env.DEV) {
-      console.log('✅ API Response:', {
-        status: response.status,
-        duration: `${duration}ms`,
-        url: response.config.url,
-        data: response.data,
-      });
+    if (this.enableLogging) {
+      console.log('🚀 API Request:', config.method || 'GET', url, config);
     }
-
-    return response;
-  },
-  (error) => {
-    // Calculate request duration if metadata exists
-    const duration = error.config?.metadata 
-      ? new Date() - error.config.metadata.startTime 
-      : 'unknown';
-
-    // Log error in development
-    if (import.meta.env.DEV) {
-      console.error('❌ API Error:', {
-        status: error.response?.status,
-        duration: typeof duration === 'number' ? `${duration}ms` : duration,
-        url: error.config?.url,
-        message: error.message,
-        data: error.response?.data,
-      });
-    }
-
-    // Handle Django REST framework error responses
-    if (error.response) {
-      const { status, data } = error.response;
-      
-      switch (status) {
-        case 400:
-          // Bad Request - validation errors
-          return Promise.reject({
-            status,
-            success: false,
-            message: data?.message || data?.detail || 'Données invalides',
-            errors: data?.errors || [],
-            field_errors: data?.field_errors || data,
-          });
-          
-        case 401:
-          // Unauthorized - clear token and redirect to login
-          localStorage.removeItem('authToken');
-          if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
-          }
-          return Promise.reject({
-            status,
-            success: false,
-            message: 'Session expirée. Veuillez vous reconnecter.',
-            errors: ['unauthorized'],
-          });
-          
-        case 403:
-          // Forbidden - user doesn't have permission
-          return Promise.reject({
-            status,
-            success: false,
-            message: 'Accès non autorisé',
-            errors: ['forbidden'],
-          });
-          
-        case 404:
-          // Not found
-          return Promise.reject({
-            status,
-            success: false,
-            message: data?.message || 'Ressource non trouvée',
-            errors: ['not_found'],
-          });
-          
-        case 422:
-          // Unprocessable Entity - validation error
-          return Promise.reject({
-            status,
-            success: false,
-            message: data?.message || 'Erreur de validation',
-            errors: data?.errors || [],
-            field_errors: data?.field_errors || data,
-          });
-          
-        case 429:
-          // Rate limit exceeded
-          return Promise.reject({
-            status,
-            success: false,
-            message: data?.message || 'Trop de requêtes. Veuillez patienter.',
-            errors: ['rate_limit_exceeded'],
-          });
-          
-        case 500:
-          // Server error
-          return Promise.reject({
-            status,
-            success: false,
-            message: 'Erreur serveur. Veuillez réessayer plus tard.',
-            errors: ['server_error'],
-          });
-          
-        default:
-          return Promise.reject({
-            status,
-            success: false,
-            message: data?.message || error.message || 'Une erreur est survenue',
-            errors: data?.errors || [],
-          });
-      }
-    } else if (error.request) {
-      // Network error - no response received
-      return Promise.reject({
-        status: 0,
-        success: false,
-        message: 'Erreur de connexion. Vérifiez votre connexion internet.',
-        errors: ['network_error'],
-      });
-    } else {
-      // Request setup error
-      return Promise.reject({
-        status: 0,
-        success: false,
-        message: error.message || 'Erreur de configuration',
-        errors: ['request_error'],
-      });
-    }
-  }
-);
-
-// API Client class with Django-specific methods
-class DBConnection {
-  constructor() {
-    this.client = apiClient;
-    this.baseURL = API_CONFIG.BASE_URL;
-  }
-
-  // Generic GET request
-  async get(url, params = {}, config = {}) {
+    
     try {
-      const response = await this.client.get(url, {
-        params,
+      // Create abort controller for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+      
+      const response = await fetch(url, {
         ...config,
+        signal: controller.signal
       });
-      return response.data;
-    } catch (error) {
-      throw error; // Error is already formatted by interceptor
-    }
-  }
-
-  // Generic POST request
-  async post(url, data = {}, config = {}) {
-    try {
-      const response = await this.client.post(url, data, config);
-      return response.data;
-    } catch (error) {
-      throw error; // Error is already formatted by interceptor
-    }
-  }
-
-  // Generic PUT request
-  async put(url, data = {}, config = {}) {
-    try {
-      const response = await this.client.put(url, data, config);
-      return response.data;
-    } catch (error) {
-      throw error; // Error is already formatted by interceptor
-    }
-  }
-
-  // Generic PATCH request
-  async patch(url, data = {}, config = {}) {
-    try {
-      const response = await this.client.patch(url, data, config);
-      return response.data;
-    } catch (error) {
-      throw error; // Error is already formatted by interceptor
-    }
-  }
-
-  // Generic DELETE request
-  async delete(url, config = {}) {
-    try {
-      const response = await this.client.delete(url, config);
-      return response.data;
-    } catch (error) {
-      throw error; // Error is already formatted by interceptor
-    }
-  }
-
-  // File upload request (multipart/form-data)
-  async uploadFiles(url, formData, onUploadProgress = null) {
-    try {
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        timeout: 120000, // 2 minutes for large file uploads
-      };
-
-      if (onUploadProgress) {
-        config.onUploadProgress = (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          onUploadProgress(percentCompleted);
-        };
-      }
-
-      const response = await this.client.post(url, formData, config);
-      return response.data;
-    } catch (error) {
-      throw error; // Error is already formatted by interceptor
-    }
-  }
-
-  // Health check - updated for Django
-  async healthCheck() {
-    try {
-      const response = await this.client.get('/health/');
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  // Set authentication token
-  setAuthToken(token) {
-    if (token) {
-      localStorage.setItem('authToken', token);
-      this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      localStorage.removeItem('authToken');
-      delete this.client.defaults.headers.common['Authorization'];
-    }
-  }
-
-  // Get authentication token
-  getAuthToken() {
-    return localStorage.getItem('authToken');
-  }
-
-  // Check if user is authenticated
-  isAuthenticated() {
-    return !!this.getAuthToken();
-  }
-
-  // Create FormData from object (helper for file uploads)
-  createFormData(data) {
-    const formData = new FormData();
-    
-    Object.keys(data).forEach(key => {
-      const value = data[key];
       
-      if (value !== null && value !== undefined) {
-        if (Array.isArray(value)) {
-          // Handle arrays
-          if (key === 'photos') {
-            // Special handling for photos array
-            value.forEach((item) => {
-              if (item instanceof File) {
-                formData.append('photos', item);
-              }
+      clearTimeout(timeoutId);
+      
+      // Parse response
+      const contentType = response.headers.get('content-type');
+      let data;
+      
+      if (contentType && contentType.includes('application/json')) {
+        data = await response.json();
+      } else {
+        data = await response.text();
+      }
+      
+      if (this.enableLogging) {
+        console.log('📡 API Response:', response.status, data);
+      }
+      
+      // Handle response based on status
+      if (!response.ok) {
+        const error = new Error(data.message || `HTTP error! status: ${response.status}`);
+        error.status = response.status;
+        error.data = data;
+        throw error;
+      }
+      
+      return {
+        success: true,
+        data: data,
+        status: response.status,
+        headers: response.headers
+      };
+      
+    } catch (error) {
+      if (this.enableLogging) {
+        console.error('❌ API Error:', error);
+      }
+      
+      // Handle different types of errors
+      if (error.name === 'AbortError') {
+        throw new Error('Request timeout - please try again');
+      }
+      
+      if (!navigator.onLine) {
+        throw new Error('No internet connection - please check your network');
+      }
+      
+      // Re-throw with additional context
+      const enhancedError = new Error(error.message || 'Network request failed');
+      enhancedError.originalError = error;
+      enhancedError.status = error.status || 0;
+      enhancedError.data = error.data || null;
+      
+      throw enhancedError;
+    }
+  }
+  
+  /**
+   * GET request
+   */
+  async get(endpoint, params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const fullEndpoint = queryString ? `${endpoint}?${queryString}` : endpoint;
+    
+    return this.request(fullEndpoint, {
+      method: 'GET'
+    });
+  }
+  
+  /**
+   * POST request
+   */
+  async post(endpoint, data, options = {}) {
+    return this.request(endpoint, {
+      method: 'POST',
+      body: data,
+      ...options
+    });
+  }
+  
+  /**
+   * PUT request
+   */
+  async put(endpoint, data, options = {}) {
+    return this.request(endpoint, {
+      method: 'PUT',
+      body: data,
+      ...options
+    });
+  }
+  
+  /**
+   * PATCH request
+   */
+  async patch(endpoint, data, options = {}) {
+    return this.request(endpoint, {
+      method: 'PATCH',
+      body: data,
+      ...options
+    });
+  }
+  
+  /**
+   * DELETE request
+   */
+  async delete(endpoint, options = {}) {
+    return this.request(endpoint, {
+      method: 'DELETE',
+      ...options
+    });
+  }
+  
+  /**
+   * Upload files with FormData
+   */
+  async uploadFiles(endpoint, formData, onProgress = null) {
+    const url = `${this.baseURL}${endpoint}`;
+    
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      
+      // Handle upload progress
+      if (onProgress) {
+        xhr.upload.addEventListener('progress', (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round((event.loaded / event.total) * 100);
+            onProgress(percentComplete);
+          }
+        });
+      }
+      
+      xhr.addEventListener('load', () => {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve({
+              success: true,
+              data: response,
+              status: xhr.status
             });
           } else {
-            value.forEach((item, index) => {
-              if (item instanceof File) {
-                formData.append(key, item);
-              } else {
-                formData.append(`${key}[${index}]`, item);
-              }
-            });
+            const error = new Error(response.message || `Upload failed with status ${xhr.status}`);
+            error.status = xhr.status;
+            error.data = response;
+            reject(error);
           }
-        } else if (value instanceof File) {
-          // Handle single file
-          formData.append(key, value);
-        } else if (typeof value === 'object') {
-          // Handle objects (convert to JSON string)
-          formData.append(key, JSON.stringify(value));
-        } else {
-          // Handle primitive values
-          formData.append(key, value.toString());
+        } catch (parseError) {
+          reject(new Error('Invalid response format'));
         }
+      });
+      
+      xhr.addEventListener('error', () => {
+        reject(new Error('Upload failed - network error'));
+      });
+      
+      xhr.addEventListener('abort', () => {
+        reject(new Error('Upload cancelled'));
+      });
+      
+      xhr.addEventListener('timeout', () => {
+        reject(new Error('Upload timeout'));
+      });
+      
+      // Set timeout
+      xhr.timeout = this.timeout;
+      
+      // Add CSRF token if available
+      const csrfToken = this.getCSRFToken();
+      if (csrfToken) {
+        xhr.setRequestHeader('X-CSRFToken', csrfToken);
       }
+      
+      xhr.open('POST', url);
+      xhr.send(formData);
     });
-    
-    return formData;
   }
-
-  // Validate file before upload
-  validateFile(file, options = {}) {
-    const {
-      maxSize = 10 * 1024 * 1024, // 10MB default
-      allowedTypes = [
-        'application/pdf',
-        'application/msword', 
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'image/jpeg', 
-        'image/jpg', 
-        'image/png'
-      ],
-    } = options;
-
-    const errors = [];
-
-    if (!file) {
-      errors.push('Aucun fichier sélectionné');
-      return { isValid: false, errors };
-    }
-
-    // Check file size
-    if (file.size > maxSize) {
-      errors.push(`Le fichier est trop volumineux. Taille maximale: ${Math.round(maxSize / 1024 / 1024)}MB`);
-    }
-
-    // Check file type
-    if (!allowedTypes.includes(file.type)) {
-      errors.push(`Type de fichier non autorisé. Types acceptés: PDF, DOC, DOCX, JPG, PNG`);
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
-  }
-
-  // Format error for display
-  formatError(error) {
-    if (typeof error === 'string') {
-      return { message: error, errors: [] };
-    }
-    
-    if (error?.success === false) {
+  
+  /**
+   * Health check endpoint
+   */
+  async healthCheck() {
+    try {
+      const response = await this.get('/health/');
+      return response.data;
+    } catch (error) {
       return {
-        message: error.message || 'Une erreur est survenue',
-        errors: error.errors || [],
-        field_errors: error.field_errors || {},
+        status: 'unhealthy',
+        error: error.message
       };
     }
+  }
+  
+  /**
+   * Service health check for frontend monitoring
+   */
+  async serviceHealth() {
+    try {
+      const response = await this.get('/service-health/');
+      return response.data;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message
+      };
+    }
+  }
+  
+  /**
+   * Get CSRF token from cookies (if using CSRF protection)
+   */
+  getCSRFToken() {
+    const name = 'csrftoken';
+    let cookieValue = null;
     
-    return {
-      message: 'Une erreur inattendue est survenue',
-      errors: [],
-    };
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    
+    return cookieValue;
+  }
+  
+  /**
+   * Validate email format
+   */
+  isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+  
+  /**
+   * Validate Cameroon phone number
+   */
+  isValidPhone(phone) {
+    const phoneRegex = /^\+?237?[0-9]{9,}$/;
+    return phoneRegex.test(phone.replace(/\s+/g, ''));
+  }
+  
+  /**
+   * Validate URL format
+   */
+  isValidUrl(url) {
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  
+  /**
+   * Format file size for display
+   */
+  formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+  
+  /**
+   * Format date for display
+   */
+  formatDate(dateString) {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('fr-FR', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    } catch {
+      return 'Date invalide';
+    }
+  }
+  
+  /**
+   * Enable/disable request logging
+   */
+  setLogging(enabled) {
+    this.enableLogging = enabled;
+    console.log(`API logging ${enabled ? 'enabled' : 'disabled'}`);
   }
 }
 
-// Create singleton instance
-const dbConnection = new DBConnection();
+// Create and export singleton instance
+const dbConnection = new DatabaseConnection();
 
-// Export both the class and instance
 export default dbConnection;
-export { DBConnection };
-
-// Export Django-specific API endpoints
-export const API_ENDPOINTS = {
-  // Contact endpoints
-  CONTACT: '/contact/',
-  CONTACT_CONFIG: '/contact/config/',
-  CONTACT_EXPORT: '/contact/export/',
-  
-  // Partner endpoints
-  PARTNER: '/partner/',
-  PARTNER_CONFIG: '/partner/config/',
-  PARTNER_STATUS: '/partner/check_status/',
-  PARTNER_EXPORT: '/partner/export/',
-  
-  // Analytics endpoints
-  CONTACT_ANALYTICS: '/contact-analytics/',
-  PARTNER_ANALYTICS: '/partner-analytics/',
-  DASHBOARD_STATS: '/dashboard/stats/',
-  
-  // Search
-  GLOBAL_SEARCH: '/search/',
-  
-  // Health check
-  HEALTH: '/health/',
-};
-
-// Utility functions
-export const isOnline = () => navigator.onLine;
-
-export const handleNetworkError = (callback) => {
-  if (!isOnline()) {
-    const error = {
-      success: false,
-      message: 'Vous êtes hors ligne. Vérifiez votre connexion internet.',
-      errors: ['offline'],
-    };
-    callback(error);
-    return true;
-  }
-  return false;
-};
-
-// Django CSRF token helper
-export const getCSRFToken = () => {
-  return document.querySelector('[name=csrfmiddlewaretoken]')?.value;
-};
-
-// Add CSRF token to form data
-export const addCSRFToFormData = (formData) => {
-  const csrfToken = getCSRFToken();
-  if (csrfToken) {
-    formData.append('csrfmiddlewaretoken', csrfToken);
-  }
-  return formData;
-};

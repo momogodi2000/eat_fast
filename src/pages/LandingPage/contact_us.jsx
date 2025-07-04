@@ -24,14 +24,25 @@ import {
   Truck,
   Headphones,
   WifiOff,
-  RefreshCw
+  RefreshCw,
+  Loader2
 } from 'lucide-react';
 
 import Footer from '../../components/CommonShare/Footer';
 
+// Import the contact services with proper integration
+import contactServices, { 
+  getContactFormConfig, 
+  validateContactForm, 
+  isValidEmail, 
+  isValidPhone, 
+  isValidUrl, 
+  formatErrorMessages, 
+  getCharacterCount 
+} from '../../Services/Public/ContactServices';
 
-// Import the contact services
-import contactServices, { getContactFormConfig } from '../../Services/Public/ContactServices';
+// Helper function to check online status
+const isOnline = () => typeof navigator !== 'undefined' && navigator.onLine;
 
 // FAQ Data - moved outside component to prevent recreation on each render
 const FAQ_DATA = [
@@ -178,10 +189,11 @@ const ContactPage = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [openFAQ, setOpenFAQ] = useState(1);
-  const [isConnected, setIsConnected] = useState(navigator?.onLine ?? true);
+  const [isConnected, setIsConnected] = useState(isOnline());
   const [notification, setNotification] = useState(null);
+  const [serviceHealth, setServiceHealth] = useState(null);
   
-  // Form data state
+  // Form data state with proper service integration
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -202,38 +214,45 @@ const ContactPage = () => {
   
   const [formErrors, setFormErrors] = useState({});
   const [formConfig, setFormConfig] = useState({});
+  const [characterCount, setCharacterCount] = useState({
+    current: 0,
+    max: 5000,
+    remaining: 5000,
+    isValid: false,
+    percentage: 0
+  });
 
-  // Memoized config initialization
+  // Initialize form configuration from services
   useEffect(() => {
     try {
-      const config = {
-        subjects: [
-          { value: 'general', label: 'Demande générale' },
-          { value: 'order', label: 'Problème de commande' },
-          { value: 'delivery', label: 'Problème de livraison' },
-          { value: 'payment', label: 'Problème de paiement' },
-          { value: 'restaurant', label: 'Demande restaurant partenaire' },
-          { value: 'driver', label: 'Devenir livreur' },
-          { value: 'business', label: 'Partenariat commercial' },
-          { value: 'feedback', label: 'Retour d\'expérience' },
-          { value: 'complaint', label: 'Plainte' },
-          { value: 'other', label: 'Autre' }
-        ],
-        contactMethods: [
-          { value: 'email', label: 'Email' },
-          { value: 'phone', label: 'Appel téléphonique' },
-          { value: 'whatsapp', label: 'WhatsApp' },
-          { value: 'sms', label: 'SMS' }
-        ]
-      };
+      const config = getContactFormConfig();
       setFormConfig(config);
     } catch (error) {
       console.error('Failed to load form config:', error);
       setFormConfig({
         subjects: [{ value: 'general', label: 'Demande générale' }],
-        contactMethods: [{ value: 'email', label: 'Email' }]
+        contactMethods: [{ value: 'email', label: 'Email' }],
+        maxMessageLength: 5000,
+        minMessageLength: 10
       });
     }
+  }, []);
+
+  // Service health check
+  useEffect(() => {
+    const checkHealth = async () => {
+      try {
+        const health = await contactServices.checkServiceHealth();
+        setServiceHealth(health);
+      } catch (error) {
+        setServiceHealth({ success: false, message: 'Service indisponible' });
+      }
+    };
+    
+    checkHealth();
+    const interval = setInterval(checkHealth, 60000); // Check every minute
+    
+    return () => clearInterval(interval);
   }, []);
 
   // Network connectivity monitoring
@@ -278,6 +297,12 @@ const ContactPage = () => {
     }
   }, [notification]);
 
+  // Update character count when message changes
+  useEffect(() => {
+    const count = getCharacterCount(formData.message, formConfig.maxMessageLength);
+    setCharacterCount(count);
+  }, [formData.message, formConfig.maxMessageLength]);
+
   // Optimized event handlers
   const toggleDarkMode = useCallback(() => setDarkMode(prev => !prev), []);
   const toggleMenu = useCallback(() => setIsMenuOpen(prev => !prev), []);
@@ -291,56 +316,31 @@ const ContactPage = () => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     
-    // Clear error when user starts typing
+    // Clear specific field error when user starts typing
     if (formErrors[name]) {
       setFormErrors(prev => ({ ...prev, [name]: '' }));
     }
   }, [formErrors]);
 
-  // Enhanced form validation
+  // Enhanced form validation using service
   const validateForm = useCallback((data) => {
-    const errors = {};
-    
-    // Required field validation
-    if (!data.name?.trim()) {
-      errors.name = 'Le nom est requis';
-    } else if (data.name.trim().length < 2) {
-      errors.name = 'Le nom doit contenir au moins 2 caractères';
-    }
-    
-    // Email validation
-    if (!data.email?.trim()) {
-      errors.email = 'L\'email est requis';
-    } else if (!contactServices.isValidEmail(data.email)) {
-      errors.email = 'Adresse email invalide';
-    }
-    
-    // Phone validation (optional but must be valid if provided)
-    if (data.phone?.trim() && !contactServices.isValidPhone(data.phone)) {
-      errors.phone = 'Numéro de téléphone invalide';
-    }
-    
-    // Website validation (optional but must be valid if provided)
-    if (data.website?.trim() && !contactServices.isValidUrl(data.website)) {
-      errors.website = 'URL de site web invalide';
-    }
-    
-    // Message validation
-    if (!data.message?.trim()) {
-      errors.message = 'Le message est requis';
-    } else if (data.message.trim().length < 10) {
-      errors.message = 'Le message doit contenir au moins 10 caractères';
-    } else if (data.message.trim().length > 5000) {
-      errors.message = 'Le message ne peut pas dépasser 5000 caractères';
-    }
-    
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors
-    };
+    const validation = validateContactForm(data);
+    return validation;
   }, []);
 
-  // Enhanced form submission
+  // Real-time validation for fields
+  const validateField = useCallback((fieldName, value) => {
+    const tempData = { ...formData, [fieldName]: value };
+    const validation = validateForm(tempData);
+    
+    if (validation.errors[fieldName]) {
+      setFormErrors(prev => ({ ...prev, [fieldName]: validation.errors[fieldName] }));
+    } else {
+      setFormErrors(prev => ({ ...prev, [fieldName]: '' }));
+    }
+  }, [formData, validateForm]);
+
+  // Enhanced form submission using service
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     
@@ -349,8 +349,14 @@ const ContactPage = () => {
       showNotification('Pas de connexion internet. Veuillez vérifier votre connexion.', 'error');
       return;
     }
+
+    // Check service health
+    if (serviceHealth && !serviceHealth.success) {
+      showNotification('Service temporairement indisponible. Veuillez réessayer plus tard.', 'error');
+      return;
+    }
     
-    // Validate form
+    // Validate form using service
     const validation = validateForm(formData);
     if (!validation.isValid) {
       setFormErrors(validation.errors);
@@ -396,25 +402,13 @@ const ContactPage = () => {
         
       } else {
         // Handle validation errors from server
-        if (result.errors && Array.isArray(result.errors)) {
-          const errorObj = {};
-          result.errors.forEach(error => {
-            const errorStr = error.toString().toLowerCase();
-            if (errorStr.includes('nom') || errorStr.includes('name')) {
-              errorObj.name = error;
-            } else if (errorStr.includes('email')) {
-              errorObj.email = error;
-            } else if (errorStr.includes('message')) {
-              errorObj.message = error;
-            } else if (errorStr.includes('téléphone') || errorStr.includes('phone')) {
-              errorObj.phone = error;
-            } else if (errorStr.includes('site web') || errorStr.includes('website')) {
-              errorObj.website = error;
-            } else {
-              errorObj.general = error;
-            }
-          });
-          setFormErrors(errorObj);
+        if (result.errors) {
+          if (typeof result.errors === 'object') {
+            setFormErrors(result.errors);
+          } else if (Array.isArray(result.errors)) {
+            const errorMessages = formatErrorMessages(result.errors);
+            showNotification(errorMessages.join('\n'), 'error');
+          }
         }
         
         setFormStatus({ 
@@ -439,7 +433,7 @@ const ContactPage = () => {
       
       showNotification('Erreur de connexion. Veuillez réessayer.', 'error');
     }
-  }, [formData, isConnected, validateForm, showNotification]);
+  }, [formData, isConnected, serviceHealth, validateForm, showNotification]);
 
   // Animation variants
   const containerVariants = useMemo(() => ({
@@ -593,7 +587,11 @@ const ContactPage = () => {
               <div className="inline-flex items-center px-4 py-2 bg-emerald-100 dark:bg-emerald-900 rounded-full text-emerald-800 dark:text-emerald-200 text-sm font-medium mb-4">
                 <MessageCircle size={16} className="mr-2" />
                 Support disponible 24h/24
-                {isConnected && <div className="ml-2 w-2 h-2 bg-green-500 rounded-full" />}
+                {isConnected && serviceHealth && (
+                  <div className={`ml-2 w-2 h-2 rounded-full ${
+                    serviceHealth.success ? 'bg-green-500' : 'bg-red-500'
+                  }`} />
+                )}
               </div>
             </motion.div>
 
@@ -710,6 +708,7 @@ const ContactPage = () => {
                       name="name"
                       value={formData.name}
                       onChange={handleChange}
+                      onBlur={(e) => validateField('name', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border transition-colors ${
                         formErrors.name 
                           ? 'border-red-500 focus:ring-red-500' 
@@ -734,6 +733,7 @@ const ContactPage = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
+                      onBlur={(e) => validateField('email', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border transition-colors ${
                         formErrors.email 
                           ? 'border-red-500 focus:ring-red-500' 
@@ -758,6 +758,7 @@ const ContactPage = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
+                      onBlur={(e) => validateField('phone', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border transition-colors ${
                         formErrors.phone ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500'
                       } ${darkMode ? 'bg-gray-700' : 'bg-white'} focus:outline-none focus:ring-2`}
@@ -766,6 +767,9 @@ const ContactPage = () => {
                     {formErrors.phone && (
                       <p className="text-red-500 text-sm mt-1">{formErrors.phone}</p>
                     )}
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Format: +237 6XX XXX XXX pour les mobiles
+                    </p>
                   </div>
 
                   {/* Company Field */}
@@ -797,6 +801,7 @@ const ContactPage = () => {
                       name="website"
                       value={formData.website}
                       onChange={handleChange}
+                      onBlur={(e) => validateField('website', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border transition-colors ${
                         formErrors.website ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 dark:border-gray-600 focus:ring-emerald-500'
                       } ${darkMode ? 'bg-gray-700' : 'bg-white'} focus:outline-none focus:ring-2`}
@@ -863,6 +868,7 @@ const ContactPage = () => {
                       rows="5"
                       value={formData.message}
                       onChange={handleChange}
+                      onBlur={(e) => validateField('message', e.target.value)}
                       className={`w-full px-4 py-3 rounded-lg border transition-colors resize-none ${
                         formErrors.message 
                           ? 'border-red-500 focus:ring-red-500' 
@@ -870,38 +876,57 @@ const ContactPage = () => {
                       } ${darkMode ? 'bg-gray-700' : 'bg-white'} focus:outline-none focus:ring-2`}
                       placeholder="Veuillez fournir des détails sur votre demande..."
                       required
-                      minLength={10}
-                      maxLength={5000}
+                      minLength={formConfig.minMessageLength || 10}
+                      maxLength={formConfig.maxMessageLength || 5000}
                     />
                     {formErrors.message && (
                       <p className="text-red-500 text-sm mt-1">{formErrors.message}</p>
                     )}
-                    <div className="text-xs text-gray-500 mt-1">
-                      {formData.message.length}/5000 caractères
+                    <div className={`text-xs mt-1 flex justify-between ${
+                      characterCount.isValid ? 'text-green-600 dark:text-green-400' : 
+                      characterCount.current === 0 ? 'text-gray-500 dark:text-gray-400' : 
+                      'text-red-500 dark:text-red-400'
+                    }`}>
+                      <span>
+                        {characterCount.current}/{characterCount.max} caractères
+                      </span>
+                      {characterCount.current > 0 && (
+                        <span>
+                          {characterCount.current < (formConfig.minMessageLength || 10) ? 
+                            `${(formConfig.minMessageLength || 10) - characterCount.current} restants` : 
+                            characterCount.isValid ? '✓ Valide' : 'Trop long'
+                          }
+                        </span>
+                      )}
                     </div>
                   </div>
                   
                   {/* Submit Button */}
                   <motion.button
                     type="submit"
-                    disabled={formStatus.submitting || !isConnected}
+                    disabled={formStatus.submitting || !isConnected || (serviceHealth && !serviceHealth.success)}
                     whileHover={{ scale: formStatus.submitting ? 1 : 1.02 }}
                     whileTap={{ scale: formStatus.submitting ? 1 : 0.98 }}
                     className={`w-full font-medium py-4 px-6 rounded-lg flex items-center justify-center gap-3 transition-all duration-200 ${
-                      formStatus.submitting || !isConnected
+                      formStatus.submitting || !isConnected || (serviceHealth && !serviceHealth.success)
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 transform hover:shadow-lg'
                     } text-white`}
                   >
                     {formStatus.submitting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <Loader2 className="w-5 h-5 animate-spin" />
                         <span>Envoi en cours...</span>
                       </>
                     ) : !isConnected ? (
                       <>
                         <WifiOff size={18} />
                         <span>Hors ligne</span>
+                      </>
+                    ) : serviceHealth && !serviceHealth.success ? (
+                      <>
+                        <AlertCircle size={18} />
+                        <span>Service indisponible</span>
                       </>
                     ) : (
                       <>
@@ -965,18 +990,81 @@ const ContactPage = () => {
                   Actions rapides
                 </h3>
                 <div className="space-y-3">
-                  <button className="w-full p-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600">
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, subject: 'urgent' }));
+                      showNotification('Sujet défini sur "Support d\'urgence"', 'info');
+                    }}
+                    className="w-full p-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
+                  >
                     <div className="font-medium">Support d'urgence</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Assistance 24h/24</div>
-                  </button>
-                  <button className="w-full p-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600">
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, subject: 'order' }));
+                      showNotification('Sujet défini sur "Problème de commande"', 'info');
+                    }}
+                    className="w-full p-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
+                  >
                     <div className="font-medium">Problèmes de commande</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Signaler des problèmes de livraison</div>
-                  </button>
-                  <button className="w-full p-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600">
+                  </motion.button>
+                  <motion.button 
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      setFormData(prev => ({ ...prev, subject: 'restaurant' }));
+                      showNotification('Sujet défini sur "Demande restaurant partenaire"', 'info');
+                    }}
+                    className="w-full p-3 text-left rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors border border-gray-200 dark:border-gray-600"
+                  >
                     <div className="font-medium">Demande de partenariat</div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">Rejoindre notre réseau</div>
-                  </button>
+                  </motion.button>
+                </div>
+              </div>
+
+              {/* Service Health Indicator */}
+              <div className={`p-6 rounded-2xl shadow-lg border ${
+                darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+              }`}>
+                <h3 className="text-lg font-bold mb-4 flex items-center">
+                  <Shield className="text-emerald-600 dark:text-emerald-400 mr-2" size={20} />
+                  État du service
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">API Contact</span>
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        serviceHealth?.success ? 'bg-green-500' : 'bg-red-500'
+                      }`} />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {serviceHealth?.success ? 'Opérationnel' : 'Indisponible'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Connexion</span>
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        isConnected ? 'bg-green-500' : 'bg-red-500'
+                      }`} />
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        {isConnected ? 'Connecté' : 'Hors ligne'}
+                      </span>
+                    </div>
+                  </div>
+                  {serviceHealth?.message && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                      {serviceHealth.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -1085,17 +1173,27 @@ const ContactPage = () => {
                 Vous avez encore des questions ? Notre équipe de support est là pour vous aider 24h/24 !
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <button className="inline-flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-3 px-6 rounded-lg transition-colors">
+                <motion.button 
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, subject: 'general' }));
+                    document.getElementById('message')?.focus();
+                  }}
+                  className="inline-flex items-center justify-center bg-emerald-500 hover:bg-emerald-600 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                >
                   <MessageCircle size={18} className="mr-2" />
                   Chat en direct
-                </button>
-                <a 
+                </motion.button>
+                <motion.a 
                   href="tel:+237698765432"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
                   className="inline-flex items-center justify-center border border-emerald-500 text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900 font-medium py-3 px-6 rounded-lg transition-colors"
                 >
                   <Phone size={18} className="mr-2" />
                   Appeler le support
-                </a>
+                </motion.a>
               </div>
             </motion.div>
           </div>
@@ -1103,7 +1201,7 @@ const ContactPage = () => {
       </section>
 
       {/* Enhanced Footer */}
-     <Footer darkMode={darkMode} />
+      <Footer darkMode={darkMode} />
     </div>
   );
 };
