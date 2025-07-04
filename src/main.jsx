@@ -1,5 +1,9 @@
 // src/main.jsx
+<<<<<<< HEAD
 import React, { StrictMode } from 'react';
+=======
+import { StrictMode } from 'react';
+>>>>>>> 753220f0986fa4338251ff890c029766f035deec
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
@@ -8,6 +12,7 @@ import App from './App.jsx';
 // Import i18n configuration
 import './i18n';
 
+<<<<<<< HEAD
 // Error boundary for the entire app
 class AppErrorBoundary extends React.Component {
   constructor(props) {
@@ -81,4 +86,26 @@ if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initializeApp);
 } else {
   initializeApp();
+=======
+const root = createRoot(document.getElementById('root'));
+
+// Simplified initialization without waiting for i18n
+// This prevents blank screen if i18n has issues
+try {
+  root.render(
+    <StrictMode>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </StrictMode>
+  );
+} catch (error) {
+  console.error('Failed to render app:', error);
+  // Fallback render without StrictMode for debugging
+  root.render(
+    <BrowserRouter>
+      <App />
+    </BrowserRouter>
+  );
+>>>>>>> 753220f0986fa4338251ff890c029766f035deec
 }

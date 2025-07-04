@@ -14,17 +14,24 @@ services:
     environment:
       - NODE_ENV=development
       - VITE_API_BASE_URL=http://localhost:8000/api/v1
+<<<<<<< HEAD
       - CHOKIDAR_USEPOLLING=true
     command: npm run dev -- --host 0.0.0.0
     networks:
       - eat-fast-network
     
   # Production service
+=======
+    command: npm run dev
+    
+  # Production service (for testing production build locally)
+>>>>>>> 753220f0986fa4338251ff890c029766f035deec
   eat-fast-prod:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
+<<<<<<< HEAD
       - "80:80"
     environment:
       - NODE_ENV=production
@@ -53,3 +60,21 @@ services:
 networks:
   eat-fast-network:
     driver: bridge
+=======
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_BASE_URL=https://your-backend-api.render.com/api/v1
+    
+  # Nginx reverse proxy (optional, for production-like setup)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - eat-fast-prod
+    profiles:
+      - production
+>>>>>>> 753220f0986fa4338251ff890c029766f035deec

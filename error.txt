@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Eat Fast - Installation and Troubleshooting Guide
 
 ## Quick Installation
@@ -80,6 +81,14 @@ Create a `.env` file in the root directory:
 VITE_API_BASE_URL=http://localhost:8000/api/v1
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
+=======
+# Clean and force install with all optional dependencies
+rm -rf node_modules package-lock.json
+npm install --force --include=optional
+
+# Try build
+npm run build
+>>>>>>> 753220f0986fa4338251ff890c029766f035deec
 
 
 
