@@ -33,8 +33,7 @@
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "prepare": "husky install"
+    "format:check": "prettier --check ."
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
