@@ -38,7 +38,7 @@ class AuthService {
       const response = await fetch(`${this.baseEndpoint}/register`, options);
 
       const responseData = await response.json();
-      return responseData.user;
+      return responseData;
     } catch (error) {
       throw error;
     }
