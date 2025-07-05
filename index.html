@@ -2,12 +2,115 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/src/assets/logo/eat_fast.png" />
+    <link rel="apple-touch-icon" href="/src/assets/logo/eat_fast.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Vite + React</title>
+    
+    <!-- Primary Meta Tags -->
+    <title>Eat Fast - Food Delivery App in Cameroon | Fast Food Delivery Yaoundé, Douala</title>
+    <meta name="title" content="Eat Fast - Food Delivery App in Cameroon | Fast Food Delivery Yaoundé, Douala" />
+    <meta name="description" content="Order delicious food online in Cameroon. Fast delivery to your doorstep in Yaoundé, Douala, and across Cameroon. Best food delivery app with traditional and international cuisine." />
+    <meta name="keywords" content="food delivery Cameroon, food delivery Yaoundé, food delivery Douala, best food app Cameroon, online food ordering, restaurant delivery, traditional food Cameroon, fast food delivery" />
+    <meta name="author" content="Eat Fast" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://eatfast.cm/" />
+    <meta property="og:title" content="Eat Fast - Food Delivery App in Cameroon" />
+    <meta property="og:description" content="Order delicious food online in Cameroon. Fast delivery to your doorstep in Yaoundé, Douala, and across Cameroon." />
+    <meta property="og:image" content="/src/assets/logo/eat_fast.png" />
+    <meta property="og:site_name" content="Eat Fast" />
+    <meta property="og:locale" content="en_US" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://eatfast.cm/" />
+    <meta property="twitter:title" content="Eat Fast - Food Delivery App in Cameroon" />
+    <meta property="twitter:description" content="Order delicious food online in Cameroon. Fast delivery to your doorstep in Yaoundé, Douala, and across Cameroon." />
+    <meta property="twitter:image" content="/src/assets/logo/eat_fast.png" />
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="theme-color" content="#FF6B35" />
+    <meta name="msapplication-TileColor" content="#FF6B35" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Eat Fast" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://eatfast.cm/" />
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json" />
+    
+    <!-- Preconnect to external domains -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FoodService",
+      "name": "Eat Fast",
+      "description": "Food delivery service in Cameroon",
+      "url": "https://eatfast.cm",
+      "logo": "https://eatfast.cm/src/assets/logo/eat_fast.png",
+      "image": "https://eatfast.cm/src/assets/logo/eat_fast.png",
+      "telephone": "+237-XXX-XXX-XXX",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "CM",
+        "addressLocality": "Yaoundé",
+        "addressRegion": "Centre"
+      },
+      "areaServed": [
+        {
+          "@type": "City",
+          "name": "Yaoundé"
+        },
+        {
+          "@type": "City", 
+          "name": "Douala"
+        }
+      ],
+      "serviceType": "Food Delivery",
+      "priceRange": "$$",
+      "openingHours": "Mo-Su 06:00-23:00",
+      "sameAs": [
+        "https://facebook.com/eatfastcm",
+        "https://twitter.com/eatfastcm",
+        "https://instagram.com/eatfastcm"
+      ]
+    }
+    </script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'GA_MEASUREMENT_ID');
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then((registration) => {
+              console.log('SW registered: ', registration);
+            })
+            .catch((registrationError) => {
+              console.log('SW registration failed: ', registrationError);
+            });
+        });
+      }
+    </script>
   </body>
 </html>

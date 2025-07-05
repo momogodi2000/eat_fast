@@ -8,6 +8,8 @@ import {
   LogIn, UserPlus, ChevronLeft, ChevronRight, Eye, Users, TrendingUp,
   Shield, Verified, Camera
 } from 'lucide-react';
+import Footer from '../../components/CommonShare/Footer';
+
 
 // Custom Hooks
 const useTheme = () => {
@@ -1112,66 +1114,7 @@ const RestaurantPublicityPage = () => {
       </section>
       
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-yellow-500 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">E</span>
-                </div>
-                <Logo className="text-xl" />
-              </div>
-              <p className="text-gray-400 mb-4 text-sm">
-                Votre plateforme de référence pour découvrir et commander dans les meilleurs restaurants du Cameroun
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-bold mb-4">Navigation</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="/" className="hover:text-white transition-colors">Accueil</a></li>
-                <li><a href="/restaurants" className="hover:text-white transition-colors">Restaurants</a></li>
-                <li><a href="/partner" className="hover:text-white transition-colors">Devenir Partenaire</a></li>
-                <li><a href="/about" className="hover:text-white transition-colors">À propos</a></li>
-                <li><a href="/contact" className="hover:text-white transition-colors">Contact</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-bold mb-4">Services</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Livraison rapide</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Support client</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Programme fidélité</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Carte cadeau</a></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-bold mb-4">Contact</h3>
-              <div className="space-y-2 text-sm text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Phone size={16} />
-                  <span>+237 6XX XXX XXX</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Globe size={16} />
-                  <span>contact@eatfast.cm</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin size={16} />
-                  <span>Yaoundé, Cameroun</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2024 EatFast. Tous droits réservés. | Politique de confidentialité | Conditions d'utilisation</p>
-          </div>
-        </div>
-      </footer>
+     <Footer darkMode={darkMode} />
     </div>
   );
 };

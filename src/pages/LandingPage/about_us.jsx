@@ -6,6 +6,8 @@ import {
   Target, Eye, Lightbulb, Zap, Clock, CheckCircle, TrendingUp, Coffee,
   Calendar, Camera, Play
 } from 'lucide-react';
+import Footer from '../../components/CommonShare/Footer';
+
 
 // Custom Hooks
 const useTheme = () => {
@@ -983,64 +985,8 @@ const AboutPage = () => {
       <CTASection />
       
       {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12 px-4">
-        <div className="container mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-yellow-500 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold text-sm">E</span>
-                </div>
-                <Logo className="text-xl" />
-              </div>
-              <p className="text-gray-400 mb-4 text-sm">
-                Votre passerelle vers les délices culinaires du Cameroun
-              </p>
-            </div>
-            
-            <div>
-              <h3 className="font-bold mb-4">Navigation</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><button onClick={() => navigate('/')} className="hover:text-white transition-colors">Accueil</button></li>
-                <li><button onClick={() => navigate('/restaurants')} className="hover:text-white transition-colors">Restaurants</button></li>
-                <li><button onClick={() => navigate('/about')} className="hover:text-white transition-colors">À propos</button></li>
-                <li><button onClick={() => navigate('/contact')} className="hover:text-white transition-colors">Contact</button></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-bold mb-4">Services</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
-                <li><a href="#" className="hover:text-white transition-colors">Livraison</a></li>
-                <li><button onClick={() => navigate('/become')} className="hover:text-white transition-colors">Devenir partenaire</button></li>
-                <li><button onClick={() => navigate('/become')} className="hover:text-white transition-colors">Carrières</button></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h3 className="font-bold mb-4">Contact</h3>
-              <div className="space-y-2 text-sm text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Phone size={16} />
-                  <span>+237 6XX XXX XXX</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Mail size={16} />
-                  <span>contact@eatfast.cm</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin size={16} />
-                  <span>Yaoundé, Cameroun</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2024 EatFast. Tous droits réservés.</p>
-          </div>
-        </div>
-      </footer>
+    <Footer darkMode={darkMode} />
+
     </div>
   );
 };

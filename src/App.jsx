@@ -1,5 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Public pages
 import HomePage from "./pages/LandingPage/homepage";
@@ -11,6 +12,13 @@ import Register from "./pages/Authentication/register";
 import ForgotPassword from "./pages/Authentication/forgot_password";
 import BecomeAPartner from "./pages/LandingPage/BecomeAPartner.jsx";
 import MenuPage from "./pages/LandingPage/menus.jsx";
+
+
+// Privacy and policy pages
+import PrivacyPolicy from "./components/CommonShare/privacy.jsx";
+import RefundPolicy from "./components/CommonShare/refund.jsx";
+import TermsAndConditions from "./components/CommonShare/term.jsx";
+import FoodSafety from "./components/CommonShare/safety.jsx";
 
 // Admin pages
 import AdminDashboard from "./pages/Dashboards/Admin/admin_dashboard";
@@ -69,7 +77,27 @@ import DeliveryChatSupport from "./pages/Dashboards/Delivery/contact_support/del
 
 import { UserInformationProvider } from "./pages/Authentication/const_provider.jsx";
 // Create QueryClient
-const queryClient = new QueryClient();
+
+
+// Loading component
+const LoadingSpinner = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+  </div>
+);
+
+// Create QueryClient with error handling
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+    },
+  },
+});
+
+
 
 function App() {
   return (
@@ -104,7 +132,16 @@ function App() {
           <Route path="/menu" element={<MenuPage />} />
           <Route path="/test" element={<DashboardRedirect />} />
 
-          {/* Admin Router */}
+
+
+          {/* term and condiction */}
+
+          <Route path="/terms" element={<PrivacyPolicy />} />
+          <Route path="/privacy" element={<RefundPolicy />} />
+          <Route path="/refund" element={<TermsAndConditions />} />
+          <Route path="/safety" element={<FoodSafety />} />
+
+
 
           {/* Admin Routes */}
           <Route
