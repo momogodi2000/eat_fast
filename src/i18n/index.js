@@ -1,8 +1,6 @@
 // i18n.js
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
-<<<<<<< HEAD
-<<<<<<< HEAD
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import translations
@@ -18,23 +16,7 @@ const resources = {
     translation: {
       ...restaurantTranslations.en,
       ...enTranslation,
-=======
-=======
-import LanguageDetector from 'i18next-browser-languagedetector';
->>>>>>> Divinson-NewIUX
-import { restaurantTranslations } from './restaurant_i18n_translations';
 
-// Import translations
-import enTranslation from './locales/en/translation.json';
-import frTranslation from './locales/fr/translation.json';
-
-const resources = {
-  en: {
-    translation: {
-<<<<<<< HEAD
-            ...restaurantTranslations.en,
-
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       // Navigation
       nav: {
         home: 'Home',
@@ -119,72 +101,7 @@ const resources = {
         reviews: 'Reviews',
         reply: 'Reply',
         like: 'Like',
-<<<<<<< HEAD
         dislike: 'Dislike'
-=======
-        dislike: 'Dislike',
-        restaurantDescriptions: {
-          foufouDelice: 'A traditional Cameroonian restaurant offering authentic dishes prepared with fresh local ingredients.',
-          mamiNyanga: 'Specializing in traditional dishes from western Cameroon, Mami Nyanga offers a unique culinary experience.',
-          saveursAfrique: 'A fusion of African flavors offering dishes from different countries across the continent in a warm atmosphere.',
-          kwaboRestaurant: 'Kwabo means "welcome" in Pidgin, and that\'s exactly how you\'ll feel in this friendly restaurant.'
-        },
-        dishDescriptions: {
-          ndole: 'Traditional Cameroonian dish made with bitter leaves and shrimp',
-          pouletDG: 'Fried chicken with ripe plantains and vegetables',
-          eru: 'Traditional dish made with eru leaves and cassava paste',
-          poissonBraise: 'Fresh grilled fish served with grilled plantains',
-          thieboudienne: 'Fish rice dish typical of Senegalese cuisine',
-          mafe: 'Stew made with peanut sauce and beef',
-          jollofRice: 'Spicy rice typical of West Africa',
-          achuSoup: 'Traditional Cameroonian yellow soup with taro paste'
-        },
-        comments: {
-          comment1: 'The DG chicken was delicious, fast delivery!',
-          comment2: 'Excellent traditional cuisine, but delivery was a bit long',
-          comment3: 'The Thieboudienne was authentic and tasty!',
-          comment4: 'Generous portions and excellent value for money',
-          reply1: 'Thank you for your positive feedback!'
-        },
-        cities: {
-          all: 'All Cities'
-        },
-        zones: {
-          all: 'All Zones',
-          centre: 'Centre',
-          north: 'North',
-          littoral: 'Littoral',
-          west: 'West'
-        },
-        sort: {
-          title: 'Sort By',
-          by: 'Sort by',
-          popularity: 'Popularity',
-          rating: 'Rating',
-          deliveryTime: 'Delivery Time',
-          priceLow: 'Price: Low to High',
-          priceHigh: 'Price: High to Low'
-        },
-        priceRange: 'Price Range',
-        location: 'Location',
-        city: 'City',
-        zone: 'Zone',
-        minOrder: 'Min. Order',
-        deliveryFee: 'Delivery Fee',
-        viewMenu: 'View Menu',
-        addToCart: 'Add to Cart',
-        comments: 'Reviews',
-        noComments: 'No reviews yet. Be the first to review!',
-        addComment: 'Add a Review',
-        commentPlaceholder: 'Share your experience with this restaurant...',
-        submitComment: 'Submit Review',
-        reply: 'Reply',
-        share: 'Share',
-        like: 'Like',
-        dislike: 'Dislike',
-        menu: 'Menu',
-        popularDishes: 'Popular Dishes'
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       },
 
       // How It Works
@@ -202,21 +119,12 @@ const resources = {
       about: {
         title: 'About Eatfast',
         subtitle: 'Revolutionizing food delivery in Cameroon',
-<<<<<<< HEAD
         description: 'Eatfast is a pioneering food delivery platform connecting customers with their favorite local restaurants.',
         slogan: 'Fast. Fresh. Delivered.',
         missionTitle: 'Our Mission',
         missionText: 'To connect people with the food they love through innovative technology.',
         visionTitle: 'Our Vision',
         visionText: 'To become Cameroon\'s most trusted food delivery platform.'
-=======
-        description: 'Eatfast is a pioneering food delivery platform connecting customers with their favorite local restaurants. Launched in 2025 with our pilot in Yaoundé, we are expanding across Cameroon to bring fast, reliable food delivery to every corner of the country.',
-        slogan: 'Fast. Fresh. Delivered.',
-        missionTitle: 'Our Mission',
-        missionText: 'To connect people with the food they love through innovative technology while supporting local businesses and creating employment opportunities.',
-        visionTitle: 'Our Vision',
-        visionText: 'To become Cameroon\'s most trusted food delivery platform, known for our speed, reliability, and commitment to local culinary traditions.'
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       },
 
       // Team
@@ -229,21 +137,14 @@ const resources = {
 
       // Testimonials
       testimonials: {
-<<<<<<< HEAD
         customer1: 'Eatfast has transformed my lunch breaks!',
         customer2: 'The 30-minute delivery guarantee is real!',
         customer3: 'As a restaurant owner, Eatfast has helped me reach new customers.'
-=======
-        customer1: 'Eatfast has transformed my lunch breaks! I can now enjoy meals from my favorite restaurants without leaving the office.',
-        customer2: 'The 30-minute delivery guarantee is real! I\'m impressed by their service and the quality of food.',
-        customer3: 'As a restaurant owner, Eatfast has helped me reach new customers and increase my sales by 40%.'
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       },
 
       // Contact
       contact: {
         title: 'Contact Us',
-<<<<<<< HEAD
         subtitle: 'Get in touch with us',
         description: 'Have questions? We\'d love to hear from you.',
         form: {
@@ -258,25 +159,6 @@ const resources = {
           phone: 'Phone',
           email: 'Email',
           hours: 'Business Hours'
-        }
-=======
-        subtitle: 'We\'d love to hear from you',
-        form: {
-          name: 'Your Name',
-          email: 'Email Address',
-          phone: 'Phone Number',
-          subject: 'Subject',
-          message: 'Your Message',
-          send: 'Send Message',
-          success: 'Thank you! Your message has been sent successfully.',
-          error: 'There was an error sending your message. Please try again.'
-        },
-        topics: {
-          general: 'General Inquiry',
-          partnership: 'Partnership',
-          support: 'Customer Support',
-          careers: 'Careers',
-          other: 'Other'
         }
       },
 
@@ -599,31 +481,19 @@ const resources = {
         restaurant: 'Restaurant',
         cloudKitchen: 'Cloud Kitchen',
         caterer: 'Catering Service'
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       }
-=======
-      ...restaurantTranslations.en,
-      ...enTranslation
->>>>>>> Divinson-NewIUX
     }
   },
   fr: {
     translation: {
       ...restaurantTranslations.fr,
-<<<<<<< HEAD
-<<<<<<< HEAD
       ...frTranslation,
-=======
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
+
       // Navigation
       nav: {
         home: 'Accueil',
         restaurants: 'Restaurants',
-<<<<<<< HEAD
         about: 'À propos',
-=======
-        about: 'À Propos',
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
         contact: 'Contact',
         account: 'Compte',
         cart: 'Panier'
@@ -631,41 +501,25 @@ const resources = {
 
       // Hero Section
       hero: {
-<<<<<<< HEAD
         title: 'Commandez de la Nourriture Délicieuse',
-=======
-        title: 'Commandez des Plats Délicieux Avec',
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
         subtitle: 'Livraison rapide à votre porte',
         searchPlaceholder: 'Rechercher des restaurants ou des plats',
         orderButton: 'Commander Maintenant',
         becomePartner: 'Devenir Partenaire',
         delivery: 'Livraison',
         minutes: 'min',
-<<<<<<< HEAD
         location: 'Votre Localisation'
-=======
-        location: 'Votre Emplacement'
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       },
 
       // Sections
       sections: {
         categories: 'Catégories',
         featuredRestaurants: 'Restaurants en Vedette',
-<<<<<<< HEAD
         howItWorks: 'Comment ça Marche',
         testimonials: 'Ce que Disent Nos Clients',
         ourTeam: 'Notre Équipe',
         mission: 'Notre Mission',
         contactForm: 'Nous Contacter',
-=======
-        howItWorks: 'Comment Ça Marche',
-        testimonials: 'Ce Que Disent Nos Clients',
-        ourTeam: 'Notre Équipe',
-        mission: 'Notre Mission',
-        contactForm: 'Contactez-Nous',
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
         contactInfo: 'Informations de Contact'
       },
 
@@ -676,11 +530,7 @@ const resources = {
         fastFood: 'Fast Food',
         vegetarian: 'Végétarien',
         italian: 'Italien',
-<<<<<<< HEAD
         seafood: 'Fruits de mer',
-=======
-        seafood: 'Fruits de Mer',
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
         african: 'Africain'
       },
 
@@ -695,7 +545,6 @@ const resources = {
         resetFilters: 'Réinitialiser tous les filtres',
         title: 'Découvrez les Meilleurs Restaurants',
         subtitle: 'Trouvez et commandez dans les meilleurs restaurants de votre ville',
-<<<<<<< HEAD
         refineSearch: 'Affiner Votre Recherche',
         allCategories: 'Toutes les Catégories',
         allZones: 'Toutes les Zones',
@@ -711,133 +560,35 @@ const resources = {
         send: 'Envoyer',
         leaveReview: 'Laisser un Avis',
         popularDishes: 'Plats Populaires',
-=======
-        refineSearch: 'Affiner votre recherche',
-        allCategories: 'Toutes les catégories',
-        allZones: 'Toutes les zones',
-        allDistricts: 'Tous les quartiers',
-        allPrices: 'Tous les prix',
-        anyTime: 'N\'importe quand',
-        anyFee: 'Frais quelconques',
-        featured: 'En vedette',
-        loading: 'Chargement des restaurants...',
-        noComments: 'Pas encore de commentaires',
-        writeReview: 'Écrivez votre avis...',
-        writeReply: 'Écrivez votre réponse...',
-        send: 'Envoyer',
-        leaveReview: 'Laisser un avis',
-        popularDishes: 'Plats populaires',
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
         deliveryFee: 'frais de livraison',
         minOrder: 'Commande min.',
         tryAdjusting: 'Essayez d\'ajuster votre recherche ou vos filtres',
         category: 'Catégorie',
         zone: 'Zone',
-<<<<<<< HEAD
         district: 'District',
         priceRange: 'Fourchette de Prix',
         maxDeliveryTime: 'Temps de Livraison Max',
         maxDeliveryFee: 'Frais de Livraison Max',
-=======
-        district: 'Quartier',
-        priceRange: 'Gamme de prix',
-        maxDeliveryTime: 'Temps de livraison max',
-        maxDeliveryFee: 'Frais de livraison max',
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
         menu: 'Menu',
         reviews: 'Avis',
         reply: 'Répondre',
         like: 'J\'aime',
-<<<<<<< HEAD
         dislike: 'Je n\'aime pas'
-=======
-        dislike: 'Je n\'aime pas',
-        restaurantDescriptions: {
-          foufouDelice: 'Un restaurant traditionnel camerounais offrant des plats authentiques préparés avec des ingrédients locaux frais.',
-          mamiNyanga: 'Spécialisé dans les plats traditionnels de l\'ouest Cameroun, Mami Nyanga offre une expérience culinaire unique.',
-          saveursAfrique: 'Une fusion de saveurs africaines proposant des plats de différents pays du continent dans une ambiance chaleureuse.',
-          kwaboRestaurant: 'Kwabo signifie "bienvenue" en pidgin, et c\'est exactement ce que vous ressentirez dans ce restaurant convivial.'
-        },
-        dishDescriptions: {
-          ndole: 'Plat traditionnel camerounais à base de feuilles amères et crevettes',
-          pouletDG: 'Poulet frit avec plantains mûrs et légumes',
-          eru: 'Plat traditionnel à base de feuilles d\'eru et pâte de manioc',
-          poissonBraise: 'Poisson frais braisé servi avec des plantains grillés',
-          thieboudienne: 'Plat de riz au poisson typique de la cuisine sénégalaise',
-          mafe: 'Ragoût à base de sauce arachide et viande de bœuf',
-          jollofRice: 'Riz épicé typique de l\'Afrique de l\'Ouest',
-          achuSoup: 'Soupe jaune traditionnelle camerounaise avec pâte de taro'
-        },
-        comments: {
-          comment1: 'Le poulet DG était délicieux, livraison rapide!',
-          comment2: 'Excellente cuisine traditionnelle, mais livraison un peu longue',
-          comment3: 'Le Thieboudienne était authentique et savoureux!',
-          comment4: 'Portions généreuses et excellent rapport qualité-prix',
-          reply1: 'Merci pour votre retour positif!'
-        },
-        cities: {
-          all: 'Toutes les Villes'
-        },
-        zones: {
-          all: 'Toutes les Zones',
-          centre: 'Centre',
-          north: 'Nord',
-          littoral: 'Littoral',
-          west: 'Ouest'
-        },
-        sort: {
-          title: 'Trier Par',
-          by: 'Trier par',
-          popularity: 'Popularité',
-          rating: 'Évaluation',
-          deliveryTime: 'Temps de Livraison',
-          priceLow: 'Prix: Croissant',
-          priceHigh: 'Prix: Décroissant'
-        },
-        priceRange: 'Gamme de Prix',
-        location: 'Emplacement',
-        city: 'Ville',
-        zone: 'Zone',
-        minOrder: 'Commande Min.',
-        deliveryFee: 'Frais de Livraison',
-        viewMenu: 'Voir le Menu',
-        addToCart: 'Ajouter au Panier',
-        comments: 'Avis',
-        noComments: 'Pas encore d\'avis. Soyez le premier à donner votre avis!',
-        addComment: 'Ajouter un Avis',
-        commentPlaceholder: 'Partagez votre expérience avec ce restaurant...',
-        submitComment: 'Soumettre l\'Avis',
-        reply: 'Répondre',
-        share: 'Partager',
-        like: 'J\'aime',
-        dislike: 'Je n\'aime pas',
-        menu: 'Menu',
-        popularDishes: 'Plats Populaires'
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       },
 
       // How It Works
       howItWorks: {
-<<<<<<< HEAD
         description: 'Moyen simple et facile de commander votre nourriture',
         step1Title: 'Choisir un Restaurant',
         step1Description: 'Sélectionnez parmi notre gamme diversifiée de restaurants',
         step2Title: 'Sélectionner la Nourriture',
         step2Description: 'Parcourez les menus et sélectionnez vos plats préférés',
-=======
-        description: 'Façon simple et facile de commander votre nourriture',
-        step1Title: 'Choisir un Restaurant',
-        step1Description: 'Sélectionnez parmi notre gamme variée de restaurants',
-        step2Title: 'Sélectionner les Plats',
-        step2Description: 'Parcourez les menus et sélectionnez vos repas préférés',
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
         step3Title: 'Livraison Rapide',
         step3Description: 'Profitez d\'une livraison rapide à votre porte'
       },
 
       // About
       about: {
-<<<<<<< HEAD
         title: 'À Propos d\'Eatfast',
         subtitle: 'Révolutionner la livraison de nourriture au Cameroun',
         description: 'Eatfast est une plateforme de livraison de nourriture pionnière qui connecte les clients avec leurs restaurants locaux préférés.',
@@ -846,16 +597,6 @@ const resources = {
         missionText: 'Connecter les gens avec la nourriture qu\'ils aiment grâce à une technologie innovante.',
         visionTitle: 'Notre Vision',
         visionText: 'Devenir la plateforme de livraison de nourriture la plus fiable du Cameroun.'
-=======
-        title: 'À Propos de Eatfast',
-        subtitle: 'Révolutionner la livraison de repas au Cameroun',
-        description: 'Eatfast est une plateforme pionnière de livraison de repas qui connecte les clients avec leurs restaurants locaux préférés. Lancée en 2025 avec notre pilote à Yaoundé, nous nous développons à travers le Cameroun pour apporter une livraison rapide et fiable dans tous les coins du pays.',
-        slogan: 'Rapide. Frais. Livré.',
-        missionTitle: 'Notre Mission',
-        missionText: 'Connecter les gens à la nourriture qu\'ils aiment grâce à une technologie innovante tout en soutenant les entreprises locales et en créant des opportunités d\'emploi.',
-        visionTitle: 'Notre Vision',
-        visionText: 'Devenir la plateforme de livraison de repas la plus fiable du Cameroun, reconnue pour notre rapidité, notre fiabilité et notre engagement envers les traditions culinaires locales.'
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       },
 
       // Team
@@ -868,20 +609,13 @@ const resources = {
 
       // Testimonials
       testimonials: {
-<<<<<<< HEAD
         customer1: 'Eatfast a transformé mes pauses déjeuner !',
         customer2: 'La garantie de livraison en 30 minutes est réelle !',
         customer3: 'En tant que propriétaire de restaurant, Eatfast m\'a aidé à atteindre de nouveaux clients.'
-=======
-        customer1: 'Eatfast a transformé mes pauses déjeuner! Je peux maintenant déguster des repas de mes restaurants préférés sans quitter le bureau.',
-        customer2: 'La garantie de livraison en 30 minutes est réelle! Je suis impressionné par leur service et la qualité de la nourriture.',
-        customer3: 'En tant que propriétaire de restaurant, Eatfast m\'a aidé à atteindre de nouveaux clients et à augmenter mes ventes de 40%.'
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       },
 
       // Contact
       contact: {
-<<<<<<< HEAD
         title: 'Contactez-nous',
         subtitle: 'Entrez en contact avec nous',
         description: 'Des questions ? Nous aimerions avoir de vos nouvelles.',
@@ -897,26 +631,6 @@ const resources = {
           phone: 'Téléphone',
           email: 'Email',
           hours: 'Heures d\'Ouverture'
-        }
-=======
-        title: 'Contactez-Nous',
-        subtitle: 'Nous serions ravis d\'avoir de vos nouvelles',
-        form: {
-          name: 'Votre Nom',
-          email: 'Adresse Email',
-          phone: 'Numéro de Téléphone',
-          subject: 'Sujet',
-          message: 'Votre Message',
-          send: 'Envoyer le Message',
-          success: 'Merci! Votre message a été envoyé avec succès.',
-          error: 'Une erreur s\'est produite lors de l\'envoi de votre message. Veuillez réessayer.'
-        },
-        topics: {
-          general: 'Demande Générale',
-          partnership: 'Partenariat',
-          support: 'Support Client',
-          careers: 'Carrières',
-          other: 'Autre'
         }
       },
 
@@ -1239,299 +953,90 @@ const resources = {
         restaurant: 'Restaurant',
         cloudKitchen: 'Cuisine Virtuelle',
         caterer: 'Service de Traiteur'
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
       }
-=======
-      ...frTranslation
->>>>>>> Divinson-NewIUX
     }
   }
 };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-// Initialize i18n with error handling
-const initI18n = async () => {
-  try {
-    await i18n
-      .use(LanguageDetector)
-      .use(initReactI18next)
-      .init({
-        resources,
-        fallbackLng: 'fr',
-        debug: false,
-        interpolation: {
-          escapeValue: false,
-        },
-        detection: {
-          order: ['localStorage', 'navigator', 'htmlTag'],
-          caches: ['localStorage'],
-        },
-        react: {
-          useSuspense: false,
-        },
-      });
-  } catch (error) {
-    console.error('Failed to initialize i18n:', error);
-    // Fallback initialization
-    i18n.init({
-      resources,
-      lng: 'fr',
-      fallbackLng: 'fr',
-      interpolation: {
-        escapeValue: false,
-      },
-      react: {
-        useSuspense: false,
-      },
-    });
-  }
-};
-
-// Initialize immediately
-initI18n();
-
-export default i18n;
-=======
 const initOptions = {
   resources,
   lng: 'en',
-=======
-// Language detection options
-const detectionOptions = {
-  // Order and from where user language should be detected
-  order: ['localStorage', 'navigator', 'htmlTag', 'path', 'subdomain'],
-
-  // Keys or params to lookup language from
-  lookupLocalStorage: 'eat-fast-language',
-  lookupFromPathIndex: 0,
-  lookupFromSubdomainIndex: 0,
-
-  // Cache user language on
-  caches: ['localStorage'],
-
-  // Only detect languages that are in the whitelist
-  checkWhitelist: true,
-
-  // Language whitelist
-  whitelist: ['en', 'fr'],
-
-  // Fallback language
->>>>>>> Divinson-NewIUX
   fallbackLng: 'en',
-
-  // Debug mode
   debug: false,
-
-  // Interpolation options
   interpolation: {
-    escapeValue: false, // React already does escaping
+    escapeValue: false,
   },
-
-  // React i18next options
   react: {
     useSuspense: false,
   },
-
-  // Default namespace
   defaultNS: 'translation',
-
-  // Fallback namespace
   fallbackNS: 'translation',
-
-  // Load resources
-  resources,
-
-  // Language detection
-  detection: detectionOptions,
-
-  // Backend options (if using backend)
-  backend: {
-    loadPath: '/locales/{{lng}}/{{ns}}.json',
-  },
-
-  // Parse missing key handler
-  parseMissingKeyHandler: (key) => {
-    console.warn(`Missing translation key: ${key}`);
-    return key;
-  },
-
-  // Missing key handler
-  missingKeyHandler: (lng, ns, key, fallbackValue) => {
-    console.warn(`Missing translation for key: ${key} in language: ${lng}`);
-    return fallbackValue || key;
-  },
-
-  // Save missing keys
-  saveMissing: true,
-  saveMissingTo: 'all',
-
-  // Key separator
-  keySeparator: '.',
-  nsSeparator: ':',
-
-  // Plural separator
-  pluralSeparator: '_',
-
-  // Context separator
-  contextSeparator: '_',
-
-  // Escape HTML
-  escapeValue: false,
-
-  // Use data attributes
-  useDataAttrOptions: true,
-
-  // Bind store
-  bindStore: false,
-
-  // Bind I18n instance
-  bindI18n: 'languageChanged loaded',
-
-  // Bind I18n namespace
-  bindI18nNamespace: false,
-
-  // Debug mode
-  debug: process.env.NODE_ENV === 'development',
-
-  // Init i18next
-  initImmediate: false,
-
-  // Load resources synchronously
-  load: 'languageOnly',
-
-  // Preload languages
-  preload: ['en', 'fr'],
-
-  // Language detection
   detection: {
-    // Order and from where user language should be detected
     order: ['localStorage', 'navigator', 'htmlTag', 'path', 'subdomain'],
-
-    // Keys or params to lookup language from
     lookupLocalStorage: 'eat-fast-language',
     lookupFromPathIndex: 0,
     lookupFromSubdomainIndex: 0,
-
-    // Cache user language on
     caches: ['localStorage'],
-
-    // Only detect languages that are in the whitelist
     checkWhitelist: true,
-
-    // Language whitelist
     whitelist: ['en', 'fr'],
-
-    // Fallback language
     fallbackLng: 'en',
-
-    // Debug mode
     debug: false,
   },
-
-  // Interpolation options
   interpolation: {
-    escapeValue: false, // React already does escaping
+    escapeValue: false,
   },
-
-  // React i18next options
   react: {
     useSuspense: false,
   },
-
-  // Default namespace
   defaultNS: 'translation',
-
-  // Fallback namespace
   fallbackNS: 'translation',
-
-  // Load resources
   resources,
-
-  // Backend options (if using backend)
   backend: {
     loadPath: '/locales/{{lng}}/{{ns}}.json',
   },
-
-  // Parse missing key handler
   parseMissingKeyHandler: (key) => {
     console.warn(`Missing translation key: ${key}`);
     return key;
   },
-
-  // Missing key handler
   missingKeyHandler: (lng, ns, key, fallbackValue) => {
     console.warn(`Missing translation for key: ${key} in language: ${lng}`);
     return fallbackValue || key;
   },
-
-  // Save missing keys
   saveMissing: true,
   saveMissingTo: 'all',
-
-  // Key separator
   keySeparator: '.',
   nsSeparator: ':',
-
-  // Plural separator
   pluralSeparator: '_',
-
-  // Context separator
   contextSeparator: '_',
-
-  // Escape HTML
   escapeValue: false,
-
-  // Use data attributes
   useDataAttrOptions: true,
-
-  // Bind store
   bindStore: false,
-
-  // Bind I18n instance
   bindI18n: 'languageChanged loaded',
-
-  // Bind I18n namespace
   bindI18nNamespace: false,
-
-  // Debug mode
   debug: process.env.NODE_ENV === 'development',
-
-  // Init i18next
   initImmediate: false,
-
-  // Load resources synchronously
   load: 'languageOnly',
-
-  // Preload languages
   preload: ['en', 'fr'],
 };
 
-// Initialize i18next
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
-  .init(detectionOptions);
+  .init(initOptions);
 
-// Language change handler
 i18n.on('languageChanged', (lng) => {
-  // Update HTML lang attribute
   document.documentElement.lang = lng;
   
-  // Update meta tags
   const metaLang = document.querySelector('meta[name="language"]');
   if (metaLang) {
     metaLang.setAttribute('content', lng);
   }
   
-  // Save to localStorage
   localStorage.setItem('eat-fast-language', lng);
   
-  // Update document title based on language
   updateDocumentTitle(lng);
 });
 
-// Update document title based on language
 function updateDocumentTitle(lng) {
   const titles = {
     en: 'Eat Fast - Food Delivery App in Cameroon | Fast Food Delivery Yaoundé, Douala',
@@ -1541,18 +1046,12 @@ function updateDocumentTitle(lng) {
   document.title = titles[lng] || titles.en;
 }
 
-// Export i18n instance
 export default i18n;
 
-// Export language utilities
 export const changeLanguage = (lng) => {
   return i18n.changeLanguage(lng);
 };
 
-<<<<<<< HEAD
-export default i18nService;
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
-=======
 export const getCurrentLanguage = () => {
   return i18n.language;
 };
@@ -1565,7 +1064,6 @@ export const isLanguageSupported = (lng) => {
   return getAvailableLanguages().includes(lng);
 };
 
-// Auto-detect and set initial language
 const detectInitialLanguage = () => {
   const savedLanguage = localStorage.getItem('eat-fast-language');
   if (savedLanguage && isLanguageSupported(savedLanguage)) {
@@ -1580,9 +1078,7 @@ const detectInitialLanguage = () => {
   return 'en';
 };
 
-// Set initial language
 const initialLanguage = detectInitialLanguage();
 if (initialLanguage !== i18n.language) {
   i18n.changeLanguage(initialLanguage);
 }
->>>>>>> Divinson-NewIUX

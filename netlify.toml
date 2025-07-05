@@ -6,31 +6,12 @@
   NODE_VERSION = "18"
   NPM_VERSION = "9"
 
-<<<<<<< HEAD
-=======
 # Redirects for SPA routing
->>>>>>> Divinson-NewIUX
 [[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200
 
-<<<<<<< HEAD
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-
-=======
 # Redirects for SEO
 [[redirects]]
   from = "/home"
@@ -73,7 +54,6 @@
     Expires = "0"
 
 # Static asset caching
->>>>>>> Divinson-NewIUX
 [[headers]]
   for = "*.js"
   [headers.values]
@@ -100,14 +80,11 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-<<<<<<< HEAD
-=======
   for = "*.gif"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
->>>>>>> Divinson-NewIUX
   for = "*.svg"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
@@ -127,24 +104,6 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-<<<<<<< HEAD
-[dev]
-  command = "npm run dev"
-  port = 5173
-  publish = "dist"
-  framework = "#custom"
-
-[functions]
-  directory = "netlify/functions"
-
-[[edge_functions]]
-  function = "auth"
-  path = "/api/auth/*"
-
-[[edge_functions]]
-  function = "api"
-  path = "/api/*" 
-=======
 [[headers]]
   for = "*.ttf"
   [headers.values]
@@ -207,5 +166,4 @@
 
 # Analytics
 [analytics]
-  enabled = true 
->>>>>>> Divinson-NewIUX
+  enabled = true

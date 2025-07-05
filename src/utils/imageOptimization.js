@@ -3,7 +3,6 @@
 /**
  * Lazy load images with intersection observer
  */
-<<<<<<< HEAD
 export const useLazyImage = (src, placeholder = '/assets/placeholder.jpg') => {
   const [imageSrc, setImageSrc] = useState(placeholder);
   const [imageRef, setImageRef] = useState(null);
@@ -34,47 +33,6 @@ export const useLazyImage = (src, placeholder = '/assets/placeholder.jpg') => {
   }, [imageRef, imageSrc, placeholder, src]);
 
   return [imageSrc, setImageRef];
-=======
-export const useLazyImage = (src, options = {}) => {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isInView, setIsInView] = useState(false);
-  const imgRef = useRef(null);
-
-  useEffect(() => {
-    if (!imgRef.current) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsInView(true);
-          observer.unobserve(entry.target);
-        }
-      },
-      {
-        rootMargin: options.rootMargin || '50px 0px',
-        threshold: options.threshold || 0.01
-      }
-    );
-
-    observer.observe(imgRef.current);
-
-    return () => {
-      if (imgRef.current) {
-        observer.unobserve(imgRef.current);
-      }
-    };
-  }, [options.rootMargin, options.threshold]);
-
-  useEffect(() => {
-    if (!isInView) return;
-
-    const img = new Image();
-    img.onload = () => setIsLoaded(true);
-    img.src = src;
-  }, [isInView, src]);
-
-  return { imgRef, isLoaded, isInView };
->>>>>>> Divinson-NewIUX
 };
 
 /**
@@ -140,9 +98,6 @@ export const getOptimizedImageUrl = (imageName, format = 'jpg') => {
   
   // Use CDN or optimized path
   return `/assets/images/optimized/${imageName}.${extension}`;
-<<<<<<< HEAD
-};
-=======
 };
 
 // Image Optimization Utility
@@ -166,7 +121,7 @@ class ImageOptimizer {
       webP.onload = webP.onerror = () => {
         resolve(webP.height === 2);
       };
-      webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAA';
+      webP.src = 'data:image/webp;base64,UklGRjoAAABXRUJQVlA4IC4AAACyAgCdASoCAAIALmk0mk0iIiIiIgBoSygABc6WWgAA/veff/0PP8bA//LwYAAAABAABhdjAxQ29sb3IAAAAAamlwcnAAAABLaXBjbwAAABRpc3BlAAAAAAAAAAEAAAABAAAAEHBpeGkAAAAAAwgICAAAAAxhdjFDgQ0MAAAAABNjb2xybmNseAACAAIAAYAAAAAXaXBtYQAAAAAAAAABAAEEAQKDBAAAACVtZGF0EgAKCBgABogQEAwgMg8f8D///8WfhwB8+ErK42A=';
     });
   }
 
@@ -444,4 +399,3 @@ class ImageOptimizer {
 const imageOptimizer = new ImageOptimizer();
 
 export default imageOptimizer;
->>>>>>> Divinson-NewIUX

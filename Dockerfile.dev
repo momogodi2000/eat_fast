@@ -1,14 +1,10 @@
-<<<<<<< HEAD
 # Development Dockerfile
-=======
 # Development Dockerfile for local development
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
 FROM node:18-alpine
 
 # Set working directory
 WORKDIR /app
 
-<<<<<<< HEAD
 # Install dependencies
 RUN apk add --no-cache libc6-compat
 
@@ -17,7 +13,6 @@ COPY package.json package-lock.json* ./
 
 # Install all dependencies (including dev dependencies)
 RUN npm ci
-=======
 # Install dependencies for development
 RUN apk add --no-cache git
 
@@ -26,12 +21,11 @@ COPY package*.json ./
 
 # Install all dependencies including dev dependencies
 RUN npm ci --include=optional
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
+
 
 # Copy source code
 COPY . .
 
-<<<<<<< HEAD
 # Compile translations
 RUN npm run compile
 
@@ -40,13 +34,3 @@ EXPOSE 5173
 
 # Start development server
 CMD ["npm", "run", "dev"]
-=======
-# Compile Lingui translations
-RUN npm run compile
-
-# Expose port for Vite dev server
-EXPOSE 5173
-
-# Start development server
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
->>>>>>> 753220f0986fa4338251ff890c029766f035deec
