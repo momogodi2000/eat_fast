@@ -1,0 +1,44 @@
+User-agent: *
+Allow: /
+
+# Allow all public pages
+Allow: /about
+Allow: /contact
+Allow: /restaurants
+Allow: /menu
+Allow: /become
+Allow: /terms
+Allow: /privacy
+Allow: /refund
+Allow: /safety
+
+# Allow authentication pages
+Allow: /login
+Allow: /register
+Allow: /forgot-password
+
+# Allow static assets
+Allow: /src/assets/
+Allow: /manifest.json
+Allow: /sw.js
+
+# Disallow private dashboard pages
+Disallow: /admin/
+Disallow: /client/
+Disallow: /restaurants_manager
+Disallow: /delivery/
+Disallow: /agent/
+
+# Disallow API endpoints
+Disallow: /api/
+
+# Disallow temporary and development files
+Disallow: /temp/
+Disallow: /dev/
+Disallow: /test/
+
+# Sitemap location
+Sitemap: https://eatfast.cm/sitemap.xml
+
+# Crawl delay (optional - be respectful to server)
+Crawl-delay: 1 

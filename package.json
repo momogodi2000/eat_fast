@@ -1,5 +1,6 @@
 {
 <<<<<<< HEAD
+<<<<<<< HEAD
   "name": "eat-fast",
   "private": true,
   "version": "1.0.0",
@@ -8,6 +9,11 @@
   "private": true,
   "version": "0.0.0",
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
+=======
+  "name": "eat-fast",
+  "private": true,
+  "version": "1.0.0",
+>>>>>>> Divinson-NewIUX
   "type": "module",
   "engines": {
     "node": ">=18.0.0",
@@ -31,6 +37,7 @@
     "start": "vite preview --port 4173 --host 0.0.0.0",
     "extract": "lingui extract",
     "compile": "lingui compile",
+<<<<<<< HEAD
 <<<<<<< HEAD
     "translate": "node scripts/translate.js",
     "clean": "rm -rf node_modules package-lock.json dist",
@@ -91,6 +98,22 @@
     "react-dom": "^18.2.0"
 =======
     "translate": "node scripts/translate.js"
+=======
+    "translate": "node scripts/translate.js",
+    "docker:build": "docker build -t eat-fast .",
+    "docker:run": "docker run -p 3000:3000 eat-fast",
+    "docker:compose": "docker-compose up -d",
+    "docker:compose:down": "docker-compose down",
+    "docker:compose:logs": "docker-compose logs -f",
+    "analyze": "npm run build && npx vite-bundle-analyzer dist",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest --coverage",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "husky install"
+>>>>>>> Divinson-NewIUX
   },
   "dependencies": {
     "@googlemaps/js-api-loader": "^1.16.8",
@@ -112,6 +135,7 @@
     "i18next": "^25.1.3",
     "i18next-browser-languagedetector": "^8.1.0",
     "icons": "^1.0.0",
+    "idb": "^8.0.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.509.0",
     "motion": "^12.12.1",
@@ -136,16 +160,53 @@
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
     "@vitejs/plugin-react": "^4.5.0",
+    "@vitest/ui": "^2.1.8",
     "autoprefixer": "^10.4.21",
     "cross-env": "^7.0.3",
     "eslint": "^9.25.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.19",
     "globals": "^16.0.0",
+    "husky": "^9.1.6",
+    "lint-staged": "^15.2.10",
     "postcss": "^8.5.3",
+    "prettier": "^3.3.3",
     "tailwindcss": "^4.1.6",
+<<<<<<< HEAD
     "terser": "^5.43.1",
     "vite": "^5.4.19"
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
+=======
+    "terser": "^5.29.2",
+    "vite": "^6.3.5",
+    "vite-bundle-analyzer": "^0.7.0",
+    "vite-plugin-pwa": "^0.19.0",
+    "vitest": "^2.1.8"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+>>>>>>> Divinson-NewIUX
   }
 }

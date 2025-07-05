@@ -2,6 +2,7 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 <<<<<<< HEAD
+<<<<<<< HEAD
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import translations
@@ -18,12 +19,19 @@ const resources = {
       ...restaurantTranslations.en,
       ...enTranslation,
 =======
+=======
+import LanguageDetector from 'i18next-browser-languagedetector';
+>>>>>>> Divinson-NewIUX
 import { restaurantTranslations } from './restaurant_i18n_translations';
 
+// Import translations
+import enTranslation from './locales/en/translation.json';
+import frTranslation from './locales/fr/translation.json';
 
 const resources = {
   en: {
     translation: {
+<<<<<<< HEAD
             ...restaurantTranslations.en,
 
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
@@ -593,11 +601,16 @@ const resources = {
         caterer: 'Catering Service'
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
       }
+=======
+      ...restaurantTranslations.en,
+      ...enTranslation
+>>>>>>> Divinson-NewIUX
     }
   },
   fr: {
     translation: {
       ...restaurantTranslations.fr,
+<<<<<<< HEAD
 <<<<<<< HEAD
       ...frTranslation,
 =======
@@ -1228,10 +1241,14 @@ const resources = {
         caterer: 'Service de Traiteur'
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
       }
+=======
+      ...frTranslation
+>>>>>>> Divinson-NewIUX
     }
   }
 };
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 // Initialize i18n with error handling
 const initI18n = async () => {
@@ -1279,30 +1296,293 @@ export default i18n;
 const initOptions = {
   resources,
   lng: 'en',
+=======
+// Language detection options
+const detectionOptions = {
+  // Order and from where user language should be detected
+  order: ['localStorage', 'navigator', 'htmlTag', 'path', 'subdomain'],
+
+  // Keys or params to lookup language from
+  lookupLocalStorage: 'eat-fast-language',
+  lookupFromPathIndex: 0,
+  lookupFromSubdomainIndex: 0,
+
+  // Cache user language on
+  caches: ['localStorage'],
+
+  // Only detect languages that are in the whitelist
+  checkWhitelist: true,
+
+  // Language whitelist
+  whitelist: ['en', 'fr'],
+
+  // Fallback language
+>>>>>>> Divinson-NewIUX
   fallbackLng: 'en',
+
+  // Debug mode
+  debug: false,
+
+  // Interpolation options
   interpolation: {
-    escapeValue: false
+    escapeValue: false, // React already does escaping
   },
+
+  // React i18next options
   react: {
-    useSuspense: false
-  }
+    useSuspense: false,
+  },
+
+  // Default namespace
+  defaultNS: 'translation',
+
+  // Fallback namespace
+  fallbackNS: 'translation',
+
+  // Load resources
+  resources,
+
+  // Language detection
+  detection: detectionOptions,
+
+  // Backend options (if using backend)
+  backend: {
+    loadPath: '/locales/{{lng}}/{{ns}}.json',
+  },
+
+  // Parse missing key handler
+  parseMissingKeyHandler: (key) => {
+    console.warn(`Missing translation key: ${key}`);
+    return key;
+  },
+
+  // Missing key handler
+  missingKeyHandler: (lng, ns, key, fallbackValue) => {
+    console.warn(`Missing translation for key: ${key} in language: ${lng}`);
+    return fallbackValue || key;
+  },
+
+  // Save missing keys
+  saveMissing: true,
+  saveMissingTo: 'all',
+
+  // Key separator
+  keySeparator: '.',
+  nsSeparator: ':',
+
+  // Plural separator
+  pluralSeparator: '_',
+
+  // Context separator
+  contextSeparator: '_',
+
+  // Escape HTML
+  escapeValue: false,
+
+  // Use data attributes
+  useDataAttrOptions: true,
+
+  // Bind store
+  bindStore: false,
+
+  // Bind I18n instance
+  bindI18n: 'languageChanged loaded',
+
+  // Bind I18n namespace
+  bindI18nNamespace: false,
+
+  // Debug mode
+  debug: process.env.NODE_ENV === 'development',
+
+  // Init i18next
+  initImmediate: false,
+
+  // Load resources synchronously
+  load: 'languageOnly',
+
+  // Preload languages
+  preload: ['en', 'fr'],
+
+  // Language detection
+  detection: {
+    // Order and from where user language should be detected
+    order: ['localStorage', 'navigator', 'htmlTag', 'path', 'subdomain'],
+
+    // Keys or params to lookup language from
+    lookupLocalStorage: 'eat-fast-language',
+    lookupFromPathIndex: 0,
+    lookupFromSubdomainIndex: 0,
+
+    // Cache user language on
+    caches: ['localStorage'],
+
+    // Only detect languages that are in the whitelist
+    checkWhitelist: true,
+
+    // Language whitelist
+    whitelist: ['en', 'fr'],
+
+    // Fallback language
+    fallbackLng: 'en',
+
+    // Debug mode
+    debug: false,
+  },
+
+  // Interpolation options
+  interpolation: {
+    escapeValue: false, // React already does escaping
+  },
+
+  // React i18next options
+  react: {
+    useSuspense: false,
+  },
+
+  // Default namespace
+  defaultNS: 'translation',
+
+  // Fallback namespace
+  fallbackNS: 'translation',
+
+  // Load resources
+  resources,
+
+  // Backend options (if using backend)
+  backend: {
+    loadPath: '/locales/{{lng}}/{{ns}}.json',
+  },
+
+  // Parse missing key handler
+  parseMissingKeyHandler: (key) => {
+    console.warn(`Missing translation key: ${key}`);
+    return key;
+  },
+
+  // Missing key handler
+  missingKeyHandler: (lng, ns, key, fallbackValue) => {
+    console.warn(`Missing translation for key: ${key} in language: ${lng}`);
+    return fallbackValue || key;
+  },
+
+  // Save missing keys
+  saveMissing: true,
+  saveMissingTo: 'all',
+
+  // Key separator
+  keySeparator: '.',
+  nsSeparator: ':',
+
+  // Plural separator
+  pluralSeparator: '_',
+
+  // Context separator
+  contextSeparator: '_',
+
+  // Escape HTML
+  escapeValue: false,
+
+  // Use data attributes
+  useDataAttrOptions: true,
+
+  // Bind store
+  bindStore: false,
+
+  // Bind I18n instance
+  bindI18n: 'languageChanged loaded',
+
+  // Bind I18n namespace
+  bindI18nNamespace: false,
+
+  // Debug mode
+  debug: process.env.NODE_ENV === 'development',
+
+  // Init i18next
+  initImmediate: false,
+
+  // Load resources synchronously
+  load: 'languageOnly',
+
+  // Preload languages
+  preload: ['en', 'fr'],
 };
 
-const i18nService = {
-  init: () => {
-    return i18n
-      .use(initReactI18next)
-      .init(initOptions)
-      .then(() => console.log('i18n initialized successfully'))
-      .catch(error => console.error('Error initializing i18n:', error));
-  },
-  changeLanguage: (lng) => {
-    return i18n.changeLanguage(lng);
-  },
-  getCurrentLanguage: () => {
-    return i18n.language;
+// Initialize i18next
+i18n
+  .use(LanguageDetector)
+  .use(initReactI18next)
+  .init(detectionOptions);
+
+// Language change handler
+i18n.on('languageChanged', (lng) => {
+  // Update HTML lang attribute
+  document.documentElement.lang = lng;
+  
+  // Update meta tags
+  const metaLang = document.querySelector('meta[name="language"]');
+  if (metaLang) {
+    metaLang.setAttribute('content', lng);
   }
+  
+  // Save to localStorage
+  localStorage.setItem('eat-fast-language', lng);
+  
+  // Update document title based on language
+  updateDocumentTitle(lng);
+});
+
+// Update document title based on language
+function updateDocumentTitle(lng) {
+  const titles = {
+    en: 'Eat Fast - Food Delivery App in Cameroon | Fast Food Delivery Yaoundé, Douala',
+    fr: 'Eat Fast - Application de Livraison de Repas au Cameroun | Livraison Rapide Yaoundé, Douala'
+  };
+  
+  document.title = titles[lng] || titles.en;
+}
+
+// Export i18n instance
+export default i18n;
+
+// Export language utilities
+export const changeLanguage = (lng) => {
+  return i18n.changeLanguage(lng);
 };
 
+<<<<<<< HEAD
 export default i18nService;
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
+=======
+export const getCurrentLanguage = () => {
+  return i18n.language;
+};
+
+export const getAvailableLanguages = () => {
+  return Object.keys(resources);
+};
+
+export const isLanguageSupported = (lng) => {
+  return getAvailableLanguages().includes(lng);
+};
+
+// Auto-detect and set initial language
+const detectInitialLanguage = () => {
+  const savedLanguage = localStorage.getItem('eat-fast-language');
+  if (savedLanguage && isLanguageSupported(savedLanguage)) {
+    return savedLanguage;
+  }
+  
+  const browserLanguage = navigator.language.split('-')[0];
+  if (isLanguageSupported(browserLanguage)) {
+    return browserLanguage;
+  }
+  
+  return 'en';
+};
+
+// Set initial language
+const initialLanguage = detectInitialLanguage();
+if (initialLanguage !== i18n.language) {
+  i18n.changeLanguage(initialLanguage);
+}
+>>>>>>> Divinson-NewIUX

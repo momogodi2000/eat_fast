@@ -1,0 +1,99 @@
+{
+  "name": "Eat Fast - Food Delivery Cameroon",
+  "short_name": "Eat Fast",
+  "description": "Order delicious food online in Cameroon. Fast delivery to your doorstep in Yaoundé, Douala, and across Cameroon.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#FF6B35",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "en",
+  "categories": ["food", "lifestyle", "shopping"],
+  "icons": [
+    {
+      "src": "/src/assets/logo/eat_fast.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/src/assets/logo/eat_fast.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/src/assets/logo/eat_fast.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/src/assets/logo/eat_fast.png",
+      "sizes": "96x96",
+      "type": "image/png"
+    },
+    {
+      "src": "/src/assets/logo/eat_fast.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/src/assets/logo/eat_fast.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    },
+    {
+      "src": "/src/assets/logo/eat_fast.png",
+      "sizes": "152x152",
+      "type": "image/png"
+    },
+    {
+      "src": "/src/assets/logo/eat_fast.png",
+      "sizes": "384x384",
+      "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Order Food",
+      "short_name": "Order",
+      "description": "Quick access to order food",
+      "url": "/restaurants",
+      "icons": [
+        {
+          "src": "/src/assets/logo/eat_fast.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "My Orders",
+      "short_name": "Orders",
+      "description": "View your order history",
+      "url": "/client/orders",
+      "icons": [
+        {
+          "src": "/src/assets/logo/eat_fast.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/src/assets/images/carroussel_1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Eat Fast Homepage"
+    },
+    {
+      "src": "/src/assets/images/carroussel_2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Restaurant Selection"
+    }
+  ]
+} 

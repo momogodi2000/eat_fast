@@ -1,5 +1,6 @@
-# 🍕 Eat Fast - Food Delivery Platform
+# Eat Fast - Food Delivery App Cameroon 🍽️
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 **Eat Fast** is a modern, full-stack food delivery application built with React.js and Vite, designed to connect customers with local restaurants and facilitate seamless food ordering and delivery experiences.
 
@@ -42,9 +43,13 @@ npm run dev
 =======
 **Eat Fast** is a modern, full-stack food delivery application built with React.js and Django, designed to connect customers with local restaurants and facilitate seamless food ordering and delivery experiences.
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
+=======
+A modern, progressive web application for food delivery in Cameroon, featuring offline capabilities, multi-language support, and cross-platform compatibility.
+>>>>>>> Divinson-NewIUX
 
-## 📋 Table of Contents
+## 🌟 Features
 
+<<<<<<< HEAD
 - [Application Overview](#application-overview)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
@@ -67,28 +72,42 @@ npm run dev
 - [Deployment](#deployment)
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
 - [Contributing](#contributing)
+=======
+### 🚀 Core Features
+- **Progressive Web App (PWA)** - Installable on mobile and desktop
+- **Offline Functionality** - Browse menus and view orders without internet
+- **Multi-language Support** - English and French with automatic detection
+- **Dynamic Theme System** - Light/Dark mode with system preference detection
+- **Real-time Order Tracking** - Live updates on order status
+- **Responsive Design** - Optimized for all devices
+>>>>>>> Divinson-NewIUX
 
-## 🏗️ Application Overview
+### 📱 PWA Features
+- Add to Home Screen functionality
+- Offline caching with service workers
+- Push notifications
+- Background sync for offline data
+- Fast loading with optimized caching strategies
 
-Eat Fast is a comprehensive food delivery platform featuring:
+### 🌍 SEO & Performance
+- Comprehensive SEO optimization
+- Structured data markup
+- Sitemap and robots.txt
+- Google Analytics integration
+- Image optimization and lazy loading
+- Code splitting for faster loading
 
-### **Core Features**
-- **Customer Portal**: Browse restaurants, place orders, track deliveries
-- **Restaurant Dashboard**: Manage menus, orders, and analytics
-- **Admin Panel**: Platform management and monitoring
-- **Delivery Tracking**: Real-time GPS tracking and notifications
-- **Payment Integration**: Multiple payment methods including Mobile Money
-- **Multi-language Support**: Internationalization with i18next
-
-### **Key Capabilities**
-- Progressive Web App (PWA) with offline support
-- Real-time notifications and WebSocket connections
-- Advanced analytics and reporting
-- Mobile-responsive design
-- Multi-tenant restaurant management
+### 🔧 Technical Features
+- React 19 with Vite
+- Tailwind CSS for styling
+- React Query for data management
+- IndexedDB for offline storage
+- Docker containerization
+- Netlify deployment ready
 
 ## 🛠️ Tech Stack
 
+<<<<<<< HEAD
 ### **Frontend**
 <<<<<<< HEAD
 - **Framework**: React 18.2.0 + Vite 5.0.10
@@ -141,13 +160,26 @@ Eat Fast is a comprehensive food delivery platform featuring:
 │  └─────────────────────────────────────────────────────────┘ │
 └─────────────────────────────────────────────────────────────┘
 ```
+=======
+- **Frontend**: React 19, Vite, Tailwind CSS
+- **State Management**: React Query, Context API
+- **Internationalization**: i18next, Lingui
+- **PWA**: Vite PWA Plugin, Service Workers
+- **Database**: IndexedDB (offline), PostgreSQL (online)
+- **Deployment**: Docker, Netlify
+- **Monitoring**: Prometheus, Grafana
+>>>>>>> Divinson-NewIUX
 
 <<<<<<< HEAD
 =======
 ## 📋 Prerequisites
 
-Before setting up the application, ensure you have the following installed:
+- Node.js 18+ 
+- npm 9+
+- Docker (optional)
+- Git
 
+<<<<<<< HEAD
 - **Node.js** (v18+ recommended)
 - **npm** or **yarn**
 - **Python** (v3.9+ recommended)
@@ -158,14 +190,17 @@ Before setting up the application, ensure you have the following installed:
 
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
 ## 🚀 Installation & Setup
+=======
+## 🚀 Quick Start
+>>>>>>> Divinson-NewIUX
 
 ### 1. Clone the Repository
-
 ```bash
-git clone https://github.com/your-org/eat-fast.git
+git clone https://github.com/your-username/eat-fast.git
 cd eat-fast
 ```
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 ### 2. Environment Configuration
 
@@ -203,12 +238,14 @@ eat-fast/
 cd frontend
 ```
 
+=======
+>>>>>>> Divinson-NewIUX
 ### 2. Install Dependencies
-
 ```bash
 npm install
 ```
 
+<<<<<<< HEAD
 ### 3. Environment Configuration
 
 Create a `.env` file in the frontend directory:
@@ -473,421 +510,229 @@ npm run build
 6. Push to the branch: `git push origin feature-name`
 7. Submit a pull request
 =======
-```
-
-### 5. Key Dependencies Overview
-
-- **@tanstack/react-query**: Server state management
-- **axios**: HTTP client for API calls
-- **react-hook-form + yup**: Form handling and validation
-- **react-leaflet**: Interactive maps
-- **chart.js**: Data visualization
-- **framer-motion**: Animations and transitions
-- **react-toastify**: Toast notifications
-- **i18next**: Internationalization
-
-## 🐍 Backend Setup
-
-### 1. Navigate to Backend Directory
-
+=======
+### 3. Environment Setup
 ```bash
-cd backend
+cp env.example .env
+# Edit .env with your configuration
+>>>>>>> Divinson-NewIUX
 ```
 
-### 2. Create Virtual Environment
-
+### 4. Development
 ```bash
-python -m venv venv
-
-# Activate virtual environment
-# On Windows:
-venv\Scripts\activate
-
-# On macOS/Linux:
-source venv/bin/activate
-```
-
-### 3. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Environment Configuration
-
-Create a `.env` file in the backend directory:
-
-```env
-# Django Configuration
-DEBUG=True
-SECRET_KEY=your_super_secret_key_here
-ALLOWED_HOSTS=localhost,127.0.0.1
-
-# Database Configuration
-DB_NAME=eat_fast_db
-DB_USER=postgres
-DB_PASSWORD=your_db_password
-DB_HOST=localhost
-DB_PORT=5432
-
-# Redis Configuration
-REDIS_URL=redis://localhost:6379/0
-
-# JWT Configuration
-JWT_SECRET_KEY=your_jwt_secret_key
-JWT_EXPIRATION_HOURS=24
-
-# Email Configuration
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your_email@gmail.com
-EMAIL_HOST_PASSWORD=your_email_password
-
-# AWS Configuration
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_STORAGE_BUCKET_NAME=your_s3_bucket
-AWS_S3_REGION_NAME=af-south-1
-
-# Payment Gateways
-MTN_MOBILE_MONEY_API_KEY=your_mtn_api_key
-ORANGE_MONEY_API_KEY=your_orange_api_key
-
-# External APIs
-OPENAI_API_KEY=your_openai_key
-DEEPL_API_KEY=your_deepl_api_key
-```
-
-### 5. Django Management Commands
-
-```bash
-# Apply database migrations
-python manage.py migrate
-
-# Create superuser
-python manage.py createsuperuser
-
-# Collect static files
-python manage.py collectstatic
-
-# Start development server
-python manage.py runserver
-
-# Start Celery worker (in separate terminal)
-celery -A core worker -l info
-
-# Start Celery beat scheduler
-celery -A core beat -l info
-```
-
-## 🗄️ Database Configuration
-
-### 1. PostgreSQL Setup
-
-```bash
-# Create database
-sudo -u postgres createdb eat_fast_db
-
-# Create user
-sudo -u postgres createuser --superuser eat_fast_user
-
-# Set password
-sudo -u postgres psql -c "ALTER USER eat_fast_user PASSWORD 'your_password';"
-```
-
-### 2. Redis Setup
-
-```bash
-# Install Redis (Ubuntu/Debian)
-sudo apt update
-sudo apt install redis-server
-
-# Start Redis service
-sudo systemctl start redis-server
-
-# Enable Redis on boot
-sudo systemctl enable redis-server
-```
-
-### 3. Database Migrations
-
-```bash
-# Create migrations
-python manage.py makemigrations
-
-# Apply migrations
-python manage.py migrate
-
-# Load initial data (optional)
-python manage.py loaddata fixtures/initial_data.json
-```
-
-## 🔐 Authentication Setup
-
-The application supports both Django JWT authentication and Firebase authentication.
-
-### Option 1: Django JWT Authentication (Default)
-
-The backend uses JWT tokens for authentication. No additional setup required beyond environment variables.
-
-**API Endpoints:**
-- `POST /api/v1/auth/register/` - User registration
-- `POST /api/v1/auth/login/` - User login
-- `POST /api/v1/auth/logout/` - User logout
-- `POST /api/v1/auth/refresh/` - Refresh JWT token
-- `POST /api/v1/auth/verify-phone/` - Phone verification
-
-### Option 2: Firebase Authentication Integration
-
-To integrate Firebase authentication:
-
-#### 1. Install Firebase SDK
-
-```bash
-cd frontend
-npm install firebase
-```
-
-#### 2. Create Firebase Service
-
-Create `src/services/firebase.js`:
-
-```javascript
-import { initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID
-};
-
-const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export default app;
-```
-
-#### 3. Create Authentication Hook
-
-Create `src/hooks/useFirebaseAuth.js`:
-
-```javascript
-import { useState, useEffect } from 'react';
-import { 
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged 
-} from 'firebase/auth';
-import { auth } from '../services/firebase';
-
-export const useFirebaseAuth = () => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      setLoading(false);
-    });
-
-    return unsubscribe;
-  }, []);
-
-  const login = async (email, password) => {
-    return signInWithEmailAndPassword(auth, email, password);
-  };
-
-  const register = async (email, password) => {
-    return createUserWithEmailAndPassword(auth, email, password);
-  };
-
-  const logout = async () => {
-    return signOut(auth);
-  };
-
-  return {
-    user,
-    loading,
-    login,
-    register,
-    logout
-  };
-};
-```
-
-#### 4. Backend Firebase Integration
-
-Install Firebase Admin SDK in your Django backend:
-
-```bash
-pip install firebase-admin
-```
-
-Add Firebase configuration to Django settings and create a custom authentication backend.
-
-## 🌍 Environment Variables
-
-### Frontend (.env)
-
-```env
-# Required
-VITE_API_BASE_URL=http://localhost:8000/api/v1
-VITE_WS_BASE_URL=ws://localhost:8000/ws
-
-# Optional Services
-VITE_GOOGLE_MAPS_API_KEY=
-VITE_FIREBASE_API_KEY=
-VITE_SENTRY_DSN=
-```
-
-### Backend (.env)
-
-```env
-# Required
-SECRET_KEY=
-DB_NAME=eat_fast_db
-DB_USER=postgres
-DB_PASSWORD=
-REDIS_URL=redis://localhost:6379/0
-
-# Optional
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-EMAIL_HOST_USER=
-EMAIL_HOST_PASSWORD=
-```
-
-## 🏃‍♂️ Running the Application
-
-### Development Mode
-
-#### 1. Start Backend Services
-
-```bash
-# Terminal 1: Start PostgreSQL and Redis
-sudo systemctl start postgresql
-sudo systemctl start redis-server
-
-# Terminal 2: Start Django server
-cd backend
-source venv/bin/activate
-python manage.py runserver
-
-# Terminal 3: Start Celery worker
-cd backend
-source venv/bin/activate
-celery -A core worker -l info
-```
-
-#### 2. Start Frontend
-
-```bash
-# Terminal 4: Start React development server
-cd frontend
 npm run dev
 ```
 
-#### 3. Access the Application
+The app will be available at `http://localhost:3000`
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:8000/api/v1/
-- **Admin Panel**: http://localhost:8000/admin/
+## 🐳 Docker Deployment
 
-### Production Mode
-
+### Build and Run with Docker
 ```bash
-# Build frontend for production
-cd frontend
-npm run build
+# Build the image
+npm run docker:build
 
-# Serve with Django
-cd backend
-python manage.py collectstatic
-python manage.py runserver --settings=core.settings.production
+# Run the container
+npm run docker:run
 ```
 
-## 📚 API Documentation
-
-### Base URL
-`http://localhost:8000/api/v1/`
-
-### Authentication Endpoints
-- `POST /auth/register/` - User registration
-- `POST /auth/login/` - User login
-- `POST /auth/logout/` - User logout
-- `POST /auth/refresh/` - Refresh token
-
-### User Management
-- `GET /users/profile/` - Get user profile
-- `PUT /users/profile/` - Update user profile
-- `GET /users/addresses/` - Get user addresses
-- `POST /users/addresses/` - Add new address
-
-### Restaurant Management
-- `GET /restaurants/` - List restaurants
-- `GET /restaurants/{id}/` - Restaurant details
-- `GET /restaurants/{id}/menu/` - Restaurant menu
-- `GET /restaurants/search/` - Search restaurants
-- `GET /restaurants/nearby/` - Nearby restaurants
-
-### Order Management
-- `GET /orders/` - List user orders
-- `POST /orders/` - Create new order
-- `GET /orders/{id}/` - Order details
-- `GET /orders/{id}/track/` - Track order
-- `GET /orders/history/` - Order history
-
-### Payment
-- `GET /payments/methods/` - Payment methods
-- `POST /payments/process/` - Process payment
-- `POST /payments/webhooks/` - Payment webhooks
-
-### Delivery
-- `GET /delivery/available/` - Available delivery missions
-- `POST /delivery/accept/` - Accept delivery mission
-- `POST /delivery/update-location/` - Update delivery location
-- `POST /delivery/complete/` - Complete delivery
-
-## 🚀 Deployment
-
-### Docker Deployment
-
+### Using Docker Compose (Full Stack)
 ```bash
-# Build and start containers
-docker-compose up -d
+# Start all services
+npm run docker:compose
 
 # View logs
-docker-compose logs -f
+npm run docker:compose:logs
+
+# Stop services
+npm run docker:compose:down
 ```
 
-### AWS Deployment
+## 🌐 Netlify Deployment
 
-The application is designed to be deployed on AWS infrastructure:
+### Automatic Deployment
+1. Connect your GitHub repository to Netlify
+2. Set build command: `npm run build`
+3. Set publish directory: `dist`
+4. Configure environment variables in Netlify dashboard
 
-- **EC2**: Application servers
-- **RDS**: PostgreSQL database
-- **ElastiCache**: Redis cache
-- **S3**: Static and media file storage
-- **CloudFront**: CDN for static assets
-- **Load Balancer**: Application load balancer
+### Manual Deployment
+```bash
+# Build the project
+npm run build
 
-### Environment Setup
+# Deploy to Netlify
+netlify deploy --prod --dir=dist
+```
 
-1. Set up AWS credentials
-2. Configure RDS PostgreSQL instance
-3. Set up ElastiCache Redis cluster
-4. Create S3 bucket for media storage
-5. Configure environment variables
-6. Deploy using CI/CD pipeline
+## 📱 PWA Features
+
+### Installation
+- **Mobile**: Add to Home Screen from browser menu
+- **Desktop**: Install prompt or browser menu option
+
+### Offline Usage
+- Browse cached restaurants and menus
+- View order history
+- Access profile and settings
+- Data syncs when connection is restored
+
+## 🌍 Internationalization
+
+### Supported Languages
+- English (en)
+- French (fr)
+
+### Language Detection
+- Automatic detection based on browser settings
+- Manual language switching
+- Persistent language preference
+
+### Adding New Languages
+1. Create translation files in `src/i18n/locales/[lang]/`
+2. Update language configuration in `src/i18n/index.js`
+3. Add language to whitelist
+
+## 🎨 Theme System
+
+### Features
+- Light/Dark mode toggle
+- System preference detection
+- Persistent theme selection
+- Automatic theme switching
+
+### Usage
+```javascript
+import { useTheme } from '@/theme/useTheme';
+
+const { theme, toggleTheme, setTheme } = useTheme();
+```
+
+## 📊 Performance Optimization
+
+### Build Optimization
+- Code splitting by route and feature
+- Tree shaking for unused code
+- Image optimization and compression
+- Gzip compression
+- Service worker caching
+
+### Monitoring
+```bash
+# Analyze bundle size
+npm run analyze
+
+# Run tests
+npm run test
+
+# Check code coverage
+npm run test:coverage
+```
+
+## 🔧 Configuration
+
+### Environment Variables
+```bash
+# Application
+NODE_ENV=production
+VITE_API_URL=https://api.eatfast.cm
+VITE_GA_MEASUREMENT_ID=GA_MEASUREMENT_ID
+
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/eatfast
+
+# JWT
+JWT_SECRET=your_secret_key
+JWT_EXPIRES_IN=7d
+
+# Email
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your_email@gmail.com
+SMTP_PASS=your_app_password
+```
+
+### PWA Configuration
+- Manifest: `public/manifest.json`
+- Service Worker: `public/sw.js`
+- Offline Page: `public/offline.html`
+
+## 📁 Project Structure
+
+```
+eat-fast/
+├── public/                 # Static files
+│   ├── manifest.json      # PWA manifest
+│   ├── sw.js             # Service worker
+│   ├── offline.html      # Offline page
+│   ├── sitemap.xml       # SEO sitemap
+│   └── robots.txt        # SEO robots
+├── src/
+│   ├── components/       # Reusable components
+│   ├── pages/           # Page components
+│   ├── Services/        # API and offline services
+│   ├── i18n/           # Internationalization
+│   ├── theme/          # Theme system
+│   ├── utils/          # Utility functions
+│   └── styles/         # Global styles
+├── Dockerfile          # Docker configuration
+├── docker-compose.yml  # Docker Compose
+├── netlify.toml       # Netlify configuration
+└── vite.config.js     # Vite configuration
+```
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm run test
+
+# Run tests with UI
+npm run test:ui
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+## 📈 Analytics & Monitoring
+
+### Google Analytics
+- Automatic page tracking
+- Custom event tracking
+- User behavior analysis
+
+### Performance Monitoring
+- Core Web Vitals tracking
+- Error monitoring
+- User experience metrics
+
+## 🔒 Security
+
+### Security Headers
+- X-Frame-Options
+- X-XSS-Protection
+- X-Content-Type-Options
+- Content-Security-Policy
+
+### Rate Limiting
+- API rate limiting
+- Login attempt limiting
+- DDoS protection
+
+## 🚀 Deployment Checklist
+
+- [ ] Environment variables configured
+- [ ] Google Analytics ID set
+- [ ] SSL certificate installed
+- [ ] Domain configured
+- [ ] Database migrations run
+- [ ] Email service configured
+- [ ] Monitoring set up
+- [ ] Backup strategy implemented
 
 ## 🤝 Contributing
 
+<<<<<<< HEAD
 ### Development Workflow
 
 1. **Fork the repository**
@@ -957,11 +802,19 @@ For support and questions:
 - **Issues**: Create a GitHub issue for bugs and feature requests
 - **Email**: contact@eatfast.com
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
+=======
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+>>>>>>> Divinson-NewIUX
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 ## 🆘 Support
 
@@ -994,3 +847,21 @@ npm run dev
 
 **Eat Fast** - Delivering delicious food, one order at a time! 🚚🍕
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
+=======
+## 🆘 Support
+
+- **Documentation**: [Wiki](https://github.com/your-username/eat-fast/wiki)
+- **Issues**: [GitHub Issues](https://github.com/your-username/eat-fast/issues)
+- **Email**: support@eatfast.cm
+
+## 🙏 Acknowledgments
+
+- React team for the amazing framework
+- Vite team for the fast build tool
+- Tailwind CSS for the utility-first CSS framework
+- All contributors and supporters
+
+---
+
+**Made with ❤️ for Cameroon**
+>>>>>>> Divinson-NewIUX

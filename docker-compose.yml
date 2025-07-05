@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+<<<<<<< HEAD
   # Development service
   eat-fast-dev:
     build:
@@ -44,10 +45,113 @@ services:
   # Nginx reverse proxy for production
   nginx-proxy:
     image: nginx:alpine
+=======
+  # Frontend application
+  eat-fast-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eat-fast-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=http://localhost:8000/api
+      - VITE_GA_MEASUREMENT_ID=${GA_MEASUREMENT_ID}
+    volumes:
+      - ./logs:/var/log/nginx
+    depends_on:
+      - eat-fast-backend
+    networks:
+      - eat-fast-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Backend API (placeholder - you'll need to implement this)
+  eat-fast-backend:
+    image: node:18-alpine
+    container_name: eat-fast-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    volumes:
+      - ./backend:/app
+      - ./logs:/app/logs
+    working_dir: /app
+    command: ["npm", "start"]
+    networks:
+      - eat-fast-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Database (PostgreSQL)
+  eat-fast-db:
+    image: postgres:15-alpine
+    container_name: eat-fast-db
+    environment:
+      - POSTGRES_DB=eatfast
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - eat-fast-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d eatfast"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Redis for caching and sessions
+  eat-fast-redis:
+    image: redis:7-alpine
+    container_name: eat-fast-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - eat-fast-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx reverse proxy (for production)
+  nginx:
+    image: nginx:alpine
+    container_name: eat-fast-nginx
+>>>>>>> Divinson-NewIUX
     ports:
       - "80:80"
       - "443:443"
     volumes:
+<<<<<<< HEAD
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro
     depends_on:
@@ -78,3 +182,70 @@ networks:
     profiles:
       - production
 >>>>>>> 753220f0986fa4338251ff890c029766f035deec
+=======
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - eat-fast-frontend
+      - eat-fast-backend
+    networks:
+      - eat-fast-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+  # Monitoring with Prometheus
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: eat-fast-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - eat-fast-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+  # Grafana for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: eat-fast-grafana
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - eat-fast-network
+    restart: unless-stopped
+    profiles:
+      - monitoring
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  prometheus_data:
+    driver: local
+  grafana_data:
+    driver: local
+
+networks:
+  eat-fast-network:
+    driver: bridge 
+>>>>>>> Divinson-NewIUX
