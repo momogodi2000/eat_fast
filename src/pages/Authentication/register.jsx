@@ -414,7 +414,7 @@ const Register = () => {
       setFormState((prev) => ({ ...prev, success: false }));
 
       if (newUser.user_type === "client") {
-        navigate("/clients");
+        navigate("/client/dashboard");
       } else {
         alert(
           "Inscription réussie ! Vos documents sont en cours de vérification."

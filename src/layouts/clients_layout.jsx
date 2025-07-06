@@ -85,35 +85,35 @@ const ClientsLayout = ({ children, currentPage = "dashboard" }) => {
     {
       icon: TrendingUp,
       label: t.dashboard,
-      path: "/clients",
+      path: "/client/dashboard",
       active: activePage === "clients",
       badge: null,
     },
     {
       icon: ShoppingCart,
       label: t.restaurants,
-      path: "/clients/restaurant",
+      path: "/client/restaurants",
       active: activePage === "restaurants",
       badge: null,
     },
     {
       icon: Package,
       label: t.orders,
-      path: "/clients/orders",
+      path: "/client/orders",
       active: activePage === "orders",
       badge: 2, // Active orders count
     },
     {
       icon: History,
       label: t.orderHistory,
-      path: "/clients/order-history",
+      path: "/client/history",
       active: activePage === "order-history",
       badge: null,
     },
     {
       icon: User,
       label: t.profile,
-      path: "/clients/profile",
+      path: "/client/profile",
       active: activePage === "profile",
       badge: null,
     },
@@ -306,7 +306,7 @@ const ClientsLayout = ({ children, currentPage = "dashboard" }) => {
                 {/* Support Button */}
                 <button
                   onClick={() =>
-                    handleNavigation({ path: "/clients/support/chat" })
+                    handleNavigation({ path: "/client/support" })
                   }
                   className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-200 transform hover:scale-105 shadow-lg"
                 >

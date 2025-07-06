@@ -25,7 +25,7 @@ export const ANIMATION_DELAY_BASE = 100;
 export const redirection = (role, navigate) => {
   switch (role) {
     case "client":
-      navigate("/clients");
+      navigate("/client/dashboard");
       break;
     case "admin":
       navigate("/admin");

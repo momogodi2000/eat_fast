@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "react-hot-toast";
@@ -46,9 +46,6 @@ const AdminOrdersPage = lazy(() => import("./pages/Dashboards/Admin/Orders/order
 const StatisticsPage = lazy(() => import("./pages/Dashboards/Admin/Statistics/StatisticsPage"));
 const AdminDeliveryManagement = lazy(() => import("./pages/Dashboards/Admin/Delivery/delivery_managemnet"));
 const PromotionManagement = lazy(() => import("./pages/Dashboards/Admin/Promotion/promotion"));
-
-// Import OrderProvider
-const OrderProviderModule = lazy(() => import("./pages/Dashboards/Restaurants/command/restaurant_command"));
 
 // Agent Support pages
 const SupportTicketsPage = lazy(() => import("./pages/Dashboards/Agent/Tickets/ticketsPage"));
@@ -194,13 +191,15 @@ function App() {
                 <Route path="/refund" element={<TermsAndConditions />} />
                 <Route path="/safety" element={<FoodSafety />} />
 
-                {/* Admin Routes */}
+                {/* Admin Routes - Individual routes with AdminLayout */}
                 <Route
                   path="/admin"
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminDashboard />
+                        <AdminLayout>
+                          <AdminDashboard />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   }
@@ -210,7 +209,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminDashboard />
+                        <AdminLayout>
+                          <AdminDashboard />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   }
@@ -220,7 +221,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <UserListPage />
+                        <AdminLayout>
+                          <UserListPage />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -230,7 +233,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <UserListPage />
+                        <AdminLayout>
+                          <UserListPage />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -240,7 +245,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <RestaurantManagement />
+                        <AdminLayout>
+                          <RestaurantManagement />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -250,7 +257,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminContactMessages />
+                        <AdminLayout>
+                          <AdminContactMessages />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -260,7 +269,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminOrdersPage />
+                        <AdminLayout>
+                          <AdminOrdersPage />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -270,7 +281,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <StatisticsPage />
+                        <AdminLayout>
+                          <StatisticsPage />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -280,7 +293,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminDeliveryManagement />
+                        <AdminLayout>
+                          <AdminDeliveryManagement />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -290,7 +305,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <PromotionManagement />
+                        <AdminLayout>
+                          <PromotionManagement />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -398,7 +415,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/restaurant/support/chat"
+                  path="/restaurant/support"
                   element={
                     <UserInformationProvider>
                       <RestaurantLayoutWithProviders>
@@ -420,6 +437,16 @@ function App() {
                   }
                 />
                 <Route
+                  path="/delivery/dashboard"
+                  element={
+                    <UserInformationProvider>
+                      <DeliveryLayout>
+                        <DeliveryDashboard />
+                      </DeliveryLayout>
+                    </UserInformationProvider>
+                  }
+                />
+                <Route
                   path="/delivery/missions"
                   element={
                     <UserInformationProvider>
@@ -430,7 +457,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/delivery/live-map"
+                  path="/delivery/commands"
                   element={
                     <UserInformationProvider>
                       <DeliveryLayout>
@@ -460,7 +487,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/delivery/support/chat"
+                  path="/delivery/support"
                   element={
                     <UserInformationProvider>
                       <DeliveryLayout>
@@ -472,7 +499,7 @@ function App() {
 
                 {/* Client Routes */}
                 <Route
-                  path="/clients"
+                  path="/client"
                   element={
                     <UserInformationProvider>
                       <ClientsLayout>
@@ -482,7 +509,17 @@ function App() {
                   }
                 />
                 <Route
-                  path="/clients/restaurant"
+                  path="/client/dashboard"
+                  element={
+                    <UserInformationProvider>
+                      <ClientsLayout>
+                        <ClientDashboard />
+                      </ClientsLayout>
+                    </UserInformationProvider>
+                  }
+                />
+                <Route
+                  path="/client/restaurants"
                   element={
                     <UserInformationProvider>
                       <ClientsLayout>
@@ -492,7 +529,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/clients/orders"
+                  path="/client/orders"
                   element={
                     <UserInformationProvider>
                       <ClientsLayout>
@@ -502,7 +539,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/clients/order-history"
+                  path="/client/history"
                   element={
                     <UserInformationProvider>
                       <ClientsLayout>
@@ -512,7 +549,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/clients/support/chat"
+                  path="/client/support"
                   element={
                     <UserInformationProvider>
                       <ClientsLayout>
@@ -522,7 +559,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/clients/profile"
+                  path="/client/profile"
                   element={
                     <UserInformationProvider>
                       <ClientsLayout>
@@ -531,30 +568,34 @@ function App() {
                     </UserInformationProvider>
                   }
                 />
+                {/* Redirection /clients vers /client/dashboard */}
+                <Route path="/clients" element={<Navigate to="/client/dashboard" replace />} />
 
                 {/* 404 Route */}
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </Suspense>
           </div>
-        </Router>
 
-        {/* React Query Devtools (only in development) */}
-        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+          {/* Development tools */}
+          {process.env.NODE_ENV === 'development' && (
+            <ReactQueryDevtools initialIsOpen={false} />
+          )}
+        </Router>
       </QueryClientProvider>
     </ErrorBoundary>
   );
 }
 
-// 404 Not Found Component
+// 404 Page Component
 const NotFoundPage = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100">
     <div className="text-center">
       <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
       <p className="text-xl text-gray-600 mb-8">Page not found</p>
       <a
         href="/"
-        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg transition-colors"
+        className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors"
       >
         Go Home
       </a>

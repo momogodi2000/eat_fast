@@ -81,7 +81,7 @@ export default function Verify2FACode({ userId, contactMethod, onResendCode }) {
       // Simulate navigation after success
       setTimeout(() => {
         if (userInformation?.user_type === "client") {
-          navigate("/clients");
+          navigate("/client/dashboard");
         } else {
           alert(
             "Inscription réussie ! Vos documents sont en cours de vérification."

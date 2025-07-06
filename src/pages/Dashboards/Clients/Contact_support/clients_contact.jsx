@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import ClientsLayout, { useAppContext, AppContext } from '../../../../layouts/clients_layout';
+import { useAppContext, AppContext } from '../../../../layouts/clients_layout';
 import { 
   MessageCircle, 
   Send, 

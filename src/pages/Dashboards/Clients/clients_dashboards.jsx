@@ -18,7 +18,7 @@ import {
   Calendar,
   Gift
 } from 'lucide-react';
-import ClientsLayout from '../../../layouts/clients_layout';
+
 
 // Mock delivery context (will be replaced by the actual context from ClientsLayout)
 const useClientContext = () => ({

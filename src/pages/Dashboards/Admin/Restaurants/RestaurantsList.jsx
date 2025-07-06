@@ -30,7 +30,7 @@ import {
 } from 'react-icons/fi';
 import { HiOutlineSpeakerphone } from 'react-icons/hi';
 import { Tooltip, Badge, Modal, Progress } from '../../../../components/ui/ui-components';
-import { OrderProvider } from '../../Restaurants/command/restaurant_command';
+
 import { useFetcher } from 'react-router-dom';
  
 import { FiBarChart2, FiCalendar, FiTrendingUp, FiImage } from 'react-icons/fi';
@@ -1265,28 +1265,22 @@ export default RestaurantManagement;
 
 
 export const AdminRestaurantProvider = ({children}) => {
+  const [restaurants, setRestaurants] = useState(mockRestaurants); 
+  const [registerRestaurants, setRegisterRestaurant] = useState(mockRegisterRestaurants);
+  
+  useEffect(() => {
+    setRestaurants(mockRestaurants);
+  }, [mockRestaurants])  
 
-const [restaurants, setRestaurants] = useState(mockRestaurants); 
+  useEffect(() => {
+    setRegisterRestaurant(mockRegisterRestaurants)
+  }, [mockRegisterRestaurants]);
 
-const [registerRestaurants, setRegisterRestaurant] = useState(mockRegisterRestaurants);
-useEffect( () => {
-  setRestaurants(mockRestaurants);
-},[mockRestaurants])  
-
-useEffect (() => {
-setRegisterRestaurant(mockRegisterRestaurants)
-}, [mockRegisterRestaurants]);
-
-
-return(
+  return(
     <adminRestaurantContext.Provider value={restaurants}>
       <registerRestaurantContext.Provider value={registerRestaurants}>
-      
-      <OrderProvider>
-      {children}
-      </OrderProvider>
+        {children}
       </registerRestaurantContext.Provider>
     </adminRestaurantContext.Provider>
-
   )
 } 

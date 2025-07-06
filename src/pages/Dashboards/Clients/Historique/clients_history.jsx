@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import ClientsLayout, { AppContext } from '../../../../layouts/clients_layout';
+import { AppContext } from '../../../../layouts/clients_layout';
 import { 
   Clock, 
   Package, 
