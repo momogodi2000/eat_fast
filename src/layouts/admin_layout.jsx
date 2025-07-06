@@ -151,9 +151,9 @@ const AdminLayout = ({ children }) => {
   const navigationItems = [
     {
       name: t("navigation.dashboard"),
-      href: "/admin/dashboard",
+      href: "/admin",
       icon: FiHome,
-      current: location.pathname === "/admin/dashboard",
+      current: location.pathname === "/admin" || location.pathname === "/admin/dashboard",
     },
     {
       name: t("navigation.restaurants"),
@@ -165,7 +165,7 @@ const AdminLayout = ({ children }) => {
       name: t("navigation.users"),
       href: "/admin/users",
       icon: FiUsers,
-      current: location.pathname.startsWith("/admin/users"),
+      current: location.pathname.startsWith("/admin/users") || location.pathname.startsWith("/admin/user"),
     },
     {
       name: t("navigation.delivery"),

@@ -8,7 +8,8 @@ import {
   FiClock, FiAlertTriangle, FiFileText, FiUpload, FiWifi, FiWifiOff,
   FiPhone, FiMail, FiMapPin, FiCalendar, FiPackage, FiStar, FiActivity,
   FiUser, FiLock, FiCamera, FiImage, FiFile, FiCheckCircle, FiXCircle,
-  FiAlertCircle, FiInfo, FiTrendingUp, FiTrendingDown, FiZap, FiGlobe
+  FiAlertCircle, FiInfo, FiTrendingUp, FiTrendingDown, FiZap, FiGlobe,
+  FiPlus, FiSettings, FiBarChart2
 } from 'react-icons/fi';
 
 // Import the three separate components
@@ -202,25 +203,50 @@ const UserListPage = () => {
             url: '#'
           }
         }
+      },
+      {
+        id: 3,
+        first_name: 'Mike',
+        last_name: 'Johnson',
+        email: 'mike.johnson@example.com',
+        phone_number: '+237 555 123 456',
+        role: USER_ROLES.DELIVERY_AGENT,
+        status: USER_STATUS.ACTIVE,
+        city: 'Bamenda',
+        address: '789 Delivery St',
+        createdAt: '2024-01-05T16:20:00Z',
+        lastLoginAt: '2024-01-20T08:30:00Z',
+        emailVerified: true,
+        totalOrders: 0,
+        totalSpent: 0,
+        rating: 4.8,
+        daysActive: 15,
+        documents: {
+          driving_license: {
+            name: 'driving_license.pdf',
+            size: 1024000,
+            status: DOCUMENT_STATUS.APPROVED,
+            uploadedAt: '2024-01-05T16:20:00Z'
+          }
+        }
       }
     ];
+    
     setUsers(mockUsers);
     setFilteredUsers(mockUsers);
   }, []);
 
-  // Filter and search logic
+  // Filter users based on search and filters
   useEffect(() => {
-    let filtered = [...users];
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered.filter(user =>
-        user.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    let filtered = users.filter(user => {
+      const searchLower = searchTerm.toLowerCase();
+      return (
+        user.first_name.toLowerCase().includes(searchLower) ||
+        user.last_name.toLowerCase().includes(searchLower) ||
+        user.email.toLowerCase().includes(searchLower) ||
         user.phone_number.includes(searchTerm)
       );
-    }
+    });
 
     // Role filter
     if (selectedRole !== 'all') {
@@ -342,8 +368,135 @@ const UserListPage = () => {
     setIsFormOpen(true);
   }, []);
 
+  // Calculate statistics
+  const stats = useMemo(() => {
+    const totalUsers = users.length;
+    const activeUsers = users.filter(u => u.status === USER_STATUS.ACTIVE).length;
+    const pendingUsers = users.filter(u => u.status === USER_STATUS.PENDING).length;
+    const clients = users.filter(u => u.role === USER_ROLES.CLIENT).length;
+    const restaurants = users.filter(u => u.role === USER_ROLES.RESTAURANT_MANAGER).length;
+    const deliveryAgents = users.filter(u => u.role === USER_ROLES.DELIVERY_AGENT).length;
+    const supportAgents = users.filter(u => u.role === USER_ROLES.AGENT_SUPPORT).length;
+
+    return {
+      totalUsers,
+      activeUsers,
+      pendingUsers,
+      clients,
+      restaurants,
+      deliveryAgents,
+      supportAgents,
+      activePercentage: totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0
+    };
+  }, [users]);
+
   return (
-    <>
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {t('admin.users.title', 'Gestion des Utilisateurs')}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {t('admin.users.subtitle', 'Gérez tous les utilisateurs de la plateforme')}
+          </p>
+        </div>
+        <div className="flex items-center space-x-4 mt-4 sm:mt-0">
+          <button
+            onClick={fetchUsers}
+            disabled={isLoading}
+            className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <FiRefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
+            <span>{t('common.refresh', 'Actualiser')}</span>
+          </button>
+          <button
+            onClick={handleAddUser}
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+          >
+            <FiPlus size={16} />
+            <span>{t('admin.users.add_user', 'Ajouter Utilisateur')}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title={t('admin.users.total_users', 'Total Utilisateurs')}
+          value={stats.totalUsers}
+          icon={FiUsers}
+          color="blue"
+        />
+        <StatCard
+          title={t('admin.users.active_users', 'Utilisateurs Actifs')}
+          value={stats.activeUsers}
+          percentage={stats.activePercentage}
+          icon={FiCheckCircle}
+          color="green"
+        />
+        <StatCard
+          title={t('admin.users.pending_users', 'En Attente')}
+          value={stats.pendingUsers}
+          icon={FiClock}
+          color="orange"
+        />
+        <StatCard
+          title={t('admin.users.clients', 'Clients')}
+          value={stats.clients}
+          icon={FiUser}
+          color="purple"
+        />
+      </div>
+
+      {/* Role Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {t('admin.users.role_distribution', 'Répartition par Rôle')}
+          </h3>
+          <div className="space-y-4">
+            <RoleStat label="Clients" value={stats.clients} total={stats.totalUsers} color="blue" />
+            <RoleStat label="Restaurants" value={stats.restaurants} total={stats.totalUsers} color="green" />
+            <RoleStat label="Livreurs" value={stats.deliveryAgents} total={stats.totalUsers} color="orange" />
+            <RoleStat label="Support" value={stats.supportAgents} total={stats.totalUsers} color="purple" />
+          </div>
+        </div>
+        
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+            {t('admin.users.quick_actions', 'Actions Rapides')}
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <QuickActionButton
+              icon={FiUserPlus}
+              label={t('admin.users.add_user', 'Ajouter Utilisateur')}
+              onClick={handleAddUser}
+              color="blue"
+            />
+            <QuickActionButton
+              icon={FiDownload}
+              label={t('admin.users.export_csv', 'Exporter CSV')}
+              onClick={exportToCSV}
+              color="green"
+            />
+            <QuickActionButton
+              icon={FiBarChart2}
+              label={t('admin.users.statistics', 'Statistiques')}
+              onClick={() => {}}
+              color="purple"
+            />
+            <QuickActionButton
+              icon={FiSettings}
+              label={t('admin.users.settings', 'Paramètres')}
+              onClick={() => {}}
+              color="orange"
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Offline Indicator */}
       <AnimatePresence>
         {!isOnline && (
@@ -351,7 +504,7 @@ const UserListPage = () => {
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -50 }}
-            className="fixed top-0 left-0 right-0 z-50 bg-red-500 text-white px-4 py-3 text-center shadow-lg"
+            className="bg-red-500 text-white px-4 py-3 rounded-lg shadow-lg"
           >
             <div className="flex items-center justify-center space-x-2">
               <FiWifiOff size={20} />
@@ -365,24 +518,26 @@ const UserListPage = () => {
       <NotificationComponent notification={notification} onClose={hideNotification} />
 
       {/* Main User List Component */}
-      <UserListMain
-        users={users}
-        filteredUsers={filteredUsers}
-        searchTerm={searchTerm}
-        setSearchTerm={setSearchTerm}
-        selectedRole={selectedRole}
-        setSelectedRole={setSelectedRole}
-        selectedStatus={selectedStatus}
-        setSelectedStatus={setSelectedStatus}
-        isLoading={isLoading}
-        fetchUsers={fetchUsers}
-        currentPage={currentPage}
-        setCurrentPage={setCurrentPage}
-        usersPerPage={usersPerPage}
-        onUserAction={handleUserAction}
-        onExportCSV={exportToCSV}
-        onAddUser={handleAddUser}
-      />
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl">
+        <UserListMain
+          users={users}
+          filteredUsers={filteredUsers}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          selectedRole={selectedRole}
+          setSelectedRole={setSelectedRole}
+          selectedStatus={selectedStatus}
+          setSelectedStatus={setSelectedStatus}
+          isLoading={isLoading}
+          fetchUsers={fetchUsers}
+          currentPage={currentPage}
+          setCurrentPage={setCurrentPage}
+          usersPerPage={usersPerPage}
+          onUserAction={handleUserAction}
+          onExportCSV={exportToCSV}
+          onAddUser={handleAddUser}
+        />
+      </div>
 
       {/* User Form Modal */}
       <UserFormPage
@@ -415,7 +570,83 @@ const UserListPage = () => {
           setIsDocumentModalOpen(true);
         }}
       />
-    </>
+    </div>
+  );
+};
+
+// Stat Card Component
+const StatCard = ({ title, value, percentage, icon: Icon, color }) => {
+  const colorClasses = {
+    blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
+    green: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',
+    purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400',
+    orange: 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400',
+    red: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+          {percentage !== undefined && (
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{percentage}%</p>
+          )}
+        </div>
+        <div className={`p-3 rounded-xl ${colorClasses[color]}`}>
+          <Icon size={24} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Role Stat Component
+const RoleStat = ({ label, value, total, color }) => {
+  const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+  const colorClasses = {
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    orange: 'bg-orange-500',
+    purple: 'bg-purple-500'
+  };
+
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{label}</span>
+      <div className="flex items-center space-x-3">
+        <div className="w-24 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div 
+            className={`h-2 rounded-full ${colorClasses[color]}`}
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        <span className="text-sm font-medium text-gray-900 dark:text-white w-8 text-right">
+          {value}
+        </span>
+      </div>
+    </div>
+  );
+};
+
+// Quick Action Button Component
+const QuickActionButton = ({ icon: Icon, label, onClick, color }) => {
+  const colorClasses = {
+    blue: 'bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40',
+    green: 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/20 dark:text-green-400 dark:hover:bg-green-900/40',
+    orange: 'bg-orange-50 text-orange-600 hover:bg-orange-100 dark:bg-orange-900/20 dark:text-orange-400 dark:hover:bg-orange-900/40',
+    purple: 'bg-purple-50 text-purple-600 hover:bg-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:hover:bg-purple-900/40'
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`flex flex-col items-center justify-center p-4 rounded-xl transition-all duration-200 ${colorClasses[color]}`}
+    >
+      <Icon size={24} className="mb-2" />
+      <span className="text-sm font-medium text-center">{label}</span>
+    </button>
   );
 };
 

@@ -11,7 +11,15 @@ import {
   FiTrendingDown,
   FiActivity,
   FiCalendar,
-  FiMapPin
+  FiMapPin,
+  FiRefreshCw,
+  FiAlertCircle,
+  FiCheckCircle,
+  FiBarChart2,
+  FiPieChart,
+  FiTarget,
+  FiAward,
+  FiZap
 } from 'react-icons/fi';
 import { HiOutlineMoon, HiOutlineSun } from 'react-icons/hi';
 import { 
@@ -35,17 +43,17 @@ import { useTranslation } from 'react-i18next';
 import { adminRestaurantContext, registerRestaurantContext } from './Restaurants/RestaurantsList';
 import { OrderContext } from '../Restaurants/command/restaurant_command';
 
-const AdminDashboard = () => {
-  // Use the translation hook instead of a simple function
-  // const { t, i18n } = useTranslation();
-  // const [darkMode, setDarkMode] = useState(false);
-  // const [currentTime, setCurrentTime] = useState(new Date());
-  // const [isLoading, setIsLoading] = useState(true);
+// Constants
+const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
-  // États pour la gestion de l'interface
+const AdminDashboard = () => {
+  const { t } = useTranslation();
+  
+  // States
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isLoading, setIsLoading] = useState(true);
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Safe context usage with error handling
   const listOfRestaurants = useContext(adminRestaurantContext) || [];
@@ -59,13 +67,7 @@ const AdminDashboard = () => {
     }
   }, [listOfRestaurants, listOfOrders, listOfRegistersRestaurants]);
 
-  // Filtrage des restaurants actifs et vérifiés
-  
-  // const listOfRestaurant = listOfRestaurants.filter(restaurant => restaurant.status === "active"
-
-  //   && restaurant.verificationStatus === "verified"
-  // )
-
+  // Filtered restaurants
   const listOfRestaurant = useMemo(() => 
     listOfRestaurants?.filter(restaurant => 
       restaurant.status === "active" && restaurant.verificationStatus === "verified"
@@ -73,10 +75,7 @@ const AdminDashboard = () => {
     [listOfRestaurants]
   );
 
-
-
-//   //  data from the restaurantList so as to calculate the number of order we have
-
+  // Statistics functions with error handling
   const statsTotalOrdersRestaurant = () => {
     try {
       const listOfOrders = listOfRestaurant.map(restaurant => restaurant.orders || 0);
@@ -86,9 +85,7 @@ const AdminDashboard = () => {
       console.warn('Error calculating total orders:', error);
       return 0;
     }
-  }
-
-//   // to calculate the number of restaurant we have
+  };
 
   const statsNumberOfRestaurant = () => {
     try {
@@ -97,9 +94,7 @@ const AdminDashboard = () => {
       console.warn('Error calculating number of restaurants:', error);
       return 0;
     }
-  }
-
-//   // to calculate the total revenue from the restaurant 
+  };
 
   const statsTotalRevenueRestaurant = () => {
     try {
@@ -110,9 +105,7 @@ const AdminDashboard = () => {
       console.warn('Error calculating total revenue:', error);
       return 0;
     }
-  }
-
-//   // to classify each restaurant in African , European , Asian or other food 
+  };
 
   const statsRestaurantsCategorie = () => {
     try {
@@ -133,10 +126,7 @@ const AdminDashboard = () => {
       console.warn('Error calculating restaurant categories:', error);
       return [];
     }
-  }
-
-
-//   // TO calculate the average delivery Time 
+  };
 
   const statsDeliveryTime = () => {
     try {
@@ -147,9 +137,7 @@ const AdminDashboard = () => {
       console.warn('Error calculating delivery time:', error);
       return '0.00';
     }
-  }
-
-//   // To calculate the pending deliveries 
+  };
 
   const statsPendingDeliveries = () => {
     try {
@@ -159,9 +147,7 @@ const AdminDashboard = () => {
       console.warn('Error calculating pending deliveries:', error);
       return 0;
     }
-  }
-
-//   // To calculate the Time Ago 
+  };
 
   function timeAgo(createdAt) {
     try {
@@ -175,9 +161,6 @@ const AdminDashboard = () => {
     }
   }
 
-//   // To calculate how many order has been recently order 
-
-
   const newOrderActivity = () => {
     try {
       const listOfNewOrder = listOfOrders.filter(order => order.status === "new");
@@ -190,236 +173,76 @@ const AdminDashboard = () => {
       console.warn('Error calculating new order activity:', error);
       return [];
     }
-  }
-
-//   // To calculate how many restaurants have been created recently 
-
+  };
 
   const newRestaurants = () => {
     try {
       const finalList = listOfRegistersRestaurants.filter(restaurant => {
-        return timeAgo(restaurant.createdAt) < 10;
+        const createdAt = new Date(restaurant.createdAt);
+        const now = new Date();
+        const diffInHours = (now - createdAt) / (1000 * 60 * 60);
+        return diffInHours <= 24;
       });
       
-      const listRegister = finalList.map(restaurant => ({...restaurant, 
-        time :  timeAgo(restaurant.createdAt) 
+      return finalList.map(restaurant => ({
+        ...restaurant,
+        type: "restaurant",
+        time: timeAgo(restaurant.createdAt)
       }));
-      return listRegister;
     } catch (error) {
       console.warn('Error calculating new restaurants:', error);
       return [];
     }
-  } 
-
-  // To combine the different recenty activity 
-
-  // const combineRecentActivity = () => {
-
-  //   const 
-  // }
-
-  //  // Calcul du nombre total de commandes
-  // const statsTotalOrdersRestaurant = useMemo(() => {
-  //   if (!listOfRestaurant.length) return 0;
-  //   const listOfOrders = listOfRestaurant.map(restaurant => restaurant.orders || 0);
-  //   return listOfOrders.reduce((acc, order) => acc + order, 0);
-  // }, [listOfRestaurant]);
-
-  // // Calcul du nombre de restaurants
-  // const statsNumberOfRestaurant = useMemo(() => 
-  //   listOfRestaurant.length, 
-  //   [listOfRestaurant]
-  // );
-
-  // // Calcul du chiffre d'affaires total
-  // const statsTotalRevenueRestaurant = useMemo(() => {
-  //   if (!listOfRestaurant.length) return 0;
-  //   const listOfRevenue = listOfRestaurant.map(restaurant => restaurant.revenue || 0);
-  //   return listOfRevenue.reduce((acc, revenue) => acc + revenue, 0);
-  // }, [listOfRestaurant]);
-
-  // // Classification des restaurants par catégorie
-  // const statsRestaurantsCategorie = useMemo(() => {
-  //   if (!listOfRestaurant.length) return [];
-    
-  //   const categories = {
-  //     'Africain': listOfRestaurant.filter(restaurant => restaurant.categorie === "African").length,
-  //     'Fast Food': listOfRestaurant.filter(restaurant => restaurant.categorie === "Fast Food").length,
-  //     'Asiatique': listOfRestaurant.filter(restaurant => restaurant.categorie === "Asian").length,
-  //     'Européen': listOfRestaurant.filter(restaurant => restaurant.categorie === "European").length,
-  //     'Autres': listOfRestaurant.filter(restaurant => restaurant.categorie === "Others").length,
-  //   };
-
-  //   return Object.entries(categories).map(([name, value]) => ({ name, value }));
-  // }, [listOfRestaurant]);
-
-  // // Calcul du temps de livraison moyen
-  // const statsDeliveryTime = useMemo(() => {
-  //   if (!listOfRestaurant.length) return 0;
-  //   const listOfDeliveryTime = listOfRestaurant.map(restaurant => restaurant.avgDeliveryTime || 0);
-  //   const avgDeliveryTime = listOfDeliveryTime.reduce((acc, deliveryTime) => acc + deliveryTime, 0);
-  //   return (avgDeliveryTime / listOfRestaurant.length).toFixed(1);
-  // }, [listOfRestaurant]);
-
-  // // Calcul des livraisons en attente
-  // const statsPendingDeliveries = useMemo(() => {
-  //   if (!listOfOrders?.length) return 0;
-  //   return listOfOrders.filter(order => order.status === "ready").length;
-  // }, [listOfOrders]);
-
-  // // Fonction pour calculer le temps écoulé
-  // const timeAgo = (createdAt) => {
-  //   const now = new Date();
-  //   const seconds = Math.floor((now - createdAt) / 1000);
-  //   return Math.floor(seconds / 60);
-  // };
-
-  // // Calcul des nouvelles commandes
-  // const newOrderActivity = useMemo(() => {
-  //   if (!listOfOrders?.length) return [];
-  //   const listOfNewOrder = listOfOrders.filter(order => order.status === "new");
-  //   return listOfNewOrder.map(order => ({
-  //     ...order,
-  //     type: "order",
-  //     time: timeAgo(order.createdAt)
-  //   }));
-  // }, [listOfOrders]);
-
-  // // Calcul des nouveaux restaurants
-  // const newRestaurants = useMemo(() => {
-  //   if (!listOfRegistersRestaurants?.length) return [];
-  //   const finalList = listOfRegistersRestaurants.filter(restaurant => 
-  //     timeAgo(restaurant.createdAt) < 10
-  //   );
-  //   return finalList.map(restaurant => ({
-  //     ...restaurant,
-  //     time: timeAgo(restaurant.createdAt)
-  //   }));
-  // }, [listOfRegistersRestaurants]);
-
-
-
-  // // Sample data for the dashboard
-  // const stats = {
-  //   totalOrders: 1245,
-  //   activeRestaurants: 87,
-  //   registeredUsers: 5432,
-  //   pendingDeliveries: 23,
-  //   revenue: 12560000,
-  //   avgDeliveryTime: 28,
-  // };
-
-  // Sample data for monthly orders chart
-  // const monthlyOrdersData = [
-  //   { name: t('Jan'), orders: 450 },
-  //   { name: t('Feb'), orders: 520 },
-  //   { name: t('Mar'), orders: 610 },
-  //   { name: t('Apr'), orders: 550 },
-  //   { name: t('May'), orders: 680 },
-  //   { name: t('Jun'), orders: 720 },
-  //   { name: t('Jul'), orders: 830 },
-  //   { name: t('Aug'), orders: 790 },
-  //   { name: t('Sep'), orders: 850 },
-  //   { name: t('Oct'), orders: 940 },
-  //   { name: t('Nov'), orders: 1100 },
-  //   { name: t('Dec'), orders: 1245 },
-  // ];
-
-  // // Sample data for restaurant categories chart
-  // const restaurantCategoriesData = [
-  //   { name: t('African'), value: 35 },
-  //   { name: t('Fast Food'), value: 25 },
-  //   { name: t('Asian'), value: 15 },
-  //   { name: t('European'), value: 12 },
-  //   { name: t('Others'), value: 10 },
-  // ];
-
-  // // Colors for the pie chart
-  // // const COLORS = ['#4ade80', '#fbbf24', '#f87171', '#60a5fa', '#c084fc'];
-
-
-   // Couleurs pour les graphiques
-  const COLORS = ['#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6'];
-  const GRADIENT_COLORS = {
-    primary: ['#10B981', '#059669'],
-    secondary: ['#F59E0B', '#D97706'],
-    tertiary: ['#EF4444', '#DC2626'],
-    quaternary: ['#3B82F6', '#2563EB'],
-    quinary: ['#8B5CF6', '#7C3AED']
   };
 
+  // Mock data for charts
+  const weeklyRevenueData = [
+    { day: 'Lun', revenue: 45000, orders: 23 },
+    { day: 'Mar', revenue: 52000, orders: 28 },
+    { day: 'Mer', revenue: 48000, orders: 25 },
+    { day: 'Jeu', revenue: 61000, orders: 32 },
+    { day: 'Ven', revenue: 75000, orders: 41 },
+    { day: 'Sam', revenue: 89000, orders: 52 },
+    { day: 'Dim', revenue: 67000, orders: 38 }
+  ];
 
-  // // // Format currency for Cameroon (FCFA)
-  // // const formatCurrency = (amount) => {
-  // //   return new Intl.NumberFormat('fr-FR', {
-  // //     style: 'currency',
-  // //     currency: 'XAF',
-  // //     minimumFractionDigits: 0,
-  // //   }).format(amount);
-  // // };
+  const orderTrendData = [
+    { day: 'Lun', orders: 23, delivered: 20, pending: 3 },
+    { day: 'Mar', orders: 28, delivered: 25, pending: 3 },
+    { day: 'Mer', orders: 25, delivered: 22, pending: 3 },
+    { day: 'Jeu', orders: 32, delivered: 28, pending: 4 },
+    { day: 'Ven', orders: 41, delivered: 35, pending: 6 },
+    { day: 'Sam', orders: 52, delivered: 45, pending: 7 },
+    { day: 'Dim', orders: 38, delivered: 32, pending: 6 }
+  ];
 
-   // Formatage de la devise (FCFA)
+  // Utility functions
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('fr-FR', {
       style: 'currency',
       currency: 'XAF',
-      minimumFractionDigits: 0,
+      notation: 'compact',
+      compactDisplay: 'short'
     }).format(amount);
   };
 
-
-   // Formatage des pourcentages
   const formatPercentage = (value) => {
-    return `${value > 0 ? '+' : ''}${value}%`;
+    return `${value}%`;
   };
 
-
-  // // Sample activity data
-  // const recentActivity = [
-  //   { id: 1, type: 'order', orderNumber: 1001, restaurant: 'Chez Paul', customer: 'Emma Mensah', time: 10 },
-  //   { id: 2, type: 'order', orderNumber: 1002, restaurant: 'Burger Palace', customer: 'John Doe', time: 25 },
-  //   { id: 3, type: 'restaurant', name: 'Asian Fusion', action: 'added', time: 40 },
-  //   { id: 4, type: 'order', orderNumber: 1003, restaurant: 'Pizza Corner', customer: 'Marie Ateba', time: 55 },
-  //   { id: 5, type: 'user', name: 'Samuel Etoo', action: 'registered', time: 90 },
-  // ];
-
-
-   // Données pour les graphiques
-  const monthlyOrdersData = [
-    { name: 'Jan', orders: 450, revenue: 8500000 },
-    { name: 'Fév', orders: 520, revenue: 9200000 },
-    { name: 'Mar', orders: 610, revenue: 11400000 },
-    { name: 'Avr', orders: 550, revenue: 10100000 },
-    { name: 'Mai', orders: 680, revenue: 12800000 },
-    { name: 'Jun', orders: 720, revenue: 13600000 },
-    { name: 'Jul', orders: 830, revenue: 15700000 },
-    { name: 'Aoû', orders: 790, revenue: 14900000 },
-    { name: 'Sep', orders: 850, revenue: 16100000 },
-    { name: 'Oct', orders: 940, revenue: 17800000 },
-    { name: 'Nov', orders: 1100, revenue: 20900000 },
-    { name: 'Déc', orders: 1245, revenue: 23600000 },
-  ];
-
-  const weeklyRevenueData = [
-    { day: 'Lun', revenue: 1800000, orders: 120 },
-    { day: 'Mar', revenue: 2200000, orders: 145 },
-    { day: 'Mer', revenue: 1900000, orders: 132 },
-    { day: 'Jeu', revenue: 2400000, orders: 158 },
-    { day: 'Ven', revenue: 3100000, orders: 198 },
-    { day: 'Sam', revenue: 3800000, orders: 245 },
-    { day: 'Dim', revenue: 2700000, orders: 175 },
-  ];
-
-  // Tooltip personnalisé pour les graphiques
+  // Custom tooltip component
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-200 mb-2">{label}</p>
+          <p className="text-sm font-medium text-gray-900 dark:text-white mb-2">{label}</p>
           {payload.map((entry, index) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {entry.name}: {entry.name === 'Revenue' || entry.name === 'Chiffre d\'affaires' ? 
-                formatCurrency(entry.value) : entry.value}
+            <p key={index} className="text-sm text-gray-600 dark:text-gray-300">
+              <span 
+                className="inline-block w-3 h-3 rounded-full mr-2"
+                style={{ backgroundColor: entry.color }}
+              />
+              {entry.name}: {entry.value}
             </p>
           ))}
         </div>
@@ -428,101 +251,24 @@ const AdminDashboard = () => {
     return null;
   };
 
-  // Effet pour la mise à jour du temps
-   useEffect(() => {
+  // Handle refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    // Simulate API refresh
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    setIsRefreshing(false);
+  };
+
+  // Initialize dashboard
+  useEffect(() => {
     const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    const loadingTimer = setTimeout(() => setIsLoading(false), 1200);
+    const loadingTimer = setTimeout(() => setIsLoading(false), 1000);
     
     return () => {
       clearInterval(timer);
       clearTimeout(loadingTimer);
     };
   }, []);
-
-  // // Load theme and language from localStorage on initial render
-  // useEffect(() => {
-  //   // Load theme preference
-  //   const savedTheme = localStorage.getItem('adminTheme');
-  //   if (savedTheme) {
-  //     setDarkMode(savedTheme === 'dark');
-  //   } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-  //     setDarkMode(true);
-  //     localStorage.setItem('adminTheme', 'dark');
-  //   }
-
-  //   // Load language preference
-  //   const savedLanguage = localStorage.getItem('adminLanguage');
-  //   if (savedLanguage) {
-  //     i18n.changeLanguage(savedLanguage);
-  //   }
-    
-  //   // Update time every minute
-  //   const timer = setInterval(() => setCurrentTime(new Date()), 60000);
-    
-  //   // Listen for system theme changes
-  //   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  //   const handleChange = (e) => {
-  //     const newMode = e.matches;
-  //     setDarkMode(newMode);
-  //     localStorage.setItem('adminTheme', newMode ? 'dark' : 'light');
-  //   };
-    
-  //   if (mediaQuery.addEventListener) {
-  //     mediaQuery.addEventListener('change', handleChange);
-  //   } else {
-  //     // Fallback for older browsers
-  //     mediaQuery.addListener(handleChange);
-  //   }
-    
-  //   // Simulate data loading
-  //   const loadingTimer = setTimeout(() => {
-  //     setIsLoading(false);
-  //   }, 1000);
-    
-  //   return () => {
-  //     clearInterval(timer);
-  //     clearTimeout(loadingTimer);
-  //     if (mediaQuery.removeEventListener) {
-  //       mediaQuery.removeEventListener('change', handleChange);
-  //     } else {
-  //       mediaQuery.removeListener(handleChange);
-  //     }
-  //   };
-  // }, [i18n]);
-
-  // // Update theme when darkMode changes
-  // useEffect(() => {
-  //   if (darkMode) {
-  //     document.documentElement.classList.add('dark');
-  //   } else {
-  //     document.documentElement.classList.remove('dark');
-  //   }
-  //   localStorage.setItem('adminTheme', darkMode ? 'dark' : 'light');
-  // }, [darkMode]);
-
-  // // Toggle theme function
-  // const toggleTheme = () => {
-  //   setDarkMode(!darkMode);
-  // };
-
-  // // Handle language change
-  // const handleLanguageChange = (e) => {
-  //   const newLanguage = e.target.value;
-  //   i18n.changeLanguage(newLanguage);
-  //   localStorage.setItem('adminLanguage', newLanguage);
-  // };
-
-  // // Custom tooltip for the charts
-  // const CustomTooltip = ({ active, payload, label }) => {
-  //   if (active && payload && payload.length) {
-  //     return (
-  //       <div className="bg-white dark:bg-gray-800 p-2 border border-gray-200 dark:border-gray-700 rounded shadow-md">
-  //         <p className="text-sm text-gray-900 dark:text-gray-200">{`${label}: ${payload[0].value}`}</p>
-  //       </div>
-  //     );
-  //   }
-  //   return null;
-  // };
 
   // Loading state
   if (isLoading) {
@@ -537,207 +283,92 @@ const AdminDashboard = () => {
       </div>
     );
   }
-return (
-    <div className="container mx-auto px-4 py-6 space-y-8">
-      {/* En-tête avec informations temporelles */}
-      <div className="bg-gradient-to-r from-emerald-50 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl p-6 shadow-sm">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Tableau de Bord Administrateur
-            </h1>
-            <div className="flex items-center text-gray-600 dark:text-gray-300">
-              <FiClock className="mr-2 text-emerald-600" size={18} />
-              <span className="text-lg">
-                {currentTime.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                {' - '}
-                {currentTime.toLocaleDateString('fr-FR', { 
-                  weekday: 'long', 
-                  day: 'numeric', 
-                  month: 'long', 
-                  year: 'numeric' 
-                })}
-              </span>
-            </div>
+
+  return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+            {t('admin.dashboard.title', 'Tableau de Bord Administrateur')}
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 mt-1">
+            {t('admin.dashboard.subtitle', 'Vue d\'ensemble de votre plateforme')}
+          </p>
+        </div>
+        <div className="flex items-center space-x-4 mt-4 sm:mt-0">
+          <div className="flex items-center space-x-2 text-sm text-gray-500 dark:text-gray-400">
+            <FiClock size={16} />
+            <span>{currentTime.toLocaleTimeString()}</span>
           </div>
-          
-          <div className="flex items-center space-x-3 mt-4 md:mt-0">
-            <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg shadow-sm">
-              <FiCalendar className="text-emerald-600" size={16} />
-              <select 
-                className="bg-transparent text-sm font-medium focus:outline-none"
-                value={selectedTimeRange}
-                onChange={(e) => setSelectedTimeRange(e.target.value)}
-              >
-                <option value="7d">7 derniers jours</option>
-                <option value="30d">30 derniers jours</option>
-                <option value="3m">3 derniers mois</option>
-                <option value="1y">Cette année</option>
-              </select>
-            </div>
-          </div>
+          <button
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <FiRefreshCw size={16} className={isRefreshing ? 'animate-spin' : ''} />
+            <span>{t('common.refresh', 'Actualiser')}</span>
+          </button>
         </div>
       </div>
-      
-      {/* Cartes de statistiques principales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Total des commandes */}
-        <div className="group hover:scale-105 transition-all duration-300">
-          <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-emerald-100 text-sm font-medium">Total des Commandes</p>
-                  <p className="text-4xl font-bold mt-1">{statsTotalOrdersRestaurant()}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
-                  <FiShoppingCart size={24} />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <FiTrendingUp size={16} className="text-emerald-200" />
-                <span className="text-emerald-100 text-sm">+12% ce mois-ci</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Restaurants actifs */}
-        <div className="group hover:scale-105 transition-all duration-300">
-          <div className="bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-amber-100 text-sm font-medium">Restaurants Actifs</p>
-                  <p className="text-4xl font-bold mt-1">{statsNumberOfRestaurant()}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
-                  <FiStar size={24} />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <FiTrendingUp size={16} className="text-amber-200" />
-                <span className="text-amber-100 text-sm">+5 nouveaux ce mois</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Chiffre d'affaires */}
-        <div className="group hover:scale-105 transition-all duration-300">
-          <div className="bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-rose-100 text-sm font-medium">Chiffre d'Affaires</p>
-                  <p className="text-3xl font-bold mt-1">{formatCurrency(statsTotalRevenueRestaurant())}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
-                  <FiDollarSign size={24} />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <FiTrendingUp size={16} className="text-rose-200" />
-                <span className="text-rose-100 text-sm">+18% ce mois-ci</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Utilisateurs enregistrés */}
-        <div className="group hover:scale-105 transition-all duration-300">
-          <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-blue-100 text-sm font-medium">Utilisateurs Enregistrés</p>
-                  <p className="text-4xl font-bold mt-1">5,432</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
-                  <FiUsers size={24} />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <FiTrendingUp size={16} className="text-blue-200" />
-                <span className="text-blue-100 text-sm">+324 nouveaux utilisateurs</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Temps de livraison moyen */}
-        <div className="group hover:scale-105 transition-all duration-300">
-          <div className="bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-purple-100 text-sm font-medium">Temps de Livraison Moyen</p>
-                  <p className="text-4xl font-bold mt-1">{statsDeliveryTime()} <span className="text-2xl">min</span></p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
-                  <FiClock size={24} />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <FiTrendingDown size={16} className="text-purple-200" />
-                <span className="text-purple-100 text-sm">-2 min ce mois-ci</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        {/* Livraisons en attente */}
-        <div className="group hover:scale-105 transition-all duration-300">
-          <div className="bg-gradient-to-br from-cyan-500 to-teal-600 rounded-2xl shadow-xl p-6 text-white relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-white/10 rounded-full -translate-y-12 translate-x-12"></div>
-            <div className="relative z-10">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <p className="text-cyan-100 text-sm font-medium">Livraisons en Attente</p>
-                  <p className="text-4xl font-bold mt-1">{statsPendingDeliveries()}</p>
-                </div>
-                <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm">
-                  <FiTruck size={24} />
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <FiTrendingDown size={16} className="text-cyan-200" />
-                <span className="text-cyan-100 text-sm">-5 depuis hier</span>
-              </div>
-            </div>
-          </div>
-        </div>
+
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <StatCard
+          title={t('admin.stats.total_orders', 'Total Commandes')}
+          value={statsTotalOrdersRestaurant()}
+          change="+12%"
+          positive={true}
+          icon={FiShoppingCart}
+          color="blue"
+        />
+        <StatCard
+          title={t('admin.stats.total_revenue', 'Chiffre d\'Affaires')}
+          value={formatCurrency(statsTotalRevenueRestaurant())}
+          change="+8%"
+          positive={true}
+          icon={FiDollarSign}
+          color="green"
+        />
+        <StatCard
+          title={t('admin.stats.restaurants', 'Restaurants')}
+          value={statsNumberOfRestaurant()}
+          change="+3"
+          positive={true}
+          icon={FiUsers}
+          color="purple"
+        />
+        <StatCard
+          title={t('admin.stats.pending_deliveries', 'Livraisons en Attente')}
+          value={statsPendingDeliveries()}
+          change="-2"
+          positive={false}
+          icon={FiTruck}
+          color="orange"
+        />
       </div>
-      
-      {/* Section des graphiques */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Graphique des commandes mensuelles */}
+
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Order Trends Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Commandes Mensuelles</h3>
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                <span className="text-sm text-gray-600 dark:text-gray-400">Commandes</span>
-              </div>
-            </div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              {t('admin.charts.order_trends', 'Évolution des Commandes')}
+            </h3>
+            <FiBarChart2 className="text-gray-400" size={20} />
           </div>
           <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyOrdersData}>
+              <AreaChart data={orderTrendData}>
                 <defs>
                   <linearGradient id="orderGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
+                    <stop offset="5%" stopColor="#3B82F6" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#3B82F6" stopOpacity={0.1}/>
                   </linearGradient>
                 </defs>
                 <XAxis 
-                  dataKey="name" 
+                  dataKey="day" 
                   stroke="#6B7280"
                   fontSize={12}
                   tickLine={false}
@@ -750,10 +381,10 @@ return (
                   axisLine={false}
                 />
                 <Tooltip content={<CustomTooltip />} />
-                <Area 
-                  type="monotone" 
-                  dataKey="orders" 
-                  stroke="#10B981"
+                <Area
+                  type="monotone"
+                  dataKey="orders"
+                  stroke="#3B82F6"
                   strokeWidth={3}
                   fill="url(#orderGradient)" 
                 />
@@ -762,11 +393,13 @@ return (
           </div>
         </div>
         
-        {/* Graphique des catégories de restaurants */}
+        {/* Restaurant Categories Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Restaurants par Catégorie</h3>
-            <FiActivity className="text-gray-400" size={20} />
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+              {t('admin.charts.restaurant_categories', 'Restaurants par Catégorie')}
+            </h3>
+            <FiPieChart className="text-gray-400" size={20} />
           </div>
           <div className="h-80">
             <div className="h-64">
@@ -806,18 +439,24 @@ return (
         </div>
       </div>
       
-      {/* Graphique des revenus hebdomadaires */}
+      {/* Revenue Chart */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Évolution du Chiffre d'Affaires Hebdomadaire</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            {t('admin.charts.revenue_evolution', 'Évolution du Chiffre d\'Affaires Hebdomadaire')}
+          </h3>
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">
               <div className="w-3 h-3 bg-amber-500 rounded-full"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Chiffre d'affaires</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                {t('admin.charts.revenue', 'Chiffre d\'affaires')}
+              </span>
             </div>
             <div className="flex items-center space-x-1">
               <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-              <span className="text-sm text-gray-600 dark:text-gray-400">Commandes</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">
+                {t('admin.charts.orders', 'Commandes')}
+              </span>
             </div>
           </div>
         </div>
@@ -882,20 +521,26 @@ return (
         </div>
       </div>
       
-      {/* Activité récente */}
+      {/* Recent Activity */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-shadow duration-300">
         <div className="flex justify-between items-center mb-6">
-          <h3 className="text-xl font-bold text-gray-900 dark:text-white">Activité Récente</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+            {t('admin.activity.recent', 'Activité Récente')}
+          </h3>
           <div className="flex items-center space-x-2">
             <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-500 dark:text-gray-400">En temps réel</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">
+              {t('admin.activity.real_time', 'En temps réel')}
+            </span>
           </div>
         </div>
         <div className="space-y-4 max-h-96 overflow-y-auto">
           {[...newOrderActivity(), ...newRestaurants()].length === 0 ? (
             <div className="text-center py-8">
               <FiActivity className="mx-auto text-gray-300 dark:text-gray-600 mb-4" size={48} />
-              <p className="text-gray-500 dark:text-gray-400">Aucune activité récente</p>
+              <p className="text-gray-500 dark:text-gray-400">
+                {t('admin.activity.no_activity', 'Aucune activité récente')}
+              </p>
             </div>
           ) : (
             [...newOrderActivity(), ...newRestaurants()].map((activity, index) => (
@@ -912,8 +557,8 @@ return (
                     <div className="flex items-center justify-between">
                       <p className="text-sm font-semibold text-gray-900 dark:text-white">
                         {activity.type === 'order' 
-                          ? `Nouvelle commande #${activity.id}` 
-                          : `Nouveau restaurant: ${activity.name}`
+                          ? `${t('admin.activity.new_order', 'Nouvelle commande')} #${activity.id}` 
+                          : `${t('admin.activity.new_restaurant', 'Nouveau restaurant')}: ${activity.name}`
                         }
                       </p>
                       <div className="flex items-center space-x-2">
@@ -924,15 +569,17 @@ return (
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       {activity.type === 'order' 
-                        ? `${activity.restaurant || 'Restaurant'} - Livraison à ${activity.customerName || 'Client'}` 
-                        : 'Nouveau restaurant ajouté à la plateforme'
+                        ? `${activity.restaurant || 'Restaurant'} - ${t('admin.activity.delivery_to', 'Livraison à')} ${activity.customerName || 'Client'}` 
+                        : t('admin.activity.restaurant_added', 'Nouveau restaurant ajouté à la plateforme')
                       }
                     </p>
                     {activity.type === 'order' && (
                       <div className="flex items-center space-x-4 mt-2">
                         <div className="flex items-center space-x-1">
                           <FiMapPin size={12} className="text-gray-400" />
-                          <span className="text-xs text-gray-500">Zone de livraison</span>
+                          <span className="text-xs text-gray-500">
+                            {t('admin.activity.delivery_zone', 'Zone de livraison')}
+                          </span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <FiDollarSign size={12} className="text-gray-400" />
@@ -946,6 +593,39 @@ return (
             ))
           )}
         </div>
+      </div>
+    </div>
+  );
+};
+
+// Stat Card Component
+const StatCard = ({ title, value, change, positive, icon: Icon, color }) => {
+  const colorClasses = {
+    blue: 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400',
+    green: 'bg-green-50 text-green-600 dark:bg-green-900/20 dark:text-green-400',
+    purple: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400',
+    orange: 'bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400',
+    red: 'bg-red-50 text-red-600 dark:bg-red-900/20 dark:text-red-400'
+  };
+
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-gray-100 dark:border-gray-700">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+          <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{value}</p>
+        </div>
+        <div className={`p-3 rounded-xl ${colorClasses[color]}`}>
+          <Icon size={24} />
+        </div>
+      </div>
+      <div className="flex items-center mt-4">
+        <span className={`text-sm font-medium ${positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+          {change}
+        </span>
+        <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+          vs mois dernier
+        </span>
       </div>
     </div>
   );

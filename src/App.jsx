@@ -207,6 +207,30 @@ function App() {
                     </UserInformationProvider>
                   }
                 />
+                <Route
+                  path="/admin/dashboard"
+                  element={
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
+                        <AdminLayout>
+                          <AdminDashboard />
+                        </AdminLayout>
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
+                  }
+                />
+                <Route 
+                  path="/admin/users" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
+                        <AdminLayout>
+                          <UserListPage />
+                        </AdminLayout>
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
+                  } 
+                />
                 <Route 
                   path="/admin/user" 
                   element={
