@@ -309,8 +309,7 @@ export {
 
 // Export all helpers
 export {
-  firestoreHelpers,
-  messagingHelpers
+  // No named exports to avoid duplicates
 };
 
 // Default export

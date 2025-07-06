@@ -49,11 +49,9 @@ const AdminDashboard = () => {
 
 
    // Contextes pour les données
-  const listOfRestaurants = useContext(adminRestaurantContext);
-
-  const listOfOrders = useContext(OrderContext);
-
-  const listOfRegistersRestaurants = useContext(registerRestaurantContext);
+  const listOfRestaurants = useContext(adminRestaurantContext) || [];
+  const listOfOrders = useContext(OrderContext) || [];
+  const listOfRegistersRestaurants = useContext(registerRestaurantContext) || [];
 
  
  // Filtrage des restaurants actifs et vérifiés
