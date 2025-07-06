@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import AdminLayout from '../../../../layouts/admin_layout';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FiPackage,
@@ -550,804 +549,802 @@ const AdminOrdersPage = () => {
   );
 
   return (
-    <AdminLayout>
-      <div className="flex flex-col space-y-6 p-2 sm:p-4">
-        {/* Page Header avec animation améliorée */}
-        <motion.div 
-          className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-        >
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
-            <div className="flex items-center mb-4 lg:mb-0">
-              <motion.div 
-                className="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-xl shadow-lg mr-4"
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 300 }}
-              >
-                <FiPackage className="text-white" size={28} />
-              </motion.div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
-                  Gestion des Commandes
-                </h1>
-                <p className="text-gray-600 dark:text-gray-400 text-lg">
-                  Suivez et gérez toutes vos commandes en temps réel
-                </p>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <motion.button 
-                className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl flex items-center font-medium shadow-lg transition-all duration-300 transform hover:scale-105"
-                onClick={exportToCSV}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FiDownload className="mr-2" size={18} />
-                Exporter CSV
-              </motion.button>
-              <motion.button 
-                className="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-700 dark:text-white rounded-xl flex items-center font-medium shadow-lg transition-all duration-300 transform hover:scale-105"
-                onClick={resetFilters}
-                whileHover={{ y: -2 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <FiRefreshCw className="mr-2" size={18} />
-                Réinitialiser
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Statistiques améliorées */}
-        <motion.div 
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2, staggerChildren: 0.1 }}
-        >
-          {[
-            { key: 'total', label: 'Total', value: statistics.total, icon: FiPackage, color: 'indigo', bgGradient: 'from-indigo-500 to-indigo-600' },
-            { key: 'pending', label: 'En attente', value: statistics.pending, icon: FiClock, color: 'yellow', bgGradient: 'from-yellow-500 to-yellow-600' },
-            { key: 'preparing', label: 'En préparation', value: statistics.preparing, icon: FiBriefcase, color: 'blue', bgGradient: 'from-blue-500 to-blue-600' },
-            { key: 'delivering', label: 'En livraison', value: statistics.delivering, icon: FiTruck, color: 'purple', bgGradient: 'from-purple-500 to-purple-600' },
-            { key: 'completed', label: 'Terminées', value: statistics.completed, icon: FiCheckCircle, color: 'green', bgGradient: 'from-green-500 to-green-600' },
-            { key: 'cancelled', label: 'Annulées', value: statistics.cancelled, icon: FiXCircle, color: 'red', bgGradient: 'from-red-500 to-red-600' }
-          ].map((stat, index) => (
-            <motion.div
-              key={stat.key}
-              className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 * index }}
-              whileHover={{ y: -4 }}
+    <div className="flex flex-col space-y-6 p-2 sm:p-4">
+      {/* Page Header avec animation améliorée */}
+      <motion.div 
+        className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+      >
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center">
+          <div className="flex items-center mb-4 lg:mb-0">
+            <motion.div 
+              className="bg-gradient-to-br from-green-500 to-green-600 p-3 rounded-xl shadow-lg mr-4"
+              whileHover={{ scale: 1.05 }}
+              transition={{ type: "spring", stiffness: 300 }}
             >
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
-                    {stat.label}
-                  </p>
-                  <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
-                    {stat.value}
-                  </h3>
-                </div>
-                <div className={`bg-gradient-to-br ${stat.bgGradient} p-3 rounded-xl shadow-lg`}>
-                  <stat.icon className="text-white" size={24} />
-                </div>
-              </div>
-              <div className="mt-3 flex items-center">
-                <FiTrendingUp className={`text-${stat.color}-500 mr-1`} size={14} />
-                <span className={`text-${stat.color}-600 dark:text-${stat.color}-400 text-sm font-medium`}>
-                  {stat.value > 0 ? '+' : ''}{stat.value}
-                </span>
-              </div>
+              <FiPackage className="text-white" size={28} />
             </motion.div>
-          ))}
-        </motion.div>
-
-        {/* Section des filtres améliorée */}
-        <motion.div 
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700"
-          initial={ { opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Recherche */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <FiSearch className="text-gray-400" size={18} />
-              </div>
-              <input
-                type="text"
-                className="pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium"
-                placeholder="Rechercher une commande..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            {/* Filtre par statut */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <FiFilter className="text-gray-400" size={18} />
-              </div>
-              <select
-                className="pl-12 pr-8 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium appearance-none bg-white dark:bg-gray-700"
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-              >
-                <option value="all">Tous les statuts</option>
-                <option value="pending">En attente</option>
-                <option value="preparing">En préparation</option>
-                <option value="delivering">En livraison</option>
-                <option value="completed">Terminées</option>
-                <option value="cancelled">Annulées</option>
-              </select>
-            </div>
-            
-            {/* Plage de dates */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <FiCalendar className="text-gray-400" size={18} />
-              </div>
-              <input
-                type="date"
-                className="pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium"
-                value={dateRange.start || ''}
-                onChange={(e) => handleDateRangeChange(e, 'start')}
-              />
-            </div>
-            
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                <FiCalendar className="text-gray-400" size={18} />
-              </div>
-              <input
-                type="date"
-                className="pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium"
-                value={dateRange.end || ''}
-                onChange={(e) => handleDateRangeChange(e, 'end')}
-              />
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Tableau des commandes amélioré */}
-        <motion.div 
-          className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        >
-          {isLoading ? (
-            <div className="p-12 flex flex-col items-center justify-center">
-              <motion.div 
-                className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full mb-4"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              />
-              <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">
-                Chargement des commandes...
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">
+                Gestion des Commandes
+              </h1>
+              <p className="text-gray-600 dark:text-gray-400 text-lg">
+                Suivez et gérez toutes vos commandes en temps réel
               </p>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
-                  <tr>
-                    {[
-                      { key: 'id', label: 'ID Commande' },
-                      { key: 'date', label: 'Date' },
-                      { key: 'customer', label: 'Client' },
-                      { key: 'restaurant', label: 'Restaurant' },
-                      { key: 'total', label: 'Total' },
-                      { key: 'status', label: 'Statut' },
-                      { key: 'actions', label: 'Actions' }
-                    ].map((column) => (
-                      <th 
-                        key={column.key}
-                        scope="col" 
-                        className={`px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider ${column.key !== 'actions' ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200' : ''}`}
-                        onClick={column.key !== 'actions' ? () => handleSort(column.key) : undefined}
-                      >
-                        <div className="flex items-center">
-                          {column.label}
-                          {sortBy === column.key && column.key !== 'actions' && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.5 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              transition={{ duration: 0.2 }}
-                            >
-                              {sortOrder === 'asc' ? 
-                                <FiChevronUp className="ml-2 text-green-600" size={16} /> : 
-                                <FiChevronDown className="ml-2 text-green-600" size={16} />
-                              }
-                            </motion.div>
-                          )}
-                        </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
-                  <AnimatePresence>
-                    {currentItems.length > 0 ? (
-                      currentItems.map((order, index) => (
-                        <React.Fragment key={order.id}>
-                          <motion.tr 
-                            className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 group"
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.3, delay: index * 0.05 }}
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <motion.button 
+              className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl flex items-center font-medium shadow-lg transition-all duration-300 transform hover:scale-105"
+              onClick={exportToCSV}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FiDownload className="mr-2" size={18} />
+              Exporter CSV
+            </motion.button>
+            <motion.button 
+              className="px-6 py-3 bg-gradient-to-r from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-600 hover:from-gray-200 hover:to-gray-300 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-700 dark:text-white rounded-xl flex items-center font-medium shadow-lg transition-all duration-300 transform hover:scale-105"
+              onClick={resetFilters}
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <FiRefreshCw className="mr-2" size={18} />
+              Réinitialiser
+            </motion.button>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Statistiques améliorées */}
+      <motion.div 
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.6, delay: 0.2, staggerChildren: 0.1 }}
+      >
+        {[
+          { key: 'total', label: 'Total', value: statistics.total, icon: FiPackage, color: 'indigo', bgGradient: 'from-indigo-500 to-indigo-600' },
+          { key: 'pending', label: 'En attente', value: statistics.pending, icon: FiClock, color: 'yellow', bgGradient: 'from-yellow-500 to-yellow-600' },
+          { key: 'preparing', label: 'En préparation', value: statistics.preparing, icon: FiBriefcase, color: 'blue', bgGradient: 'from-blue-500 to-blue-600' },
+          { key: 'delivering', label: 'En livraison', value: statistics.delivering, icon: FiTruck, color: 'purple', bgGradient: 'from-purple-500 to-purple-600' },
+          { key: 'completed', label: 'Terminées', value: statistics.completed, icon: FiCheckCircle, color: 'green', bgGradient: 'from-green-500 to-green-600' },
+          { key: 'cancelled', label: 'Annulées', value: statistics.cancelled, icon: FiXCircle, color: 'red', bgGradient: 'from-red-500 to-red-600' }
+        ].map((stat, index) => (
+          <motion.div
+            key={stat.key}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 * index }}
+            whileHover={{ y: -4 }}
+          >
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-gray-600 dark:text-gray-400 text-sm font-medium mb-1">
+                  {stat.label}
+                </p>
+                <h3 className="text-3xl font-bold text-gray-900 dark:text-white">
+                  {stat.value}
+                </h3>
+              </div>
+              <div className={`bg-gradient-to-br ${stat.bgGradient} p-3 rounded-xl shadow-lg`}>
+                <stat.icon className="text-white" size={24} />
+              </div>
+            </div>
+            <div className="mt-3 flex items-center">
+              <FiTrendingUp className={`text-${stat.color}-500 mr-1`} size={14} />
+              <span className={`text-${stat.color}-600 dark:text-${stat.color}-400 text-sm font-medium`}>
+                {stat.value > 0 ? '+' : ''}{stat.value}
+              </span>
+            </div>
+          </motion.div>
+        ))}
+      </motion.div>
+
+      {/* Section des filtres améliorée */}
+      <motion.div 
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700"
+        initial={ { opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {/* Recherche */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <FiSearch className="text-gray-400" size={18} />
+            </div>
+            <input
+              type="text"
+              className="pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium"
+              placeholder="Rechercher une commande..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          
+          {/* Filtre par statut */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <FiFilter className="text-gray-400" size={18} />
+            </div>
+            <select
+              className="pl-12 pr-8 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium appearance-none bg-white dark:bg-gray-700"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="all">Tous les statuts</option>
+              <option value="pending">En attente</option>
+              <option value="preparing">En préparation</option>
+              <option value="delivering">En livraison</option>
+              <option value="completed">Terminées</option>
+              <option value="cancelled">Annulées</option>
+            </select>
+          </div>
+          
+          {/* Plage de dates */}
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <FiCalendar className="text-gray-400" size={18} />
+            </div>
+            <input
+              type="date"
+              className="pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium"
+              value={dateRange.start || ''}
+              onChange={(e) => handleDateRangeChange(e, 'start')}
+            />
+          </div>
+          
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+              <FiCalendar className="text-gray-400" size={18} />
+            </div>
+            <input
+              type="date"
+              className="pl-12 pr-4 py-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm font-medium"
+              value={dateRange.end || ''}
+              onChange={(e) => handleDateRangeChange(e, 'end')}
+            />
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Tableau des commandes amélioré */}
+      <motion.div 
+        className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.4 }}
+      >
+        {isLoading ? (
+          <div className="p-12 flex flex-col items-center justify-center">
+            <motion.div 
+              className="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full mb-4"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+            <p className="text-gray-600 dark:text-gray-400 text-lg font-medium">
+              Chargement des commandes...
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600">
+                <tr>
+                  {[
+                    { key: 'id', label: 'ID Commande' },
+                    { key: 'date', label: 'Date' },
+                    { key: 'customer', label: 'Client' },
+                    { key: 'restaurant', label: 'Restaurant' },
+                    { key: 'total', label: 'Total' },
+                    { key: 'status', label: 'Statut' },
+                    { key: 'actions', label: 'Actions' }
+                  ].map((column) => (
+                    <th 
+                      key={column.key}
+                      scope="col" 
+                      className={`px-6 py-4 text-left text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-wider ${column.key !== 'actions' ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-200' : ''}`}
+                      onClick={column.key !== 'actions' ? () => handleSort(column.key) : undefined}
+                    >
+                      <div className="flex items-center">
+                        {column.label}
+                        {sortBy === column.key && column.key !== 'actions' && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.5 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ duration: 0.2 }}
                           >
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-bold text-gray-900 dark:text-white">
-                                {order.id}
+                            {sortOrder === 'asc' ? 
+                              <FiChevronUp className="ml-2 text-green-600" size={16} /> : 
+                              <FiChevronDown className="ml-2 text-green-600" size={16} />
+                            }
+                          </motion.div>
+                        )}
+                      </div>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                <AnimatePresence>
+                  {currentItems.length > 0 ? (
+                    currentItems.map((order, index) => (
+                      <React.Fragment key={order.id}>
+                        <motion.tr 
+                          className="hover:bg-gradient-to-r hover:from-gray-50 hover:to-gray-100 dark:hover:from-gray-700 dark:hover:to-gray-600 transition-all duration-200 group"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -20 }}
+                          transition={{ duration: 0.3, delay: index * 0.05 }}
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-bold text-gray-900 dark:text-white">
+                              {order.id}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <FiClock className="text-gray-400 mr-2" size={14} />
+                              <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                                {formatDate(order.date)}
                               </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <FiClock className="text-gray-400 mr-2" size={14} />
-                                <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">
-                                  {formatDate(order.date)}
-                                </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-full mr-3">
+                                <FiUsers className="text-white" size={14} />
                               </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <div className="bg-gradient-to-br from-blue-500 to-blue-600 p-2 rounded-full mr-3">
-                                  <FiUsers className="text-white" size={14} />
-                                </div>
-                                <div>
-                                  <div className="text-sm font-bold text-gray-900 dark:text-white">
-                                    {order.customer.name}
-                                  </div>
-                                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                                    {order.customer.phone}
-                                  </div>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="text-sm font-medium text-gray-900 dark:text-white">
-                                {order.restaurant.name}
-                              </div>
-                              <div className="text-sm text-gray-500 dark:text-gray-400">
-                                {order.restaurant.id}
-                              </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <div className="flex items-center">
-                                <FiDollarSign className="text-green-500 mr-1" size={14} />
+                              <div>
                                 <div className="text-sm font-bold text-gray-900 dark:text-white">
-                                  {formatCurrency(order.total)}
+                                  {order.customer.name}
+                                </div>
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
+                                  {order.customer.phone}
                                 </div>
                               </div>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap">
-                              <motion.span 
-                                className={`px-3 py-2 inline-flex text-xs leading-5 font-bold rounded-full ${getStatusInfo(order.status).color} ${getStatusInfo(order.status).pulse}`}
-                                whileHover={{ scale: 1.05 }}
-                                transition={{ type: "spring", stiffness: 300 }}
-                              >
-                                {getStatusInfo(order.status).icon}
-                                {getStatusInfo(order.status).label}
-                              </motion.span>
-                            </td>
-                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                              <div className="flex justify-end items-center space-x-2">
-                                <motion.button
-                                  onClick={() => openOrderDetails(order)}
-                                  className="text-green-600 hover:text-green-800 dark:hover:text-green-400 p-2 rounded-full hover:bg-green-50 dark:hover:bg-green-900 transition-all duration-200"
-                                  title="Voir les détails"
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                >
-                                  <FiEye size={18} />
-                                </motion.button>
-                                <motion.button
-                                  onClick={() => toggleRowExpansion(order.id)}
-                                  className="text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 p-2 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900 transition-all duration-200"
-                                  title="Afficher plus"
-                                  whileHover={{ scale: 1.1 }}
-                                  whileTap={{ scale: 0.95 }}
-                                >
-                                  <motion.div
-                                    animate={{ rotate: expandedRows[order.id] ? 180 : 0 }}
-                                    transition={{ duration: 0.3 }}
-                                  >
-                                    <FiChevronDown size={18} />
-                                  </motion.div>
-                                </motion.button>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">
+                              {order.restaurant.name}
+                            </div>
+                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                              {order.restaurant.id}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <FiDollarSign className="text-green-500 mr-1" size={14} />
+                              <div className="text-sm font-bold text-gray-900 dark:text-white">
+                                {formatCurrency(order.total)}
                               </div>
-                            </td>
-                          </motion.tr>
-                          <AnimatePresence>
-                            {expandedRows[order.id] && (
-                              <motion.tr 
-                                className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600"
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3 }}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <motion.span 
+                              className={`px-3 py-2 inline-flex text-xs leading-5 font-bold rounded-full ${getStatusInfo(order.status).color} ${getStatusInfo(order.status).pulse}`}
+                              whileHover={{ scale: 1.05 }}
+                              transition={{ type: "spring", stiffness: 300 }}
+                            >
+                              {getStatusInfo(order.status).icon}
+                              {getStatusInfo(order.status).label}
+                            </motion.span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end items-center space-x-2">
+                              <motion.button
+                                onClick={() => openOrderDetails(order)}
+                                className="text-green-600 hover:text-green-800 dark:hover:text-green-400 p-2 rounded-full hover:bg-green-50 dark:hover:bg-green-900 transition-all duration-200"
+                                title="Voir les détails"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
                               >
-                                <td colSpan="7" className="px-6 py-6">
-                                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-                                      <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                                        <FiPackage className="mr-2 text-green-600" />
-                                        Articles commandés
-                                      </h4>
-                                      <div className="space-y-3">
-                                        {order.items.map((item, index) => (
-                                          <motion.div
-                                            key={index}
-                                            className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: index * 0.1 }}
-                                          >
-                                            <span className="text-gray-700 dark:text-gray-300 font-medium">
-                                              <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs font-bold mr-2">
-                                                {item.quantity}
-                                              </span>
-                                              {item.name}
+                                <FiEye size={18} />
+                              </motion.button>
+                              <motion.button
+                                onClick={() => toggleRowExpansion(order.id)}
+                                className="text-blue-600 hover:text-blue-800 dark:hover:text-blue-400 p-2 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900 transition-all duration-200"
+                                title="Afficher plus"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <motion.div
+                                  animate={{ rotate: expandedRows[order.id] ? 180 : 0 }}
+                                  transition={{ duration: 0.3 }}
+                                >
+                                  <FiChevronDown size={18} />
+                                </motion.div>
+                              </motion.button>
+                            </div>
+                          </td>
+                        </motion.tr>
+                        <AnimatePresence>
+                          {expandedRows[order.id] && (
+                            <motion.tr 
+                              className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600"
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: "auto" }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <td colSpan="7" className="px-6 py-6">
+                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                  <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+                                    <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                                      <FiPackage className="mr-2 text-green-600" />
+                                      Articles commandés
+                                    </h4>
+                                    <div className="space-y-3">
+                                      {order.items.map((item, index) => (
+                                        <motion.div
+                                          key={index}
+                                          className="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg"
+                                          initial={{ opacity: 0, x: -20 }}
+                                          animate={{ opacity: 1, x: 0 }}
+                                          transition={{ delay: index * 0.1 }}
+                                        >
+                                          <span className="text-gray-700 dark:text-gray-300 font-medium">
+                                            <span className="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-2 py-1 rounded-full text-xs font-bold mr-2">
+                                              {item.quantity}
                                             </span>
-                                            <span className="font-bold text-gray-900 dark:text-white">
-                                              {formatCurrency(item.total)}
-                                            </span>
-                                          </motion.div>
-                                        ))}
+                                            {item.name}
+                                          </span>
+                                          <span className="font-bold text-gray-900 dark:text-white">
+                                            {formatCurrency(item.total)}
+                                          </span>
+                                        </motion.div>
+                                      ))}
+                                    </div>
+                                    <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600 space-y-2">
+                                      <div className="flex justify-between py-1 text-sm">
+                                        <span className="text-gray-600 dark:text-gray-300">Sous-total</span>
+                                        <span className="font-medium">{formatCurrency(order.subtotal)}</span>
                                       </div>
-                                      <div className="mt-6 pt-4 border-t border-gray-200 dark:border-gray-600 space-y-2">
-                                        <div className="flex justify-between py-1 text-sm">
-                                          <span className="text-gray-600 dark:text-gray-300">Sous-total</span>
-                                          <span className="font-medium">{formatCurrency(order.subtotal)}</span>
-                                        </div>
-                                        <div className="flex justify-between py-1 text-sm">
-                                          <span className="text-gray-600 dark:text-gray-300">Frais de livraison</span>
-                                          <span className="font-medium">{formatCurrency(order.delivery.fee)}</span>
-                                        </div>
-                                        <div className="flex justify-between py-1 text-sm">
-                                          <span className="text-gray-600 dark:text-gray-300">Taxes</span>
-                                          <span className="font-medium">{formatCurrency(order.tax)}</span>
-                                        </div>
-                                        <div className="flex justify-between py-3 text-lg font-bold border-t border-gray-200 dark:border-gray-600">
-                                          <span className="text-gray-900 dark:text-white">Total</span>
-                                          <span className="text-green-600 dark:text-green-400">{formatCurrency(order.total)}</span>
-                                        </div>
+                                      <div className="flex justify-between py-1 text-sm">
+                                        <span className="text-gray-600 dark:text-gray-300">Frais de livraison</span>
+                                        <span className="font-medium">{formatCurrency(order.delivery.fee)}</span>
+                                      </div>
+                                      <div className="flex justify-between py-1 text-sm">
+                                        <span className="text-gray-600 dark:text-gray-300">Taxes</span>
+                                        <span className="font-medium">{formatCurrency(order.tax)}</span>
+                                      </div>
+                                      <div className="flex justify-between py-3 text-lg font-bold border-t border-gray-200 dark:border-gray-600">
+                                        <span className="text-gray-900 dark:text-white">Total</span>
+                                        <span className="text-green-600 dark:text-green-400">{formatCurrency(order.total)}</span>
                                       </div>
                                     </div>
-                                    <div className="space-y-6">
-                                      <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-                                        <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                                          <FiTruck className="mr-2 text-purple-600" />
-                                          Informations de livraison
-                                        </h4>
-                                        <div className="space-y-3">
-                                          <div className="flex items-start">
-                                            <FiMapPin className="text-gray-500 dark:text-gray-300 mt-1 mr-3 flex-shrink-0" />
+                                  </div>
+                                  <div className="space-y-6">
+                                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+                                      <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                                        <FiTruck className="mr-2 text-purple-600" />
+                                        Informations de livraison
+                                      </h4>
+                                      <div className="space-y-3">
+                                        <div className="flex items-start">
+                                          <FiMapPin className="text-gray-500 dark:text-gray-300 mt-1 mr-3 flex-shrink-0" />
+                                          <div>
+                                            <p className="text-gray-700 dark:text-gray-300 font-medium">
+                                              {order.delivery.address}
+                                            </p>
+                                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                              Temps estimé: {order.delivery.estimatedTime}
+                                            </p>
+                                          </div>
+                                        </div>
+                                        {order.delivery.courier !== 'En attente' && (
+                                          <div className="flex items-center">
+                                            <FiPhone className="text-gray-500 dark:text-gray-300 mr-3 flex-shrink-0" />
                                             <div>
                                               <p className="text-gray-700 dark:text-gray-300 font-medium">
-                                                {order.delivery.address}
+                                                {order.delivery.courier}
                                               </p>
-                                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                                Temps estimé: {order.delivery.estimatedTime}
+                                              <p className="text-sm text-gray-500 dark:text-gray-400">
+                                                {order.delivery.courierPhone}
                                               </p>
                                             </div>
                                           </div>
-                                          {order.delivery.courier !== 'En attente' && (
-                                            <div className="flex items-center">
-                                              <FiPhone className="text-gray-500 dark:text-gray-300 mr-3 flex-shrink-0" />
-                                              <div>
-                                                <p className="text-gray-700 dark:text-gray-300 font-medium">
-                                                  {order.delivery.courier}
-                                                </p>
-                                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                  {order.delivery.courierPhone}
-                                                </p>
-                                              </div>
-                                            </div>
-                                          )}
-                                        </div>
+                                        )}
                                       </div>
+                                    </div>
+                                    <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
+                                      <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                                        <FiDollarSign className="mr-2 text-green-600" />
+                                        Informations de paiement
+                                      </h4>
+                                      <div className="space-y-2">
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                          <span className="font-medium">Mode de paiement:</span> {order.paymentMethod}
+                                        </p>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                          <span className="font-medium">Statut du paiement:</span> 
+                                          <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${
+                                            order.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' : 
+                                            order.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                            'bg-red-100 text-red-800'
+                                          }`}>
+                                            {order.paymentStatus}
+                                          </span>
+                                        </p>
+                                      </div>
+                                    </div>
+                                    {order.specialInstructions && (
                                       <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
                                         <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                                          <FiDollarSign className="mr-2 text-green-600" />
-                                          Informations de paiement
+                                          <FiActivity className="mr-2 text-blue-600" />
+                                          Instructions spéciales
                                         </h4>
-                                        <div className="space-y-2">
-                                          <p className="text-gray-700 dark:text-gray-300">
-                                            <span className="font-medium">Mode de paiement:</span> {order.paymentMethod}
-                                          </p>
-                                          <p className="text-gray-700 dark:text-gray-300">
-                                            <span className="font-medium">Statut du paiement:</span> 
-                                            <span className={`ml-2 px-2 py-1 rounded-full text-xs font-bold ${
-                                              order.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' : 
-                                              order.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                              'bg-red-100 text-red-800'
-                                            }`}>
-                                              {order.paymentStatus}
-                                            </span>
-                                          </p>
-                                        </div>
+                                        <p className="text-gray-700 dark:text-gray-300 italic">
+                                          "{order.specialInstructions}"
+                                        </p>
                                       </div>
-                                      {order.specialInstructions && (
-                                        <div className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-lg">
-                                          <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                                            <FiActivity className="mr-2 text-blue-600" />
-                                            Instructions spéciales
-                                          </h4>
-                                          <p className="text-gray-700 dark:text-gray-300 italic">
-                                            "{order.specialInstructions}"
-                                          </p>
-                                        </div>
-                                      )}
-                                    </div>
+                                    )}
                                   </div>
-                                </td>
-                              </motion.tr>
-                            )}
-                          </AnimatePresence>
-                        </React.Fragment>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="7" className="px-6 py-12 text-center">
-                          <div className="flex flex-col items-center">
-                            <FiPackage className="text-gray-300 dark:text-gray-600 mb-4" size={48} />
-                            <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
-                              Aucune commande trouvée
-                            </p>
-                            <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
-                              Essayez de modifier vos filtres de recherche
-                            </p>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </AnimatePresence>
-                </tbody>
-              </table>
-            </div>
-          )}
+                                </div>
+                              </td>
+                            </motion.tr>
+                          )}
+                        </AnimatePresence>
+                      </React.Fragment>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center">
+                          <FiPackage className="text-gray-300 dark:text-gray-600 mb-4" size={48} />
+                          <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
+                            Aucune commande trouvée
+                          </p>
+                          <p className="text-gray-400 dark:text-gray-500 text-sm mt-2">
+                            Essayez de modifier vos filtres de recherche
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </AnimatePresence>
+              </tbody>
+            </table>
+          </div>
+        )}
 
-          {/* Pagination améliorée */}
-          {sortedOrders.length > 0 && (
-            <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 border-t border-gray-200 dark:border-gray-600">
-              <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-                <div className="flex items-center space-x-2">
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
-                    Affichage de <span className="font-bold">{indexOfFirstItem + 1}</span> à{' '}
-                    <span className="font-bold">{Math.min(indexOfLastItem, sortedOrders.length)}</span> sur{' '}
-                    <span className="font-bold">{sortedOrders.length}</span> résultats
-                  </p>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <motion.button
-                    onClick={() => paginate(1)}
-                    disabled={currentPage === 1}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      currentPage === 1 
-                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
-                    }`}
-                    whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
-                  >
-                    ««
-                  </motion.button>
-                  
-                  <motion.button
-                    onClick={() => paginate(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      currentPage === 1 
-                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
-                    }`}
-                    whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
-                  >
-                    «
-                  </motion.button>
+        {/* Pagination améliorée */}
+        {sortedOrders.length > 0 && (
+          <div className="px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 border-t border-gray-200 dark:border-gray-600">
+            <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+              <div className="flex items-center space-x-2">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  Affichage de <span className="font-bold">{indexOfFirstItem + 1}</span> à{' '}
+                  <span className="font-bold">{Math.min(indexOfLastItem, sortedOrders.length)}</span> sur{' '}
+                  <span className="font-bold">{sortedOrders.length}</span> résultats
+                </p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <motion.button
+                  onClick={() => paginate(1)}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    currentPage === 1 
+                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
+                  }`}
+                  whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+                >
+                  ««
+                </motion.button>
+                
+                <motion.button
+                  onClick={() => paginate(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    currentPage === 1 
+                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
+                  }`}
+                  whileHover={currentPage !== 1 ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== 1 ? { scale: 0.95 } : {}}
+                >
+                  «
+                </motion.button>
 
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-                    if (totalPages <= 5) {
-                      pageNum = i + 1;
-                    } else if (currentPage <= 3) {
-                      pageNum = i + 1;
-                    } else if (currentPage >= totalPages - 2) {
-                      pageNum = totalPages - 4 + i;
-                    } else {
-                      pageNum = currentPage - 2 + i;
-                    }
-                    return (
-                      <motion.button
-                        key={pageNum}
-                        onClick={() => paginate(pageNum)}
-                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                          currentPage === pageNum
-                            ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
-                            : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
-                        }`}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        {pageNum}
-                      </motion.button>
-                    );
-                  })}
+                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                  let pageNum;
+                  if (totalPages <= 5) {
+                    pageNum = i + 1;
+                  } else if (currentPage <= 3) {
+                    pageNum = i + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNum = totalPages - 4 + i;
+                  } else {
+                    pageNum = currentPage - 2 + i;
+                  }
+                  return (
+                    <motion.button
+                      key={pageNum}
+                      onClick={() => paginate(pageNum)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                        currentPage === pageNum
+                          ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
+                          : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
+                      }`}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      {pageNum}
+                    </motion.button>
+                  );
+                })}
 
-                  <motion.button
-                    onClick={() => paginate(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      currentPage === totalPages 
-                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
-                    }`}
-                    whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
-                  >
-                    »
-                  </motion.button>
-                  
-                  <motion.button
-                    onClick={() => paginate(totalPages)}
-                    disabled={currentPage === totalPages}
-                    className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                      currentPage === totalPages 
-                        ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
-                        : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
-                    }`}
-                    whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
-                    whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
-                  >
-                    »»
-                  </motion.button>
-                </div>
+                <motion.button
+                  onClick={() => paginate(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    currentPage === totalPages 
+                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
+                  }`}
+                  whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                >
+                  »
+                </motion.button>
+                
+                <motion.button
+                  onClick={() => paginate(totalPages)}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                    currentPage === totalPages 
+                      ? 'bg-gray-200 dark:bg-gray-600 text-gray-400 dark:text-gray-500 cursor-not-allowed' 
+                      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 shadow-sm'
+                  }`}
+                  whileHover={currentPage !== totalPages ? { scale: 1.05 } : {}}
+                  whileTap={currentPage !== totalPages ? { scale: 0.95 } : {}}
+                >
+                  »»
+                </motion.button>
               </div>
             </div>
-          )}
-        </motion.div>
+          </div>
+        )}
+      </motion.div>
 
-        {/* Modal des détails de commande amélioré */}
-        <AnimatePresence>
-          {isOrderDetailsOpen && selectedOrder && (
-            <motion.div 
-              className="fixed inset-0 overflow-y-auto z-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <motion.div 
-                  className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 transition-opacity"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={closeOrderDetails}
-                />
-                <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-                <motion.div 
-                  className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full"
-                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
-                    <div className="flex justify-between items-center">
-                      <h3 className="text-xl font-bold text-white flex items-center">
-                        <FiPackage className="mr-3" />
-                        Détails de la commande - {selectedOrder.id}
-                      </h3>
-                      <motion.button
-                        onClick={closeOrderDetails}
-                        className="text-white hover:text-gray-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-all duration-200"
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                      >
-                        <FiXCircle size={24} />
-                      </motion.button>
-                    </div>
+      {/* Modal des détails de commande amélioré */}
+      <AnimatePresence>
+        {isOrderDetailsOpen && selectedOrder && (
+          <motion.div 
+            className="fixed inset-0 overflow-y-auto z-50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+              <motion.div 
+                className="fixed inset-0 bg-gray-500 dark:bg-gray-900 bg-opacity-75 transition-opacity"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={closeOrderDetails}
+              />
+              <span className="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+              <motion.div 
+                className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl sm:w-full"
+                initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <div className="bg-gradient-to-r from-green-600 to-green-700 px-6 py-4">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-xl font-bold text-white flex items-center">
+                      <FiPackage className="mr-3" />
+                      Détails de la commande - {selectedOrder.id}
+                    </h3>
+                    <motion.button
+                      onClick={closeOrderDetails}
+                      className="text-white hover:text-gray-200 p-2 rounded-full hover:bg-white hover:bg-opacity-20 transition-all duration-200"
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <FiXCircle size={24} />
+                    </motion.button>
                   </div>
-                  
-                  <div className="bg-white dark:bg-gray-800 px-6 py-6 max-h-96 overflow-y-auto">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      {/* Informations client */}
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-xl p-6">
+                </div>
+                
+                <div className="bg-white dark:bg-gray-800 px-6 py-6 max-h-96 overflow-y-auto">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Informations client */}
+                    <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900 dark:to-blue-800 rounded-xl p-6">
+                      <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <FiUsers className="mr-2 text-blue-600" />
+                        Information client
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="flex items-center">
+                          <FiUsers className="text-gray-500 dark:text-gray-300 mr-3" />
+                          <span className="font-bold text-gray-900 dark:text-white">{selectedOrder.customer.name}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <FiPhone className="text-gray-500 dark:text-gray-300 mr-3" />
+                          <span className="text-gray-700 dark:text-gray-300">{selectedOrder.customer.phone}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <FiMail className="text-gray-500 dark:text-gray-300 mr-3" />
+                          <span className="text-gray-700 dark:text-gray-300">{selectedOrder.customer.email}</span>
+                        </div>
+                        <div className="flex items-start">
+                          <FiMapPin className="text-gray-500 dark:text-gray-300 mt-1 mr-3 flex-shrink-0" />
+                          <span className="text-gray-700 dark:text-gray-300">{selectedOrder.customer.address}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Informations restaurant */}
+                    <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 rounded-xl p-6">
+                      <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <FiBriefcase className="mr-2 text-purple-600" />
+                        Information restaurant
+                      </h4>
+                      <div className="space-y-3">
+                        <div className="font-bold text-gray-900 dark:text-white text-lg">
+                          {selectedOrder.restaurant.name}
+                        </div>
+                        <div className="text-gray-700 dark:text-gray-300">
+                          ID: {selectedOrder.restaurant.id}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Résumé de commande */}
+                    <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-xl p-6">
+                      <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                        <FiPackage className="mr-2 text-green-600" />
+                        Résumé de commande
+                      </h4>
+                      <div className="space-y-3">
+                        {selectedOrder.items.map((item, index) => (
+                          <motion.div
+                            key={index}
+                            className="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: index * 0.1 }}
+                          >
+                            <span className="text-gray-700 dark:text-gray-300">
+                              <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold mr-2">
+                                {item.quantity}
+                              </span>
+                              {item.name}
+                            </span>
+                            <span className="font-bold text-gray-900 dark:text-white">
+                              {formatCurrency(item.total)}
+                            </span>
+                          </motion.div>
+                        ))}
+                      </div>
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-300">Sous-total</span>
+                          <span className="font-medium">{formatCurrency(selectedOrder.subtotal)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-300">Frais de livraison</span>
+                          <span className="font-medium">{formatCurrency(selectedOrder.delivery.fee)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600 dark:text-gray-300">Taxes</span>
+                          <span className="font-medium">{formatCurrency(selectedOrder.tax)}</span>
+                        </div>
+                        <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-600">
+                          <span className="text-gray-900 dark:text-white">Total</span>
+                          <span className="text-green-600 dark:text-green-400">{formatCurrency(selectedOrder.total)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Informations de livraison et paiement */}
+                    <div className="space-y-6">
+                      <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 rounded-xl p-6">
                         <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                          <FiUsers className="mr-2 text-blue-600" />
-                          Information client
+                          <FiTruck className="mr-2 text-orange-600" />
+                          Informations de livraison
                         </h4>
                         <div className="space-y-3">
-                          <div className="flex items-center">
-                            <FiUsers className="text-gray-500 dark:text-gray-300 mr-3" />
-                            <span className="font-bold text-gray-900 dark:text-white">{selectedOrder.customer.name}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <FiPhone className="text-gray-500 dark:text-gray-300 mr-3" />
-                            <span className="text-gray-700 dark:text-gray-300">{selectedOrder.customer.phone}</span>
-                          </div>
-                          <div className="flex items-center">
-                            <FiMail className="text-gray-500 dark:text-gray-300 mr-3" />
-                            <span className="text-gray-700 dark:text-gray-300">{selectedOrder.customer.email}</span>
-                          </div>
                           <div className="flex items-start">
                             <FiMapPin className="text-gray-500 dark:text-gray-300 mt-1 mr-3 flex-shrink-0" />
-                            <span className="text-gray-700 dark:text-gray-300">{selectedOrder.customer.address}</span>
+                            <div>
+                              <p className="text-gray-700 dark:text-gray-300 font-medium">
+                                {selectedOrder.delivery.address}
+                              </p>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Temps estimé: {selectedOrder.delivery.estimatedTime}
+                              </p>
+                            </div>
                           </div>
-                        </div>
-                      </div>
-
-                      {/* Informations restaurant */}
-                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900 dark:to-purple-800 rounded-xl p-6">
-                        <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                          <FiBriefcase className="mr-2 text-purple-600" />
-                          Information restaurant
-                        </h4>
-                        <div className="space-y-3">
-                          <div className="font-bold text-gray-900 dark:text-white text-lg">
-                            {selectedOrder.restaurant.name}
-                          </div>
-                          <div className="text-gray-700 dark:text-gray-300">
-                            ID: {selectedOrder.restaurant.id}
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Résumé de commande */}
-                      <div className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900 dark:to-green-800 rounded-xl p-6">
-                        <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                          <FiPackage className="mr-2 text-green-600" />
-                          Résumé de commande
-                        </h4>
-                        <div className="space-y-3">
-                          {selectedOrder.items.map((item, index) => (
-                            <motion.div
-                              key={index}
-                              className="flex justify-between items-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm"
-                              initial={{ opacity: 0, x: -20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                            >
-                              <span className="text-gray-700 dark:text-gray-300">
-                                <span className="bg-green-500 text-white px-2 py-1 rounded-full text-xs font-bold mr-2">
-                                  {item.quantity}
-                                </span>
-                                {item.name}
-                              </span>
-                              <span className="font-bold text-gray-900 dark:text-white">
-                                {formatCurrency(item.total)}
-                              </span>
-                            </motion.div>
-                          ))}
-                        </div>
-                        <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-600 space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-300">Sous-total</span>
-                            <span className="font-medium">{formatCurrency(selectedOrder.subtotal)}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-300">Frais de livraison</span>
-                            <span className="font-medium">{formatCurrency(selectedOrder.delivery.fee)}</span>
-                          </div>
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600 dark:text-gray-300">Taxes</span>
-                            <span className="font-medium">{formatCurrency(selectedOrder.tax)}</span>
-                          </div>
-                          <div className="flex justify-between text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-600">
-                            <span className="text-gray-900 dark:text-white">Total</span>
-                            <span className="text-green-600 dark:text-green-400">{formatCurrency(selectedOrder.total)}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Informations de livraison et paiement */}
-                      <div className="space-y-6">
-                        <div className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900 dark:to-orange-800 rounded-xl p-6">
-                          <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                            <FiTruck className="mr-2 text-orange-600" />
-                            Informations de livraison
-                          </h4>
-                          <div className="space-y-3">
-                            <div className="flex items-start">
-                              <FiMapPin className="text-gray-500 dark:text-gray-300 mt-1 mr-3 flex-shrink-0" />
+                          {selectedOrder.delivery.courier !== 'En attente' && (
+                            <div className="flex items-center">
+                              <FiPhone className="text-gray-500 dark:text-gray-300 mr-3 flex-shrink-0" />
                               <div>
                                 <p className="text-gray-700 dark:text-gray-300 font-medium">
-                                  {selectedOrder.delivery.address}
+                                  {selectedOrder.delivery.courier}
                                 </p>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                  Temps estimé: {selectedOrder.delivery.estimatedTime}
+                                <p className="text-sm text-gray-500 dark:text-gray-400">
+                                  {selectedOrder.delivery.courierPhone}
                                 </p>
                               </div>
                             </div>
-                            {selectedOrder.delivery.courier !== 'En attente' && (
-                              <div className="flex items-center">
-                                <FiPhone className="text-gray-500 dark:text-gray-300 mr-3 flex-shrink-0" />
-                                <div>
-                                  <p className="text-gray-700 dark:text-gray-300 font-medium">
-                                    {selectedOrder.delivery.courier}
-                                  </p>
-                                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    {selectedOrder.delivery.courierPhone}
-                                  </p>
-                                </div>
-                              </div>
-                            )}
-                          </div>
+                          )}
                         </div>
-
-                        <div className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900 dark:to-teal-800 rounded-xl p-6">
-                          <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                            <FiDollarSign className="mr-2 text-teal-600" />
-                            Informations de paiement
-                          </h4>
-                          <div className="space-y-2">
-                            <p className="text-gray-700 dark:text-gray-300">
-                              <span className="font-medium">Mode de paiement:</span> {selectedOrder.paymentMethod}
-                            </p>
-                            <p className="text-gray-700 dark:text-gray-300">
-                              <span className="font-medium">Statut du paiement:</span>
-                              <span className={`ml-2 px-3 py-1 rounded-full text-xs font-bold ${
-                                selectedOrder.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' : 
-                                selectedOrder.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
-                                'bg-red-100 text-red-800'
-                              }`}>
-                                {selectedOrder.paymentStatus}
-                              </span>
-                            </p>
-                          </div>
-                        </div>
-
-                        {selectedOrder.specialInstructions && (
-                          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900 dark:to-indigo-800 rounded-xl p-6">
-                            <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
-                              <FiActivity className="mr-2 text-indigo-600" />
-                              Instructions spéciales
-                            </h4>
-                            <p className="text-gray-700 dark:text-gray-300 italic bg-white dark:bg-gray-700 p-4 rounded-lg">
-                              "{selectedOrder.specialInstructions}"
-                            </p>
-                          </div>
-                        )}
                       </div>
+
+                      <div className="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900 dark:to-teal-800 rounded-xl p-6">
+                        <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                          <FiDollarSign className="mr-2 text-teal-600" />
+                          Informations de paiement
+                        </h4>
+                        <div className="space-y-2">
+                          <p className="text-gray-700 dark:text-gray-300">
+                            <span className="font-medium">Mode de paiement:</span> {selectedOrder.paymentMethod}
+                          </p>
+                          <p className="text-gray-700 dark:text-gray-300">
+                            <span className="font-medium">Statut du paiement:</span>
+                            <span className={`ml-2 px-3 py-1 rounded-full text-xs font-bold ${
+                              selectedOrder.paymentStatus === 'completed' ? 'bg-green-100 text-green-800' : 
+                              selectedOrder.paymentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {selectedOrder.paymentStatus}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+
+                      {selectedOrder.specialInstructions && (
+                        <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900 dark:to-indigo-800 rounded-xl p-6">
+                          <h4 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center">
+                            <FiActivity className="mr-2 text-indigo-600" />
+                            Instructions spéciales
+                          </h4>
+                          <p className="text-gray-700 dark:text-gray-300 italic bg-white dark:bg-gray-700 p-4 rounded-lg">
+                            "{selectedOrder.specialInstructions}"
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  
-                  <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 px-6 py-4 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
-                    <motion.button
-                      onClick={() => window.print()}
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl flex items-center justify-center font-medium shadow-lg transition-all duration-300"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      <FiPrinter className="mr-2" />
-                      Imprimer
-                    </motion.button>
-                    <motion.button
-                      onClick={closeOrderDetails}
-                      className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl flex items-center justify-center font-medium shadow-lg transition-all duration-300"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                    >
-                      Fermer
-                    </motion.button>
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    </AdminLayout>
+                </div>
+                
+                <div className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 px-6 py-4 flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-3">
+                  <motion.button
+                    onClick={() => window.print()}
+                    className="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl flex items-center justify-center font-medium shadow-lg transition-all duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <FiPrinter className="mr-2" />
+                    Imprimer
+                  </motion.button>
+                  <motion.button
+                    onClick={closeOrderDetails}
+                    className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl flex items-center justify-center font-medium shadow-lg transition-all duration-300"
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    Fermer
+                  </motion.button>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

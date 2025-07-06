@@ -19,6 +19,7 @@ import {
 import { HiOutlineMoon, HiOutlineSun } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { userContextInformation } from "../pages/Authentication/const_provider";
+import LanguageSwitcher from "../components/LanguageSwitcher";
 
 // Create contexts for theme and language
 const ThemeContext = createContext();
@@ -85,13 +86,13 @@ const LanguageProvider = ({ children }) => {
   const [currentLanguage, setCurrentLanguage] = useState(() => {
     // Check localStorage first, then i18n default
     const savedLanguage = localStorage.getItem("eatfast-admin-language");
-    return savedLanguage || i18n.language || "en";
+    return savedLanguage || (i18n?.language) || "en";
   });
 
   useEffect(() => {
     // Initialize language from localStorage on mount
     const savedLanguage = localStorage.getItem("eatfast-admin-language");
-    if (savedLanguage && savedLanguage !== i18n.language) {
+    if (savedLanguage && i18n && savedLanguage !== i18n.language) {
       i18n.changeLanguage(savedLanguage).catch((err) => {
         console.error("Error initializing language:", err);
       });
@@ -100,7 +101,9 @@ const LanguageProvider = ({ children }) => {
 
   const changeLanguage = async (newLanguage) => {
     try {
-      await i18n.changeLanguage(newLanguage);
+      if (i18n) {
+        await i18n.changeLanguage(newLanguage);
+      }
       setCurrentLanguage(newLanguage);
       localStorage.setItem("eatfast-admin-language", newLanguage);
     } catch (err) {
@@ -134,6 +137,16 @@ const AdminLayout = ({ children }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [activeItem, setActiveItem] = useState("/admin");
 
+  // Safe translation function
+  const safeTranslate = (key, fallback) => {
+    try {
+      return t(key) || fallback || key;
+    } catch (error) {
+      console.warn(`Translation error for key: ${key}`, error);
+      return fallback || key;
+    }
+  };
+
   // Save sidebar state to localStorage
   useEffect(() => {
     localStorage.setItem("eatfast-admin-sidebar", JSON.stringify(sidebarOpen));
@@ -165,105 +178,81 @@ const AdminLayout = ({ children }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const handleLanguageChange = (e) => {
-    const newLanguage = e.target.value;
-    changeLanguage(newLanguage);
-  };
-
   const navigationItems = [
     {
-      name: t("dashboard.dashboard"),
+      name: safeTranslate("dashboard.dashboard", "Dashboard"),
       icon: <FiHome size={20} />,
       path: "/admin",
     },
     {
-      name: t("restaurant"),
+      name: safeTranslate("restaurant", "Restaurant"),
       icon: <FiShoppingBag size={20} />,
       path: "/admin/restaurants",
     },
-    { name: t("users"), icon: <FiUsers size={20} />, path: "/admin/user" },
+    { name: safeTranslate("users", "Users"), icon: <FiUsers size={20} />, path: "/admin/user" },
     {
-      name: t("delivery"),
+      name: safeTranslate("delivery", "Delivery"),
       icon: <FiTruck size={20} />,
       path: "/admin/delivery",
     },
     {
-      name: t("orders"),
+      name: safeTranslate("orders", "Orders"),
       icon: <FiBarChart2 size={20} />,
       path: "/admin/orders",
     },
     {
-      name: t("contactMessages"),
+      name: safeTranslate("contactMessages", "Contact Messages"),
       icon: <FiMail size={20} />,
       path: "/admin/contact-messages",
     },
     {
-      name: t("statistics"),
+      name: safeTranslate("statistics", "Statistics"),
       icon: <FiPieChart size={20} />,
       path: "/admin/statistics",
     },
     {
-      name: t("promotions"),
+      name: safeTranslate("promotion", "Promotion"),
       icon: <FiTag size={20} />,
       path: "/admin/promotion",
     },
   ];
 
-  // Close sidebar when clicking outside on mobile
+  // Handle click outside sidebar on mobile
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        isMobile &&
-        sidebarOpen &&
-        !event.target.closest(".sidebar") &&
-        !event.target.closest(".sidebar-toggle")
-      ) {
-        setSidebarOpen(false);
+      if (isMobile && sidebarOpen) {
+        const sidebar = document.querySelector('.sidebar');
+        if (sidebar && !sidebar.contains(event.target)) {
+          setSidebarOpen(false);
+        }
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobile, sidebarOpen]);
 
-  // Handle navigation item click
   const handleNavClick = (path) => {
     navigate(path);
-    setActiveItem(path);
     if (isMobile) {
       setSidebarOpen(false);
     }
   };
 
   const handleLogout = () => {
-    // Clear all stored preferences on logout if needed
-    // localStorage.removeItem('eatfast-admin-theme');
-    // localStorage.removeItem('eatfast-admin-language');
-    // localStorage.removeItem('eatfast-admin-sidebar');
-
-    // Implement logout logic here
-    console.log("Logout clicked");
+    // Clear user data and redirect to login
+    localStorage.removeItem('userProfile');
+    localStorage.removeItem('firebaseToken');
+    navigate('/login');
   };
 
   return (
-    <div
-      className={`flex h-screen overflow-hidden ${
-        darkMode ? "dark bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
-      }`}
-    >
-      {/* Overlay for mobile */}
-      {isMobile && sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30 transition-opacity duration-300"
-          style={{ opacity: sidebarOpen ? 1 : 0 }}
-        />
-      )}
-
+    <div className={`flex h-screen ${darkMode ? 'dark' : ''}`}>
       {/* Sidebar */}
       <aside
-        className={`sidebar fixed md:relative z-40 h-full ${
-          darkMode ? "bg-gray-800" : "bg-white"
-        } shadow-lg transition-all duration-300 ease-in-out`}
+        className={`sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out ${
+          darkMode ? 'border-r border-gray-700' : 'border-r border-gray-200'
+        }`}
         style={{
           width: "250px",
           transform:
@@ -330,13 +319,11 @@ const AdminLayout = ({ children }) => {
               </div>
               <div className="ml-3">
                 <p className="font-medium">
-                  {/*Admin User*/}
                   {userInformation?.first_name && userInformation?.last_name
                     ? `${userInformation.first_name} ${userInformation.last_name}`
                     : 'Admin User'}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {/* admin@eatfast.cm */}
                   {userInformation?.email || 'admin@eatfast.cm'}
                 </p>
               </div>
@@ -347,7 +334,7 @@ const AdminLayout = ({ children }) => {
               className="flex items-center w-full px-4 py-2 mt-5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-red-100 dark:hover:bg-red-900 transition-all duration-200"
             >
               <FiLogOut className="mr-3 text-red-600" size={20} />
-              <span>{t("logout")}</span>
+              <span>{safeTranslate("logout", "Logout")}</span>
             </button>
           </div>
         </div>
@@ -371,20 +358,13 @@ const AdminLayout = ({ children }) => {
           <div className="flex-1 flex justify-between px-4">
             <div className="flex-1 flex items-center">
               <h1 className="text-lg md:text-xl lg:text-2xl font-bold truncate">
-                {t("dashboard.dashboard")}
+                {safeTranslate("dashboard.dashboard", "Dashboard")}
               </h1>
             </div>
 
             <div className="ml-4 flex items-center md:ml-6 space-x-2 md:space-x-4">
-              {/* Language Selector */}
-              <select
-                className="form-select rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 focus:ring-2 focus:ring-green-500 transition-shadow duration-200"
-                value={currentLanguage}
-                onChange={handleLanguageChange}
-              >
-                <option value="fr">FR</option>
-                <option value="en">EN</option>
-              </select>
+              {/* Language Switcher */}
+              <LanguageSwitcher size="md" />
 
               {/* Theme Toggle */}
               <button

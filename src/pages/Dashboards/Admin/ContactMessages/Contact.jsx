@@ -38,7 +38,6 @@ import {
   FiPieChart
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import AdminLayout from '../../../../layouts/admin_layout';
 
 // Données fictives pour les messages de contact
 const MOCK_CONTACT_MESSAGES = [

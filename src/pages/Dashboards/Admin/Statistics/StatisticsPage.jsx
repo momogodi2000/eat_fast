@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import AdminLayout from '../../../../layouts/admin_layout';
 import {
   FiTrendingUp,
   FiUsers,
@@ -26,8 +25,20 @@ import {
   FiPackage
 } from 'react-icons/fi';
 import { 
-  BarChart, Bar, LineChart, Line, PieChart, Pie, ResponsiveContainer, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell, AreaChart, Area 
+  BarChart, 
+  Bar, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  ResponsiveContainer, 
+  XAxis, 
+  YAxis, 
+  Tooltip, 
+  Legend, 
+  LineChart, 
+  Line,
+  Area,
+  AreaChart
 } from 'recharts';
 
 // Génération des données mockées améliorées
@@ -366,586 +377,582 @@ const StatisticsPage = () => {
 
   if (isLoading) {
     return (
-      <AdminLayout>
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
-          <div className="animate-pulse space-y-8">
-            <div className="h-12 bg-gray-300 dark:bg-gray-700 rounded-2xl w-1/3"></div>
-            <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[...Array(8)].map((_, i) => (
-                <div key={i} className="h-40 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
-              ))}
-            </div>
-            <div className="h-96 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
+        <div className="animate-pulse space-y-8">
+          <div className="h-12 bg-gray-300 dark:bg-gray-700 rounded-2xl w-1/3"></div>
+          <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="h-40 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
+            ))}
           </div>
+          <div className="h-96 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
         </div>
-      </AdminLayout>
+      </div>
     );
   }
 
   return (
-    <AdminLayout>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
-        {/* En-tête */}
-        <motion.div 
-          className="mb-8"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-4">
-            <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl">
-              <FiBarChart2 className="text-white text-3xl" />
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
+      {/* En-tête */}
+      <motion.div 
+        className="mb-8"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-4">
+          <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl">
+            <FiBarChart2 className="text-white text-3xl" />
+          </div>
+          Tableau de Bord Statistiques
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 text-lg">
+          Analyse complète des performances de la plateforme EatFast
+        </p>
+      </motion.div>
+      
+      <FilterSection />
+      <TabNavigation />
+      
+      {/* Contenu principal basé sur l'onglet actif */}
+      <AnimatePresence mode="wait">
+        {activeTab === 'overview' && (
+          <motion.div
+            key="overview"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-8"
+          >
+            {/* Cartes de statistiques principales */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <EnhancedStatCard 
+                icon={<FiUsers size={32} />}
+                title="Utilisateurs"
+                value={formatNumber(data.userData.total)}
+                subtitle={`${formatNumber(data.userData.active)} actifs`}
+                subValue={`${formatNumber(data.userData.new)} nouveaux ce mois`}
+                growth={data.userData.growth}
+                color="from-blue-500 to-blue-600"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiShoppingBag size={32} />}
+                title="Restaurants"
+                value={formatNumber(data.restaurantData.total)}
+                subtitle={`${formatNumber(data.restaurantData.active)} actifs`}
+                subValue={`Note moyenne: ${data.restaurantData.avgRating}/5`}
+                growth={data.restaurantData.growth}
+                color="from-emerald-500 to-emerald-600"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiTruck size={32} />}
+                title="Livreurs"
+                value={formatNumber(data.deliveryData.total)}
+                subtitle={`${formatNumber(data.deliveryData.active)} actifs`}
+                subValue={`Temps moyen: ${data.deliveryData.avgDeliveryTime}min`}
+                growth={data.deliveryData.growth}
+                color="from-amber-500 to-orange-500"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiPackage size={32} />}
+                title="Commandes"
+                value={formatNumber(data.orderData.total)}
+                subtitle={`${formatNumber(data.orderData.completed)} terminées`}
+                subValue={`Valeur moyenne: ${formatCurrency(data.orderData.avgOrderValue)}`}
+                growth={data.orderData.growth}
+                color="from-purple-500 to-indigo-600"
+              />
             </div>
-            Tableau de Bord Statistiques
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400 text-lg">
-            Analyse complète des performances de la plateforme EatFast
-          </p>
-        </motion.div>
-        
-        <FilterSection />
-        <TabNavigation />
-        
-        {/* Contenu principal basé sur l'onglet actif */}
-        <AnimatePresence mode="wait">
-          {activeTab === 'overview' && (
-            <motion.div
-              key="overview"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-8"
-            >
-              {/* Cartes de statistiques principales */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <EnhancedStatCard 
-                  icon={<FiUsers size={32} />}
-                  title="Utilisateurs"
-                  value={formatNumber(data.userData.total)}
-                  subtitle={`${formatNumber(data.userData.active)} actifs`}
-                  subValue={`${formatNumber(data.userData.new)} nouveaux ce mois`}
-                  growth={data.userData.growth}
-                  color="from-blue-500 to-blue-600"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiShoppingBag size={32} />}
-                  title="Restaurants"
-                  value={formatNumber(data.restaurantData.total)}
-                  subtitle={`${formatNumber(data.restaurantData.active)} actifs`}
-                  subValue={`Note moyenne: ${data.restaurantData.avgRating}/5`}
-                  growth={data.restaurantData.growth}
-                  color="from-emerald-500 to-emerald-600"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiTruck size={32} />}
-                  title="Livreurs"
-                  value={formatNumber(data.deliveryData.total)}
-                  subtitle={`${formatNumber(data.deliveryData.active)} actifs`}
-                  subValue={`Temps moyen: ${data.deliveryData.avgDeliveryTime}min`}
-                  growth={data.deliveryData.growth}
-                  color="from-amber-500 to-orange-500"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiPackage size={32} />}
-                  title="Commandes"
-                  value={formatNumber(data.orderData.total)}
-                  subtitle={`${formatNumber(data.orderData.completed)} terminées`}
-                  subValue={`Valeur moyenne: ${formatCurrency(data.orderData.avgOrderValue)}`}
-                  growth={data.orderData.growth}
-                  color="from-purple-500 to-indigo-600"
-                />
-              </div>
 
-              {/* Métriques financières */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <EnhancedStatCard 
-                  icon={<FiDollarSign size={32} />}
-                  title="Revenus Totaux"
-                  value={formatCurrency(data.paymentData.totalRevenue)}
-                  subtitle={`Croissance de ${data.paymentData.growth}%`}
-                  subValue={`Transaction moyenne: ${formatCurrency(data.paymentData.avgTransactionValue)}`}
-                  growth={data.paymentData.growth}
-                  color="from-green-500 to-emerald-600"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiCreditCard size={32} />}
-                  title="Paiements Restaurants"
-                  value={formatCurrency(data.paymentData.restaurantPayouts)}
-                  subtitle="70% du total"
-                  subValue="Commission moyenne incluse"
-                  color="from-teal-500 to-cyan-600"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiTarget size={32} />}
-                  title="Frais Admin"
-                  value={formatCurrency(data.paymentData.adminFees)}
-                  subtitle="10% du total"
-                  subValue="Revenus plateforme"
-                  color="from-indigo-500 to-purple-600"
-                />
-              </div>
+            {/* Métriques financières */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <EnhancedStatCard 
+                icon={<FiDollarSign size={32} />}
+                title="Revenus Totaux"
+                value={formatCurrency(data.paymentData.totalRevenue)}
+                subtitle={`Croissance de ${data.paymentData.growth}%`}
+                subValue={`Transaction moyenne: ${formatCurrency(data.paymentData.avgTransactionValue)}`}
+                growth={data.paymentData.growth}
+                color="from-green-500 to-emerald-600"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiCreditCard size={32} />}
+                title="Paiements Restaurants"
+                value={formatCurrency(data.paymentData.restaurantPayouts)}
+                subtitle="70% du total"
+                subValue="Commission moyenne incluse"
+                color="from-teal-500 to-cyan-600"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiTarget size={32} />}
+                title="Frais Admin"
+                value={formatCurrency(data.paymentData.adminFees)}
+                subtitle="10% du total"
+                subValue="Revenus plateforme"
+                color="from-indigo-500 to-purple-600"
+              />
+            </div>
 
-              {/* Graphiques principaux */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Graphique des revenus */}
-                <motion.div 
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.2 }}
-                >
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                      <FiTrendingUp className="text-emerald-600" size={24} />
-                      Évolution des Revenus
-                    </h3>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setSelectedChart('revenue')}
-                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                          selectedChart === 'revenue' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-600'
-                        }`}
-                      >
-                        Revenus
-                      </button>
-                      <button
-                        onClick={() => setSelectedChart('orders')}
-                        className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                          selectedChart === 'orders' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-600'
-                        }`}
-                      >
-                        Commandes
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      {selectedChart === 'revenue' ? (
-                        <AreaChart data={data.revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                          <defs>
-                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
-                              <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                          <XAxis dataKey="name" tick={{ fill: '#6B7280' }} />
-                          <YAxis tick={{ fill: '#6B7280' }} tickFormatter={value => formatNumber(value)} />
-                          <Tooltip content={<CustomTooltip />} />
-                          <Area 
-                            type="monotone" 
-                            dataKey="totalAmount" 
-                            stroke="#10B981" 
-                            fillOpacity={1} 
-                            fill="url(#colorRevenue)"
-                            strokeWidth={2}
-                          />
-                        </AreaChart>
-                      ) : (
-                        <LineChart data={data.revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                          <XAxis dataKey="name" tick={{ fill: '#6B7280' }} />
-                          <YAxis tick={{ fill: '#6B7280' }} />
-                          <Tooltip content={<CustomTooltip />} />
-                          <Line 
-                            type="monotone" 
-                            dataKey="orders" 
-                            stroke="#3B82F6" 
-                            strokeWidth={3}
-                            dot={{ fill: '#3B82F6', strokeWidth: 2, r: 6 }}
-                            activeDot={{ r: 8 }}
-                          />
-                        </LineChart>
-                      )}
-                    </ResponsiveContainer>
-                  </div>
-                </motion.div>
-
-                {/* Méthodes de paiement */}
-                <motion.div 
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: 0.3 }}
-                >
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
-                    <FiCreditCard className="text-blue-600" size={24} />
-                    Méthodes de Paiement
+            {/* Graphiques principaux */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {/* Graphique des revenus */}
+              <motion.div 
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.2 }}
+              >
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
+                    <FiTrendingUp className="text-emerald-600" size={24} />
+                    Évolution des Revenus
                   </h3>
-                  
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={data.paymentMethodsData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {data.paymentMethodsData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value, name) => [
-                            `${value}% (${formatCurrency(data.paymentMethodsData.find(d => d.name === name)?.amount || 0)})`,
-                            name
-                          ]}
-                        />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-                </motion.div>
-              </div>
-            </motion.div>
-          )}
-
-          {activeTab === 'revenue' && (
-            <motion.div
-              key="revenue"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-8"
-            >
-              {/* Tableau de bord financier détaillé */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
-                  <FiDollarSign className="text-emerald-600" size={28} />
-                  Analyse Financière Détaillée
-                </h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-6 rounded-xl">
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                      Revenus Total
-                    </h3>
-                    <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
-                      {formatCurrency(data.paymentData.totalRevenue)}
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <FiArrowUp className="text-emerald-600" />
-                      <span className="text-emerald-600 font-medium">+{data.paymentData.growth}%</span>
-                      <span className="text-gray-500">vs mois précédent</span>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl">
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                      Paiements Restaurants
-                    </h3>
-                    <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
-                      {formatCurrency(data.paymentData.restaurantPayouts)}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      70% du chiffre d'affaires
-                    </div>
-                  </div>
-                  
-                  <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-xl">
-                    <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                      Revenus Plateforme
-                    </h3>
-                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
-                      {formatCurrency(data.paymentData.adminFees)}
-                    </div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">
-                      10% commission moyenne
-                    </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelectedChart('revenue')}
+                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                        selectedChart === 'revenue' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-600'
+                      }`}
+                    >
+                      Revenus
+                    </button>
+                    <button
+                      onClick={() => setSelectedChart('orders')}
+                      className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
+                        selectedChart === 'orders' ? 'bg-emerald-100 text-emerald-700' : 'text-gray-600'
+                      }`}
+                    >
+                      Commandes
+                    </button>
                   </div>
                 </div>
                 
-                {/* Graphique de répartition des revenus */}
-                <div className="h-96">
+                <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={data.revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                      <XAxis dataKey="name" tick={{ fill: '#6B7280' }} />
-                      <YAxis tick={{ fill: '#6B7280' }} tickFormatter={value => formatNumber(value)} />
-                      <Tooltip content={<CustomTooltip />} />
-                      <Legend />
-                      <Bar dataKey="restaurantAmount" name="Restaurants" fill="#10B981" stackId="a" />
-                      <Bar dataKey="deliveryAmount" name="Livraisons" fill="#3B82F6" stackId="a" />
-                      <Bar dataKey="adminAmount" name="Commission" fill="#8B5CF6" stackId="a" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-
-              {/* Tableau détaillé des finances */}
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-                    Détail Financier par Période
-                  </h3>
-                </div>
-                
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 dark:bg-gray-700">
-                      <tr>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Période</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Revenus Total</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Restaurants</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Livraisons</th>
-                        <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Commission</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-                      {data.revenueData.slice(0, 8).map((item, index) => (
-                        <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                          <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{item.name}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.totalAmount)}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.restaurantAmount)}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.deliveryAmount)}</td>
-                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.adminAmount)}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {activeTab === 'users' && (
-            <motion.div
-              key="users"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-8"
-            >
-              {/* Métriques utilisateurs */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <EnhancedStatCard 
-                  icon={<FiUsers size={32} />}
-                  title="Utilisateurs Actifs"
-                  value={formatNumber(data.userData.active)}
-                  subtitle={`${formatNumber(data.userData.returning)} récurrents`}
-                  subValue={`Taux de rétention: ${data.userData.retention}%`}
-                  growth={data.userData.growth}
-                  color="from-blue-500 to-indigo-600"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiTarget size={32} />}
-                  title="Nouveaux Utilisateurs"
-                  value={formatNumber(data.userData.new)}
-                  subtitle="Ce mois"
-                  subValue="Objectif: 800 utilisateurs"
-                  color="from-emerald-500 to-teal-600"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiStar size={32} />}
-                  title="Satisfaction Client"
-                  value="4.6/5"
-                  subtitle="Note moyenne"
-                  subValue="Basé sur 2,340 avis"
-                  color="from-amber-500 to-orange-500"
-                />
-              </div>
-
-              {/* Graphiques utilisateurs */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
-                    <FiActivity className="text-blue-600" size={24} />
-                    Activité par Jour
-                  </h3>
-                  
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={data.ordersByDayData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    {selectedChart === 'revenue' ? (
+                      <AreaChart data={data.revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <defs>
+                          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10B981" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#10B981" stopOpacity={0.1}/>
+                          </linearGradient>
+                        </defs>
                         <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                         <XAxis dataKey="name" tick={{ fill: '#6B7280' }} />
-                        <YAxis tick={{ fill: '#6B7280' }} />
+                        <YAxis tick={{ fill: '#6B7280' }} tickFormatter={value => formatNumber(value)} />
                         <Tooltip content={<CustomTooltip />} />
-                        <Bar dataKey="orders" name="Commandes" fill="#3B82F6" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
-                    <FiMapPin className="text-emerald-600" size={24} />
-                    Répartition par Ville
-                  </h3>
-                  
-                  <div className="space-y-4">
-                    {data.cityData.map((city, index) => (
-                      <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                        <div>
-                          <h4 className="font-semibold text-gray-900 dark:text-white">{city.name}</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">
-                            {formatNumber(city.orders)} commandes • {city.restaurants} restaurants
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-emerald-600">{formatCurrency(city.revenue)}</p>
-                          <p className="text-sm text-gray-500">{city.deliveryTime}min moyen</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {activeTab === 'performance' && (
-            <motion.div
-              key="performance"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.5 }}
-              className="space-y-8"
-            >
-              {/* Métriques de performance */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <EnhancedStatCard 
-                  icon={<FiClock size={32} />}
-                  title="Temps Livraison"
-                  value={`${data.deliveryData.avgDeliveryTime}min`}
-                  subtitle="Temps moyen"
-                  subValue="Objectif: 25min"
-                  color="from-amber-500 to-orange-500"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiStar size={32} />}
-                  title="Note Restaurants"
-                  value={`${data.restaurantData.avgRating}/5`}
-                  subtitle="Note moyenne"
-                  subValue={`${data.restaurantData.verified} vérifiés`}
-                  color="from-yellow-500 to-amber-500"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiTarget size={32} />}
-                  title="Taux de Réussite"
-                  value="92.3%"
-                  subtitle="Commandes réussies"
-                  subValue={`${formatNumber(data.orderData.canceled)} annulées`}
-                  color="from-emerald-500 to-green-600"
-                />
-                
-                <EnhancedStatCard 
-                  icon={<FiDollarSign size={32} />}
-                  title="Panier Moyen"
-                  value={formatCurrency(data.orderData.avgOrderValue)}
-                  subtitle="Valeur moyenne"
-                  subValue="En augmentation"
-                  color="from-purple-500 to-indigo-600"
-                />
-              </div>
-
-              {/* Graphiques de performance */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
-                    <FiActivity className="text-purple-600" size={24} />
-                    Performance par Heure
-                  </h3>
-                  
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={data.hourlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <Area 
+                          type="monotone" 
+                          dataKey="totalAmount" 
+                          stroke="#10B981" 
+                          fillOpacity={1} 
+                          fill="url(#colorRevenue)"
+                          strokeWidth={2}
+                        />
+                      </AreaChart>
+                    ) : (
+                      <LineChart data={data.revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
-                        <XAxis dataKey="hour" tick={{ fill: '#6B7280' }} />
+                        <XAxis dataKey="name" tick={{ fill: '#6B7280' }} />
                         <YAxis tick={{ fill: '#6B7280' }} />
                         <Tooltip content={<CustomTooltip />} />
                         <Line 
                           type="monotone" 
                           dataKey="orders" 
-                          stroke="#8B5CF6" 
-                          strokeWidth={2}
-                          dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
+                          stroke="#3B82F6" 
+                          strokeWidth={3}
+                          dot={{ fill: '#3B82F6', strokeWidth: 2, r: 6 }}
+                          activeDot={{ r: 8 }}
                         />
                       </LineChart>
-                    </ResponsiveContainer>
+                    )}
+                  </ResponsiveContainer>
+                </div>
+              </motion.div>
+
+              {/* Méthodes de paiement */}
+              <motion.div 
+                className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
+                  <FiCreditCard className="text-blue-600" size={24} />
+                  Méthodes de Paiement
+                </h3>
+                
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={data.paymentMethodsData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {data.paymentMethodsData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value, name) => [
+                          `${value}% (${formatCurrency(data.paymentMethodsData.find(d => d.name === name)?.amount || 0)})`,
+                          name
+                        ]}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </motion.div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'revenue' && (
+          <motion.div
+            key="revenue"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-8"
+          >
+            {/* Tableau de bord financier détaillé */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
+                <FiDollarSign className="text-emerald-600" size={28} />
+                Analyse Financière Détaillée
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 p-6 rounded-xl">
+                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Revenus Total
+                  </h3>
+                  <div className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mb-2">
+                    {formatCurrency(data.paymentData.totalRevenue)}
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <FiArrowUp className="text-emerald-600" />
+                    <span className="text-emerald-600 font-medium">+{data.paymentData.growth}%</span>
+                    <span className="text-gray-500">vs mois précédent</span>
                   </div>
                 </div>
-
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
-                    <FiPieChart className="text-emerald-600" size={24} />
-                    Types de Cuisine
+                
+                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 p-6 rounded-xl">
+                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Paiements Restaurants
                   </h3>
-                  
-                  <div className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={data.cuisineTypesData}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          outerRadius={100}
-                          fill="#8884d8"
-                          dataKey="value"
-                          label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                        >
-                          {data.cuisineTypesData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip 
-                          formatter={(value, name) => [
-                            `${value}% (${formatNumber(data.cuisineTypesData.find(d => d.name === name)?.orders || 0)} commandes)`,
-                            name
-                          ]}
-                        />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
+                  <div className="text-3xl font-bold text-blue-600 dark:text-blue-400 mb-2">
+                    {formatCurrency(data.paymentData.restaurantPayouts)}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    70% du chiffre d'affaires
+                  </div>
+                </div>
+                
+                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-xl">
+                  <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                    Revenus Plateforme
+                  </h3>
+                  <div className="text-3xl font-bold text-purple-600 dark:text-purple-400 mb-2">
+                    {formatCurrency(data.paymentData.adminFees)}
+                  </div>
+                  <div className="text-sm text-gray-600 dark:text-gray-400">
+                    10% commission moyenne
                   </div>
                 </div>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Note informative */}
-        <motion.div 
-          className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 flex items-start gap-4 border border-blue-200 dark:border-blue-800"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-        >
-          <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
-            <FiInfo className="text-blue-600 dark:text-blue-400" size={20} />
-          </div>
-          <div>
-            <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
-              Note Importante
-            </h3>
-            <p className="text-blue-800 dark:text-blue-200">
-              Les données présentées sont mises à jour en temps réel et reflètent l'activité actuelle de la plateforme EatFast. 
-              Les statistiques incluent toutes les transactions validées et les activités utilisateur confirmées.
-            </p>
-          </div>
-        </motion.div>
-      </div>
-    </AdminLayout>
+              
+              {/* Graphique de répartition des revenus */}
+              <div className="h-96">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={data.revenueData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                    <XAxis dataKey="name" tick={{ fill: '#6B7280' }} />
+                    <YAxis tick={{ fill: '#6B7280' }} tickFormatter={value => formatNumber(value)} />
+                    <Tooltip content={<CustomTooltip />} />
+                    <Legend />
+                    <Bar dataKey="restaurantAmount" name="Restaurants" fill="#10B981" stackId="a" />
+                    <Bar dataKey="deliveryAmount" name="Livraisons" fill="#3B82F6" stackId="a" />
+                    <Bar dataKey="adminAmount" name="Commission" fill="#8B5CF6" stackId="a" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Tableau détaillé des finances */}
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+              <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">
+                  Détail Financier par Période
+                </h3>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Période</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Revenus Total</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Restaurants</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Livraisons</th>
+                      <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900 dark:text-white">Commission</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                    {data.revenueData.slice(0, 8).map((item, index) => (
+                      <tr key={index} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">{item.name}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.totalAmount)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.restaurantAmount)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.deliveryAmount)}</td>
+                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{formatCurrency(item.adminAmount)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'users' && (
+          <motion.div
+            key="users"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-8"
+          >
+            {/* Métriques utilisateurs */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <EnhancedStatCard 
+                icon={<FiUsers size={32} />}
+                title="Utilisateurs Actifs"
+                value={formatNumber(data.userData.active)}
+                subtitle={`${formatNumber(data.userData.returning)} récurrents`}
+                subValue={`Taux de rétention: ${data.userData.retention}%`}
+                growth={data.userData.growth}
+                color="from-blue-500 to-indigo-600"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiTarget size={32} />}
+                title="Nouveaux Utilisateurs"
+                value={formatNumber(data.userData.new)}
+                subtitle="Ce mois"
+                subValue="Objectif: 800 utilisateurs"
+                color="from-emerald-500 to-teal-600"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiStar size={32} />}
+                title="Satisfaction Client"
+                value="4.6/5"
+                subtitle="Note moyenne"
+                subValue="Basé sur 2,340 avis"
+                color="from-amber-500 to-orange-500"
+              />
+            </div>
+
+            {/* Graphiques utilisateurs */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
+                  <FiActivity className="text-blue-600" size={24} />
+                  Activité par Jour
+                </h3>
+                
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={data.ordersByDayData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="name" tick={{ fill: '#6B7280' }} />
+                      <YAxis tick={{ fill: '#6B7280' }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Bar dataKey="orders" name="Commandes" fill="#3B82F6" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
+                  <FiMapPin className="text-emerald-600" size={24} />
+                  Répartition par Ville
+                </h3>
+                
+                <div className="space-y-4">
+                  {data.cityData.map((city, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                      <div>
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{city.name}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {formatNumber(city.orders)} commandes • {city.restaurants} restaurants
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-emerald-600">{formatCurrency(city.revenue)}</p>
+                        <p className="text-sm text-gray-500">{city.deliveryTime}min moyen</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'performance' && (
+          <motion.div
+            key="performance"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            transition={{ duration: 0.5 }}
+            className="space-y-8"
+          >
+            {/* Métriques de performance */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              <EnhancedStatCard 
+                icon={<FiClock size={32} />}
+                title="Temps Livraison"
+                value={`${data.deliveryData.avgDeliveryTime}min`}
+                subtitle="Temps moyen"
+                subValue="Objectif: 25min"
+                color="from-amber-500 to-orange-500"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiStar size={32} />}
+                title="Note Restaurants"
+                value={`${data.restaurantData.avgRating}/5`}
+                subtitle="Note moyenne"
+                subValue={`${data.restaurantData.verified} vérifiés`}
+                color="from-yellow-500 to-amber-500"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiTarget size={32} />}
+                title="Taux de Réussite"
+                value="92.3%"
+                subtitle="Commandes réussies"
+                subValue={`${formatNumber(data.orderData.canceled)} annulées`}
+                color="from-emerald-500 to-green-600"
+              />
+              
+              <EnhancedStatCard 
+                icon={<FiDollarSign size={32} />}
+                title="Panier Moyen"
+                value={formatCurrency(data.orderData.avgOrderValue)}
+                subtitle="Valeur moyenne"
+                subValue="En augmentation"
+                color="from-purple-500 to-indigo-600"
+              />
+            </div>
+
+            {/* Graphiques de performance */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
+                  <FiActivity className="text-purple-600" size={24} />
+                  Performance par Heure
+                </h3>
+                
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={data.hourlyData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                      <XAxis dataKey="hour" tick={{ fill: '#6B7280' }} />
+                      <YAxis tick={{ fill: '#6B7280' }} />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Line 
+                        type="monotone" 
+                        dataKey="orders" 
+                        stroke="#8B5CF6" 
+                        strokeWidth={2}
+                        dot={{ fill: '#8B5CF6', strokeWidth: 2, r: 4 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-3 mb-6">
+                  <FiPieChart className="text-emerald-600" size={24} />
+                  Types de Cuisine
+                </h3>
+                
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={data.cuisineTypesData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                        label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      >
+                        {data.cuisineTypesData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        formatter={(value, name) => [
+                          `${value}% (${formatNumber(data.cuisineTypesData.find(d => d.name === name)?.orders || 0)} commandes)`,
+                          name
+                        ]}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      
+      {/* Note informative */}
+      <motion.div 
+        className="bg-blue-50 dark:bg-blue-900/20 rounded-2xl p-6 flex items-start gap-4 border border-blue-200 dark:border-blue-800"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+      >
+        <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-lg">
+          <FiInfo className="text-blue-600 dark:text-blue-400" size={20} />
+        </div>
+        <div>
+          <h3 className="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">
+            Note Importante
+          </h3>
+          <p className="text-blue-800 dark:text-blue-200">
+            Les données présentées sont mises à jour en temps réel et reflètent l'activité actuelle de la plateforme EatFast. 
+            Les statistiques incluent toutes les transactions validées et les activités utilisateur confirmées.
+          </p>
+        </div>
+      </motion.div>
+    </div>
   );
 };
 

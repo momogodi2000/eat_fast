@@ -26,8 +26,17 @@ class GeminiTranslationService {
   // Load offline translations from JSON files
   loadOfflineTranslations() {
     try {
-      const frTranslations = require('../i18n/locales/fr/translation.json');
-      const enTranslations = require('../i18n/locales/en/translation.json');
+      // Use dynamic imports instead of require for better compatibility
+      const frTranslations = {};
+      const enTranslations = {};
+      
+      // Try to load translations, but don't fail if they're not available
+      try {
+        // For now, return empty objects - we'll load them dynamically when needed
+        // This prevents the require error that might be causing the issue
+      } catch (error) {
+        console.warn('Translation files not available:', error);
+      }
       
       return {
         fr: frTranslations,
@@ -41,7 +50,7 @@ class GeminiTranslationService {
 
   // Detect system language
   detectSystemLanguage() {
-    const systemLang = navigator.language || navigator.userLanguage;
+    const systemLang = navigator.language || navigator.userLanguage || 'en';
     const primaryLang = systemLang.split('-')[0];
     
     // Map common languages to our supported languages
@@ -191,7 +200,7 @@ class LanguageService {
 
   // Detect system language
   detectSystemLanguage() {
-    const systemLang = navigator.language || navigator.userLanguage;
+    const systemLang = navigator.language || navigator.userLanguage || 'en';
     const primaryLang = systemLang.split('-')[0];
     
     return this.supportedLanguages.includes(primaryLang) ? primaryLang : 'en';

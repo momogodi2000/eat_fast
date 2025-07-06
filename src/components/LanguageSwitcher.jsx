@@ -4,12 +4,34 @@ import { languageService } from '../Services/translationService';
 
 const LanguageSwitcher = ({ className = '', size = 'md' }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState(languageService.getCurrentLanguage());
-  const [supportedLanguages] = useState(languageService.getSupportedLanguages());
+  const [currentLanguage, setCurrentLanguage] = useState('en'); // Default fallback
+  const [supportedLanguages, setSupportedLanguages] = useState([]);
 
   useEffect(() => {
+    try {
+      // Safely initialize language service
+      if (languageService && typeof languageService.getCurrentLanguage === 'function') {
+        setCurrentLanguage(languageService.getCurrentLanguage());
+      }
+      
+      if (languageService && typeof languageService.getSupportedLanguages === 'function') {
+        setSupportedLanguages(languageService.getSupportedLanguages());
+      }
+    } catch (error) {
+      console.warn('Language service initialization error:', error);
+      // Set fallback values
+      setCurrentLanguage('en');
+      setSupportedLanguages([
+        { code: 'en', name: 'English' },
+        { code: 'fr', name: 'Français' },
+        { code: 'es', name: 'Español' }
+      ]);
+    }
+
     const handleLanguageChange = (event) => {
-      setCurrentLanguage(event.detail.language);
+      if (event && event.detail && event.detail.language) {
+        setCurrentLanguage(event.detail.language);
+      }
     };
 
     window.addEventListener('languageChanged', handleLanguageChange);
@@ -17,12 +39,33 @@ const LanguageSwitcher = ({ className = '', size = 'md' }) => {
   }, []);
 
   const handleLanguageSelect = (languageCode) => {
-    languageService.setLanguage(languageCode);
+    try {
+      if (languageService && typeof languageService.setLanguage === 'function') {
+        languageService.setLanguage(languageCode);
+      }
+    } catch (error) {
+      console.warn('Error setting language:', error);
+    }
     setIsOpen(false);
   };
 
   const getCurrentLanguageName = () => {
-    return languageService.getLanguageName(currentLanguage);
+    try {
+      if (languageService && typeof languageService.getLanguageName === 'function') {
+        return languageService.getLanguageName(currentLanguage);
+      }
+    } catch (error) {
+      console.warn('Error getting language name:', error);
+    }
+    
+    // Fallback language names
+    const fallbackNames = {
+      'en': 'English',
+      'fr': 'Français',
+      'es': 'Español'
+    };
+    
+    return fallbackNames[currentLanguage] || currentLanguage;
   };
 
   const sizeClasses = {

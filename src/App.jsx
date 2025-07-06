@@ -47,6 +47,9 @@ const StatisticsPage = lazy(() => import("./pages/Dashboards/Admin/Statistics/St
 const AdminDeliveryManagement = lazy(() => import("./pages/Dashboards/Admin/Delivery/delivery_managemnet"));
 const PromotionManagement = lazy(() => import("./pages/Dashboards/Admin/Promotion/promotion"));
 
+// Import OrderProvider
+const OrderProviderModule = lazy(() => import("./pages/Dashboards/Restaurants/command/restaurant_command"));
+
 // Agent Support pages
 const SupportTicketsPage = lazy(() => import("./pages/Dashboards/Agent/Tickets/ticketsPage"));
 const SupportDisputesPage = lazy(() => import("./pages/Dashboards/Agent/Disputes/DisputesPage"));
@@ -79,7 +82,8 @@ const ClientsProfilePage = lazy(() => import("./pages/Dashboards/Clients/Profil/
 const ClientsLayout = lazy(() => import("./layouts/clients_layout"));
 const DeliveryLayout = lazy(() => import("./layouts/delivery_layout"));
 const RestaurantLayoutWithProviders = lazy(() => import("./layouts/restaurants_layout"));
-const AdminRestaurantProvider = lazy(() => import("./layouts/admin_layout"));
+const AdminLayout = lazy(() => import("./layouts/admin_layout"));
+const AdminRestaurantProvider = lazy(() => import("./pages/Dashboards/Admin/Restaurants/RestaurantsList").then(module => ({ default: module.AdminRestaurantProvider })));
 
 // Common components
 const DashboardRedirect = lazy(() => import("./components/CommonShare/test"));
@@ -193,7 +197,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminDashboard />
+                        <AdminLayout>
+                          <AdminDashboard />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   }
@@ -203,7 +209,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <UserListPage />
+                        <AdminLayout>
+                          <UserListPage />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -213,7 +221,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <RestaurantManagement />
+                        <AdminLayout>
+                          <RestaurantManagement />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -223,7 +233,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminContactMessages />
+                        <AdminLayout>
+                          <AdminContactMessages />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -233,7 +245,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminOrdersPage />
+                        <AdminLayout>
+                          <AdminOrdersPage />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -243,7 +257,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <StatisticsPage />
+                        <AdminLayout>
+                          <StatisticsPage />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -253,7 +269,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminDeliveryManagement />
+                        <AdminLayout>
+                          <AdminDeliveryManagement />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -263,7 +281,9 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <PromotionManagement />
+                        <AdminLayout>
+                          <PromotionManagement />
+                        </AdminLayout>
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 

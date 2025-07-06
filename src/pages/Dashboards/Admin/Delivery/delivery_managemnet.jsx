@@ -38,7 +38,6 @@ import {
   FiGlobe
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import AdminLayout from '../../../../layouts/admin_layout';
 
 // Fonction pour générer des données de livraison fictives
 const generateMockDeliveries = () => {

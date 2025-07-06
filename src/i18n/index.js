@@ -1048,6 +1048,9 @@ function updateDocumentTitle(lng) {
 
 export default i18n;
 
+// Named export for i18n
+export { i18n };
+
 export const changeLanguage = (lng) => {
   return i18n.changeLanguage(lng);
 };
@@ -1057,28 +1060,62 @@ export const getCurrentLanguage = () => {
 };
 
 export const getAvailableLanguages = () => {
-  return Object.keys(resources);
+  try {
+    return Object.keys(resources || {});
+  } catch (error) {
+    console.warn('Error getting available languages:', error);
+    return ['en', 'fr'];
+  }
 };
 
 export const isLanguageSupported = (lng) => {
-  return getAvailableLanguages().includes(lng);
+  try {
+    const availableLanguages = getAvailableLanguages();
+    return availableLanguages && availableLanguages.includes && availableLanguages.includes(lng);
+  } catch (error) {
+    console.warn('Error checking language support:', error);
+    return false;
+  }
 };
 
 const detectInitialLanguage = () => {
-  const savedLanguage = localStorage.getItem('eat-fast-language');
-  if (savedLanguage && isLanguageSupported(savedLanguage)) {
-    return savedLanguage;
+  try {
+    const savedLanguage = localStorage.getItem('eat-fast-language');
+    if (savedLanguage && isLanguageSupported(savedLanguage)) {
+      return savedLanguage;
+    }
+    
+    const browserLanguage = (navigator.language || 'en').split('-')[0];
+    if (isLanguageSupported(browserLanguage)) {
+      return browserLanguage;
+    }
+    
+    return 'en';
+  } catch (error) {
+    console.warn('Error detecting initial language:', error);
+    return 'en';
   }
-  
-  const browserLanguage = navigator.language.split('-')[0];
-  if (isLanguageSupported(browserLanguage)) {
-    return browserLanguage;
-  }
-  
-  return 'en';
 };
 
 const initialLanguage = detectInitialLanguage();
 if (initialLanguage !== i18n.language) {
-  i18n.changeLanguage(initialLanguage);
+  try {
+    i18n.changeLanguage(initialLanguage);
+  } catch (error) {
+    console.warn('Failed to set initial language:', error);
+  }
 }
+
+// Add error handling for i18n initialization
+i18n.on('failedLoading', (lng, ns, msg) => {
+  console.warn(`Failed to load translation for ${lng}/${ns}:`, msg);
+});
+
+i18n.on('missingKey', (lng, ns, key, fallbackValue) => {
+  console.warn(`Missing translation key: ${key} in ${lng}/${ns}`);
+});
+
+// Export a function to check if i18n is ready
+export const isI18nReady = () => {
+  return i18n.isInitialized;
+};
