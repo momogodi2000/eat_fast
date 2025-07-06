@@ -109,50 +109,83 @@ const animations = {
 
 // Mock Data - Enhanced
 const mockData = {
-  teamMembers: [
+teamMembers: [
     {
       id: 1,
       name: 'Madame Fina Nguenang',
       role: 'CEO & Fondatrice',
       image: 'https://images.unsplash.com/photo-1494790108755-2616b612b0e1?w=300&h=300&fit=crop&crop=face',
-      description: 'Visionnaire passionnée avec plus de 10 ans d\'expérience dans l\'industrie alimentaire et la technologie.',
+      description: 'Visionnaire passionnée avec plus de 10 ans d\'expérience dans l\'industrie alimentaire et la technologie. Elle a piloté la transformation digitale de plusieurs entreprises africaines.',
       linkedin: '#',
       email: 'fina@eatfast.cm',
       achievements: ['Forbes 30 Under 30', 'Tech Leader Award 2023'],
-      quote: "Notre mission est de connecter chaque camerounais à ses saveurs préférées."
+      quote: "Notre mission est de connecter chaque camerounais à ses saveurs préférées tout en préservant notre patrimoine culinaire."
     },
     {
       id: 2,
       name: 'Monsieur Alain Talla',
       role: 'CTO & Co-fondateur',
       image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&h=300&fit=crop&crop=face',
-      description: 'Expert en développement logiciel spécialisé dans les plateformes de livraison évolutives.',
+      description: 'Expert en développement logiciel avec plus de 12 ans d\'expérience dans les plateformes de livraison évolutives et les architectures cloud distribuées.',
       linkedin: '#',
       email: 'alain@eatfast.cm',
       achievements: ['Google Developer Expert', 'AWS Solutions Architect'],
-      quote: "La technologie doit servir l'humain, pas l'inverse."
+      quote: "La technologie doit servir l'humain et créer des ponts entre les cultures."
     },
     {
       id: 3,
-      name: 'Monsieur Momo Yvan',
-      role: 'Lead Developer',
+      name: 'Monsieur Momo Godi Yvan',
+      role: 'CTO & Co-fondateur, Lead Developer',
       image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&h=300&fit=crop&crop=face',
-      description: 'Développeur talentueux spécialisé dans l\'expérience utilisateur et les interfaces modernes.',
+      description: 'Développeur full-stack chevronné et co-fondateur technique, spécialisé dans l\'expérience utilisateur, les interfaces modernes et l\'architecture logicielle. Il supervise toute l\'équipe de développement.',
       linkedin: '#',
       email: 'yvan@eatfast.cm',
-      achievements: ['React Expert', 'UI/UX Certification'],
-      quote: "Chaque ligne de code doit améliorer la vie de nos utilisateurs."
+      achievements: ['React Expert', 'Node.js Specialist', 'UI/UX Certification'],
+      quote: "Chaque ligne de code doit améliorer la vie de nos utilisateurs et respecter notre engagement qualité."
     },
     {
       id: 4,
       name: 'Madame Sarah Fokam',
       role: 'Head of Design',
       image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=300&h=300&fit=crop&crop=face',
-      description: 'Designer créative garantissant que notre plateforme soit à la fois belle et intuitive.',
+      description: 'Designer créative avec 8 ans d\'expérience, garantissant que notre plateforme soit à la fois belle, intuitive et accessible à tous les utilisateurs camerounais.',
       linkedin: '#',
       email: 'sarah@eatfast.cm',
       achievements: ['Adobe Certified Expert', 'Design Thinking Master'],
-      quote: "Le design c'est résoudre des problèmes avec beauté."
+      quote: "Le design c'est résoudre des problèmes avec beauté tout en respectant la diversité culturelle."
+    },
+    {
+      id: 5,
+      name: 'Monsieur Carlson Divinson Siyam',
+      role: 'Senior Developer',
+      image: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&h=300&fit=crop&crop=face',
+      description: 'Développeur senior basé au Canada, étudiant à Polytechnique Montréal. Spécialisé dans les systèmes distribués et l\'optimisation des performances.',
+      linkedin: '#',
+      email: 'carlson@eatfast.cm',
+      achievements: ['Polytechnique Montréal', 'Distributed Systems Expert'],
+      quote: "L'innovation naît de la collaboration entre les continents et les cultures."
+    },
+    {
+      id: 6,
+      name: 'Mademoiselle Sonia',
+      role: 'Junior Developer',
+      image: 'https://images.unsplash.com/photo-1544725176-7c40e5a71c5e?w=300&h=300&fit=crop&crop=face',
+      description: 'Développeuse junior prometteuse en 3ème année à l\'UCAC-ICAM Douala. Passionnée par le développement mobile et les nouvelles technologies.',
+      linkedin: '#',
+      email: 'sonia@eatfast.cm',
+      achievements: ['UCAC-ICAM Douala', 'Mobile Dev Enthusiast'],
+      quote: "Apprendre, créer et innover pour transformer l'avenir du Cameroun."
+    },
+    {
+      id: 7,
+      name: 'Monsieur Wilfred',
+      role: 'Junior Developer',
+      image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop&crop=face',
+      description: 'Développeur junior talentueux en 3ème année à l\'UCAC-ICAM Douala. Spécialisé dans le développement web et les API REST.',
+      linkedin: '#',
+      email: 'wilfred@eatfast.cm',
+      achievements: ['UCAC-ICAM Douala', 'Web Dev Specialist'],
+      quote: "Chaque défi technique est une opportunité d'apprendre et de grandir."
     }
   ],
 
