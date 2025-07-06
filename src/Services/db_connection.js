@@ -1,19 +1,18 @@
-// src/services/db_connection.js
+// src/Services/db_connection.js
 import axios from 'axios';
 
-// API Configuration
- const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
-  TIMEOUT: 30000, // 30 seconds for file uploads
+// API Configuration for Express.js Backend
+const API_CONFIG = {
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://your-express-backend.onrender.com',
+  TIMEOUT: 30000, // 30 seconds
   VERSION: 'v1',
- 
 };
 
-export  const baseURI =  `${API_CONFIG.BASE_URL}/api/${API_CONFIG.VERSION}`
+export const baseURI = `${API_CONFIG.BASE_URL}/api/${API_CONFIG.VERSION}`;
 
 // Create axios instance with default configuration
 export const apiClient = axios.create({
-  baseURL: `${API_CONFIG.BASE_URL}/api/${API_CONFIG.VERSION}`,
+  baseURL: baseURI,
   timeout: API_CONFIG.TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
@@ -23,8 +22,8 @@ export const apiClient = axios.create({
 // Request interceptor - Add auth token if available
 apiClient.interceptors.request.use(
   (config) => {
-    // Add authentication token if available
-    const token = localStorage.getItem('authToken');
+    // Add Firebase Auth token if available
+    const token = localStorage.getItem('firebaseToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -87,12 +86,12 @@ apiClient.interceptors.response.use(
 
     // Handle common error scenarios
     if (error.response) {
-      // Server responded with error status
       const { status, data } = error.response;
       
       switch (status) {
         case 401:
           // Unauthorized - clear token and redirect to login
+          localStorage.removeItem('firebaseToken');
           localStorage.removeItem('authToken');
           if (window.location.pathname !== '/login') {
             window.location.href = '/login';
@@ -100,27 +99,22 @@ apiClient.interceptors.response.use(
           break;
           
         case 403:
-          // Forbidden - user doesn't have permission
           console.warn('Access forbidden - insufficient permissions');
           break;
           
         case 404:
-          // Not found
           console.warn('Resource not found');
           break;
           
         case 422:
-          // Validation error
           console.warn('Validation error:', data);
           break;
           
         case 429:
-          // Rate limit exceeded
           console.warn('Rate limit exceeded - please try again later');
           break;
           
         case 500:
-          // Server error
           console.error('Server error - please try again later');
           break;
           
@@ -159,7 +153,7 @@ apiClient.interceptors.response.use(
 class DBConnection {
   constructor() {
     this.client = apiClient;
-    this.baseURL = API_CONFIG.BASE_URL;
+    this.baseURL = baseURI;
   }
 
   // Generic GET request
@@ -205,144 +199,58 @@ class DBConnection {
     }
   }
 
-  // File upload request (multipart/form-data)
-  async uploadFiles(url, formData, onUploadProgress = null) {
+  // File upload with progress
+  async uploadFile(url, formData, onProgress) {
     try {
-      const config = {
+      const response = await this.client.post(url, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
-        timeout: 60000, // 60 seconds for file uploads
-      };
-
-      if (onUploadProgress) {
-        config.onUploadProgress = onUploadProgress;
-      }
-
-      const response = await this.client.post(url, formData, config);
+        onUploadProgress: this.getUploadProgressHandler(onProgress),
+      });
       return response.data;
     } catch (error) {
       throw this.handleError(error);
     }
   }
 
-  // Health check
-  async healthCheck() {
-    try {
-      const response = await this.client.get('/partner-applications/health');
-      return response.data;
-    } catch (error) {
-      throw this.handleError(error);
-    }
-  }
-
-  // Set authentication token
-  setAuthToken(token) {
-    if (token) {
-      localStorage.setItem('authToken', token);
-      this.client.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    } else {
-      localStorage.removeItem('authToken');
-      delete this.client.defaults.headers.common['Authorization'];
-    }
-  }
-
-  // Get authentication token
-  getAuthToken() {
-    return localStorage.getItem('authToken');
-  }
-
-  // Check if user is authenticated
-  isAuthenticated() {
-    return !!this.getAuthToken();
-  }
-
-  // Handle error formatting
+  // Error handler
   handleError(error) {
     if (error.response) {
-      // API error response
       return {
         success: false,
         status: error.response.status,
-        message: error.response.data?.message || 'Une erreur est survenue',
+        message: error.response.data?.message || 'Server error occurred',
         errors: error.response.data?.errors || [],
         data: error.response.data,
       };
-    } else if (error.request) {
-      // Network error
-      return {
-        success: false,
-        status: 0,
-        message: 'Erreur de connexion - vérifiez votre connexion internet',
-        errors: ['Impossible de se connecter au serveur'],
-      };
-    } else {
-      // Other error
-      return {
-        success: false,
-        status: 0,
-        message: error.message || 'Une erreur inattendue est survenue',
-        errors: [error.message || 'Erreur inconnue'],
-      };
     }
+    
+    return {
+      success: false,
+      status: 0,
+      message: error.message || 'Network error occurred',
+      errors: [error.message || 'Unknown error'],
+    };
   }
 
-  // Create FormData from object (helper for file uploads)
-  createFormData(data) {
-    const formData = new FormData();
-    
-    Object.keys(data).forEach(key => {
-      const value = data[key];
-      
-      if (value !== null && value !== undefined) {
-        if (Array.isArray(value)) {
-          // Handle arrays (like photos)
-          value.forEach((item, index) => {
-            if (item instanceof File) {
-              formData.append(key, item);
-            } else {
-              formData.append(`${key}[${index}]`, item);
-            }
-          });
-        } else if (value instanceof File) {
-          // Handle single file
-          formData.append(key, value);
-        } else if (typeof value === 'object') {
-          // Handle objects (convert to JSON string)
-          formData.append(key, JSON.stringify(value));
-        } else {
-          // Handle primitive values
-          formData.append(key, value.toString());
-        }
-      }
-    });
-    
-    return formData;
-  }
-
-  // Validate file before upload
+  // File validation
   validateFile(file, options = {}) {
     const {
-      maxSize = 10 * 1024 * 1024, // 10MB default
-      allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'],
-      maxFiles = 5,
+      maxSize = 5 * 1024 * 1024, // 5MB default
+      allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
     } = options;
 
     const errors = [];
 
-    if (!file) {
-      errors.push('Aucun fichier sélectionné');
-      return { isValid: false, errors };
-    }
-
     // Check file size
     if (file.size > maxSize) {
-      errors.push(`Le fichier est trop volumineux. Taille maximale: ${Math.round(maxSize / 1024 / 1024)}MB`);
+      errors.push(`File too large. Maximum size: ${Math.round(maxSize / 1024 / 1024)}MB`);
     }
 
     // Check file type
     if (!allowedTypes.includes(file.type)) {
-      errors.push(`Type de fichier non autorisé. Types acceptés: ${allowedTypes.join(', ')}`);
+      errors.push(`File type not allowed. Allowed types: ${allowedTypes.join(', ')}`);
     }
 
     return {
@@ -378,10 +286,54 @@ export { DBConnection };
 
 // Export configuration for testing/customization
 export const API_ENDPOINTS = {
-  PARTNER_APPLICATIONS: '/partner-applications',
-  HEALTH: '/partner-applications/health',
-  STATUS: (id) => `/partner-applications/status/${id}`,
-  ADMIN: '/partner-applications/admin',
+  // Authentication endpoints
+  AUTH: {
+    REGISTER: '/auth/register',
+    LOGIN: '/auth/login',
+    LOGOUT: '/auth/logout',
+    REFRESH: '/auth/refresh-token',
+    VERIFY_EMAIL: '/auth/verify-email',
+    RESET_PASSWORD: '/auth/reset-password',
+  },
+  
+  // User endpoints
+  USERS: {
+    PROFILE: '/users/profile',
+    UPDATE: '/users/update',
+    DELETE: '/users/delete',
+    LIST: '/users',
+  },
+  
+  // Restaurant endpoints
+  RESTAURANTS: {
+    LIST: '/restaurants',
+    CREATE: '/restaurants',
+    UPDATE: (id) => `/restaurants/${id}`,
+    DELETE: (id) => `/restaurants/${id}`,
+    MENU: (id) => `/restaurants/${id}/menu`,
+  },
+  
+  // Order endpoints
+  ORDERS: {
+    LIST: '/orders',
+    CREATE: '/orders',
+    UPDATE: (id) => `/orders/${id}`,
+    CANCEL: (id) => `/orders/${id}/cancel`,
+    TRACK: (id) => `/orders/${id}/track`,
+  },
+  
+  // Payment endpoints
+  PAYMENTS: {
+    PROCESS: '/payments/process',
+    VERIFY: '/payments/verify',
+    REFUND: '/payments/refund',
+  },
+  
+  // File upload endpoints
+  UPLOADS: {
+    IMAGE: '/uploads/image',
+    DOCUMENT: '/uploads/document',
+  },
 };
 
 // Utility functions
@@ -391,9 +343,20 @@ export const handleNetworkError = (callback) => {
   if (!isOnline()) {
     callback({
       success: false,
-      message: 'Vous êtes hors ligne. Vérifiez votre connexion internet.',
+      message: 'You are offline. Please check your internet connection.',
     });
     return true;
   }
   return false;
+};
+
+// Health check function
+export const healthCheck = async () => {
+  try {
+    const response = await dbConnection.get('/health');
+    return response;
+  } catch (error) {
+    console.error('Health check failed:', error);
+    return { status: 'error', message: 'Service unavailable' };
+  }
 };

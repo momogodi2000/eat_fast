@@ -1,277 +1,412 @@
+// src/Services/userLogin/authService.js
 import { baseURI } from "../db_connection";
-
-const postFunction = (userData) => {
-  const options = {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(userData),
-  };
-
-  return options;
-};
+import { 
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  sendEmailVerification,
+  updateProfile,
+  getAuth,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { auth } from '../firebase/config'; // Assume you have Firebase config
 
 class AuthService {
   constructor() {
-    //this.apiClient = dbConnection;
-    this.baseEndpoint = `${baseURI}/auth`; // Updated to use menu endpoints
-    this.partnerEndPoint = `${baseURI}/partner-application`;
+    this.baseEndpoint = `${baseURI}/auth`;
+    this.userEndpoint = `${baseURI}/users`;
+    this.currentUser = null;
+    
+    // Listen to auth state changes
+    this.initAuthListener();
   }
 
+  // Initialize Firebase Auth listener
+  initAuthListener() {
+    onAuthStateChanged(auth, (user) => {
+      this.currentUser = user;
+      if (user) {
+        // Store Firebase token for API calls
+        user.getIdToken().then(token => {
+          localStorage.setItem('firebaseToken', token);
+        });
+      } else {
+        localStorage.removeItem('firebaseToken');
+        localStorage.removeItem('userProfile');
+      }
+    });
+  }
+
+  // Register new user with Firebase + Express backend
   async createUser(userData) {
     try {
-      // Si delivery ou restaurant_manager avec documents → route partner
-      if (
-        ["delivery", "restaurant_manager"].includes(userData.user_type) &&
-        userData.documents?.length > 0
-      ) {
-        return await this.submitPartnerApplication(userData);
-      }
+      // 1. Create user in Firebase
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        userData.email,
+        userData.password
+      );
+      
+      const firebaseUser = userCredential.user;
+      
+      // 2. Update Firebase profile
+      await updateProfile(firebaseUser, {
+        displayName: `${userData.first_name} ${userData.last_name}`,
+      });
+      
+      // 3. Send email verification
+      await sendEmailVerification(firebaseUser);
+      
+      // 4. Get Firebase token
+      const firebaseToken = await firebaseUser.getIdToken();
+      
+      // 5. Create user profile in Express backend
+      const backendUserData = {
+        firebase_uid: firebaseUser.uid,
+        email: userData.email,
+        first_name: userData.first_name,
+        last_name: userData.last_name,
+        phone_number: userData.phone_number,
+        user_type: userData.user_type || 'client',
+        role: userData.user_type || 'client',
+      };
+      
       const options = {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${firebaseToken}`
         },
-        body: JSON.stringify(userData),
+        body: JSON.stringify(backendUserData),
       };
-      const response = await fetch(`${this.baseEndpoint}/register`, options);
-
+      
+      const response = await fetch(`${this.userEndpoint}/create`, options);
       const responseData = await response.json();
-      return responseData;
+      
+      if (!response.ok) {
+        // If backend fails, delete Firebase user
+        await firebaseUser.delete();
+        throw new Error(responseData.error || "Failed to create user profile");
+      }
+      
+      return {
+        success: true,
+        message: "Account created successfully. Please verify your email.",
+        user: {
+          firebase_uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          ...responseData.user
+        },
+        requiresEmailVerification: true
+      };
+      
     } catch (error) {
+      console.error("Registration error:", error);
+      
+      // Handle Firebase specific errors
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            throw new Error("This email is already registered");
+          case 'auth/weak-password':
+            throw new Error("Password is too weak. Use at least 6 characters");
+          case 'auth/invalid-email':
+            throw new Error("Invalid email address");
+          default:
+            throw new Error(error.message);
+        }
+      }
+      
       throw error;
     }
   }
 
-  // Vérifier si les documents requis sont présents
-  hasRequiredDocuments(userData) {
-    if (userData.user_type === "delivery") {
-      return (
-        userData.documents.id_document && userData.documents.driving_license
+  // Login user with Firebase
+  async getUserByLogin(loginData) {
+    try {
+      // 1. Authenticate with Firebase
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        loginData.email,
+        loginData.password
       );
+      
+      const firebaseUser = userCredential.user;
+      
+      // 2. Check if email is verified
+      if (!firebaseUser.emailVerified) {
+        await signOut(auth);
+        throw new Error("Please verify your email before logging in");
+      }
+      
+      // 3. Get Firebase token
+      const firebaseToken = await firebaseUser.getIdToken();
+      
+      // 4. Get user profile from Express backend
+      const options = {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${firebaseToken}`
+        },
+      };
+      
+      const response = await fetch(`${this.userEndpoint}/profile`, options);
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.error || "Failed to get user profile");
+      }
+      
+      // 5. Store user data
+      localStorage.setItem('userProfile', JSON.stringify(responseData.user));
+      
+      return {
+        success: true,
+        message: "Login successful",
+        user: {
+          firebase_uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          emailVerified: firebaseUser.emailVerified,
+          ...responseData.user
+        },
+        token: firebaseToken
+      };
+      
+    } catch (error) {
+      console.error("Login error:", error);
+      
+      // Handle Firebase specific errors
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/user-not-found':
+            throw new Error("No account found with this email");
+          case 'auth/wrong-password':
+            throw new Error("Incorrect password");
+          case 'auth/invalid-email':
+            throw new Error("Invalid email address");
+          case 'auth/user-disabled':
+            throw new Error("This account has been disabled");
+          case 'auth/too-many-requests':
+            throw new Error("Too many failed attempts. Please try again later");
+          default:
+            throw new Error(error.message);
+        }
+      }
+      
+      throw error;
     }
-
-    if (userData.user_type === "restaurant_manager") {
-      return (
-        userData.documents.id_document &&
-        userData.documents.business_license &&
-        userData.documents.health_certificate
-      );
-    }
-
-    return false;
   }
 
-  async submitPartnerApplication(userData) {
-    const formData = new FormData();
-
-    // Mapper vos données vers le format partner
-    formData.append(
-      "contact_name",
-      `${userData.first_name} ${userData.last_name}`
-    );
-    formData.append("email", userData.email);
-    formData.append("phone", userData.phone_number);
-    formData.append("terms_accepted", "true");
-
-    // Type de partenaire
-    if (userData.user_type === "delivery") {
-      formData.append("partner_type", "delivery-agent");
-      formData.append("address", "À compléter");
-      formData.append("city", "Yaoundé");
-      formData.append("vehicle_type", "motorcycle");
-      formData.append("driving_license", "Voir documents");
-    } else if (userData.user_type === "restaurant_manager") {
-      formData.append("partner_type", "restaurant");
-      formData.append("business_name", `Restaurant ${userData.first_name}`);
-      formData.append("cuisine_type", "Local");
-      formData.append("capacity", "50");
-      formData.append("opening_hours", "08:00-22:00");
-      formData.append("address", "À compléter");
-      formData.append("city", "Yaoundé");
-      formData.append("legal_status", "sole_proprietor");
-      formData.append("tax_id", "À fournir");
+  // Logout user
+  async logout() {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('firebaseToken');
+      localStorage.removeItem('userProfile');
+      
+      return {
+        success: true,
+        message: "Logged out successfully"
+      };
+    } catch (error) {
+      console.error("Logout error:", error);
+      throw new Error("Failed to logout");
     }
-
-    // Ajouter les fichiers
-    userData.documents.forEach((file, index) => {
-      if (index === 0) {
-        formData.append("id_document", file);
-      } else if (index === 1) {
-        formData.append("health_certificate", file);
-      } else {
-        formData.append("photos", file);
-      }
-    });
-
-    const response = await fetch(this.partnerEndPoint, {
-      method: "POST",
-      body: formData,
-    });
-
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      throw new Error(responseData.message || "Erreur soumission");
-    }
-
-    // Retourner format attendu par votre frontend
-    return {
-      first_name: userData.first_name,
-      last_name: userData.last_name,
-      email: userData.email,
-      phone_number: userData.phone_number,
-      user_type: userData.user_type,
-      id: responseData.data?.id,
-      status: "inactive",
-    };
   }
 
-  async submitPartnerApplication(userData) {
-    const formData = new FormData();
-
-    // Mapper les données de base
-    formData.append(
-      "contact_name",
-      `${userData.first_name} ${userData.last_name}`
-    );
-    formData.append("email", userData.email);
-    formData.append("phone", userData.phone_number);
-    formData.append("terms_accepted", "true");
-
-    // Mapper selon le type d'utilisateur
-    if (userData.user_type === "delivery") {
-      formData.append("partner_type", "delivery-agent");
-      formData.append("address", userData.address);
-      formData.append("city", userData.city);
-      formData.append("vehicle_type", userData.vehicle_type);
-      formData.append("driving_license", "Voir document joint");
-
-      // MAPPER LES DOCUMENTS SPÉCIFIQUES vers les champs attendus par votre backend
-      if (userData.documents.id_document) {
-        formData.append("id_document", userData.documents.id_document);
-      }
-
-      // Votre backend attend peut-être 'health_certificate' même pour delivery
-      // On peut utiliser le permis de conduire comme "certificat"
-      if (userData.documents.driving_license) {
-        formData.append(
-          "health_certificate",
-          userData.documents.driving_license
-        );
-      }
-
-      // Si assurance présente, l'ajouter comme photo supplémentaire
-      if (userData.documents.insurance) {
-        formData.append("photos", userData.documents.insurance);
-      }
-    } else if (userData.user_type === "restaurant_manager") {
-      formData.append("partner_type", "restaurant");
-      formData.append("business_name", `Restaurant ${userData.first_name}`);
-      formData.append("cuisine_type", "Cuisine locale");
-      formData.append("capacity", "50");
-      formData.append("opening_hours", "08:00-22:00");
-      formData.append("address", userData.address);
-      formData.append("city", userData.city);
-      formData.append("legal_status", "sole_proprietor");
-      formData.append("tax_id", "À fournir lors de l'activation");
-
-      // MAPPER LES DOCUMENTS SPÉCIFIQUES
-      if (userData.documents.id_document) {
-        formData.append("id_document", userData.documents.id_document);
-      }
-
-      if (userData.documents.health_certificate) {
-        formData.append(
-          "health_certificate",
-          userData.documents.health_certificate
-        );
-      }
-
-      // Business license peut aller comme photo ou document supplémentaire
-      if (userData.documents.business_license) {
-        formData.append("photos", userData.documents.business_license);
-      }
-
-      // Menu optionnel
-      if (userData.documents.menu) {
-        formData.append("menu", userData.documents.menu);
-      }
-    }
-
-    // Appeler votre route partner-application existante
-    const response = await fetch(this.partnerEndpoint, {
-      method: "POST",
-      body: formData,
-    });
-
-    const responseData = await response.json();
-
-    if (!response.ok) {
-      throw new Error(responseData.message || "Erreur lors de la soumission");
-    }
-
-    // Retourner le format attendu par votre frontend
-    return {
-      first_name: userData.first_name,
-      last_name: userData.last_name,
-      email: userData.email,
-      phone_number: userData.phone_number,
-      user_type: userData.user_type,
-      id: responseData.data?.id,
-      status: "pending",
-      partner_application_id: responseData.data?.id,
-    };
+  // Get current user
+  getCurrentUser() {
+    const userProfile = localStorage.getItem('userProfile');
+    return userProfile ? JSON.parse(userProfile) : null;
   }
 
-  // Méthode pour obtenir la liste des documents requis (pour affichage)
+  // Check if user is authenticated
+  isAuthenticated() {
+    return !!this.currentUser && !!localStorage.getItem('firebaseToken');
+  }
+
+  // Update user profile
+  async updateUserProfile(userData) {
+    try {
+      const firebaseToken = localStorage.getItem('firebaseToken');
+      if (!firebaseToken) {
+        throw new Error("User not authenticated");
+      }
+      
+      const options = {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${firebaseToken}`
+        },
+        body: JSON.stringify(userData),
+      };
+      
+      const response = await fetch(`${this.userEndpoint}/profile`, options);
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.error || "Failed to update profile");
+      }
+      
+      // Update local storage
+      localStorage.setItem('userProfile', JSON.stringify(responseData.user));
+      
+      return {
+        success: true,
+        message: "Profile updated successfully",
+        user: responseData.user
+      };
+      
+    } catch (error) {
+      console.error("Profile update error:", error);
+      throw error;
+    }
+  }
+
+  // Send password reset email
+  async resetPassword(email) {
+    try {
+      const { sendPasswordResetEmail } = await import('firebase/auth');
+      await sendPasswordResetEmail(auth, email);
+      
+      return {
+        success: true,
+        message: "Password reset email sent"
+      };
+    } catch (error) {
+      console.error("Password reset error:", error);
+      
+      if (error.code === 'auth/user-not-found') {
+        throw new Error("No account found with this email");
+      }
+      
+      throw new Error("Failed to send password reset email");
+    }
+  }
+
+  // Upload user documents (for restaurant managers and delivery personnel)
+  async uploadDocuments(documents) {
+    try {
+      const firebaseToken = localStorage.getItem('firebaseToken');
+      if (!firebaseToken) {
+        throw new Error("User not authenticated");
+      }
+      
+      const formData = new FormData();
+      
+      // Add documents to FormData
+      Object.keys(documents).forEach(key => {
+        if (documents[key]) {
+          formData.append(key, documents[key]);
+        }
+      });
+      
+      const options = {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${firebaseToken}`
+        },
+        body: formData,
+      };
+      
+      const response = await fetch(`${this.userEndpoint}/documents`, options);
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.error || "Failed to upload documents");
+      }
+      
+      return {
+        success: true,
+        message: "Documents uploaded successfully",
+        documents: responseData.documents
+      };
+      
+    } catch (error) {
+      console.error("Document upload error:", error);
+      throw error;
+    }
+  }
+
+  // Get user documents status
+  async getDocumentStatus() {
+    try {
+      const firebaseToken = localStorage.getItem('firebaseToken');
+      if (!firebaseToken) {
+        throw new Error("User not authenticated");
+      }
+      
+      const options = {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${firebaseToken}`
+        },
+      };
+      
+      const response = await fetch(`${this.userEndpoint}/documents/status`, options);
+      const responseData = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(responseData.error || "Failed to get document status");
+      }
+      
+      return responseData;
+      
+    } catch (error) {
+      console.error("Document status error:", error);
+      throw error;
+    }
+  }
+
+  // Get required documents for user type
   getRequiredDocuments(userType) {
     const requirements = {
+      client: [],
       delivery: [
         {
           key: "id_document",
-          label: "Pièce d'identité (CNI ou Passeport)",
+          label: "Identity Document",
           required: true,
-          description: "Document d'identité officiel en cours de validité",
+          description: "National ID card or passport",
         },
         {
           key: "driving_license",
-          label: "Permis de conduire",
+          label: "Driving License",
           required: true,
-          description: "Permis de conduire valide pour véhicule à moteur",
+          description: "Valid motorcycle or car driving license",
         },
         {
-          key: "insurance",
-          label: "Assurance véhicule",
+          key: "vehicle_registration",
+          label: "Vehicle Registration",
           required: false,
-          description: "Attestation d'assurance de votre véhicule (recommandé)",
+          description: "Vehicle registration document (if applicable)",
         },
       ],
       restaurant_manager: [
         {
           key: "id_document",
-          label: "Pièce d'identité du gérant",
+          label: "Identity Document",
           required: true,
-          description: "Document d'identité du responsable du restaurant",
+          description: "National ID card or passport",
         },
         {
           key: "business_license",
-          label: "Licence commerciale",
+          label: "Business License",
           required: true,
-          description: "Registre du commerce ou licence d'exploitation",
+          description: "Restaurant business license",
         },
         {
           key: "health_certificate",
-          label: "Certificat sanitaire",
+          label: "Health Certificate",
           required: true,
-          description: "Autorisation d'hygiène et de salubrité",
+          description: "Food safety and hygiene certificate",
         },
         {
           key: "menu",
-          label: "Menu du restaurant",
+          label: "Restaurant Menu",
           required: false,
-          description: "Carte des plats et prix (optionnel)",
+          description: "Menu with prices (optional)",
         },
       ],
     };
@@ -279,14 +414,14 @@ class AuthService {
     return requirements[userType] || [];
   }
 
-  // Méthode pour valider les documents côté client
+  // Validate documents client-side
   validateDocuments(userType, documents) {
     const errors = {};
     const requirements = this.getRequiredDocuments(userType);
 
     requirements.forEach((req) => {
       if (req.required && !documents[req.key]) {
-        errors[req.key] = `${req.label} est requis`;
+        errors[req.key] = `${req.label} is required`;
       }
     });
 
@@ -295,58 +430,10 @@ class AuthService {
       errors,
     };
   }
-
-  async getUserByLogin(userData) {
-    try {
-      const options = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      };
-
-      const response = await fetch(`${this.baseEndpoint}/login`, options);
-
-      const responseData = await response.json();
-
-      if (!response.ok) {
-        // Erreurs spécifiques selon le code de statut
-        switch (response.status) {
-          case 404:
-            throw new Error(responseData.error || "Utilisateur non trouvé");
-          case 401:
-            throw new Error(responseData.error || "Mot de passe incorrect");
-          case 500:
-            throw new Error(
-              responseData.error || "Erreur de connexion au serveur"
-            );
-          default:
-            throw new Error(responseData.error || "Erreur de connexion");
-        }
-      }
-
-      // Succès - retourner les données
-      return {
-        success: true,
-        message: responseData.message,
-        firebase_uid: responseData.firebase_uid,
-        requiresMFA: true, // Indique qu'une vérification 2FA est nécessaire
-      };
-    } catch (error) {
-      // Gérer les erreurs réseau ou autres
-      if (error.name === "TypeError" && error.message.includes("fetch")) {
-        throw new Error(
-          "Problème de connexion réseau. Vérifiez votre connexion internet."
-        );
-      }
-
-      // Propager l'erreur avec un message utilisateur-friendly
-      throw new Error(error.message || "Erreur de connexion");
-    }
-  }
 }
 
+// Create singleton instance
 const AuthServices = new AuthService();
 
 export { AuthServices };
+export default AuthServices;
