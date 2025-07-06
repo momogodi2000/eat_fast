@@ -9,7 +9,7 @@ import {
   getAuth,
   onAuthStateChanged
 } from 'firebase/auth';
-import { auth } from '../firebase/config'; // Assume you have Firebase config
+import { auth, authHelpers } from '../firebase/config'; // Use safe auth helpers
 
 class AuthService {
   constructor() {
@@ -17,18 +17,25 @@ class AuthService {
     this.userEndpoint = `${baseURI}/users`;
     this.currentUser = null;
     
-    // Listen to auth state changes
+    // Listen to auth state changes using safe helper
     this.initAuthListener();
   }
 
-  // Initialize Firebase Auth listener
+  // Initialize Firebase Auth listener using safe helper
   initAuthListener() {
-    onAuthStateChanged(auth, (user) => {
+    if (!authHelpers.isAvailable()) {
+      console.warn('Firebase Auth not available for listener');
+      return;
+    }
+    
+    authHelpers.onAuthStateChanged((user) => {
       this.currentUser = user;
       if (user) {
         // Store Firebase token for API calls
         user.getIdToken().then(token => {
           localStorage.setItem('firebaseToken', token);
+        }).catch(error => {
+          console.error('Error getting user token:', error);
         });
       } else {
         localStorage.removeItem('firebaseToken');
@@ -40,6 +47,10 @@ class AuthService {
   // Register new user with Firebase + Express backend
   async createUser(userData) {
     try {
+      if (!auth) {
+        throw new Error('Firebase Auth not initialized');
+      }
+      
       // 1. Create user in Firebase
       const userCredential = await createUserWithEmailAndPassword(
         auth,
@@ -124,6 +135,10 @@ class AuthService {
   // Login user with Firebase
   async getUserByLogin(loginData) {
     try {
+      if (!auth) {
+        throw new Error('Firebase Auth not initialized');
+      }
+      
       // 1. Authenticate with Firebase
       const userCredential = await signInWithEmailAndPassword(
         auth,

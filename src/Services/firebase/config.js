@@ -4,7 +4,8 @@ import {
   getAuth, 
   connectAuthEmulator,
   browserSessionPersistence,
-  setPersistence
+  setPersistence,
+  onAuthStateChanged
 } from 'firebase/auth';
 import { 
   getFirestore, 
@@ -202,19 +203,36 @@ export const messagingHelpers = {
 
 // Auth helper functions
 export const authHelpers = {
+  // Safe onAuthStateChanged wrapper
+  onAuthStateChanged(callback) {
+    if (!auth) {
+      console.warn('Firebase Auth not initialized');
+      return () => {};
+    }
+    
+    try {
+      return onAuthStateChanged(auth, callback);
+    } catch (error) {
+      console.error('Error setting up auth state listener:', error);
+      return () => {};
+    }
+  },
+  
   // Check if user is authenticated
   isAuthenticated() {
-    return !!auth?.currentUser;
+    if (!auth) return false;
+    return !!auth.currentUser;
   },
   
-  // Get current user
+  // Get current user safely
   getCurrentUser() {
-    return auth?.currentUser || null;
+    if (!auth) return null;
+    return auth.currentUser;
   },
   
-  // Get current user token
+  // Get current user token safely
   async getCurrentUserToken() {
-    if (!auth?.currentUser) {
+    if (!auth || !auth.currentUser) {
       return null;
     }
     
@@ -297,15 +315,8 @@ export const connectionHelpers = {
   }
 };
 
-// Export Firebase instances
-export { 
-  app, 
-  auth, 
-  db, 
-  storage, 
-  messaging, 
-  analytics 
-};
+// Export Firebase instances with safety checks
+export { app, auth, db, storage, messaging, analytics };
 
 // Export all helpers
 export {
