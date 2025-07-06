@@ -38,7 +38,8 @@ import {
   LineChart, 
   Line,
   Area,
-  AreaChart
+  AreaChart,
+  CartesianGrid
 } from 'recharts';
 
 // Génération des données mockées améliorées
@@ -376,8 +377,8 @@ const StatisticsPage = () => {
   );
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
+      return (
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6">
         <div className="animate-pulse space-y-8">
           <div className="h-12 bg-gray-300 dark:bg-gray-700 rounded-2xl w-1/3"></div>
           <div className="h-24 bg-gray-300 dark:bg-gray-700 rounded-2xl"></div>
@@ -393,25 +394,17 @@ const StatisticsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-6">
-      {/* En-tête */}
-      <motion.div 
-        className="mb-8"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-4">
-          <div className="p-3 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-2xl">
-            <FiBarChart2 className="text-white text-3xl" />
-          </div>
-          Tableau de Bord Statistiques
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6">
+      {/* Header */}
+      <div className="mb-6">
+        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+          Statistiques et Analyses
         </h1>
-        <p className="text-gray-600 dark:text-gray-400 text-lg">
-          Analyse complète des performances de la plateforme EatFast
+        <p className="text-gray-600 dark:text-gray-400">
+          Vue d'ensemble des performances de la plateforme
         </p>
-      </motion.div>
-      
+      </div>
+
       <FilterSection />
       <TabNavigation />
       

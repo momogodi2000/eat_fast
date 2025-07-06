@@ -1,14 +1,19 @@
 // i18n.js
 import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
+import { initReactI18next, useTranslation } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 
 // Import translations
 import enTranslation from './locales/en/translation.json';
 import frTranslation from './locales/fr/translation.json';
+import enAdmin from './locales/en/admin.json';
+import frAdmin from './locales/fr/admin.json';
 
 // Import restaurant translations
 import { restaurantTranslations } from './restaurant_i18n_translations';
+
+// Import Gemini translation service
+import geminiTranslationService from '../Services/geminiTranslationService';
 
 // Merge translations
 const resources = {
@@ -16,6 +21,7 @@ const resources = {
     translation: {
       ...restaurantTranslations.en,
       ...enTranslation,
+      ...enAdmin,
 
       // Navigation
       nav: {
@@ -201,21 +207,19 @@ const resources = {
         passwordPlaceholder: 'Enter your password',
         rememberMe: 'Remember me',
         forgotPassword: 'Forgot password?',
-        submitButton: 'Sign In',
+        loginButton: 'Sign In',
         noAccount: "Don't have an account?",
-        register: 'Sign up',
-        welcomeTitle: 'Welcome Back!',
-        welcomeMessage: 'Login to access your favorite restaurants and dishes',
-        feature1: 'Track your order history and favorites',
-        feature2: 'Get personalized recommendations',
-        feature3: 'Enjoy faster checkout with saved details',
-        footerText: 'By continuing, you agree to our Terms of Service and Privacy Policy'
+        signUp: 'Sign up',
+        or: 'Or',
+        continueWithGoogle: 'Continue with Google',
+        continueWithFacebook: 'Continue with Facebook',
+        continueWithApple: 'Continue with Apple'
       },
 
       // Register
       register: {
         title: 'Create Your Account',
-        subtitle: 'Join our community and start ordering now',
+        subtitle: 'Join thousands of food lovers',
         firstName: 'First Name',
         firstNamePlaceholder: 'Enter your first name',
         lastName: 'Last Name',
@@ -227,260 +231,170 @@ const resources = {
         password: 'Password',
         passwordPlaceholder: 'Create a password',
         confirmPassword: 'Confirm Password',
-        confirmPasswordPlaceholder: 'Re-enter your password',
-        acceptTerms: 'I agree to the',
-        termsLink: 'Terms and Conditions',
-        submitButton: 'Create Account',
+        confirmPasswordPlaceholder: 'Confirm your password',
+        agreeToTerms: 'I agree to the',
+        termsAndConditions: 'Terms & Conditions',
+        and: 'and',
+        privacyPolicy: 'Privacy Policy',
+        registerButton: 'Create Account',
         alreadyHaveAccount: 'Already have an account?',
-        loginLink: 'Log in',
-        welcomeTitle: 'Join EatFast Today!',
-        welcomeMessage: 'Create an account to enjoy these benefits:',
-        feature1: 'Fast delivery to your doorstep',
-        feature2: 'Exclusive deals and discounts',
-        feature3: 'Personalized recommendations',
-        footerText: 'By creating an account, you agree to our Terms of Service and Privacy Policy',
-        backToHome: 'Back to home'
+        signIn: 'Sign in',
+        or: 'Or',
+        continueWithGoogle: 'Continue with Google',
+        continueWithFacebook: 'Continue with Facebook',
+        continueWithApple: 'Continue with Apple'
       },
 
-      // Form
-      form: {
-        requiredField: 'This field is required',
-        invalidEmail: 'Please enter a valid email',
-        passwordLength: 'Password must be at least 8 characters',
-        passwordMatch: 'Passwords must match',
-        invalidPhone: 'Please enter a valid phone number'
+      // Forgot Password
+      forgotPassword: {
+        title: 'Reset Your Password',
+        subtitle: 'Enter your email to receive reset instructions',
+        email: 'Email',
+        emailPlaceholder: 'Enter your email',
+        resetButton: 'Send Reset Link',
+        backToLogin: 'Back to Login',
+        checkEmail: 'Check your email',
+        instructionsSent: 'We\'ve sent password reset instructions to your email'
       },
 
       // Dashboard
       dashboard: {
-        dashboard: 'Dashboard',
-        total_orders: 'Total Orders',
-        active_restaurants: 'Active Restaurants',
-        total_revenue: 'Total Revenue',
-        registered_users: 'Registered Users',
-        avg_delivery_time: 'Average Delivery Time',
-        pending_deliveries: 'Pending Deliveries',
-        from_last_month: 'from last month',
-        new_this_month: 'new this month',
-        new_users: 'new users',
-        from_yesterday: 'from yesterday',
-        monthly_orders: 'Monthly Orders',
-        restaurants_by_category: 'Restaurants by Category',
-        recent_activity: 'Recent Activity',
-        new_order: 'New Order',
-        restaurant_name: 'Example Restaurant',
-        delivery_to: 'delivery to',
-        customer_name: 'Example Customer',
-        minutes_ago: 'minutes ago',
-        theme_changed: 'Theme changed',
-        language_changed: 'Language changed'
-      },
-
-      // Admin Navigation
-      users: 'Users',
-      delivery: 'Delivery',
-      orders: 'Orders',
-      messages: 'Messages',
-      contactMessages: 'Contact Messages',  
-      statistics: 'Statistics',
-      promotions: 'Promotions',
-      settings: 'Settings',
-      logout: 'Logout',
-
-      // User Management
-      userManagement: {
-        title: 'User Management',
-        addUser: 'Add User',
-        editUser: 'Edit User',
-        deleteUser: 'Delete',
-        deleteUserConfirmation: 'Are you sure you want to delete this user?',
-        search: 'Search users...',
-        statusAll: 'All Statuses',
-        statusActive: 'Active',
-        statusInactive: 'Inactive',
-        roles: {
-          admin: 'Admin',
-          livreur: 'Delivery',
-          client: 'Client'
-        },
-        id: 'ID',
-        name: 'Name',
-        email: 'Email',
-        role: 'Role',
-        status: 'Status',
-        registered: 'Registered',
-        actions: 'Actions',
-        showing: 'Showing',
-        to: 'to',
-        of: 'of',
-        results: 'results',
-        previous: 'Previous',
-        next: 'Next',
-        noUsers: 'No users found',
-        export: 'Export to CSV',
-        refresh: 'Refresh',
-        filters: 'Filters',
-        createdAt: 'Created At',
-        lastLogin: 'Last Login',
-        phone: 'Phone',
-        address: 'Address',
-        orders: 'Orders'
-      },
-
-      // User Form
-      userForm: {
-        createTitle: 'Create New User',
-        editTitle: 'Edit User',
-        name: 'Full Name',
-        namePlaceholder: 'Enter full name',
-        email: 'Email',
-        emailPlaceholder: 'Enter email address',
-        phone: 'Phone',
-        phonePlaceholder: 'Enter phone number',
-        role: 'Role',
-        status: 'Status',
-        address: 'Address',
-        addressPlaceholder: 'Enter full address',
-        password: 'Password',
-        passwordPlaceholder: 'Enter password',
-        confirmPassword: 'Confirm Password',
-        confirmPasswordPlaceholder: 'Re-enter password',
-        cancel: 'Cancel',
-        create: 'Create',
-        update: 'Update',
-        saving: 'Saving...',
-        errors: {
-          nameRequired: 'Name is required',
-          emailRequired: 'Email is required',
-          emailInvalid: 'Please enter a valid email',
-          phoneRequired: 'Phone is required',
-          passwordRequired: 'Password is required',
-          passwordLength: 'Password must be at least 6 characters',
-          passwordMatch: 'Passwords must match',
-          addressRequired: 'Address is required'
-        },
-        statuses: {
-          active: 'Active',
-          inactive: 'Inactive'
-        },
-        roles: {
-          admin: 'Admin',
-          livreur: 'Delivery',
-          client: 'Client'
+        welcome: 'Welcome back',
+        totalOrders: 'Total Orders',
+        totalRevenue: 'Total Revenue',
+        activeRestaurants: 'Active Restaurants',
+        pendingDeliveries: 'Pending Deliveries',
+        recentOrders: 'Recent Orders',
+        viewAll: 'View All',
+        orderNumber: 'Order #',
+        status: {
+          pending: 'Pending',
+          preparing: 'Preparing',
+          delivering: 'Delivering',
+          completed: 'Completed',
+          cancelled: 'Cancelled'
         }
       },
 
-      // User Detail
-      userDetail: {
-        fullName: 'Full Name',
+      // Profile
+      profile: {
+        title: 'My Profile',
+        personalInfo: 'Personal Information',
+        contactInfo: 'Contact Information',
+        preferences: 'Preferences',
+        security: 'Security',
+        firstName: 'First Name',
+        lastName: 'Last Name',
         email: 'Email',
         phone: 'Phone',
         address: 'Address',
-        registered: 'Registered',
-        lastLogin: 'Last Login',
-        neverLoggedIn: 'Never logged in',
-        totalOrders: 'Total Orders',
-        editButton: 'Edit',
-        closeButton: 'Close'
+        city: 'City',
+        language: 'Language',
+        currency: 'Currency',
+        notifications: 'Notifications',
+        emailNotifications: 'Email Notifications',
+        pushNotifications: 'Push Notifications',
+        smsNotifications: 'SMS Notifications',
+        saveChanges: 'Save Changes',
+        changePassword: 'Change Password',
+        currentPassword: 'Current Password',
+        newPassword: 'New Password',
+        confirmNewPassword: 'Confirm New Password',
+        updatePassword: 'Update Password'
       },
 
-      // Partner Page
-      partner: {
-        heroTitle: 'Become a Partner with',
-        heroSubtitle: 'Join our network of restaurants and food businesses to reach more customers',
-        fastOnboarding: 'Fast Onboarding',
-        days: 'days',
-        location: 'Location',
-        applyNow: 'Apply Now',
-        whyJoin: 'Why Join Our Platform?',
-        whyJoinSubtitle: 'Discover the benefits of partnering with us',
-        benefit1Title: 'Increased Visibility',
-        benefit1Desc: 'Get discovered by thousands of hungry customers in your area',
-        benefit2Title: 'Marketing Support',
-        benefit2Desc: 'We promote your business through our marketing channels',
-        benefit3Title: 'Easy Management',
-        benefit3Desc: 'Simple tools to manage your menu, orders, and payments',
-        requirementsTitle: 'Partner Requirements',
-        requirementsSubtitle: 'What you need to join our platform',
-        legalRequirements: 'Legal Requirements',
-        requirement1: 'Valid business registration',
-        requirement2: 'Tax identification number',
-        requirement3: 'Health and safety certification',
-        requirement4: 'Food handling permits',
-        requirement5: 'Compliance with local regulations',
-        operationalRequirements: 'Operational Requirements',
-        operational1: 'Ability to handle online orders',
-        operational2: 'Reliable food preparation capacity',
-        operational3: 'Commitment to quality standards',
-        operational4: 'Willingness to use our platform tools',
-        operational5: 'Adherence to delivery timelines',
-        noteTitle: 'Important Note',
-        noteContent: 'Requirements may vary slightly depending on your location and business type',
-        applicationFormTitle: 'Partner Application',
-        applicationFormSubtitle: 'Fill out the form below to start your application process',
-        businessInfo: 'Business Information',
-        businessName: 'Business Name',
-        cuisineType: 'Cuisine Type',
-        capacity: 'Seating Capacity',
-        openingHours: 'Opening Hours',
-        contactInfo: 'Contact Information',
-        contactName: 'Contact Person',
-        email: 'Email Address',
-        phone: 'Phone Number',
-        locationInfo: 'Location Information',
-        address: 'Street Address',
-        city: 'City',
-        legalInfo: 'Legal Information',
-        legalStatus: 'Legal Status',
-        selectOption: 'Select an option',
-        soleProprietor: 'Sole Proprietor',
-        llc: 'LLC',
-        corporation: 'Corporation',
-        other: 'Other',
-        taxId: 'Tax ID Number',
-        documentUploads: 'Document Uploads',
-        healthCertificate: 'Health Certificate',
-        healthCertificateDesc: 'Upload your valid health certificate',
-        idDocument: 'ID Document',
-        idDocumentDesc: 'Upload owner/manager ID (passport or national ID)',
-        menu: 'Menu PDF',
-        menuDesc: 'Upload your current menu in PDF format',
-        restaurantPhotos: 'Restaurant Photos',
-        photosDesc: 'Upload 3-5 photos of your establishment (max 5)',
-        agreeToTerms1: 'I agree to the',
-        terms: 'Terms of Service',
-        and: 'and',
-        privacyPolicy: 'Privacy Policy',
-        agreeToTerms2: 'of Eat-Fast platform',
-        submitApplication: 'Submit Application',
-        processing: 'Processing...',
-        successTitle: 'Application Submitted!',
-        successMessage: 'Thank you for your application. Our team will review your information and contact you within 3-5 business days.',
-        submitAnother: 'Submit Another Application',
-        processTitle: 'Application Process',
-        processSubtitle: 'Here\'s what happens after you submit your application',
-        step1Title: 'Application Review',
-        step1Desc: 'Our team will review your application and documents',
-        step2Title: 'Onboarding Call',
-        step2Desc: 'We\'ll schedule a call to discuss partnership details',
-        step3Title: 'Account Setup',
-        step3Desc: 'We\'ll create your partner account and train your team',
-        step4Title: 'Go Live!',
-        step4Desc: 'Your restaurant will be live on our platform',
-        faqTitle: 'Frequently Asked Questions',
-        faq1Question: 'How long does the approval process take?',
-        faq1Answer: 'Typically 3-5 business days after we receive all required documents.',
-        faq2Question: 'Is there a fee to join the platform?',
-        faq2Answer: 'We charge a small commission on orders, with no upfront fees.',
-        faq3Question: 'Can I update my menu after joining?',
-        faq3Answer: 'Yes, you can update your menu anytime through your partner dashboard.',
-        faq4Question: 'How do I receive payments?',
-        faq4Answer: 'We process payments weekly via bank transfer or mobile money.',
-        faq5Question: 'What support do you provide?',
-        faq5Answer: '24/7 customer support and dedicated account manager for all partners.',
+      // Orders
+      orders: {
+        title: 'My Orders',
+        orderHistory: 'Order History',
+        currentOrders: 'Current Orders',
+        pastOrders: 'Past Orders',
+        orderNumber: 'Order #',
+        orderDate: 'Order Date',
         restaurant: 'Restaurant',
-        cloudKitchen: 'Cloud Kitchen',
-        caterer: 'Catering Service'
+        items: 'Items',
+        total: 'Total',
+        status: 'Status',
+        actions: 'Actions',
+        viewDetails: 'View Details',
+        reorder: 'Reorder',
+        rateOrder: 'Rate Order',
+        trackOrder: 'Track Order',
+        estimatedDelivery: 'Estimated Delivery',
+        deliveredAt: 'Delivered At',
+        orderItems: 'Order Items',
+        deliveryAddress: 'Delivery Address',
+        paymentMethod: 'Payment Method',
+        orderSummary: 'Order Summary',
+        subtotal: 'Subtotal',
+        deliveryFee: 'Delivery Fee',
+        tax: 'Tax',
+        total: 'Total'
+      },
+
+      // Cart
+      cart: {
+        title: 'Shopping Cart',
+        items: 'Items',
+        item: 'Item',
+        quantity: 'Quantity',
+        price: 'Price',
+        total: 'Total',
+        subtotal: 'Subtotal',
+        deliveryFee: 'Delivery Fee',
+        tax: 'Tax',
+        grandTotal: 'Grand Total',
+        emptyCart: 'Your cart is empty',
+        addItems: 'Add some delicious items to get started',
+        continueShopping: 'Continue Shopping',
+        checkout: 'Proceed to Checkout',
+        removeItem: 'Remove Item',
+        updateQuantity: 'Update Quantity',
+        clearCart: 'Clear Cart',
+        saveForLater: 'Save for Later',
+        applyCoupon: 'Apply Coupon',
+        couponCode: 'Coupon Code',
+        apply: 'Apply',
+        removeCoupon: 'Remove Coupon'
+      },
+
+      // Checkout
+      checkout: {
+        title: 'Checkout',
+        orderSummary: 'Order Summary',
+        deliveryAddress: 'Delivery Address',
+        paymentMethod: 'Payment Method',
+        orderNotes: 'Order Notes',
+        placeOrder: 'Place Order',
+        backToCart: 'Back to Cart',
+        addNewAddress: 'Add New Address',
+        selectAddress: 'Select Address',
+        addAddress: 'Add Address',
+        editAddress: 'Edit Address',
+        addressLine1: 'Address Line 1',
+        addressLine2: 'Address Line 2 (Optional)',
+        city: 'City',
+        state: 'State',
+        zipCode: 'Zip Code',
+        country: 'Country',
+        saveAddress: 'Save Address',
+        paymentOptions: 'Payment Options',
+        cashOnDelivery: 'Cash on Delivery',
+        creditCard: 'Credit Card',
+        mobileMoney: 'Mobile Money',
+        cardNumber: 'Card Number',
+        expiryDate: 'Expiry Date',
+        cvv: 'CVV',
+        cardholderName: 'Cardholder Name',
+        payNow: 'Pay Now',
+        orderNotesPlaceholder: 'Special instructions for delivery...',
+        termsAgreement: 'I agree to the Terms & Conditions and Privacy Policy',
+        orderConfirmation: 'Order Confirmation',
+        orderPlaced: 'Your order has been placed successfully!',
+        orderNumber: 'Order Number',
+        estimatedDeliveryTime: 'Estimated Delivery Time',
+        trackOrder: 'Track Order',
+        continueShopping: 'Continue Shopping'
       }
     }
   },
@@ -488,12 +402,13 @@ const resources = {
     translation: {
       ...restaurantTranslations.fr,
       ...frTranslation,
+      ...frAdmin,
 
       // Navigation
       nav: {
         home: 'Accueil',
         restaurants: 'Restaurants',
-        about: 'À propos',
+        about: 'À Propos',
         contact: 'Contact',
         account: 'Compte',
         cart: 'Panier'
@@ -501,9 +416,9 @@ const resources = {
 
       // Hero Section
       hero: {
-        title: 'Commandez de la Nourriture Délicieuse',
+        title: 'Commandez de Délicieux Repas Avec',
         subtitle: 'Livraison rapide à votre porte',
-        searchPlaceholder: 'Rechercher des restaurants ou des plats',
+        searchPlaceholder: 'Recherchez des restaurants ou des plats',
         orderButton: 'Commander Maintenant',
         becomePartner: 'Devenir Partenaire',
         delivery: 'Livraison',
@@ -515,8 +430,8 @@ const resources = {
       sections: {
         categories: 'Catégories',
         featuredRestaurants: 'Restaurants en Vedette',
-        howItWorks: 'Comment ça Marche',
-        testimonials: 'Ce que Disent Nos Clients',
+        howItWorks: 'Comment Ça Marche',
+        testimonials: 'Ce Que Disent Nos Clients',
         ourTeam: 'Notre Équipe',
         mission: 'Notre Mission',
         contactForm: 'Nous Contacter',
@@ -525,12 +440,12 @@ const resources = {
 
       // Categories
       categories: {
-        all: 'Tous',
+        all: 'Tout',
         traditional: 'Traditionnel',
         fastFood: 'Fast Food',
         vegetarian: 'Végétarien',
         italian: 'Italien',
-        seafood: 'Fruits de mer',
+        seafood: 'Fruits de Mer',
         african: 'Africain'
       },
 
@@ -538,13 +453,13 @@ const resources = {
       restaurants: {
         minutes: 'min',
         order: 'Commander',
-        searchPlaceholder: 'Rechercher des restaurants ou des plats',
+        searchPlaceholder: 'Recherchez des restaurants ou des plats',
         filters: 'Filtres',
         found: 'restaurants trouvés',
         noResults: 'Aucun restaurant ne correspond à vos filtres',
         resetFilters: 'Réinitialiser tous les filtres',
         title: 'Découvrez les Meilleurs Restaurants',
-        subtitle: 'Trouvez et commandez dans les meilleurs restaurants de votre ville',
+        subtitle: 'Trouvez et commandez auprès des meilleurs restaurants de votre ville',
         refineSearch: 'Affiner Votre Recherche',
         allCategories: 'Toutes les Catégories',
         allZones: 'Toutes les Zones',
@@ -555,8 +470,8 @@ const resources = {
         featured: 'En Vedette',
         loading: 'Chargement des restaurants...',
         noComments: 'Aucun commentaire pour le moment',
-        writeReview: 'Écrire votre avis...',
-        writeReply: 'Écrire votre réponse...',
+        writeReview: 'Écrivez votre avis...',
+        writeReply: 'Écrivez votre réponse...',
         send: 'Envoyer',
         leaveReview: 'Laisser un Avis',
         popularDishes: 'Plats Populaires',
@@ -579,10 +494,10 @@ const resources = {
       // How It Works
       howItWorks: {
         description: 'Moyen simple et facile de commander votre nourriture',
-        step1Title: 'Choisir un Restaurant',
+        step1Title: 'Choisissez un Restaurant',
         step1Description: 'Sélectionnez parmi notre gamme diversifiée de restaurants',
-        step2Title: 'Sélectionner la Nourriture',
-        step2Description: 'Parcourez les menus et sélectionnez vos plats préférés',
+        step2Title: 'Sélectionnez la Nourriture',
+        step2Description: 'Parcourez les menus et sélectionnez vos repas préférés',
         step3Title: 'Livraison Rapide',
         step3Description: 'Profitez d\'une livraison rapide à votre porte'
       },
@@ -616,7 +531,7 @@ const resources = {
 
       // Contact
       contact: {
-        title: 'Contactez-nous',
+        title: 'Contactez-Nous',
         subtitle: 'Entrez en contact avec nous',
         description: 'Des questions ? Nous aimerions avoir de vos nouvelles.',
         form: {
@@ -637,25 +552,25 @@ const resources = {
       // App
       app: {
         title: 'Téléchargez Notre Application Mobile',
-        description: 'Obtenez des offres exclusives et des commandes plus rapides',
+        description: 'Obtenez des offres exclusives à l\'application et des commandes plus rapides',
         downloadOn: 'Télécharger sur',
         getItOn: 'Disponible sur'
       },
 
       // Footer
       footer: {
-        description: 'Eatfast est votre application de livraison de repas de référence au Cameroun.',
+        description: 'Eatfast est votre application de livraison de nourriture au Cameroun.',
         quickLinks: 'Liens Rapides',
         aboutUs: 'À Propos de Nous',
         restaurants: 'Restaurants',
         becomePartner: 'Devenir Partenaire',
         careers: 'Carrières',
-        contactUs: 'Contactez-Nous',
-        legal: 'Mentions Légales',
+        contactUs: 'Nous Contacter',
+        legal: 'Légal',
         terms: 'Conditions Générales',
         privacy: 'Politique de Confidentialité',
         cookies: 'Politique des Cookies',
-        licensing: 'Licences',
+        licensing: 'Licence',
         contact: 'Contact',
         newsletter: 'Newsletter',
         emailPlaceholder: 'Votre email',
@@ -665,391 +580,324 @@ const resources = {
 
       // Login
       login: {
-        title: 'Connectez-vous à votre compte',
-        subtitle: 'Content de vous revoir! Veuillez entrer vos coordonnées',
+        title: 'Connectez-vous à Votre Compte',
+        subtitle: 'Bon retour ! Veuillez entrer vos détails',
         email: 'Email',
         emailPlaceholder: 'Entrez votre email',
-        password: 'Mot de passe',
+        password: 'Mot de Passe',
         passwordPlaceholder: 'Entrez votre mot de passe',
         rememberMe: 'Se souvenir de moi',
-        forgotPassword: 'Mot de passe oublié?',
-        submitButton: 'Se connecter',
-        noAccount: "Vous n'avez pas de compte?",
-        register: "S'inscrire",
-        welcomeTitle: 'Content de vous revoir!',
-        welcomeMessage: 'Connectez-vous pour accéder à vos restaurants et plats préférés',
-        feature1: 'Suivez votre historique de commandes et favoris',
-        feature2: 'Recevez des recommandations personnalisées',
-        feature3: 'Profitez d\'un paiement plus rapide avec vos détails enregistrés',
-        footerText: 'En continuant, vous acceptez nos Conditions d\'utilisation et notre Politique de confidentialité'
+        forgotPassword: 'Mot de passe oublié ?',
+        loginButton: 'Se Connecter',
+        noAccount: 'Vous n\'avez pas de compte ?',
+        signUp: 'S\'inscrire',
+        or: 'Ou',
+        continueWithGoogle: 'Continuer avec Google',
+        continueWithFacebook: 'Continuer avec Facebook',
+        continueWithApple: 'Continuer avec Apple'
       },
 
       // Register
       register: {
-        title: 'Créez votre compte',
-        subtitle: 'Rejoignez notre communauté et commencez à commander dès maintenant',
+        title: 'Créez Votre Compte',
+        subtitle: 'Rejoignez des milliers d\'amateurs de nourriture',
         firstName: 'Prénom',
         firstNamePlaceholder: 'Entrez votre prénom',
         lastName: 'Nom',
         lastNamePlaceholder: 'Entrez votre nom',
         email: 'Email',
         emailPlaceholder: 'Entrez votre email',
-        phone: 'Numéro de téléphone',
+        phone: 'Numéro de Téléphone',
         phonePlaceholder: 'Entrez votre numéro de téléphone',
-        password: 'Mot de passe',
+        password: 'Mot de Passe',
         passwordPlaceholder: 'Créez un mot de passe',
-        confirmPassword: 'Confirmez le mot de passe',
-        confirmPasswordPlaceholder: 'Entrez à nouveau votre mot de passe',
-        acceptTerms: 'J\'accepte les',
-        termsLink: 'Conditions générales',
-        submitButton: 'Créer un compte',
-        alreadyHaveAccount: 'Vous avez déjà un compte?',
-        loginLink: 'Connectez-vous',
-        welcomeTitle: 'Rejoignez EatFast dès aujourd\'hui!',
-        welcomeMessage: 'Créez un compte pour profiter de ces avantages:',
-        feature1: 'Livraison rapide à votre porte',
-        feature2: 'Offres et réductions exclusives',
-        feature3: 'Recommandations personnalisées',
-        footerText: 'En créant un compte, vous acceptez nos Conditions d\'utilisation et notre Politique de confidentialité',
-        backToHome: 'Retour à l\'accueil'
+        confirmPassword: 'Confirmer le Mot de Passe',
+        confirmPasswordPlaceholder: 'Confirmez votre mot de passe',
+        agreeToTerms: 'J\'accepte les',
+        termsAndConditions: 'Conditions Générales',
+        and: 'et la',
+        privacyPolicy: 'Politique de Confidentialité',
+        registerButton: 'Créer un Compte',
+        alreadyHaveAccount: 'Vous avez déjà un compte ?',
+        signIn: 'Se connecter',
+        or: 'Ou',
+        continueWithGoogle: 'Continuer avec Google',
+        continueWithFacebook: 'Continuer avec Facebook',
+        continueWithApple: 'Continuer avec Apple'
       },
 
-      // Form
-      form: {
-        requiredField: 'Ce champ est obligatoire',
-        invalidEmail: 'Veuillez entrer un email valide',
-        passwordLength: 'Le mot de passe doit comporter au moins 8 caractères',
-        passwordMatch: 'Les mots de passe doivent correspondre',
-        invalidPhone: 'Veuillez entrer un numéro de téléphone valide'
+      // Forgot Password
+      forgotPassword: {
+        title: 'Réinitialisez Votre Mot de Passe',
+        subtitle: 'Entrez votre email pour recevoir les instructions de réinitialisation',
+        email: 'Email',
+        emailPlaceholder: 'Entrez votre email',
+        resetButton: 'Envoyer le Lien de Réinitialisation',
+        backToLogin: 'Retour à la Connexion',
+        checkEmail: 'Vérifiez votre email',
+        instructionsSent: 'Nous avons envoyé les instructions de réinitialisation de mot de passe à votre email'
       },
 
       // Dashboard
       dashboard: {
-        dashboard: 'Tableau de bord',
-        total_orders: 'Commandes totales',
-        active_restaurants: 'Restaurants actifs',
-        total_revenue: 'Revenu total',
-        registered_users: 'Utilisateurs enregistrés',
-        avg_delivery_time: 'Temps de livraison moyen',
-        pending_deliveries: 'Livraisons en attente',
-        from_last_month: 'par rapport au mois dernier',
-        new_this_month: 'nouveaux ce mois-ci',
-        new_users: 'nouveaux utilisateurs',
-        from_yesterday: 'par rapport à hier',
-        monthly_orders: 'Commandes mensuelles',
-        restaurants_by_category: 'Restaurants par catégorie',
-        recent_activity: 'Activité récente',
-        new_order: 'Nouvelle commande',
-        restaurant_name: 'Restaurant Exemple',
-        delivery_to: 'livraison à',
-        customer_name: 'Client Exemple',
-        minutes_ago: 'minutes',
-        theme_changed: 'Thème changé',
-        language_changed: 'Langue changée'
-      },
-
-      // Admin Navigation
-      users: 'Utilisateurs',
-      delivery: 'Livraison',
-      orders: 'Commandes',
-      messages: 'Messages',
-      contactMessages: 'Messages de Contact',
-      statistics: 'Statistiques',
-      promotions: 'Promotions',
-      settings: 'Paramètres',
-      logout: 'Déconnexion',
-
-      // User Management
-      userManagement: {
-        title: 'Gestion des Utilisateurs',
-        addUser: 'Ajouter Utilisateur',
-        editUser: 'Modifier Utilisateur',
-        deleteUser: 'Supprimer',
-        deleteUserConfirmation: 'Êtes-vous sûr de vouloir supprimer cet utilisateur?',
-        search: 'Rechercher des utilisateurs...',
-        statusAll: 'Tous les statuts',
-        statusActive: 'Actif',
-        statusInactive: 'Inactif',
-        roles: {
-          admin: 'Admin',
-          livreur: 'Livreur',
-          client: 'Client'
-        },
-        id: 'ID',
-        name: 'Nom',
-        email: 'Email',
-        role: 'Rôle',
-        status: 'Statut',
-        registered: 'Inscrit',
-        actions: 'Actions',
-        showing: 'Affichage',
-        to: 'à',
-        of: 'sur',
-        results: 'résultats',
-        previous: 'Précédent',
-        next: 'Suivant',
-        noUsers: 'Aucun utilisateur trouvé',
-        export: 'Exporter en CSV',
-        refresh: 'Rafraîchir',
-        filters: 'Filtres',
-        createdAt: 'Créé le',
-        lastLogin: 'Dernière connexion',
-        phone: 'Téléphone',
-        address: 'Adresse',
-        orders: 'Commandes'
-      },
-
-      // User Form
-      userForm: {
-        createTitle: 'Créer un Nouvel Utilisateur',
-        editTitle: 'Modifier Utilisateur',
-        name: 'Nom Complet',
-        namePlaceholder: 'Entrez le nom complet',
-        email: 'Email',
-        emailPlaceholder: 'Entrez l\'adresse email',
-        phone: 'Téléphone',
-        phonePlaceholder: 'Entrez le numéro de téléphone',
-        role: 'Rôle',
-        status: 'Statut',
-        address: 'Adresse',
-        addressPlaceholder: 'Entrez l\'adresse complète',
-        password: 'Mot de passe',
-        passwordPlaceholder: 'Entrez le mot de passe',
-        confirmPassword: 'Confirmer le Mot de Passe',
-        confirmPasswordPlaceholder: 'Entrez à nouveau le mot de passe',
-        cancel: 'Annuler',
-        create: 'Créer',
-        update: 'Mettre à jour',
-        saving: 'Enregistrement...',
-        errors: {
-          nameRequired: 'Le nom est requis',
-          emailRequired: 'L\'email est requis',
-          emailInvalid: 'Veuillez entrer un email valide',
-          phoneRequired: 'Le téléphone est requis',
-          passwordRequired: 'Le mot de passe est requis',
-          passwordLength: 'Le mot de passe doit contenir au moins 6 caractères',
-          passwordMatch: 'Les mots de passe doivent correspondre',
-          addressRequired: 'L\'adresse est requise'
-        },
-        statuses: {
-          active: 'Actif',
-          inactive: 'Inactif'
-        },
-        roles: {
-          admin: 'Admin',
-          livreur: 'Livreur',
-          client: 'Client'
+        welcome: 'Bon retour',
+        totalOrders: 'Total Commandes',
+        totalRevenue: 'Total Revenus',
+        activeRestaurants: 'Restaurants Actifs',
+        pendingDeliveries: 'Livraisons en Attente',
+        recentOrders: 'Commandes Récentes',
+        viewAll: 'Voir Tout',
+        orderNumber: 'Commande #',
+        status: {
+          pending: 'En Attente',
+          preparing: 'En Préparation',
+          delivering: 'En Livraison',
+          completed: 'Terminée',
+          cancelled: 'Annulée'
         }
       },
 
-      // User Detail
-      userDetail: {
-        fullName: 'Nom Complet',
+      // Profile
+      profile: {
+        title: 'Mon Profil',
+        personalInfo: 'Informations Personnelles',
+        contactInfo: 'Informations de Contact',
+        preferences: 'Préférences',
+        security: 'Sécurité',
+        firstName: 'Prénom',
+        lastName: 'Nom',
         email: 'Email',
         phone: 'Téléphone',
         address: 'Adresse',
-        registered: 'Inscrit',
-        lastLogin: 'Dernière Connexion',
-        neverLoggedIn: 'Jamais connecté',
-        totalOrders: 'Commandes Totales',
-        editButton: 'Modifier',
-        closeButton: 'Fermer'
+        city: 'Ville',
+        language: 'Langue',
+        currency: 'Devise',
+        notifications: 'Notifications',
+        emailNotifications: 'Notifications Email',
+        pushNotifications: 'Notifications Push',
+        smsNotifications: 'Notifications SMS',
+        saveChanges: 'Enregistrer les Modifications',
+        changePassword: 'Changer le Mot de Passe',
+        currentPassword: 'Mot de Passe Actuel',
+        newPassword: 'Nouveau Mot de Passe',
+        confirmNewPassword: 'Confirmer le Nouveau Mot de Passe',
+        updatePassword: 'Mettre à Jour le Mot de Passe'
       },
 
-      // Partner Page
-      partner: {
-        heroTitle: 'Devenez Partenaire avec',
-        heroSubtitle: 'Rejoignez notre réseau de restaurants et entreprises alimentaires pour toucher plus de clients',
-        fastOnboarding: 'Intégration Rapide',
-        days: 'jours',
-        location: 'Emplacement',
-        applyNow: 'Postuler Maintenant',
-        whyJoin: 'Pourquoi Rejoindre Notre Plateforme?',
-        whyJoinSubtitle: 'Découvrez les avantages de devenir partenaire',
-        benefit1Title: 'Visibilité Accrue',
-        benefit1Desc: 'Soyez découvert par des milliers de clients dans votre région',
-        benefit2Title: 'Support Marketing',
-        benefit2Desc: 'Nous promouvons votre entreprise via nos canaux marketing',
-        benefit3Title: 'Gestion Simplifiée',
-        benefit3Desc: 'Outils simples pour gérer votre menu, commandes et paiements',
-        requirementsTitle: 'Exigences pour les Partenaires',
-        requirementsSubtitle: 'Ce dont vous avez besoin pour rejoindre notre plateforme',
-        legalRequirements: 'Exigences Légales',
-        requirement1: 'Enregistrement commercial valide',
-        requirement2: 'Numéro d\'identification fiscale',
-        requirement3: 'Certificat de santé et sécurité',
-        requirement4: 'Permis de manipulation alimentaire',
-        requirement5: 'Conformité aux réglementations locales',
-        operationalRequirements: 'Exigences Opérationnelles',
-        operational1: 'Capacité à gérer les commandes en ligne',
-        operational2: 'Capacité fiable de préparation alimentaire',
-        operational3: 'Engagement envers les standards de qualité',
-        operational4: 'Volonté d\'utiliser nos outils de plateforme',
-        operational5: 'Respect des délais de livraison',
-        noteTitle: 'Note Importante',
-        noteContent: 'Les exigences peuvent varier légèrement selon votre localisation et type d\'entreprise',
-        applicationFormTitle: 'Demande de Partenariat',
-        applicationFormSubtitle: 'Remplissez le formulaire ci-dessous pour commencer votre demande',
-        businessInfo: 'Informations sur l\'Entreprise',
-        businessName: 'Nom de l\'Entreprise',
-        cuisineType: 'Type de Cuisine',
-        capacity: 'Capacité d\'Accueil',
-        openingHours: 'Heures d\'Ouverture',
-        contactInfo: 'Informations de Contact',
-        contactName: 'Personne de Contact',
-        email: 'Adresse Email',
-        phone: 'Numéro de Téléphone',
-        locationInfo: 'Informations de Localisation',
-        address: 'Adresse',
-        city: 'Ville',
-        legalInfo: 'Informations Légales',
-        legalStatus: 'Statut Légal',
-        selectOption: 'Sélectionnez une option',
-        soleProprietor: 'Entreprise Individuelle',
-        llc: 'SARL',
-        corporation: 'Société',
-        other: 'Autre',
-        taxId: 'Numéro d\'Identification Fiscale',
-        documentUploads: 'Téléchargement de Documents',
-        healthCertificate: 'Certificat de Santé',
-        healthCertificateDesc: 'Téléchargez votre certificat de santé valide',
-        idDocument: 'Pièce d\'Identité',
-        idDocumentDesc: 'Téléchargez la pièce d\'identité du propriétaire/gérant (passeport ou CNI)',
-        menu: 'Menu PDF',
-        menuDesc: 'Téléchargez votre menu actuel au format PDF',
-        restaurantPhotos: 'Photos du Restaurant',
-        photosDesc: 'Téléchargez 3-5 photos de votre établissement (max 5)',
-        agreeToTerms1: 'J\'accepte les',
-        terms: 'Conditions d\'Utilisation',
-        and: 'et',
-        privacyPolicy: 'Politique de Confidentialité',
-        agreeToTerms2: 'de la plateforme Eat-Fast',
-        submitApplication: 'Soumettre la Demande',
-        processing: 'Traitement en cours...',
-        successTitle: 'Demande Soumise!',
-        successMessage: 'Merci pour votre demande. Notre équipe examinera vos informations et vous contactera dans les 3-5 jours ouvrables.',
-        submitAnother: 'Soumettre une Autre Demande',
-        processTitle: 'Processus de Demande',
-        processSubtitle: 'Voici ce qui se passe après avoir soumis votre demande',
-        step1Title: 'Examen de la Demande',
-        step1Desc: 'Notre équipe examinera votre demande et documents',
-        step2Title: 'Appel d\'Intégration',
-        step2Desc: 'Nous programmerons un appel pour discuter des détails du partenariat',
-        step3Title: 'Configuration du Compte',
-        step3Desc: 'Nous créerons votre compte partenaire et formerons votre équipe',
-        step4Title: 'Mise en Ligne!',
-        step4Desc: 'Votre restaurant sera en ligne sur notre plateforme',
-        faqTitle: 'Questions Fréquemment Posées',
-        faq1Question: 'Combien de temps prend le processus d\'approbation?',
-        faq1Answer: 'Généralement 3-5 jours ouvrables après réception de tous les documents requis.',
-        faq2Question: 'Y a-t-il des frais pour rejoindre la plateforme?',
-        faq2Answer: 'Nous prélevons une petite commission sur les commandes, sans frais initiaux.',
-        faq3Question: 'Puis-je mettre à jour mon menu après avoir rejoint?',
-        faq3Answer: 'Oui, vous pouvez mettre à jour votre menu à tout moment via votre tableau de bord partenaire.',
-        faq4Question: 'Comment reçois-je les paiements?',
-        faq4Answer: 'Nous traitons les paiements hebdomadaires par virement bancaire ou mobile money.',
-        faq5Question: 'Quel support fournissez-vous?',
-        faq5Answer: 'Support client 24/7 et gestionnaire de compte dédié pour tous les partenaires.',
+      // Orders
+      orders: {
+        title: 'Mes Commandes',
+        orderHistory: 'Historique des Commandes',
+        currentOrders: 'Commandes en Cours',
+        pastOrders: 'Commandes Passées',
+        orderNumber: 'Commande #',
+        orderDate: 'Date de Commande',
         restaurant: 'Restaurant',
-        cloudKitchen: 'Cuisine Virtuelle',
-        caterer: 'Service de Traiteur'
+        items: 'Articles',
+        total: 'Total',
+        status: 'Statut',
+        actions: 'Actions',
+        viewDetails: 'Voir les Détails',
+        reorder: 'Recommander',
+        rateOrder: 'Évaluer la Commande',
+        trackOrder: 'Suivre la Commande',
+        estimatedDelivery: 'Livraison Estimée',
+        deliveredAt: 'Livré à',
+        orderItems: 'Articles Commandés',
+        deliveryAddress: 'Adresse de Livraison',
+        paymentMethod: 'Méthode de Paiement',
+        orderSummary: 'Résumé de la Commande',
+        subtotal: 'Sous-total',
+        deliveryFee: 'Frais de Livraison',
+        tax: 'Taxe',
+        total: 'Total'
+      },
+
+      // Cart
+      cart: {
+        title: 'Panier d\'Achats',
+        items: 'Articles',
+        item: 'Article',
+        quantity: 'Quantité',
+        price: 'Prix',
+        total: 'Total',
+        subtotal: 'Sous-total',
+        deliveryFee: 'Frais de Livraison',
+        tax: 'Taxe',
+        grandTotal: 'Total Général',
+        emptyCart: 'Votre panier est vide',
+        addItems: 'Ajoutez quelques délicieux articles pour commencer',
+        continueShopping: 'Continuer les Achats',
+        checkout: 'Procéder au Paiement',
+        removeItem: 'Supprimer l\'Article',
+        updateQuantity: 'Mettre à Jour la Quantité',
+        clearCart: 'Vider le Panier',
+        saveForLater: 'Sauvegarder pour Plus Tard',
+        applyCoupon: 'Appliquer un Coupon',
+        couponCode: 'Code Coupon',
+        apply: 'Appliquer',
+        removeCoupon: 'Supprimer le Coupon'
+      },
+
+      // Checkout
+      checkout: {
+        title: 'Paiement',
+        orderSummary: 'Résumé de la Commande',
+        deliveryAddress: 'Adresse de Livraison',
+        paymentMethod: 'Méthode de Paiement',
+        orderNotes: 'Notes de Commande',
+        placeOrder: 'Passer la Commande',
+        backToCart: 'Retour au Panier',
+        addNewAddress: 'Ajouter une Nouvelle Adresse',
+        selectAddress: 'Sélectionner une Adresse',
+        addAddress: 'Ajouter une Adresse',
+        editAddress: 'Modifier l\'Adresse',
+        addressLine1: 'Ligne d\'Adresse 1',
+        addressLine2: 'Ligne d\'Adresse 2 (Optionnel)',
+        city: 'Ville',
+        state: 'État',
+        zipCode: 'Code Postal',
+        country: 'Pays',
+        saveAddress: 'Sauvegarder l\'Adresse',
+        paymentOptions: 'Options de Paiement',
+        cashOnDelivery: 'Paiement à la Livraison',
+        creditCard: 'Carte de Crédit',
+        mobileMoney: 'Mobile Money',
+        cardNumber: 'Numéro de Carte',
+        expiryDate: 'Date d\'Expiration',
+        cvv: 'CVV',
+        cardholderName: 'Nom du Titulaire',
+        payNow: 'Payer Maintenant',
+        orderNotesPlaceholder: 'Instructions spéciales pour la livraison...',
+        termsAgreement: 'J\'accepte les Conditions Générales et la Politique de Confidentialité',
+        orderConfirmation: 'Confirmation de Commande',
+        orderPlaced: 'Votre commande a été passée avec succès !',
+        orderNumber: 'Numéro de Commande',
+        estimatedDeliveryTime: 'Temps de Livraison Estimé',
+        trackOrder: 'Suivre la Commande',
+        continueShopping: 'Continuer les Achats'
       }
     }
   }
 };
 
-const initOptions = {
-  resources,
-  lng: 'en',
-  fallbackLng: 'en',
-  debug: false,
-  interpolation: {
-    escapeValue: false,
-  },
-  react: {
-    useSuspense: false,
-  },
-  defaultNS: 'translation',
-  fallbackNS: 'translation',
-  detection: {
-    order: ['localStorage', 'navigator', 'htmlTag', 'path', 'subdomain'],
-    lookupLocalStorage: 'eat-fast-language',
-    lookupFromPathIndex: 0,
-    lookupFromSubdomainIndex: 0,
-    caches: ['localStorage'],
-    checkWhitelist: true,
-    whitelist: ['en', 'fr'],
-    fallbackLng: 'en',
-    debug: false,
-  },
-  interpolation: {
-    escapeValue: false,
-  },
-  react: {
-    useSuspense: false,
-  },
-  defaultNS: 'translation',
-  fallbackNS: 'translation',
-  resources,
-  backend: {
-    loadPath: '/locales/{{lng}}/{{ns}}.json',
-  },
-  parseMissingKeyHandler: (key) => {
-    console.warn(`Missing translation key: ${key}`);
-    return key;
-  },
-  missingKeyHandler: (lng, ns, key, fallbackValue) => {
-    console.warn(`Missing translation for key: ${key} in language: ${lng}`);
-    return fallbackValue || key;
-  },
-  saveMissing: true,
-  saveMissingTo: 'all',
-  keySeparator: '.',
-  nsSeparator: ':',
-  pluralSeparator: '_',
-  contextSeparator: '_',
-  escapeValue: false,
-  useDataAttrOptions: true,
-  bindStore: false,
-  bindI18n: 'languageChanged loaded',
-  bindI18nNamespace: false,
-  debug: process.env.NODE_ENV === 'development',
-  initImmediate: false,
-  load: 'languageOnly',
-  preload: ['en', 'fr'],
+// Initialize Gemini translation service
+const initializeGeminiService = async () => {
+  try {
+    // Get API key from environment or localStorage
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || localStorage.getItem('gemini_api_key');
+    if (apiKey) {
+      await geminiTranslationService.initialize(apiKey);
+    }
+  } catch (error) {
+    console.warn('Failed to initialize Gemini service:', error);
+  }
 };
 
+// Initialize i18n
 i18n
   .use(LanguageDetector)
   .use(initReactI18next)
-  .init(initOptions);
+  .init({
+    resources,
+    fallbackLng: 'en',
+    debug: false,
+    interpolation: {
+      escapeValue: false,
+    },
+    detection: {
+      order: ['localStorage', 'navigator', 'htmlTag'],
+      caches: ['localStorage'],
+    },
+    react: {
+      useSuspense: false,
+    },
+  });
 
-i18n.on('languageChanged', (lng) => {
-  document.documentElement.lang = lng;
+// Initialize Gemini service after i18n is ready
+initializeGeminiService();
+
+// Export the i18n instance
+export { i18n };
+
+// Enhanced translation function with Gemini AI support
+export const translateWithGemini = async (key, options = {}) => {
+  const { lng = i18n.language, fallbackLng = 'en', useGemini = true } = options;
   
-  const metaLang = document.querySelector('meta[name="language"]');
-  if (metaLang) {
-    metaLang.setAttribute('content', lng);
+  // First try to get translation from i18n
+  let translation = i18n.t(key, { lng });
+  
+  // If translation is the same as key (not found) and Gemini is enabled
+  if (translation === key && useGemini && geminiTranslationService.isInitialized) {
+    try {
+      // Try to translate the key as text
+      const geminiTranslation = await geminiTranslationService.translateText(
+        key, 
+        lng, 
+        fallbackLng
+      );
+      
+      if (geminiTranslation && geminiTranslation !== key) {
+        // Store the new translation in i18n resources
+        if (!i18n.store.data[lng]) {
+          i18n.store.data[lng] = { translation: {} };
+        }
+        
+        // Set nested key
+        const keys = key.split('.');
+        let current = i18n.store.data[lng].translation;
+        for (let i = 0; i < keys.length - 1; i++) {
+          if (!current[keys[i]]) {
+            current[keys[i]] = {};
+          }
+          current = current[keys[i]];
+        }
+        current[keys[keys.length - 1]] = geminiTranslation;
+        
+        return geminiTranslation;
+      }
+    } catch (error) {
+      console.warn('Gemini translation failed:', error);
+    }
   }
   
-  localStorage.setItem('eat-fast-language', lng);
-  
-  updateDocumentTitle(lng);
-});
+  return translation;
+};
 
-function updateDocumentTitle(lng) {
-  const titles = {
-    en: 'Eat Fast - Food Delivery App in Cameroon | Fast Food Delivery Yaoundé, Douala',
-    fr: 'Eat Fast - Application de Livraison de Repas au Cameroun | Livraison Rapide Yaoundé, Douala'
+// Enhanced useTranslation hook
+export const useEnhancedTranslation = () => {
+  const { t, i18n: i18nInstance } = useTranslation();
+  
+  const enhancedT = async (key, options = {}) => {
+    return await translateWithGemini(key, { ...options, lng: i18nInstance.language });
   };
   
-  document.title = titles[lng] || titles.en;
-}
+  return {
+    t: enhancedT,
+    i18n: i18nInstance,
+    ready: i18nInstance.isInitialized,
+  };
+};
 
-export default i18n;
+// Export the enhanced translation function
+export { translateWithGemini as t };
 
-// Named export for i18n
-export { i18n };
+// Language detection and management functions
+export const detectInitialLanguage = () => {
+  try {
+    const storedLang = localStorage.getItem('i18nextLng');
+    if (storedLang) return storedLang;
+    
+    const browserLang = navigator.language || navigator.userLanguage || 'en';
+    const primaryLang = browserLang.split('-')[0];
+    
+    const supportedLanguages = ['en', 'fr', 'es'];
+    return supportedLanguages.includes(primaryLang) ? primaryLang : 'en';
+  } catch (error) {
+    console.warn('Error detecting initial language:', error);
+    return 'en';
+  }
+};
 
 export const changeLanguage = (lng) => {
   return i18n.changeLanguage(lng);
@@ -1060,62 +908,34 @@ export const getCurrentLanguage = () => {
 };
 
 export const getAvailableLanguages = () => {
-  try {
-    return Object.keys(resources || {});
-  } catch (error) {
-    console.warn('Error getting available languages:', error);
-    return ['en', 'fr'];
-  }
+  return Object.keys(resources);
 };
 
 export const isLanguageSupported = (lng) => {
   try {
-    const availableLanguages = getAvailableLanguages();
-    return availableLanguages && availableLanguages.includes && availableLanguages.includes(lng);
+    return Object.keys(resources).includes(lng);
   } catch (error) {
     console.warn('Error checking language support:', error);
     return false;
   }
 };
 
-const detectInitialLanguage = () => {
+// Document title update function
+export const updateDocumentTitle = (lng) => {
   try {
-    const savedLanguage = localStorage.getItem('eat-fast-language');
-    if (savedLanguage && isLanguageSupported(savedLanguage)) {
-      return savedLanguage;
+    const title = i18n.t('app.title', { lng });
+    if (title && title !== 'app.title') {
+      document.title = title;
     }
-    
-    const browserLanguage = (navigator.language || 'en').split('-')[0];
-    if (isLanguageSupported(browserLanguage)) {
-      return browserLanguage;
-    }
-    
-    return 'en';
   } catch (error) {
-    console.warn('Error detecting initial language:', error);
-    return 'en';
+    console.warn('Error updating document title:', error);
   }
 };
 
-const initialLanguage = detectInitialLanguage();
-if (initialLanguage !== i18n.language) {
-  try {
-    i18n.changeLanguage(initialLanguage);
-  } catch (error) {
-    console.warn('Failed to set initial language:', error);
-  }
-}
-
-// Add error handling for i18n initialization
-i18n.on('failedLoading', (lng, ns, msg) => {
-  console.warn(`Failed to load translation for ${lng}/${ns}:`, msg);
-});
-
-i18n.on('missingKey', (lng, ns, key, fallbackValue) => {
-  console.warn(`Missing translation key: ${key} in ${lng}/${ns}`);
-});
-
-// Export a function to check if i18n is ready
+// Check if i18n is ready
 export const isI18nReady = () => {
   return i18n.isInitialized;
 };
+
+// Default export
+export default i18n;

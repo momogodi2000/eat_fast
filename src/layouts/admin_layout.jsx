@@ -15,17 +15,21 @@ import {
   FiUser,
   FiLogOut,
   FiChevronLeft,
+  FiX,
+  FiBell,
+  FiSearch,
 } from "react-icons/fi";
 import { HiOutlineMoon, HiOutlineSun } from "react-icons/hi";
 import { useTranslation } from "react-i18next";
 import { userContextInformation } from "../pages/Authentication/const_provider";
 import LanguageSwitcher from "../components/LanguageSwitcher";
+import TranslationManager from "../components/TranslationManager";
 
 // Create contexts for theme and language
 const ThemeContext = createContext();
 const LanguageContext = createContext();
 
-// Custom hooks to use contexts
+// Custom hook for theme
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (!context) {
@@ -34,6 +38,7 @@ export const useTheme = () => {
   return context;
 };
 
+// Custom hook for language
 export const useLanguage = () => {
   const context = useContext(LanguageContext);
   if (!context) {
@@ -42,405 +47,418 @@ export const useLanguage = () => {
   return context;
 };
 
-// Theme Provider Component
-const ThemeProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(() => {
-    // Check localStorage first, then system preference
-    const savedTheme = localStorage.getItem("eatfast-admin-theme");
-    if (savedTheme !== null) {
-      return savedTheme === "dark";
-    }
-    // Fallback to system preference
-    return (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    );
-  });
-
-  useEffect(() => {
-    // Save theme preference to localStorage
-    localStorage.setItem("eatfast-admin-theme", darkMode ? "dark" : "light");
-
-    // Apply theme to document
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [darkMode]);
-
-  const toggleTheme = () => {
-    setDarkMode((prev) => !prev);
-  };
-
-  return (
-    <ThemeContext.Provider value={{ darkMode, toggleTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
-};
-
-// Language Provider Component
-const LanguageProvider = ({ children }) => {
-  const { i18n } = useTranslation();
-  const [currentLanguage, setCurrentLanguage] = useState(() => {
-    // Check localStorage first, then i18n default
-    const savedLanguage = localStorage.getItem("eatfast-admin-language");
-    return savedLanguage || (i18n?.language) || "en";
-  });
-
-  useEffect(() => {
-    // Initialize language from localStorage on mount
-    const savedLanguage = localStorage.getItem("eatfast-admin-language");
-    if (savedLanguage && i18n && savedLanguage !== i18n.language) {
-      i18n.changeLanguage(savedLanguage).catch((err) => {
-        console.error("Error initializing language:", err);
-      });
-    }
-  }, [i18n]);
-
-  const changeLanguage = async (newLanguage) => {
-    try {
-      if (i18n) {
-        await i18n.changeLanguage(newLanguage);
-      }
-      setCurrentLanguage(newLanguage);
-      localStorage.setItem("eatfast-admin-language", newLanguage);
-    } catch (err) {
-      console.error("Error changing language:", err);
-    }
-  };
-
-  return (
-    <LanguageContext.Provider value={{ currentLanguage, changeLanguage }}>
-      {children}
-    </LanguageContext.Provider>
-  );
-};
-
-// Main AdminLayout Component
 const AdminLayout = ({ children }) => {
-  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { darkMode, toggleTheme } = useTheme();
-  const { currentLanguage, changeLanguage } = useLanguage();
-
-  const { userInformation } = useContext(userContextInformation);
-
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    // Restore sidebar state from localStorage
-    const savedSidebarState = localStorage.getItem("eatfast-admin-sidebar");
-    return savedSidebarState !== null ? JSON.parse(savedSidebarState) : true;
-  });
-
-  const [isMobile, setIsMobile] = useState(false);
-  const [activeItem, setActiveItem] = useState("/admin");
-
-  // Safe translation function
-  const safeTranslate = (key, fallback) => {
-    try {
-      return t(key) || fallback || key;
-    } catch (error) {
-      console.warn(`Translation error for key: ${key}`, error);
-      return fallback || key;
+  const { t } = useTranslation();
+  
+  // Add error handling for context usage
+  let userInformation, setUserInformation, updateUserInformation;
+  try {
+    const contextValue = useContext(userContextInformation);
+    userInformation = contextValue?.userInformation;
+    setUserInformation = contextValue?.setUserInformation;
+    updateUserInformation = contextValue?.updateUserInformation;
+  } catch (error) {
+    console.warn('User context not available:', error);
+    // Provide fallback values
+    userInformation = {
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone_number: "",
+    };
+    setUserInformation = () => {};
+    updateUserInformation = () => {};
+  }
+  
+  // Mock user data for now - replace with actual user data from context
+  const user = {
+    firstName: userInformation?.first_name || "Admin",
+    lastName: userInformation?.last_name || "User",
+    email: userInformation?.email || "admin@eatfast.com",
+    avatar: "/src/assets/avartar/avatar1.jpg"
+  };
+  
+  // Mock logout function - replace with actual logout logic
+  const logout = () => {
+    // Clear user data
+    if (setUserInformation) {
+      setUserInformation({
+        first_name: "",
+        last_name: "",
+        email: "",
+        phone_number: "",
+      });
     }
+    navigate("/login");
   };
 
-  // Save sidebar state to localStorage
-  useEffect(() => {
-    localStorage.setItem("eatfast-admin-sidebar", JSON.stringify(sidebarOpen));
-  }, [sidebarOpen]);
+  // State management
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currentLanguage, setCurrentLanguage] = useState("fr");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [notifications, setNotifications] = useState([]);
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  // Set active item based on current path
-  useEffect(() => {
-    setActiveItem(location.pathname);
-  }, [location.pathname]);
+  // Responsive breakpoints
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
 
-  // Detect screen size
+  // Handle window resize
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth < 768;
-      setIsMobile(mobile);
-      if (mobile) {
+      setIsMobile(window.innerWidth < 768);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+      
+      // Auto-close sidebar on larger screens
+      if (window.innerWidth >= 1024) {
         setSidebarOpen(false);
-      } else {
-        // Restore saved sidebar state for desktop
-        const savedSidebarState = localStorage.getItem("eatfast-admin-sidebar");
-        setSidebarOpen(
-          savedSidebarState !== null ? JSON.parse(savedSidebarState) : true
-        );
       }
     };
 
-    handleResize(); // Initial check
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  // Initialize theme and language from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("admin-theme");
+    const savedLanguage = localStorage.getItem("admin-language");
+    
+    if (savedTheme) {
+      setIsDarkMode(savedTheme === "dark");
+    }
+    
+    if (savedLanguage) {
+      setCurrentLanguage(savedLanguage);
+    }
+  }, []);
+
+  // Apply theme to document
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+    localStorage.setItem("admin-theme", isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
+  // Navigation items with translations
   const navigationItems = [
     {
-      name: safeTranslate("dashboard.dashboard", "Dashboard"),
-      icon: <FiHome size={20} />,
-      path: "/admin",
+      name: t("navigation.dashboard"),
+      href: "/admin/dashboard",
+      icon: FiHome,
+      current: location.pathname === "/admin/dashboard",
     },
     {
-      name: safeTranslate("restaurant", "Restaurant"),
-      icon: <FiShoppingBag size={20} />,
-      path: "/admin/restaurants",
-    },
-    { name: safeTranslate("users", "Users"), icon: <FiUsers size={20} />, path: "/admin/user" },
-    {
-      name: safeTranslate("delivery", "Delivery"),
-      icon: <FiTruck size={20} />,
-      path: "/admin/delivery",
+      name: t("navigation.restaurants"),
+      href: "/admin/restaurants",
+      icon: FiShoppingBag,
+      current: location.pathname.startsWith("/admin/restaurants"),
     },
     {
-      name: safeTranslate("orders", "Orders"),
-      icon: <FiBarChart2 size={20} />,
-      path: "/admin/orders",
+      name: t("navigation.users"),
+      href: "/admin/users",
+      icon: FiUsers,
+      current: location.pathname.startsWith("/admin/users"),
     },
     {
-      name: safeTranslate("contactMessages", "Contact Messages"),
-      icon: <FiMail size={20} />,
-      path: "/admin/contact-messages",
+      name: t("navigation.delivery"),
+      href: "/admin/delivery",
+      icon: FiTruck,
+      current: location.pathname.startsWith("/admin/delivery"),
     },
     {
-      name: safeTranslate("statistics", "Statistics"),
-      icon: <FiPieChart size={20} />,
-      path: "/admin/statistics",
+      name: t("navigation.orders"),
+      href: "/admin/orders",
+      icon: FiShoppingBag,
+      current: location.pathname.startsWith("/admin/orders"),
     },
     {
-      name: safeTranslate("promotion", "Promotion"),
-      icon: <FiTag size={20} />,
-      path: "/admin/promotion",
+      name: t("navigation.contactMessages"),
+      href: "/admin/contact-messages",
+      icon: FiMessageSquare,
+      current: location.pathname.startsWith("/admin/contact-messages"),
+    },
+    {
+      name: t("navigation.statistics"),
+      href: "/admin/statistics",
+      icon: FiBarChart2,
+      current: location.pathname.startsWith("/admin/statistics"),
+    },
+    {
+      name: t("navigation.promotion"),
+      href: "/admin/promotion",
+      icon: FiTag,
+      current: location.pathname.startsWith("/admin/promotion"),
     },
   ];
 
-  // Handle click outside sidebar on mobile
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (isMobile && sidebarOpen) {
-        const sidebar = document.querySelector('.sidebar');
-        if (sidebar && !sidebar.contains(event.target)) {
-          setSidebarOpen(false);
-        }
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMobile, sidebarOpen]);
-
-  const handleNavClick = (path) => {
-    navigate(path);
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
+  // Handle language change
+  const handleLanguageChange = (language) => {
+    setCurrentLanguage(language);
+    localStorage.setItem("admin-language", language);
+    // You can add i18n language change logic here
   };
 
-  const handleLogout = () => {
-    // Clear user data and redirect to login
-    localStorage.removeItem('userProfile');
-    localStorage.removeItem('firebaseToken');
-    navigate('/login');
+  // Handle search
+  const handleSearch = (e) => {
+    e.preventDefault();
+    // Implement search functionality
+    console.log("Searching for:", searchQuery);
+  };
+
+  // Context values
+  const themeContextValue = {
+    isDarkMode,
+    setIsDarkMode,
+  };
+
+  const languageContextValue = {
+    currentLanguage,
+    setCurrentLanguage: handleLanguageChange,
   };
 
   return (
-    <div className={`flex h-screen ${darkMode ? 'dark' : ''}`}>
-      {/* Sidebar */}
-      <aside
-        className={`sidebar fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-lg transform transition-transform duration-300 ease-in-out ${
-          darkMode ? 'border-r border-gray-700' : 'border-r border-gray-200'
-        }`}
-        style={{
-          width: "250px",
-          transform:
-            isMobile && !sidebarOpen ? "translateX(-100%)" : "translateX(0)",
-        }}
-      >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-bold bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 bg-clip-text text-transparent">
-              EatFast Admin
-            </h2>
-            {isMobile && (
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white transition-colors duration-200"
-              >
-                <FiChevronLeft size={24} />
-              </button>
-            )}
-          </div>
+    <ThemeContext.Provider value={themeContextValue}>
+      <LanguageContext.Provider value={languageContextValue}>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+          {/* Mobile sidebar overlay */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
+              onClick={() => setSidebarOpen(false)}
+            />
+          )}
 
-          {/* Navigation Links */}
-          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-            {navigationItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => handleNavClick(item.path)}
-                className={`flex items-center w-full px-4 py-3 rounded-lg transition-all duration-200 text-left ${
-                  activeItem === item.path
-                    ? `${
-                        darkMode
-                          ? "bg-green-800 text-white"
-                          : "bg-green-100 text-green-800"
-                      }`
-                    : `text-gray-700 dark:text-gray-200 hover:bg-green-100 dark:hover:bg-green-900`
-                }`}
-              >
-                <span
-                  className={`mr-3 ${
-                    activeItem === item.path
-                      ? "text-green-600 dark:text-yellow-400"
-                      : "text-green-600 dark:text-yellow-400"
-                  }`}
-                >
-                  {item.icon}
-                </span>
-                <span className={activeItem === item.path ? "font-medium" : ""}>
-                  {item.name}
-                </span>
-              </button>
-            ))}
-          </nav>
-
-          {/* User Profile & Logout */}
+          {/* Sidebar */}
           <div
-            className={`p-4 border-t border-gray-200 dark:border-gray-700 ${
-              darkMode ? "bg-gray-800" : "bg-white"
+            className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 ${
+              sidebarOpen ? "translate-x-0" : "-translate-x-full"
             }`}
           >
-            <div className="flex items-center p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-all duration-200">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-r from-green-600 via-yellow-500 to-red-600 flex items-center justify-center">
-                <FiUser className="text-white" size={20} />
+            {/* Sidebar header */}
+            <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-3">
+                <img
+                  src="/src/assets/logo/eat_fast.png"
+                  alt="EatFast Admin"
+                  className="h-8 w-auto"
+                />
+                <span className="text-xl font-bold text-gray-900 dark:text-white">
+                  Admin
+                </span>
               </div>
-              <div className="ml-3">
-                <p className="font-medium">
-                  {userInformation?.first_name && userInformation?.last_name
-                    ? `${userInformation.first_name} ${userInformation.last_name}`
-                    : 'Admin User'}
-                </p>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {userInformation?.email || 'admin@eatfast.cm'}
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={handleLogout}
-              className="flex items-center w-full px-4 py-2 mt-5 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-red-100 dark:hover:bg-red-900 transition-all duration-200"
-            >
-              <FiLogOut className="mr-3 text-red-600" size={20} />
-              <span>{safeTranslate("logout", "Logout")}</span>
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex flex-col flex-1 w-0 overflow-hidden">
-        {/* Top Navigation Bar */}
-        <div
-          className={`relative z-10 flex-shrink-0 flex h-16 ${
-            darkMode ? "bg-gray-800" : "bg-white"
-          } shadow`}
-        >
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="px-4 text-gray-500 dark:text-gray-200 focus:outline-none sidebar-toggle hover:bg-gray-100 dark:hover:bg-gray-700 p-2 rounded-md transition-colors duration-200"
-          >
-            <FiMenu size={24} />
-          </button>
-
-          <div className="flex-1 flex justify-between px-4">
-            <div className="flex-1 flex items-center">
-              <h1 className="text-lg md:text-xl lg:text-2xl font-bold truncate">
-                {safeTranslate("dashboard.dashboard", "Dashboard")}
-              </h1>
-            </div>
-
-            <div className="ml-4 flex items-center md:ml-6 space-x-2 md:space-x-4">
-              {/* Language Switcher */}
-              <LanguageSwitcher size="md" />
-
-              {/* Theme Toggle */}
               <button
-                onClick={toggleTheme}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none transition-colors duration-200"
-                aria-label="Toggle theme"
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
               >
-                {darkMode ? (
-                  <HiOutlineSun className="text-yellow-400" size={24} />
-                ) : (
-                  <HiOutlineMoon className="text-gray-500" size={24} />
-                )}
+                <FiX size={20} />
               </button>
             </div>
+
+            {/* Navigation */}
+            <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+              {navigationItems.map((item) => {
+                const Icon = item.icon;
+                return (
+                  <a
+                    key={item.name}
+                    href={item.href}
+                    className={`group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      item.current
+                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-r-2 border-blue-500"
+                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(item.href);
+                      if (isMobile) {
+                        setSidebarOpen(false);
+                      }
+                    }}
+                  >
+                    <Icon
+                      size={20}
+                      className={`mr-3 flex-shrink-0 ${
+                        item.current
+                          ? "text-blue-500"
+                          : "text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300"
+                      }`}
+                    />
+                    <span className="truncate">{item.name}</span>
+                  </a>
+                );
+              })}
+            </nav>
+
+            {/* Sidebar footer */}
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+              <div className="flex items-center space-x-3 p-3 rounded-lg bg-gray-50 dark:bg-gray-700">
+                <div className="flex-shrink-0">
+                  <img
+                    className="h-8 w-8 rounded-full"
+                    src={user?.avatar || "/src/assets/avartar/avatar1.jpg"}
+                    alt="User avatar"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
+                    {user?.firstName} {user?.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+                    {user?.email}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Main content */}
+          <div className="lg:pl-64 flex flex-col min-h-screen">
+            {/* Top header */}
+            <header className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
+                {/* Left side */}
+                <div className="flex items-center space-x-4">
+                  <button
+                    onClick={() => setSidebarOpen(true)}
+                    className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  >
+                    <FiMenu size={20} />
+                  </button>
+                  
+                  {/* Search bar */}
+                  <div className="hidden sm:block flex-1 max-w-lg">
+                    <form onSubmit={handleSearch} className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FiSearch className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder={t("common.search")}
+                        className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      />
+                    </form>
+                  </div>
+                </div>
+
+                {/* Right side */}
+                <div className="flex items-center space-x-4">
+                  {/* Language switcher */}
+                  <div className="hidden sm:block">
+                    <LanguageSwitcher
+                      currentLanguage={currentLanguage}
+                      onLanguageChange={handleLanguageChange}
+                    />
+                  </div>
+
+                  {/* Theme toggle */}
+                  <button
+                    onClick={() => setIsDarkMode(!isDarkMode)}
+                    className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                  >
+                    {isDarkMode ? (
+                      <HiOutlineSun size={20} />
+                    ) : (
+                      <HiOutlineMoon size={20} />
+                    )}
+                  </button>
+
+                  {/* Notifications */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowNotifications(!showNotifications)}
+                      className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 relative"
+                    >
+                      <FiBell size={20} />
+                      {notifications.length > 0 && (
+                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                          {notifications.length}
+                        </span>
+                      )}
+                    </button>
+
+                    {/* Notifications dropdown */}
+                    {showNotifications && (
+                      <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                            {t("common.notifications")}
+                          </h3>
+                        </div>
+                        <div className="max-h-96 overflow-y-auto">
+                          {notifications.length === 0 ? (
+                            <div className="p-4 text-center text-gray-500 dark:text-gray-400">
+                              {t("common.noData")}
+                            </div>
+                          ) : (
+                            notifications.map((notification, index) => (
+                              <div
+                                key={index}
+                                className="p-4 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                              >
+                                <p className="text-sm text-gray-900 dark:text-white">
+                                  {notification.message}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                  {notification.time}
+                                </p>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* User menu */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowNotifications(false)}
+                      className="flex items-center space-x-3 p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                    >
+                      <img
+                        className="h-8 w-8 rounded-full"
+                        src={user?.avatar || "/src/assets/avartar/avatar1.jpg"}
+                        alt="User avatar"
+                      />
+                      <span className="hidden sm:block text-sm font-medium text-gray-900 dark:text-white">
+                        {user?.firstName}
+                      </span>
+                    </button>
+                  </div>
+
+                  {/* Logout button */}
+                  <button
+                    onClick={logout}
+                    className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+                    title={t("navigation.logout")}
+                  >
+                    <FiLogOut size={20} />
+                  </button>
+                </div>
+              </div>
+            </header>
+
+            {/* Page content */}
+            <main className="flex-1 overflow-hidden">
+              <div className="h-full overflow-y-auto">
+                {children}
+              </div>
+            </main>
           </div>
         </div>
-
-        {/* Main Content */}
-        <main className="flex-1 relative overflow-y-auto focus:outline-none bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
-          <div className="py-6 px-4 sm:px-6 lg:px-8 animate-fadeIn">
-            {typeof children === "function"
-              ? children({ darkMode })
-              : children ?? (
-                  <div className="rounded-lg bg-white dark:bg-gray-800 shadow-md p-6 transition-all duration-300">
-                    <h2 className="text-xl md:text-2xl font-semibold mb-4">
-                      Welcome to the Admin Dashboard
-                    </h2>
-                    <p className="text-gray-600 dark:text-gray-300">
-                      Select an option from the sidebar to get started.
-                    </p>
-                  </div>
-                )}
-          </div>
-        </main>
-      </div>
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out forwards;
-        }
-        
-        ::-webkit-scrollbar {
-          width: 6px;
-        }
-        
-        ::-webkit-scrollbar-track {
-          background: ${darkMode ? "#1f2937" : "#f3f4f6"};
-        }
-        
-        ::-webkit-scrollbar-thumb {
-          background: ${darkMode ? "#4b5563" : "#d1d5db"};
-          border-radius: 3px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-          background: ${darkMode ? "#6b7280" : "#9ca3af"};
-        }
-      `}</style>
-    </div>
+      </LanguageContext.Provider>
+    </ThemeContext.Provider>
   );
 };
 
-// Main component that wraps AdminLayout with providers
-const AdminLayoutWithProviders = ({ children }) => {
-  return (
-    <ThemeProvider>
-      <LanguageProvider>
-        <AdminLayout>{children}</AdminLayout>
-      </LanguageProvider>
-    </ThemeProvider>
-  );
-};
-
-export default AdminLayoutWithProviders;
+export default AdminLayout;

@@ -1,7 +1,8 @@
 // src/Services/translationService.js
 // Comprehensive translation service with Gemini AI integration and offline fallback
 
-import { i18n } from '../i18n';
+// Remove the i18n import since we don't need it in this service
+// import { i18n } from '../i18n';
 
 // Gemini AI Translation Service
 class GeminiTranslationService {
@@ -50,17 +51,19 @@ class GeminiTranslationService {
 
   // Detect system language
   detectSystemLanguage() {
-    const systemLang = navigator.language || navigator.userLanguage || 'en';
-    const primaryLang = systemLang.split('-')[0];
-    
-    // Map common languages to our supported languages
-    const languageMap = {
-      'fr': 'fr',
-      'en': 'en',
-      'es': 'es'
-    };
-    
-    return languageMap[primaryLang] || 'en'; // Default to English
+    try {
+      const systemLang = navigator.language || navigator.userLanguage || 'en';
+      const primaryLang = systemLang.split('-')[0];
+      
+      // Ensure supportedLanguages is available before using includes
+      if (this.supportedLanguages && Array.isArray(this.supportedLanguages)) {
+        return this.supportedLanguages.includes(primaryLang) ? primaryLang : 'en';
+      }
+      return 'en';
+    } catch (error) {
+      console.warn('Error detecting system language:', error);
+      return 'en';
+    }
   }
 
   // Translate text using Gemini AI
@@ -196,14 +199,28 @@ class LanguageService {
       fr: 'Français',
       es: 'Español'
     };
+    
+    // Ensure supportedLanguages is always available
+    if (!this.supportedLanguages || !Array.isArray(this.supportedLanguages)) {
+      this.supportedLanguages = ['en', 'fr', 'es'];
+    }
   }
 
   // Detect system language
   detectSystemLanguage() {
-    const systemLang = navigator.language || navigator.userLanguage || 'en';
-    const primaryLang = systemLang.split('-')[0];
-    
-    return this.supportedLanguages.includes(primaryLang) ? primaryLang : 'en';
+    try {
+      const systemLang = navigator.language || navigator.userLanguage || 'en';
+      const primaryLang = systemLang.split('-')[0];
+      
+      // Ensure supportedLanguages is available before using includes
+      if (this.supportedLanguages && Array.isArray(this.supportedLanguages)) {
+        return this.supportedLanguages.includes(primaryLang) ? primaryLang : 'en';
+      }
+      return 'en';
+    } catch (error) {
+      console.warn('Error detecting system language:', error);
+      return 'en';
+    }
   }
 
   // Get stored language from localStorage
@@ -213,23 +230,35 @@ class LanguageService {
 
   // Set and store language
   setLanguage(language) {
-    if (!this.supportedLanguages.includes(language)) {
-      console.warn(`Unsupported language: ${language}`);
-      return;
-    }
+    try {
+      // Ensure supportedLanguages is available before using includes
+      if (!this.supportedLanguages || !Array.isArray(this.supportedLanguages)) {
+        console.warn('supportedLanguages not available, resetting to default');
+        this.supportedLanguages = ['en', 'fr', 'es'];
+      }
+      
+      if (!this.supportedLanguages.includes(language)) {
+        console.warn(`Unsupported language: ${language}`);
+        return;
+      }
 
-    this.currentLanguage = language;
-    localStorage.setItem('appLanguage', language);
-    
-    // Update i18n
-    i18n.changeLanguage(language);
-    
-    // Dispatch custom event for language change
-    window.dispatchEvent(new CustomEvent('languageChanged', { 
-      detail: { language } 
-    }));
-    
-    console.log(`🌍 Language changed to: ${this.languageNames[language]}`);
+      this.currentLanguage = language;
+      localStorage.setItem('appLanguage', language);
+      
+      // Update i18n
+      if (typeof i18n !== 'undefined' && i18n.changeLanguage) {
+        i18n.changeLanguage(language);
+      }
+      
+      // Dispatch custom event for language change
+      window.dispatchEvent(new CustomEvent('languageChanged', { 
+        detail: { language } 
+      }));
+      
+      console.log(`🌍 Language changed to: ${this.languageNames[language] || language}`);
+    } catch (error) {
+      console.error('Error setting language:', error);
+    }
   }
 
   // Get current language
@@ -273,6 +302,11 @@ class LanguageService {
 // Create singleton instances
 export const languageService = new LanguageService();
 export const translationService = new GeminiTranslationService();
+
+// Initialize language service
+if (languageService && typeof languageService.initialize === 'function') {
+  languageService.initialize();
+}
 
 // Export for use in components
 export default {

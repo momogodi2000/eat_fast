@@ -83,7 +83,10 @@ const ClientsLayout = lazy(() => import("./layouts/clients_layout"));
 const DeliveryLayout = lazy(() => import("./layouts/delivery_layout"));
 const RestaurantLayoutWithProviders = lazy(() => import("./layouts/restaurants_layout"));
 const AdminLayout = lazy(() => import("./layouts/admin_layout"));
-const AdminRestaurantProvider = lazy(() => import("./pages/Dashboards/Admin/Restaurants/RestaurantsList").then(module => ({ default: module.AdminRestaurantProvider })));
+const AdminRestaurantProvider = lazy(() => 
+  import("./pages/Dashboards/Admin/Restaurants/RestaurantsList")
+    .then(module => ({ default: module.AdminRestaurantProvider }))
+);
 
 // Common components
 const DashboardRedirect = lazy(() => import("./components/CommonShare/test"));

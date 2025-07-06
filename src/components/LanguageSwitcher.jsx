@@ -15,7 +15,12 @@ const LanguageSwitcher = ({ className = '', size = 'md' }) => {
       }
       
       if (languageService && typeof languageService.getSupportedLanguages === 'function') {
-        setSupportedLanguages(languageService.getSupportedLanguages());
+        const languages = languageService.getSupportedLanguages();
+        if (Array.isArray(languages)) {
+          setSupportedLanguages(languages);
+        } else {
+          throw new Error('getSupportedLanguages did not return an array');
+        }
       }
     } catch (error) {
       console.warn('Language service initialization error:', error);

@@ -187,10 +187,9 @@ const RestaurantManagement = () => {
     // Appliquer le filtre de recherche
     if (searchTerm) {
       results = results.filter(restaurant => 
-        restaurant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        restaurant.cuisine.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        restaurant.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        restaurant.city.toLowerCase().includes(searchTerm.toLowerCase())
+        (restaurant.name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (restaurant.cuisine?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+        (restaurant.address?.toLowerCase() || '').includes(searchTerm.toLowerCase())
       );
     }
     
@@ -209,18 +208,18 @@ const RestaurantManagement = () => {
       switch (sortBy) {
         case 'name':
           return sortOrder === 'asc' 
-            ? a.name.localeCompare(b.name)
-            : b.name.localeCompare(a.name);
+            ? (a.name || '').localeCompare(b.name || '')
+            : (b.name || '').localeCompare(a.name || '');
         case 'rating':
-          return sortOrder === 'asc' ? a.rating - b.rating : b.rating - a.rating;
+          return sortOrder === 'asc' ? (a.rating || 0) - (b.rating || 0) : (b.rating || 0) - (a.rating || 0);
         case 'orders':
-          return sortOrder === 'asc' ? a.orders - b.orders : b.orders - a.orders;
+          return sortOrder === 'asc' ? (a.orders || 0) - (b.orders || 0) : (b.orders || 0) - (a.orders || 0);
         case 'revenue':
-          return sortOrder === 'asc' ? a.revenue - b.revenue : b.revenue - a.revenue;
+          return sortOrder === 'asc' ? (a.revenue || 0) - (b.revenue || 0) : (b.revenue || 0) - (a.revenue || 0);
         case 'created':
           return sortOrder === 'asc' 
-            ? new Date(a.createdAt) - new Date(b.createdAt)
-            : new Date(b.createdAt) - new Date(a.createdAt);
+            ? new Date(a.createdAt || 0) - new Date(b.createdAt || 0)
+            : new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
         default:
           return 0;
       }
@@ -385,7 +384,7 @@ const RestaurantManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* En-tête de page */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="p-6">

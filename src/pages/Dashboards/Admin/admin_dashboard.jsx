@@ -28,7 +28,8 @@ import {
   LineChart, 
   Line,
   Area,
-  AreaChart
+  AreaChart,
+  CartesianGrid
 } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { adminRestaurantContext, registerRestaurantContext } from './Restaurants/RestaurantsList';
