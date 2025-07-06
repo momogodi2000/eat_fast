@@ -422,7 +422,7 @@ const RestaurantLayout = ({ children }) => {
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   {/* restaurant@eatfast.cm */}
-                  {userInformation.email}
+                  {userInformation?.email || 'restaurant@eatfast.cm'}
                 </p>
               </div>
             </div>
@@ -465,7 +465,9 @@ const RestaurantLayout = ({ children }) => {
               <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white truncate">
                 {`
                 ${translations["dashboard.dashboard"]}
-                 ${userInformation.first_name} ${userInformation.last_name}
+                 ${userInformation?.first_name && userInformation?.last_name
+                   ? `${userInformation.first_name} ${userInformation.last_name}`
+                   : 'Restaurant Manager'}
                 `}
               </h1>
             </div>

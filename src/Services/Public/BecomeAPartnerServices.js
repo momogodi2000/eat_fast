@@ -368,3 +368,51 @@ export const getStatusDisplay = (status) => {
     description: 'Statut inconnu'
   };
 };
+
+// Additional utility functions
+export const validateFile = (file, type = 'document') => partnerServices.validateFile(file, type);
+export const isValidCameroonPhone = (phone) => {
+  const phoneRegex = /^(\+237|237)?[236789][0-9]{8}$/;
+  return phoneRegex.test(phone.replace(/\s/g, ''));
+};
+export const isValidEmail = (email) => partnerServices.isValidEmail(email);
+export const formatFileSize = (bytes) => {
+  if (bytes === 0) return '0 Bytes';
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+};
+export const formatCurrency = (amount, currency = 'XAF') => {
+  return new Intl.NumberFormat('fr-CM', {
+    style: 'currency',
+    currency: currency,
+  }).format(amount);
+};
+export const formatDate = (date) => {
+  return new Intl.DateTimeFormat('fr-CM', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(new Date(date));
+};
+
+export const getDefaultPartnerConfig = () => ({
+  partnerTypes: [
+    { value: 'restaurant', label: 'Restaurant', icon: '🍽️' },
+    { value: 'delivery-agent', label: 'Agent Livreur', icon: '🚚' },
+    { value: 'investor', label: 'Investisseur', icon: '💰' },
+    { value: 'other', label: 'Autre Service', icon: '🔧' }
+  ],
+  maxFileSize: 10 * 1024 * 1024, // 10MB
+  allowedFileTypes: {
+    documents: ['.pdf', '.doc', '.docx'],
+    images: ['.jpg', '.jpeg', '.png']
+  },
+  requiredFields: {
+    restaurant: ['businessName', 'cuisineType', 'address', 'city'],
+    'delivery-agent': ['vehicleType', 'address', 'city'],
+    investor: ['investmentAmount', 'investmentType'],
+    other: ['serviceType']
+  }
+});

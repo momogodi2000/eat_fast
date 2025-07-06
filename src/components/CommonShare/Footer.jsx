@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, Code } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = ({ darkMode }) => {
   const [isDark, setIsDark] = useState(false);
@@ -158,6 +159,21 @@ const Footer = ({ darkMode }) => {
                 </div>
               ))}
             </div>
+            {/* Developer Test Button */}
+            {import.meta.env.DEV && (
+              <Link 
+                to="/test" 
+                className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  isDark 
+                    ? 'bg-gray-800 text-gray-300 hover:bg-emerald-600 hover:text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-emerald-500 hover:text-white'
+                }`}
+                title="Accès développeur - Navigation entre dashboards"
+              >
+                <Code size={14} />
+                <span>Test Dev</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>

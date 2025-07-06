@@ -48,9 +48,9 @@ const DeliveryLayout = ({ children }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState(0); // 3
   const { userInformation } = useContext(userContextInformation);
-  const initialUser =
-    userInformation.first_name[0].toUpperCase() +
-    userInformation.last_name[0].toUpperCase();
+  const initialUser = userInformation?.first_name && userInformation?.last_name
+    ? userInformation.first_name[0].toUpperCase() + userInformation.last_name[0].toUpperCase()
+    : 'U';
 
   // Initialize theme from localStorage
   useEffect(() => {
@@ -205,7 +205,9 @@ const DeliveryLayout = ({ children }) => {
                   </div>
                   <div>
                     <p className="font-semibold text-gray-800 dark:text-white">
-                      {`${userInformation.first_name} ${userInformation.last_name}`}
+                      {userInformation?.first_name && userInformation?.last_name
+                        ? `${userInformation.first_name} ${userInformation.last_name}`
+                        : 'Utilisateur'}
                     </p>
                     <p className="text-sm text-green-500">En ligne</p>
                   </div>

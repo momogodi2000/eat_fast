@@ -44,6 +44,7 @@ import {
 } from "./const_register";
 
 import { userContextInformation } from "./const_provider";
+import AuthServices from "../../Services/userLogin/authService";
 
 const Register = () => {
   // State management

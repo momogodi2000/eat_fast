@@ -10,10 +10,7 @@ import {
 } from 'lucide-react';
 
 // Import services with proper integration
-import partnerServices from '../../Services/Public/BecomeAPartnerServices';
-
-// Utility functions from services
-const { 
+import partnerServices, { 
   validateFile, 
   isValidCameroonPhone, 
   isValidEmail, 
@@ -24,7 +21,9 @@ const {
   getStatusDisplay,
   formatPartnerError,
   getDefaultPartnerConfig
-} = partnerServices;
+} from '../../Services/Public/BecomeAPartnerServices';
+
+
 
 // Get default configuration
 const defaultConfig = getDefaultPartnerConfig();

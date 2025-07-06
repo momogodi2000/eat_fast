@@ -150,9 +150,30 @@ function App() {
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<LandingPage />} />
-                <Route path="/login" element={<LoginPage />} />
-                <Route path="/register" element={<RegisterPage />} />
-                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                <Route 
+                  path="/login" 
+                  element={
+                    <UserInformationProvider>
+                      <LoginPage />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/register" 
+                  element={
+                    <UserInformationProvider>
+                      <RegisterPage />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/forgot-password" 
+                  element={
+                    <UserInformationProvider>
+                      <ForgotPasswordPage />
+                    </UserInformationProvider>
+                  } 
+                />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/become" element={<BecomeAPartnerPage />} />
@@ -170,20 +191,83 @@ function App() {
                 <Route
                   path="/admin"
                   element={
-                    <AdminRestaurantProvider>
-                      <UserInformationProvider>
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
                         <AdminDashboard />
-                      </UserInformationProvider>
-                    </AdminRestaurantProvider>
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
                   }
                 />
-                <Route path="/admin/user" element={<UserListPage />} />
-                <Route path="/admin/restaurants" element={<RestaurantManagement />} />
-                <Route path="/admin/contact-messages" element={<AdminContactMessages />} />
-                <Route path="/admin/orders" element={<AdminOrdersPage />} />
-                <Route path="/admin/statistics" element={<StatisticsPage />} />
-                <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
-                <Route path="/admin/promotion" element={<PromotionManagement />} />
+                <Route 
+                  path="/admin/user" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
+                        <UserListPage />
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/restaurants" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
+                        <RestaurantManagement />
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/contact-messages" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
+                        <AdminContactMessages />
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/orders" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
+                        <AdminOrdersPage />
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/statistics" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
+                        <StatisticsPage />
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/delivery" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
+                        <AdminDeliveryManagement />
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/promotion" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminRestaurantProvider>
+                        <PromotionManagement />
+                      </AdminRestaurantProvider>
+                    </UserInformationProvider>
+                  } 
+                />
 
                 {/* Agent Support Routes */}
                 <Route
@@ -194,61 +278,106 @@ function App() {
                     </UserInformationProvider>
                   }
                 />
-                <Route path="/agent/tickets" element={<SupportTicketsPage />} />
-                <Route path="/agent/disputes" element={<SupportDisputesPage />} />
-                <Route path="/agent/contact-users" element={<SupportUserCommunication />} />
-                <Route path="/agent/knowledge-base" element={<SupportKnowledge />} />
-                <Route path="/agent/escalations" element={<SupportEscalation />} />
+                <Route 
+                  path="/agent/tickets" 
+                  element={
+                    <UserInformationProvider>
+                      <SupportTicketsPage />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/agent/disputes" 
+                  element={
+                    <UserInformationProvider>
+                      <SupportDisputesPage />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/agent/contact-users" 
+                  element={
+                    <UserInformationProvider>
+                      <SupportUserCommunication />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/agent/knowledge-base" 
+                  element={
+                    <UserInformationProvider>
+                      <SupportKnowledge />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/agent/escalations" 
+                  element={
+                    <UserInformationProvider>
+                      <SupportEscalation />
+                    </UserInformationProvider>
+                  } 
+                />
 
                 {/* Restaurant Manager Routes */}
                 <Route
                   path="/restaurants_manager"
                   element={
-                    <RestaurantLayoutWithProviders>
-                      <UserInformationProvider>
+                    <UserInformationProvider>
+                      <RestaurantLayoutWithProviders>
                         <RestaurantDashboard />
-                      </UserInformationProvider>
-                    </RestaurantLayoutWithProviders>
+                      </RestaurantLayoutWithProviders>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/restaurant/orders"
                   element={
-                    <RestaurantLayoutWithProviders>
-                      <RestaurantCommand />
-                    </RestaurantLayoutWithProviders>
+                    <UserInformationProvider>
+                      <RestaurantLayoutWithProviders>
+                        <RestaurantCommand />
+                      </RestaurantLayoutWithProviders>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/restaurant/menu"
                   element={
-                    <RestaurantLayoutWithProviders>
-                      <MenuPlatsPage />
-                    </RestaurantLayoutWithProviders>
+                    <UserInformationProvider>
+                      <RestaurantLayoutWithProviders>
+                        <MenuPlatsPage />
+                      </RestaurantLayoutWithProviders>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/restaurant/stats"
                   element={
-                    <RestaurantLayoutWithProviders>
-                      <RestaurantStatsPage />
-                    </RestaurantLayoutWithProviders>
+                    <UserInformationProvider>
+                      <RestaurantLayoutWithProviders>
+                        <RestaurantStatsPage />
+                      </RestaurantLayoutWithProviders>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/restaurant/reviews"
                   element={
-                    <RestaurantLayoutWithProviders>
-                      <RestaurantReviews />
-                    </RestaurantLayoutWithProviders>
+                    <UserInformationProvider>
+                      <RestaurantLayoutWithProviders>
+                        <RestaurantReviews />
+                      </RestaurantLayoutWithProviders>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/restaurant/support/chat"
                   element={
-                    <RestaurantLayoutWithProviders>
-                      <RestaurantChatSupport />
-                    </RestaurantLayoutWithProviders>
+                    <UserInformationProvider>
+                      <RestaurantLayoutWithProviders>
+                        <RestaurantChatSupport />
+                      </RestaurantLayoutWithProviders>
+                    </UserInformationProvider>
                   }
                 />
 
@@ -266,41 +395,51 @@ function App() {
                 <Route
                   path="/delivery/missions"
                   element={
-                    <DeliveryLayout>
-                      <MissionsPage />
-                    </DeliveryLayout>
+                    <UserInformationProvider>
+                      <DeliveryLayout>
+                        <MissionsPage />
+                      </DeliveryLayout>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/delivery/live-map"
                   element={
-                    <DeliveryLayout>
-                      <RestaurantDeliverCommand />
-                    </DeliveryLayout>
+                    <UserInformationProvider>
+                      <DeliveryLayout>
+                        <RestaurantDeliverCommand />
+                      </DeliveryLayout>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/delivery/earnings"
                   element={
-                    <DeliveryLayout>
-                      <DeliveryEarningsPage />
-                    </DeliveryLayout>
+                    <UserInformationProvider>
+                      <DeliveryLayout>
+                        <DeliveryEarningsPage />
+                      </DeliveryLayout>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/delivery/history"
                   element={
-                    <DeliveryLayout>
-                      <DeliveryHistoryPage />
-                    </DeliveryLayout>
+                    <UserInformationProvider>
+                      <DeliveryLayout>
+                        <DeliveryHistoryPage />
+                      </DeliveryLayout>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/delivery/support/chat"
                   element={
-                    <DeliveryLayout>
-                      <DeliveryChatSupport />
-                    </DeliveryLayout>
+                    <UserInformationProvider>
+                      <DeliveryLayout>
+                        <DeliveryChatSupport />
+                      </DeliveryLayout>
+                    </UserInformationProvider>
                   }
                 />
 
@@ -318,33 +457,41 @@ function App() {
                 <Route
                   path="/clients/restaurant"
                   element={
-                    <ClientsLayout>
-                      <ClientMenus />
-                    </ClientsLayout>
+                    <UserInformationProvider>
+                      <ClientsLayout>
+                        <ClientMenus />
+                      </ClientsLayout>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/clients/orders"
                   element={
-                    <ClientsLayout>
-                      <ClientsCommande />
-                    </ClientsLayout>
+                    <UserInformationProvider>
+                      <ClientsLayout>
+                        <ClientsCommande />
+                      </ClientsLayout>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/clients/order-history"
                   element={
-                    <ClientsLayout>
-                      <ClientsCommandeHistory />
-                    </ClientsLayout>
+                    <UserInformationProvider>
+                      <ClientsLayout>
+                        <ClientsCommandeHistory />
+                      </ClientsLayout>
+                    </UserInformationProvider>
                   }
                 />
                 <Route
                   path="/clients/support/chat"
                   element={
-                    <ClientsLayout>
-                      <ClientsChatSupport />
-                    </ClientsLayout>
+                    <UserInformationProvider>
+                      <ClientsLayout>
+                        <ClientsChatSupport />
+                      </ClientsLayout>
+                    </UserInformationProvider>
                   }
                 />
                 <Route

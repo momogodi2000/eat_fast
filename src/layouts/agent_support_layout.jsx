@@ -364,10 +364,12 @@ const SupportAgentLayout = ({ children }) => {
               <div className="ml-3">
                 <p className="font-medium">{`
                 Agent Support
-                ${userInformation.first_name} ${userInformation.last_name}`}</p>
+                ${userInformation?.first_name && userInformation?.last_name
+                  ? `${userInformation.first_name} ${userInformation.last_name}`
+                  : 'Support Agent'}`}</p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {/* support@eatfast.cm */}
-                  {userInformation.email}
+                  {userInformation?.email || 'support@eatfast.cm'}
                 </p>
               </div>
             </div>

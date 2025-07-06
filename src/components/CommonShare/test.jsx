@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, Settings, Users, Truck, Coffee, Headset, Headphones } from "lucide-react";
+import { ArrowRight, Settings, Users, Truck, Coffee, Headphones } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function DashboardRedirect() {

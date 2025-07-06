@@ -214,6 +214,21 @@ class DBConnection {
     }
   }
 
+  // Multiple files upload with progress
+  async uploadFiles(url, formData, onProgress) {
+    try {
+      const response = await this.client.post(url, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        onUploadProgress: this.getUploadProgressHandler(onProgress),
+      });
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // Error handler
   handleError(error) {
     if (error.response) {
@@ -334,6 +349,16 @@ export const API_ENDPOINTS = {
     IMAGE: '/uploads/image',
     DOCUMENT: '/uploads/document',
   },
+  
+  // Partner application endpoints
+  PARTNER_APPLICATIONS: '/partner/applications',
+  STATUS: (id) => `/partner/applications/${id}/status`,
+  
+  // Contact endpoints
+  CONTACT: '/contact',
+  
+  // Health check endpoint
+  HEALTH: '/health',
 };
 
 // Utility functions

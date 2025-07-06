@@ -45,8 +45,9 @@ const ClientsLayout = ({ children, currentPage = "dashboard" }) => {
 
   // console.log(userLogin);
   const user = userInformation; //: userLogin;
-  const initialUser =
-    user.first_name[0].toUpperCase() + user.last_name[0].toUpperCase();
+  const initialUser = user?.first_name && user?.last_name
+    ? user.first_name[0].toUpperCase() + user.last_name[0].toUpperCase()
+    : 'U';
 
   // Load settings from memory (no localStorage in artifacts)
   useEffect(() => {

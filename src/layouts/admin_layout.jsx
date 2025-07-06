@@ -331,12 +331,13 @@ const AdminLayout = ({ children }) => {
               <div className="ml-3">
                 <p className="font-medium">
                   {/*Admin User*/}
-                  {`Admin User
-                  ${userInformation.first_name} ${userInformation.last_name}`}
+                  {userInformation?.first_name && userInformation?.last_name
+                    ? `${userInformation.first_name} ${userInformation.last_name}`
+                    : 'Admin User'}
                 </p>
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {/* admin@eatfast.cm */}
-                  {userInformation.email}
+                  {userInformation?.email || 'admin@eatfast.cm'}
                 </p>
               </div>
             </div>
