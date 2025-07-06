@@ -3,11 +3,12 @@ import { motion, AnimatePresence, useAnimation, useScroll, useTransform } from '
 import { 
   Sun, Moon, Search, MapPin, Clock, Star, ChevronDown, User, ShoppingBag, 
   Menu, X, Award, ThumbsUp, Gift, ChevronLeft, ChevronRight, Shield,
-  Truck, Phone, Mail, Facebook, Twitter, Instagram, Youtube
+  Truck, Phone, Mail, Facebook, Twitter, Instagram, Youtube, CheckCircle
 } from 'lucide-react';
 
 import Footer from '../../components/CommonShare/Footer';
-
+import PWAInstall from '../../components/PWAInstall';
+import QRCode from '../../components/QRCode';
 
 import koki from '../../assets/images/koki.jpeg';
 import achu from '../../assets/images/achue.jpeg';
@@ -957,116 +958,238 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* App Download */}
-      <section className={`py-16 ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+      {/* Enhanced App Download Section */}
+      <section className={`py-20 ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-orange-50 to-red-50'}`}>
         <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-center mb-16"
+            >
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                Téléchargez EatFast
+              </h2>
+              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
+                Commandez vos plats préférés en quelques clics. Disponible sur iOS, Android et en version PWA pour tous vos appareils.
+              </p>
+            </motion.div>
+
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
+              {/* Left Column - Download Options */}
               <motion.div
-                initial={{ opacity: 0, x: -30 }}
+                initial={{ opacity: 0, x: -50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 className="space-y-8"
               >
-                <div>
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                    Téléchargez l'application EatFast
-                  </h2>
-                  <p className="text-xl text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Commandez plus facilement avec notre application mobile. 
-                    Notifications en temps réel, suivi de commande et offres exclusives.
-                  </p>
+                {/* PWA Install Section */}
+                <div className={`p-8 rounded-2xl ${darkMode ? 'bg-gray-800/50' : 'bg-white/80'} backdrop-blur-sm border border-orange-200 dark:border-orange-800`}>
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Application Web Progressive (PWA)</h3>
+                      <p className="text-gray-600 dark:text-gray-300">Installez directement depuis votre navigateur</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span>Fonctionne hors ligne</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span>Notifications push</span>
+                    </div>
+                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
+                      <CheckCircle className="w-5 h-5 text-green-500" />
+                      <span>Mise à jour automatique</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      // Trigger PWA install prompt
+                      if ('serviceWorker' in navigator && 'BeforeInstallPromptEvent' in window) {
+                        window.dispatchEvent(new Event('beforeinstallprompt'));
+                      } else {
+                        // Fallback for browsers that don't support PWA
+                        window.open(window.location.href, '_blank');
+                      }
+                    }}
+                    className="mt-6 w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  >
+                    <div className="flex items-center justify-center gap-3">
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
+                      </svg>
+                      Installer l'App
+                    </div>
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                {/* Mobile App Stores */}
+                <div className="space-y-6">
+                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Applications Mobiles</h3>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* App Store */}
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`p-6 rounded-2xl ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'} border border-gray-200 dark:border-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl`}
+                      onClick={() => window.open('https://apps.apple.com/app/eatfast', '_blank')}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+                          <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                          </svg>
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Télécharger sur</div>
+                          <div className="font-bold text-gray-900 dark:text-white">App Store</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">iOS 12.0+</div>
+                        </div>
+                      </div>
+                    </motion.button>
+
+                    {/* Google Play */}
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className={`p-6 rounded-2xl ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'} border border-gray-200 dark:border-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl`}
+                      onClick={() => window.open('https://play.google.com/store/apps/details?id=com.eatfast.app', '_blank')}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
+                          <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
+                          </svg>
+                        </div>
+                        <div className="text-left">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Disponible sur</div>
+                          <div className="font-bold text-gray-900 dark:text-white">Google Play</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">Android 6.0+</div>
+                        </div>
+                      </div>
+                    </motion.button>
+                  </div>
+                </div>
+
+                {/* App Features */}
+                <div className="grid grid-cols-2 gap-4">
                   {[
-                    { label: 'Téléchargements', value: '50k+' },
-                    { label: 'Note moyenne', value: '4.9★' },
-                    { label: 'Villes couvertes', value: '5' },
-                    { label: 'Satisfaction', value: '98%' }
+                    { label: 'Téléchargements', value: '100K+', icon: '📱' },
+                    { label: 'Note moyenne', value: '4.9★', icon: '⭐' },
+                    { label: 'Villes couvertes', value: '8', icon: '🌍' },
+                    { label: 'Satisfaction', value: '98%', icon: '😊' }
                   ].map((stat, index) => (
-                    <div key={index} className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                      <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: index * 0.1 }}
+                      className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800/50' : 'bg-white/80'} backdrop-blur-sm border border-orange-200 dark:border-orange-800`}
+                    >
+                      <div className="text-2xl mb-2">{stat.icon}</div>
+                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
                         {stat.value}
                       </div>
                       <div className="text-sm text-gray-600 dark:text-gray-300">
                         {stat.label}
                       </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {['App Store', 'Google Play'].map((store) => (
-                    <motion.button 
-                      key={store}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`flex items-center gap-3 px-6 py-4 rounded-xl ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-900 hover:bg-black'} text-white transition-all shadow-lg`}
-                    >
-                      <div className="text-2xl">
-                        {store === 'App Store' ? '🍎' : '📱'}
-                      </div>
-                      <div className="text-left">
-                        <div className="text-xs opacity-80">
-                          {t(store === 'App Store' ? 'app.downloadOn' : 'app.getItOn')}
-                        </div>
-                        <div className="font-semibold">{store}</div>
-                      </div>
-                    </motion.button>
+                    </motion.div>
                   ))}
                 </div>
               </motion.div>
-              
-              <motion.div 
-                initial={{ opacity: 0, x: 30 }}
+
+              {/* Right Column - App Preview */}
+              <motion.div
+                initial={{ opacity: 0, x: 50 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
                 className="relative flex justify-center"
               >
                 <div className="relative">
-                  <div className="w-80 h-96 bg-gradient-to-b from-emerald-500 to-emerald-600 rounded-[3rem] p-2 shadow-2xl">
-                    <div className={`w-full h-full ${darkMode ? 'bg-gray-900' : 'bg-white'} rounded-[2.5rem] overflow-hidden`}>
+                  {/* Main Phone Mockup */}
+                  <div className="w-80 h-96 bg-gradient-to-b from-orange-500 to-red-500 rounded-[3rem] p-2 shadow-2xl">
+                    <div className={`w-full h-full ${darkMode ? 'bg-gray-900' : 'bg-white'} rounded-[2.5rem] overflow-hidden relative`}>
+                      {/* App Header */}
                       <div className="p-6 space-y-4">
                         <div className="flex items-center justify-between">
-                          <div className="w-6 h-6 bg-emerald-500 rounded-full" />
-                          <div className="text-sm font-medium">EatFast</div>
+                          <div className="w-6 h-6 bg-orange-500 rounded-full" />
+                          <div className="text-sm font-bold text-gray-900 dark:text-white">EatFast</div>
                           <div className="w-6 h-6" />
                         </div>
-                        <div className="space-y-3">
-                          <div className={`h-3 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded`} />
-                          <div className={`h-3 w-3/4 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded`} />
+                        
+                        {/* Search Bar */}
+                        <div className="flex items-center gap-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-xl">
+                          <Search className="w-4 h-4 text-gray-400" />
+                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
                         </div>
-                        <div className="grid grid-cols-2 gap-3">
-                          {[1, 2, 3, 4].map((i) => (
-                            <div key={i} className={`h-20 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg`} />
+                        
+                        {/* Restaurant Cards */}
+                        <div className="space-y-3">
+                          {[1, 2, 3].map((i) => (
+                            <div key={i} className={`h-16 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg flex items-center gap-3 p-3`}>
+                              <div className="w-10 h-10 bg-orange-200 dark:bg-orange-800 rounded-lg" />
+                              <div className="flex-1 space-y-1">
+                                <div className={`h-3 w-2/3 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded`} />
+                                <div className={`h-2 w-1/2 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded`} />
+                              </div>
+                            </div>
                           ))}
                         </div>
                       </div>
                     </div>
                   </div>
                   
-                  {/* Floating elements */}
-                  <motion.div 
+                  {/* Floating Elements */}
+                  <motion.div
                     animate={{ y: [0, -10, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute -top-4 -left-4 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg"
+                    className="absolute -top-4 -left-4 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg border border-orange-200"
                   >
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span className="text-xs font-medium">En ligne</span>
+                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">En ligne</span>
                     </div>
                   </motion.div>
                   
-                  <motion.div 
+                  <motion.div
                     animate={{ y: [0, 10, 0] }}
                     transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                    className="absolute -bottom-4 -right-4 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg"
+                    className="absolute -bottom-4 -right-4 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg border border-orange-200"
                   >
                     <div className="flex items-center gap-2">
-                      <Truck className="text-emerald-500" size={16} />
-                      <span className="text-xs font-medium">En livraison</span>
+                      <Truck className="text-orange-500" size={16} />
+                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">En livraison</span>
                     </div>
+                  </motion.div>
+                  
+                  {/* QR Code */}
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.5 }}
+                    className="absolute -bottom-8 -left-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg border border-orange-200"
+                  >
+                    <QRCode 
+                      value={window.location.href} 
+                      size={64} 
+                      className="w-16 h-16"
+                    />
+                    <div className="text-xs text-center mt-2 text-gray-600 dark:text-gray-400">Scanner</div>
                   </motion.div>
                 </div>
               </motion.div>
@@ -1147,7 +1270,8 @@ const HomePage = () => {
       </section>
 
       {/* Footer */}
-     <Footer darkMode={darkMode} />
+      <PWAInstall />
+      <Footer darkMode={darkMode} />
     </div>
   );
 };
