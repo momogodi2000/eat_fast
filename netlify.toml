@@ -178,14 +178,15 @@
   VITE_BUILD_DATE = "2024-01-20"
 
 # Functions (if using Netlify Functions)
-[functions]
-  directory = "netlify/functions"
-  node_bundler = "esbuild"
-  external_node_modules = ["@prisma/client"]
+# [functions]
+#   directory = "netlify/functions"
+#   node_bundler = "esbuild"
+#   external_node_modules = ["@prisma/client"]
 
 # Edge functions (if using Netlify Edge Functions)
-[edge_functions]
-  directory = "netlify/edge-functions"
+# [[edge_functions]]
+#   path = "/api/edge"
+#   function = "edge-function"
 
 # Forms (if using Netlify Forms)
 [[redirects]]
@@ -203,34 +204,34 @@
 [analytics]
   enabled = true
 
-# Build optimization
-[build.processing]
-  skip_processing = false
+# Build optimization (Netlify handles this automatically)
+# [build.processing]
+#   skip_processing = false
 
-[build.processing.css]
-  bundle = true
-  minify = true
+# [build.processing.css]
+#   bundle = true
+#   minify = true
 
-[build.processing.js]
-  bundle = true
-  minify = true
+# [build.processing.js]
+#   bundle = true
+#   minify = true
 
-[build.processing.html]
-  pretty_urls = true
+# [build.processing.html]
+#   pretty_urls = true
 
-[build.processing.images]
-  compress = true
+# [build.processing.images]
+#   compress = true
 
 # Post processing
-[build.post_processing]
-  auto_minify = true
+# [build.post_processing]
+#   auto_minify = true
 
-# Plugin configuration
-[[plugins]]
-  package = "@netlify/plugin-lighthouse"
+# Plugin configuration (uncomment if needed)
+# [[plugins]]
+#   package = "@netlify/plugin-lighthouse"
 
-[[plugins]]
-  package = "@netlify/plugin-sitemap"
+# [[plugins]]
+#   package = "@netlify/plugin-sitemap"
 
 # Custom headers for admin dashboard
 [[headers]]
