@@ -310,8 +310,7 @@ export {
 // Export all helpers
 export {
   firestoreHelpers,
-  messagingHelpers,
-  authHelpers
+  messagingHelpers
 };
 
 // Default export

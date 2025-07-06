@@ -33,7 +33,6 @@ import {
 } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { adminRestaurantContext, registerRestaurantContext } from './Restaurants/RestaurantsList';
-import { number } from 'framer-motion';
 import { OrderContext } from '../Restaurants/command/restaurant_command';
 
 const AdminDashboard = () => {

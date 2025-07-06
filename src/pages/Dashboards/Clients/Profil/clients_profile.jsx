@@ -66,13 +66,12 @@ const ClientsProfilePage = () => {
         newsletter: false,
       },
       language: "fr",
-
-      stats: {
-        totalOrders: 0,
-        favoriteRestaurants: 0,
-        averageRating: 0.0,
-        memberSince: "2024-01-15", // Rectifier ceci
-      },
+    },
+    stats: {
+      totalOrders: 0,
+      favoriteRestaurants: 0,
+      averageRating: 0.0,
+      memberSince: "2024-01-15", // Rectifier ceci
     },
   });
 
