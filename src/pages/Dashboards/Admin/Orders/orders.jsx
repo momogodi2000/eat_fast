@@ -25,6 +25,7 @@ import {
   FiTrendingUp,
   FiActivity
 } from 'react-icons/fi';
+import AdminLayout from '../../../layouts/admin_layout';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -549,7 +550,8 @@ const AdminOrdersPage = () => {
   );
 
   return (
-    <div className="flex flex-col space-y-6 p-2 sm:p-4">
+    <AdminLayout>
+      <div className="flex flex-col space-y-6 p-2 sm:p-4">
       {/* Page Header avec animation améliorée */}
       <motion.div 
         className="bg-gradient-to-r from-white to-gray-50 dark:from-gray-800 dark:to-gray-750 rounded-xl shadow-lg p-6 border border-gray-100 dark:border-gray-700"
@@ -1344,7 +1346,7 @@ const AdminOrdersPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </AdminLayout>
   );
 };
 

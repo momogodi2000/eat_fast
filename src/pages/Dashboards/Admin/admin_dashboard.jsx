@@ -42,6 +42,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { adminRestaurantContext, registerRestaurantContext } from './Restaurants/RestaurantsList';
 import { OrderContext } from '../Restaurants/command/restaurant_command';
+import AdminLayout from '../../../layouts/admin_layout';
 
 // Constants
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
@@ -285,7 +286,8 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <AdminLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -594,7 +596,7 @@ const AdminDashboard = () => {
           )}
         </div>
       </div>
-    </div>
+    </AdminLayout>
   );
 };
 

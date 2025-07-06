@@ -200,9 +200,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminDashboard />
-                        </AdminLayout>
+                        <AdminDashboard />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   }
@@ -212,9 +210,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminDashboard />
-                        </AdminLayout>
+                        <AdminDashboard />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   }
@@ -224,9 +220,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <UserListPage />
-                        </AdminLayout>
+                        <UserListPage />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -236,9 +230,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <UserListPage />
-                        </AdminLayout>
+                        <UserListPage />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -248,9 +240,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <RestaurantManagement />
-                        </AdminLayout>
+                        <RestaurantManagement />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -260,9 +250,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminContactMessages />
-                        </AdminLayout>
+                        <AdminContactMessages />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -272,9 +260,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminOrdersPage />
-                        </AdminLayout>
+                        <AdminOrdersPage />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -284,9 +270,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <StatisticsPage />
-                        </AdminLayout>
+                        <StatisticsPage />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -296,9 +280,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminDeliveryManagement />
-                        </AdminLayout>
+                        <AdminDeliveryManagement />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 
@@ -308,9 +290,7 @@ function App() {
                   element={
                     <UserInformationProvider>
                       <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <PromotionManagement />
-                        </AdminLayout>
+                        <PromotionManagement />
                       </AdminRestaurantProvider>
                     </UserInformationProvider>
                   } 

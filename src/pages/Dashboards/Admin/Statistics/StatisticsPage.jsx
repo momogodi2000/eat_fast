@@ -24,6 +24,7 @@ import {
   FiCreditCard,
   FiPackage
 } from 'react-icons/fi';
+import AdminLayout from '../../../layouts/admin_layout';
 import { 
   BarChart, 
   Bar, 
@@ -394,16 +395,17 @@ const StatisticsPage = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
-          Statistiques et Analyses
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          Vue d'ensemble des performances de la plateforme
-        </p>
-      </div>
+    <AdminLayout>
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6">
+        {/* Header */}
+        <div className="mb-6">
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Statistiques et Analyses
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            Vue d'ensemble des performances de la plateforme
+          </p>
+        </div>
 
       <FilterSection />
       <TabNavigation />
@@ -945,7 +947,7 @@ const StatisticsPage = () => {
           </p>
         </div>
       </motion.div>
-    </div>
+    </AdminLayout>
   );
 };
 

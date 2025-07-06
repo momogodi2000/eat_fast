@@ -11,6 +11,7 @@ import {
   FiAlertCircle, FiInfo, FiTrendingUp, FiTrendingDown, FiZap, FiGlobe,
   FiPlus, FiSettings, FiBarChart2
 } from 'react-icons/fi';
+import AdminLayout from '../../../layouts/admin_layout';
 
 // Import the three separate components
 import UserListMain from './UserListMain';
@@ -391,7 +392,8 @@ const UserListPage = () => {
   }, [users]);
 
   return (
-    <div className="p-6 space-y-6">
+    <AdminLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -569,8 +571,9 @@ const UserListPage = () => {
           setSelectedUser(user);
           setIsDocumentModalOpen(true);
         }}
-      />
-    </div>
+              />
+      </div>
+    </AdminLayout>
   );
 };
 
