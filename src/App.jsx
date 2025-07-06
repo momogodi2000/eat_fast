@@ -6,7 +6,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "react-hot-toast";
 
 // Error Boundary
-import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 // Context Providers
 import { UserInformationProvider } from "./pages/Authentication/const_provider";
@@ -15,30 +15,37 @@ import { UserInformationProvider } from "./pages/Authentication/const_provider";
 import LoadingSpinner from "./components/CommonShare/LoadingSpinner";
 
 // Lazy load components for better performance
-const LandingPage = lazy(() => import("./pages/LandingPage/landing_page"));
-const LoginPage = lazy(() => import("./pages/Authentication/login_page"));
-const RegisterPage = lazy(() => import("./pages/Authentication/register_page"));
-const AboutPage = lazy(() => import("./pages/About/about_page"));
-const ContactPage = lazy(() => import("./pages/Contact/contact_page"));
-const FoodSafety = lazy(() => import("./pages/food_safety/food_safety"));
-const TermsPage = lazy(() => import("./pages/TermsConditions/terms_page"));
-const PrivacyPage = lazy(() => import("./pages/Privacy/privacy_page"));
+const LandingPage = lazy(() => import("./pages/LandingPage/homepage"));
+const LoginPage = lazy(() => import("./pages/Authentication/login"));
+const RegisterPage = lazy(() => import("./pages/Authentication/register"));
+const ForgotPasswordPage = lazy(() => import("./pages/Authentication/forgot_password"));
+const AboutPage = lazy(() => import("./pages/LandingPage/about_us"));
+const ContactPage = lazy(() => import("./pages/LandingPage/contact_us"));
+const BecomeAPartnerPage = lazy(() => import("./pages/LandingPage/BecomeAPartner"));
+const MenuPage = lazy(() => import("./pages/LandingPage/menus"));
+const RestaurantsPage = lazy(() => import("./pages/LandingPage/Restaurants"));
+
+// Privacy and policy pages
+const PrivacyPolicy = lazy(() => import("./components/CommonShare/privacy"));
+const RefundPolicy = lazy(() => import("./components/CommonShare/refund"));
+const TermsAndConditions = lazy(() => import("./components/CommonShare/term"));
+const FoodSafety = lazy(() => import("./components/CommonShare/safety"));
 
 // Dashboard components
-const AdminDashboard = lazy(() => import("./pages/Dashboards/Admin/admin_dashboad"));
+const AdminDashboard = lazy(() => import("./pages/Dashboards/Admin/admin_dashboard"));
 const ClientDashboard = lazy(() => import("./pages/Dashboards/Clients/clients_dashboards"));
-const RestaurantDashboard = lazy(() => import("./pages/Dashboards/Restaurants/restaurants_dashboard"));
+const RestaurantDashboard = lazy(() => import("./pages/Dashboards/Restaurants/restaurant_dashboard"));
 const DeliveryDashboard = lazy(() => import("./pages/Dashboards/Delivery/delivery_dashboad"));
 const SupportAgentMainDashboard = lazy(() => import("./pages/Dashboards/Agent/agent_dashboard"));
 
 // Admin pages
-const UserListPage = lazy(() => import("./pages/Dashboards/Admin/User/userListPage"));
-const RestaurantManagement = lazy(() => import("./pages/Dashboards/Admin/Restaurants/restaurantManagement"));
-const AdminContactMessages = lazy(() => import("./pages/Dashboards/Admin/Contact/adminContactMessages"));
-const AdminOrdersPage = lazy(() => import("./pages/Dashboards/Admin/Orders/adminOrdersPage"));
-const StatisticsPage = lazy(() => import("./pages/Dashboards/Admin/Statistics/statisticsPage"));
-const AdminDeliveryManagement = lazy(() => import("./pages/Dashboards/Admin/Delivery/adminDeliveryManagement"));
-const PromotionManagement = lazy(() => import("./pages/Dashboards/Admin/Promotion/promotionManagement"));
+const UserListPage = lazy(() => import("./pages/Dashboards/Admin/Utilisateurs/UserList"));
+const RestaurantManagement = lazy(() => import("./pages/Dashboards/Admin/Restaurants/RestaurantsList"));
+const AdminContactMessages = lazy(() => import("./pages/Dashboards/Admin/ContactMessages/Contact"));
+const AdminOrdersPage = lazy(() => import("./pages/Dashboards/Admin/Orders/orders"));
+const StatisticsPage = lazy(() => import("./pages/Dashboards/Admin/Statistics/StatisticsPage"));
+const AdminDeliveryManagement = lazy(() => import("./pages/Dashboards/Admin/Delivery/delivery_managemnet"));
+const PromotionManagement = lazy(() => import("./pages/Dashboards/Admin/Promotion/promotion"));
 
 // Agent Support pages
 const SupportTicketsPage = lazy(() => import("./pages/Dashboards/Agent/Tickets/ticketsPage"));
@@ -48,17 +55,18 @@ const SupportKnowledge = lazy(() => import("./pages/Dashboards/Agent/knowledge/a
 const SupportEscalation = lazy(() => import("./pages/Dashboards/Agent/Escalation/agents_escalation"));
 
 // Restaurant pages
-const RestaurantOrders = lazy(() => import("./pages/Dashboards/Restaurants/Orders/restaurant_orders"));
-const RestaurantMenuManagement = lazy(() => import("./pages/Dashboards/Restaurants/Menu/restaurant_menu"));
-const RestaurantStats = lazy(() => import("./pages/Dashboards/Restaurants/Stats/restaurantStats"));
+const RestaurantCommand = lazy(() => import("./pages/Dashboards/Restaurants/command/restaurant_command"));
+const MenuPlatsPage = lazy(() => import("./pages/Dashboards/Restaurants/manager_menu/restuarantMenu"));
+const RestaurantStatsPage = lazy(() => import("./pages/Dashboards/Restaurants/statistic/RestaurantStats"));
 const RestaurantReviews = lazy(() => import("./pages/Dashboards/Restaurants/Review/restaurantreview"));
+const RestaurantChatSupport = lazy(() => import("./pages/Dashboards/Restaurants/contact_support/restaurant-aide"));
 
 // Delivery pages
 const MissionsPage = lazy(() => import("./pages/Dashboards/Delivery/mission/delivey_mission"));
 const RestaurantDeliverCommand = lazy(() => import("./pages/Dashboards/Delivery/map_deliveries/restaurant_command"));
 const DeliveryEarningsPage = lazy(() => import("./pages/Dashboards/Delivery/earnings/delivery_earnings"));
 const DeliveryHistoryPage = lazy(() => import("./pages/Dashboards/Delivery/History/delivery_history"));
-const DeliveryChatSupport = lazy(() => import("./pages/Dashboards/Delivery/Support_chat/delivery_chat"));
+const DeliveryChatSupport = lazy(() => import("./pages/Dashboards/Delivery/contact_support/delivery_aide"));
 
 // Client pages
 const ClientMenus = lazy(() => import("./pages/Dashboards/Clients/Restaurants/clients_restaurants"));
@@ -74,7 +82,7 @@ const RestaurantLayoutWithProviders = lazy(() => import("./layouts/restaurants_l
 const AdminRestaurantProvider = lazy(() => import("./layouts/admin_layout"));
 
 // Common components
-const DashboardRedirect = lazy(() => import("./components/CommonShare/redirectToDashboard"));
+const DashboardRedirect = lazy(() => import("./components/CommonShare/test"));
 
 // Create Query Client with optimized settings
 const queryClient = new QueryClient({
@@ -101,7 +109,7 @@ const queryClient = new QueryClient({
 // Loading fallback component
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50">
-    <LoadingSpinner size="large" />
+    <LoadingSpinner />
   </div>
 );
 
@@ -144,12 +152,19 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
-                <Route path="/terms" element={<TermsPage />} />
-                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/become" element={<BecomeAPartnerPage />} />
+                <Route path="/menu" element={<MenuPage />} />
+                <Route path="/restaurants" element={<RestaurantsPage />} />
+                <Route path="/test" element={<DashboardRedirect />} />
+
+                {/* Privacy and Policy Routes */}
+                <Route path="/terms" element={<PrivacyPolicy />} />
+                <Route path="/privacy" element={<RefundPolicy />} />
+                <Route path="/refund" element={<TermsAndConditions />} />
                 <Route path="/safety" element={<FoodSafety />} />
-                <Route path="/dashboard-redirect" element={<DashboardRedirect />} />
 
                 {/* Admin Routes */}
                 <Route
@@ -162,13 +177,13 @@ function App() {
                     </AdminRestaurantProvider>
                   }
                 />
-                <Route path="/admin/users" element={<UserListPage />} />
+                <Route path="/admin/user" element={<UserListPage />} />
                 <Route path="/admin/restaurants" element={<RestaurantManagement />} />
                 <Route path="/admin/contact-messages" element={<AdminContactMessages />} />
                 <Route path="/admin/orders" element={<AdminOrdersPage />} />
                 <Route path="/admin/statistics" element={<StatisticsPage />} />
                 <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
-                <Route path="/admin/promotions" element={<PromotionManagement />} />
+                <Route path="/admin/promotion" element={<PromotionManagement />} />
 
                 {/* Agent Support Routes */}
                 <Route
@@ -200,7 +215,7 @@ function App() {
                   path="/restaurant/orders"
                   element={
                     <RestaurantLayoutWithProviders>
-                      <RestaurantOrders />
+                      <RestaurantCommand />
                     </RestaurantLayoutWithProviders>
                   }
                 />
@@ -208,15 +223,15 @@ function App() {
                   path="/restaurant/menu"
                   element={
                     <RestaurantLayoutWithProviders>
-                      <RestaurantMenuManagement />
+                      <MenuPlatsPage />
                     </RestaurantLayoutWithProviders>
                   }
                 />
                 <Route
-                  path="/restaurant/statistics"
+                  path="/restaurant/stats"
                   element={
                     <RestaurantLayoutWithProviders>
-                      <RestaurantStats />
+                      <RestaurantStatsPage />
                     </RestaurantLayoutWithProviders>
                   }
                 />
@@ -225,6 +240,14 @@ function App() {
                   element={
                     <RestaurantLayoutWithProviders>
                       <RestaurantReviews />
+                    </RestaurantLayoutWithProviders>
+                  }
+                />
+                <Route
+                  path="/restaurant/support/chat"
+                  element={
+                    <RestaurantLayoutWithProviders>
+                      <RestaurantChatSupport />
                     </RestaurantLayoutWithProviders>
                   }
                 />
@@ -249,7 +272,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/delivery/map"
+                  path="/delivery/live-map"
                   element={
                     <DeliveryLayout>
                       <RestaurantDeliverCommand />
@@ -293,7 +316,7 @@ function App() {
                   }
                 />
                 <Route
-                  path="/clients/restaurants"
+                  path="/clients/restaurant"
                   element={
                     <ClientsLayout>
                       <ClientMenus />

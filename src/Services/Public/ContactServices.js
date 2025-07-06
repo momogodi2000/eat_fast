@@ -602,8 +602,33 @@ const contactServices = new ContactServices();
 export default contactServices;
 export { ContactServices };
 
-// Export helper functions
+// Export utility functions for use in components
+export const validateContactForm = (data) => contactServices.validateContactForm(data);
+export const isValidEmail = (email) => contactServices.isValidEmail(email);
+export const isValidPhone = (phone) => contactServices.isValidPhone(phone);
+export const isValidUrl = (url) => contactServices.isValidUrl(url);
 export const validateEmail = (email) => contactServices.isValidEmail(email);
 export const validatePhone = (phone) => contactServices.isValidPhone(phone);
 export const formatContactDate = (date) => contactServices.formatDate(date);
 export const getContactFormConfig = () => contactServices.getContactFormConfig();
+
+// Add missing utility functions
+export const formatErrorMessages = (errors) => {
+  if (!errors || !Array.isArray(errors)) return '';
+  return errors.join(', ');
+};
+
+export const getCharacterCount = (text, maxLength = 5000) => {
+  const current = text ? text.length : 0;
+  const remaining = Math.max(0, maxLength - current);
+  const percentage = Math.round((current / maxLength) * 100);
+  const isValid = current <= maxLength;
+  
+  return {
+    current,
+    max: maxLength,
+    remaining,
+    isValid,
+    percentage
+  };
+};

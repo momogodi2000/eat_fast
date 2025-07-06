@@ -1,7 +1,6 @@
 // src/main.jsx
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App.jsx';
 
@@ -15,17 +14,11 @@ const root = createRoot(document.getElementById('root'));
 try {
   root.render(
     <StrictMode>
-      <BrowserRouter>
-        <App />
-      </BrowserRouter>
+      <App />
     </StrictMode>
   );
 } catch (error) {
   console.error('Failed to render app:', error);
   // Fallback render without StrictMode for debugging
-  root.render(
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
-  );
+  root.render(<App />);
 }
