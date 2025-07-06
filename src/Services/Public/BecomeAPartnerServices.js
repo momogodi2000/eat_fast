@@ -1,463 +1,370 @@
 // src/Services/Public/BecomeAPartnerServices.js
-import dbConnection from '../db_connection.js';
+// Simplified partner services that will work reliably
 
-/**
- * Partner Services for EatFast Become a Partner Page
- * Handles all partner application related operations
- */
+import dbConnection, { API_ENDPOINTS, handleNetworkError } from '../db_connection';
 
 class PartnerServices {
   constructor() {
-    this.applicationEndpoint = '/partner-application/';
-    this.statusEndpoint = '/partner-status/';
-    this.healthEndpoint = '/service-health/';
+    this.dbConnection = dbConnection;
+    this.uploadProgress = 0;
+    this.isUploading = false;
   }
 
-  /**
-   * Submit partner application with file uploads
-   * @param {Object} formData - Partner application form data
-   * @param {Function} onProgress - Progress callback for file uploads
-   * @returns {Promise<Object>} - Response from backend
-   */
-  async submitPartnerApplication(formData, onProgress = null) {
+  // Main submission method
+  async submitPartnerApplication(formData, onUploadProgress = null) {
     try {
-      // Validate form data before sending
-      const validation = this.validatePartnerApplication(formData);
+      console.log('📤 Starting partner application submission...');
+      
+      // Check network
+      if (handleNetworkError((error) => Promise.reject(error))) {
+        return { success: false, message: 'Pas de connexion internet' };
+      }
+
+      // Basic validation
+      const validation = this.validateBasicFields(formData);
       if (!validation.isValid) {
         return {
           success: false,
-          message: 'Validation failed',
-          errors: validation.errors
+          message: 'Données invalides',
+          errors: validation.errors,
         };
       }
 
-      // Prepare FormData for file uploads
-      const submissionData = new FormData();
+      // Prepare data for submission
+      const submissionData = this.prepareSubmissionData(formData);
       
-      // Add basic form fields
-      const basicFields = [
-        'partner_type', 'contact_name', 'email', 'phone', 'business_name',
-        'cuisine_type', 'capacity', 'opening_hours', 'address', 'city',
-        'legal_status', 'tax_id', 'vehicle_type', 'driving_license',
-        'investment_amount', 'investment_type', 'business_experience',
-        'service_type', 'terms_accepted'
-      ];
+      // Track upload state
+      this.isUploading = true;
+      this.uploadProgress = 0;
 
-      basicFields.forEach(field => {
-        const value = formData[field];
-        if (value !== undefined && value !== null && value !== '') {
-          submissionData.append(field, value);
+      // Create progress handler
+      const progressHandler = (progressEvent) => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        this.uploadProgress = percentCompleted;
+        
+        if (onUploadProgress) {
+          onUploadProgress(percentCompleted);
         }
-      });
+      };
 
-      // Add file uploads
-      const fileFields = [
-        'health_certificate', 'id_document', 'menu', 'driving_license_doc',
-        'vehicle_registration', 'business_plan', 'financial_statements'
-      ];
-
-      fileFields.forEach(field => {
-        if (formData[field] && formData[field] instanceof File) {
-          submissionData.append(field, formData[field]);
-        }
-      });
-
-      // Add photos array
-      if (formData.photos && Array.isArray(formData.photos)) {
-        formData.photos.forEach((photo, index) => {
-          if (photo instanceof File) {
-            submissionData.append(`photo_${index}`, photo);
-          }
-        });
-      }
-
-      // Submit with file upload support
-      const response = await dbConnection.uploadFiles(
-        this.applicationEndpoint,
+      // Submit the application
+      const response = await this.dbConnection.uploadFiles(
+        API_ENDPOINTS.PARTNER_APPLICATIONS,
         submissionData,
-        onProgress
+        progressHandler
       );
+
+      this.isUploading = false;
+      this.uploadProgress = 100;
+
+      console.log('✅ Application submitted successfully');
       
-      if (response.success && response.data) {
-        return {
-          success: true,
-          message: response.data.message || 'Candidature soumise avec succès!',
-          data: response.data.data
-        };
-      } else {
-        return {
-          success: false,
-          message: 'Erreur lors de la soumission',
-          error: response.data
-        };
-      }
+      return {
+        success: true,
+        data: response.data,
+        message: response.message || 'Candidature soumise avec succès',
+      };
 
     } catch (error) {
-      console.error('Partner application submission error:', error);
+      console.error('❌ Application submission failed:', error);
       
-      // Handle validation errors from backend
-      if (error.status === 400 && error.data?.errors) {
-        return {
-          success: false,
-          message: error.data.message || 'Erreur de validation',
-          field_errors: error.data.errors
-        };
-      }
-      
-      // Handle network/server errors
+      this.isUploading = false;
+      this.uploadProgress = 0;
+
       return {
         success: false,
-        message: error.message || 'Une erreur inattendue s\'est produite',
-        error: error
+        message: this.getErrorMessage(error),
+        errors: [],
       };
     }
   }
 
-  /**
-   * Check partner application status
-   * @param {string} applicationId - Application ID
-   * @param {string} email - Applicant email
-   * @returns {Promise<Object>} - Application status
-   */
+  // Check application status
   async checkApplicationStatus(applicationId, email) {
     try {
       if (!applicationId || !email) {
         return {
           success: false,
-          message: 'ID de candidature et email requis'
+          message: 'ID et email requis pour vérifier le statut',
         };
       }
 
-      const data = {
-        application_id: applicationId.trim(),
-        email: email.trim().toLowerCase()
+      console.log('🔍 Checking application status...');
+
+      const response = await this.dbConnection.get(
+        API_ENDPOINTS.STATUS(applicationId),
+        { email, id: applicationId }
+      );
+
+      return {
+        success: true,
+        data: response.data,
+        message: 'Statut récupéré avec succès',
       };
-
-      const response = await dbConnection.post(this.statusEndpoint, data);
-      
-      if (response.success && response.data) {
-        return {
-          success: true,
-          message: response.data.message || 'Statut trouvé',
-          data: response.data.data
-        };
-      } else {
-        return {
-          success: false,
-          message: 'Candidature non trouvée'
-        };
-      }
 
     } catch (error) {
-      console.error('Application status check error:', error);
-      
-      if (error.status === 404) {
-        return {
-          success: false,
-          message: 'Candidature non trouvée. Vérifiez l\'ID et l\'email.'
-        };
-      }
-      
+      console.error('❌ Status check failed:', error);
       return {
         success: false,
-        message: error.message || 'Erreur lors de la vérification du statut'
+        message: this.getErrorMessage(error),
       };
     }
   }
 
-  /**
-   * Validate partner application form data
-   * @param {Object} formData - Form data to validate
-   * @returns {Object} - Validation result
-   */
-  validatePartnerApplication(formData) {
-    const errors = {};
-    const { partner_type } = formData;
-
-    // Basic required fields for all partner types
-    if (!formData.contact_name?.trim()) {
-      errors.contact_name = 'Nom de contact requis';
-    }
-
-    if (!formData.email?.trim()) {
-      errors.email = 'Email requis';
-    } else if (!dbConnection.isValidEmail(formData.email)) {
-      errors.email = 'Email invalide';
-    }
-
-    if (!formData.phone?.trim()) {
-      errors.phone = 'Téléphone requis';
-    } else if (!dbConnection.isValidPhone(formData.phone)) {
-      errors.phone = 'Numéro de téléphone invalide';
-    }
-
-    if (!formData.terms_accepted) {
-      errors.terms_accepted = 'Vous devez accepter les conditions';
-    }
-
-    // Partner type specific validation
-    if (partner_type === 'restaurant') {
-      const requiredFields = ['business_name', 'cuisine_type', 'address', 'city'];
-      requiredFields.forEach(field => {
-        if (!formData[field]?.trim()) {
-          errors[field] = `${this.getFieldLabel(field)} requis pour les restaurants`;
-        }
-      });
-    } else if (partner_type === 'delivery-agent') {
-      const requiredFields = ['vehicle_type', 'address', 'city'];
-      requiredFields.forEach(field => {
-        if (!formData[field]?.trim()) {
-          errors[field] = `${this.getFieldLabel(field)} requis pour les livreurs`;
-        }
-      });
-    } else if (partner_type === 'investor') {
-      if (!formData.investment_amount || formData.investment_amount < 100000) {
-        errors.investment_amount = 'Montant minimum 100,000 FCFA requis';
-      }
-      if (!formData.investment_type?.trim()) {
-        errors.investment_type = 'Type d\'investissement requis';
-      }
-    } else if (partner_type === 'other') {
-      if (!formData.service_type?.trim()) {
-        errors.service_type = 'Type de service requis';
-      }
-    }
-
-    return {
-      isValid: Object.keys(errors).length === 0,
-      errors
-    };
-  }
-
-  /**
-   * Check service health for partner functionality
-   * @returns {Promise<Object>} - Service health status
-   */
+  // Check service health
   async checkServiceHealth() {
     try {
-      const response = await dbConnection.get(this.healthEndpoint);
-      return response.data || { success: false, message: 'Service indisponible' };
+      const response = await this.dbConnection.healthCheck();
+      return {
+        success: true,
+        data: response,
+        message: 'Service opérationnel',
+      };
     } catch (error) {
       return {
         success: false,
         message: 'Service temporairement indisponible',
-        error: error.message
       };
     }
   }
 
-  /**
-   * Validate uploaded file
-   * @param {File} file - File to validate
-   * @returns {Object} - Validation result
-   */
-  validateFile(file) {
-    const maxSize = 10 * 1024 * 1024; // 10MB
-    const allowedTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'image/jpeg',
-      'image/jpg',
-      'image/png'
-    ];
+  // Basic field validation
+  validateBasicFields(formData) {
+    const errors = [];
 
-    if (!file) {
-      return { isValid: false, error: 'Aucun fichier sélectionné' };
+    // Required for all partner types
+    if (!formData.contactName?.trim()) {
+      errors.push('Nom de contact requis');
     }
 
+    if (!formData.email?.trim() || !this.isValidEmail(formData.email)) {
+      errors.push('Email valide requis');
+    }
+
+    if (!formData.phone?.trim()) {
+      errors.push('Numéro de téléphone requis');
+    }
+
+    if (!formData.termsAccepted) {
+      errors.push('Acceptation des conditions requise');
+    }
+
+    // Partner-specific validation
+    this.validatePartnerSpecificFields(formData, errors);
+
+    return {
+      isValid: errors.length === 0,
+      errors,
+    };
+  }
+
+  // Partner-specific field validation
+  validatePartnerSpecificFields(formData, errors) {
+    const { partnerType } = formData;
+
+    switch (partnerType) {
+      case 'restaurant':
+        if (!formData.businessName?.trim()) errors.push('Nom d\'entreprise requis');
+        if (!formData.cuisineType?.trim()) errors.push('Type de cuisine requis');
+        if (!formData.address?.trim()) errors.push('Adresse requise');
+        if (!formData.city?.trim()) errors.push('Ville requise');
+        break;
+
+      case 'delivery-agent':
+        if (!formData.vehicleType?.trim()) errors.push('Type de véhicule requis');
+        if (!formData.address?.trim()) errors.push('Adresse requise');
+        if (!formData.city?.trim()) errors.push('Ville requise');
+        break;
+
+      case 'investor':
+        if (!formData.investmentAmount || formData.investmentAmount <= 0) {
+          errors.push('Montant d\'investissement requis');
+        }
+        if (!formData.investmentType?.trim()) errors.push('Type d\'investissement requis');
+        break;
+
+      case 'other':
+        if (!formData.serviceType?.trim()) errors.push('Type de service requis');
+        break;
+    }
+  }
+
+  // Prepare form data for submission
+  prepareSubmissionData(formData) {
+    const multipartData = new FormData();
+
+    // Add basic form fields
+    Object.keys(formData).forEach(key => {
+      const value = formData[key];
+      
+      // Skip files and arrays for now
+      if (value !== null && value !== undefined && 
+          !(value instanceof File) && !Array.isArray(value) &&
+          typeof value !== 'object') {
+        multipartData.append(key, value.toString());
+      }
+    });
+
+    // Add files based on partner type
+    this.addFilesToFormData(multipartData, formData);
+
+    console.log('📋 Prepared form data with keys:', Array.from(multipartData.keys()));
+
+    return multipartData;
+  }
+
+  // Add files to form data
+  addFilesToFormData(multipartData, formData) {
+    const { partnerType } = formData;
+
+    // Common files
+    if (formData.idDocument instanceof File) {
+      multipartData.append('id_document', formData.idDocument);
+    }
+
+    // Partner-specific files
+    switch (partnerType) {
+      case 'restaurant':
+        if (formData.healthCertificate instanceof File) {
+          multipartData.append('health_certificate', formData.healthCertificate);
+        }
+        if (formData.menu instanceof File) {
+          multipartData.append('menu', formData.menu);
+        }
+        break;
+
+      case 'delivery-agent':
+        if (formData.drivingLicenseDoc instanceof File) {
+          multipartData.append('driving_license_doc', formData.drivingLicenseDoc);
+        }
+        if (formData.vehicleRegistration instanceof File) {
+          multipartData.append('vehicle_registration', formData.vehicleRegistration);
+        }
+        break;
+
+      case 'investor':
+        if (formData.businessPlan instanceof File) {
+          multipartData.append('business_plan', formData.businessPlan);
+        }
+        if (formData.financialStatements instanceof File) {
+          multipartData.append('financial_statements', formData.financialStatements);
+        }
+        break;
+    }
+
+    // Add photos
+    if (Array.isArray(formData.photos)) {
+      formData.photos.forEach((photo, index) => {
+        if (photo instanceof File) {
+          multipartData.append(`photo_${index}`, photo);
+        }
+      });
+    }
+  }
+
+  // Simple file validation
+  validateFile(file, type = 'document') {
+    const maxSize = 10 * 1024 * 1024; // 10MB
+    const documentTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    ];
+    const imageTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+    
+    const allowedTypes = type === 'image' ? imageTypes : [...documentTypes, ...imageTypes];
+    
+    const errors = [];
+
     if (file.size > maxSize) {
-      return { 
-        isValid: false, 
-        error: `Fichier trop volumineux. Maximum ${dbConnection.formatFileSize(maxSize)}` 
-      };
+      errors.push('Fichier trop volumineux (max 10MB)');
     }
 
     if (!allowedTypes.includes(file.type)) {
-      return { 
-        isValid: false, 
-        error: 'Type de fichier non supporté. Formats acceptés: PDF, DOC, DOCX, JPG, PNG' 
-      };
+      errors.push('Type de fichier non supporté');
     }
 
-    return { isValid: true };
-  }
-
-  /**
-   * Get human-readable field labels
-   * @param {string} fieldName - Field name
-   * @returns {string} - Human-readable label
-   */
-  getFieldLabel(fieldName) {
-    const labels = {
-      contact_name: 'Nom de contact',
-      email: 'Email',
-      phone: 'Téléphone',
-      business_name: 'Nom de l\'entreprise',
-      cuisine_type: 'Type de cuisine',
-      address: 'Adresse',
-      city: 'Ville',
-      vehicle_type: 'Type de véhicule',
-      investment_amount: 'Montant d\'investissement',
-      investment_type: 'Type d\'investissement',
-      service_type: 'Type de service',
-      terms_accepted: 'Conditions d\'utilisation'
+    return {
+      isValid: errors.length === 0,
+      errors,
     };
-    
-    return labels[fieldName] || fieldName;
   }
 
-  /**
-   * Get partner type display information
-   * @param {string} partnerType - Partner type code
-   * @returns {Object} - Partner type display info
-   */
-  getPartnerTypeDisplay(partnerType) {
-    const types = {
-      restaurant: {
-        label: 'Restaurant',
-        icon: '🏪',
-        description: 'Partenaire restaurant pour la livraison de repas'
-      },
-      'delivery-agent': {
-        label: 'Agent Livreur',
-        icon: '🛵',
-        description: 'Livreur indépendant pour les commandes'
-      },
-      investor: {
-        label: 'Investisseur',
-        icon: '💰',
-        description: 'Investisseur ou partenaire financier'
-      },
-      other: {
-        label: 'Autre',
-        icon: '🏢',
-        description: 'Autre type de partenariat'
-      }
-    };
-
-    return types[partnerType] || types.other;
+  // Utility methods
+  isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   }
 
-  /**
-   * Get application status display information
-   * @param {string} status - Application status code
-   * @returns {Object} - Status display info
-   */
-  getStatusDisplay(status) {
-    const statuses = {
-      pending: {
-        label: 'En attente',
-        icon: '⏳',
-        color: 'text-yellow-600',
-        bgColor: 'bg-yellow-100',
-        description: 'Votre candidature est en attente d\'examen'
-      },
-      under_review: {
-        label: 'En cours d\'examen',
-        icon: '👁️',
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100',
-        description: 'Notre équipe examine actuellement votre candidature'
-      },
-      approved: {
-        label: 'Approuvée',
-        icon: '✅',
-        color: 'text-green-600',
-        bgColor: 'bg-green-100',
-        description: 'Félicitations ! Votre candidature a été approuvée'
-      },
-      rejected: {
-        label: 'Rejetée',
-        icon: '❌',
-        color: 'text-red-600',
-        bgColor: 'bg-red-100',
-        description: 'Votre candidature n\'a pas été retenue'
-      },
-      on_hold: {
-        label: 'En suspens',
-        icon: '⏸️',
-        color: 'text-orange-600',
-        bgColor: 'bg-orange-100',
-        description: 'Votre candidature est temporairement en suspens'
-      },
-      additional_info_required: {
-        label: 'Informations requises',
-        icon: '📝',
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-100',
-        description: 'Des informations supplémentaires sont nécessaires'
-      }
-    };
-
-    return statuses[status] || statuses.pending;
+  getErrorMessage(error) {
+    if (typeof error === 'string') return error;
+    if (error?.message) return error.message;
+    return 'Une erreur inattendue est survenue';
   }
 
-  /**
-   * Format error messages for display
-   * @param {Object|Error} error - Error object
-   * @returns {string} - Formatted error message
-   */
-  formatPartnerError(error) {
-    if (typeof error === 'string') {
-      return error;
-    }
-
-    if (error.field_errors) {
-      const fieldErrors = Object.entries(error.field_errors)
-        .map(([field, errors]) => {
-          const fieldLabel = this.getFieldLabel(field);
-          const errorList = Array.isArray(errors) ? errors : [errors];
-          return `${fieldLabel}: ${errorList.join(', ')}`;
-        });
-      return fieldErrors.join('\n');
-    }
-
-    return error.message || 'Une erreur inattendue s\'est produite';
+  getUploadProgress() {
+    return this.uploadProgress;
   }
 
-  /**
-   * Get document requirements for partner type
-   * @param {string} partnerType - Partner type
-   * @returns {Array} - Required documents
-   */
-  getRequiredDocuments(partnerType) {
-    const documents = {
-      restaurant: [
-        { key: 'id_document', label: 'Pièce d\'identité', required: true },
-        { key: 'health_certificate', label: 'Certificat de santé', required: true },
-        { key: 'menu', label: 'Menu/Liste de prix', required: true }
-      ],
-      'delivery-agent': [
-        { key: 'id_document', label: 'Pièce d\'identité', required: true },
-        { key: 'driving_license_doc', label: 'Permis de conduire', required: true },
-        { key: 'vehicle_registration', label: 'Carte grise', required: false }
-      ],
-      investor: [
-        { key: 'id_document', label: 'Pièce d\'identité', required: true },
-        { key: 'business_plan', label: 'Plan d\'affaires', required: true },
-        { key: 'financial_statements', label: 'États financiers', required: false }
-      ],
-      other: [
-        { key: 'id_document', label: 'Pièce d\'identité', required: true }
-      ]
-    };
+  getIsUploading() {
+    return this.isUploading;
+  }
 
-    return documents[partnerType] || documents.other;
+  resetUploadProgress() {
+    this.uploadProgress = 0;
+    this.isUploading = false;
   }
 }
 
-// Create service instance
+// Create and export singleton
 const partnerServices = new PartnerServices();
-
-// Export default and utility functions
 export default partnerServices;
 
-// Export specific utility functions
-export const validatePartnerApplication = (formData) => partnerServices.validatePartnerApplication(formData);
-export const validateFile = (file) => partnerServices.validateFile(file);
-export const getPartnerTypeDisplay = (partnerType) => partnerServices.getPartnerTypeDisplay(partnerType);
-export const getStatusDisplay = (status) => partnerServices.getStatusDisplay(status);
-export const formatPartnerError = (error) => partnerServices.formatPartnerError(error);
-export const getRequiredDocuments = (partnerType) => partnerServices.getRequiredDocuments(partnerType);
-export const getFieldLabel = (fieldName) => partnerServices.getFieldLabel(fieldName);
+// Export utility functions
+export const formatPartnerError = (error) => partnerServices.getErrorMessage(error);
+
+export const getPartnerTypeDisplay = (type) => {
+  const displays = {
+    'restaurant': 'Restaurant',
+    'delivery-agent': 'Agent Livreur', 
+    'investor': 'Investisseur',
+    'other': 'Autre Service'
+  };
+  return displays[type] || type;
+};
+
+export const getStatusDisplay = (status) => {
+  const displays = {
+    'pending': {
+      label: 'En attente',
+      bgColor: 'bg-orange-100',
+      textColor: 'text-orange-800',
+      icon: '⏳',
+      description: 'Votre candidature est en cours de traitement'
+    },
+    'approved': {
+      label: 'Approuvée',
+      bgColor: 'bg-green-100', 
+      textColor: 'text-green-800',
+      icon: '✅',
+      description: 'Félicitations ! Votre candidature a été approuvée'
+    },
+    'rejected': {
+      label: 'Refusée',
+      bgColor: 'bg-red-100',
+      textColor: 'text-red-800', 
+      icon: '❌',
+      description: 'Votre candidature n\'a pas été retenue'
+    }
+  };
+  
+  return displays[status] || {
+    label: 'Inconnu',
+    bgColor: 'bg-gray-100',
+    textColor: 'text-gray-800',
+    icon: '❓',
+    description: 'Statut inconnu'
+  };
+};
