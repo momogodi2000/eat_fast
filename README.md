@@ -60,6 +60,7 @@ npm run dev
 - **Responsive Design** - Optimized for all devices and screen sizes
 - **Advanced Authentication** - Firebase Auth with 2FA support
 - **Push Notifications** - Real-time updates via Firebase Cloud Messaging
+- **Multiple Payment Options** - Stripe, Noupia, and Campay integration
 
 ### 📱 PWA Features
 - **Home Screen Installation** - Add to home screen on mobile and desktop
@@ -72,6 +73,12 @@ npm run dev
 - **Two-Factor Authentication (2FA)** - Enhanced security
 - **JWT Tokens** - Secure API communication
 - **Role-based Access Control** - Different user roles and permissions
+
+### 💳 Payment Integration
+- **Stripe** - International payment processing
+- **Noupia** - Mobile money payments in Cameroon
+- **Campay** - Mobile money and card payments
+- **Secure Transactions** - PCI DSS compliant payment processing
 
 ### 🌐 Multi-language Support
 - **Automatic Detection** - Based on browser/system settings
@@ -119,16 +126,21 @@ npm run dev
 ### **Backend**
 - **Runtime**: Node.js + Express.js
 - **Authentication**: Firebase Authentication
-- **Database**: Firebase Firestore
+- **Database**: PostgreSQL (Primary) + Firebase Firestore (Cache)
 - **Storage**: Firebase Storage
 - **Notifications**: Firebase Cloud Messaging (FCM)
 - **Real-time**: Firebase Realtime Database
-- **Hosting**: Firebase Hosting (optional)
+- **Payment Processing**: Stripe, Noupia, Campay APIs
 
-### **Infrastructure**
-- **Cloud Provider**: AWS (Cape Town, South Africa)
-- **Storage**: AWS S3 for media files
-- **Monitoring**: Built-in analytics and health checks
+### **Development & Deployment**
+- **Build Tool**: Vite
+- **Package Manager**: npm
+- **Linting**: ESLint
+- **Formatting**: Prettier
+- **Testing**: Vitest
+- **Containerization**: Docker
+- **Deployment**: Netlify (Frontend) + Render (Backend)
+- **CI/CD**: GitHub Actions
 
 ## 🏗️ Architecture
 
@@ -148,18 +160,20 @@ npm run dev
 │                    API LAYER                               │
 │  Express.js + Firebase SDK                                 │
 │  ├── Authentication (Firebase Auth)                        │
-│  ├── Database (Firestore)                                  │
+│  ├── Database (PostgreSQL + Firestore)                     │
 │  ├── Storage (Firebase Storage)                            │
 │  ├── Notifications (FCM)                                   │
+│  ├── Payments (Stripe, Noupia, Campay)                     │
 │  └── Real-time (Realtime Database)                         │
 └─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
-│                    FIREBASE LAYER                          │
-│  Firebase Services                                          │
-│  ├── Authentication (Users, 2FA)                           │
-│  ├── Firestore (Data Storage)                              │
+│                    DATABASE LAYER                          │
+│  PostgreSQL (Primary) + Firebase Services                  │
+│  ├── PostgreSQL (User data, orders, restaurants)           │
+│  ├── Firebase Auth (Users, 2FA)                            │
+│  ├── Firestore (Real-time data, cache)                     │
 │  ├── Storage (File Storage)                                │
 │  ├── Cloud Messaging (Push Notifications)                  │
 │  └── Realtime Database (Live Updates)                      │
@@ -171,7 +185,9 @@ npm run dev
 - **Node.js** (v18+ recommended)
 - **npm** (v9+ recommended)
 - **Git**
-- **Firebase Account** (for backend services)
+- **Firebase Account** (for authentication and notifications)
+- **PostgreSQL Database** (for primary data storage)
+- **Payment Gateway Accounts** (Stripe, Noupia, Campay)
 - **Google Cloud Console** (for API keys)
 
 ## 🚀 Installation & Setup
@@ -198,7 +214,7 @@ Create a `.env` file in the root directory:
 
 ```env
 # API Configuration
-VITE_API_BASE_URL=https://your-backend-api.com/api/v1
+VITE_API_BASE_URL=https://your-express-backend.onrender.com/api/v1
 
 # Firebase Configuration
 VITE_FIREBASE_API_KEY=your_firebase_api_key
@@ -211,11 +227,65 @@ VITE_FIREBASE_APP_ID=your_app_id
 # Google Maps API (Optional but recommended)
 VITE_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 
-# Other Services
-VITE_SENTRY_DSN=your_sentry_dsn
+# Payment Gateway Keys (Frontend)
+VITE_STRIPE_PUBLISHABLE_KEY=your_stripe_publishable_key
+VITE_NOUPIA_PUBLIC_KEY=your_noupia_public_key
+VITE_CAMPAY_PUBLIC_KEY=your_campay_public_key
 ```
 
-### 4. Firebase Setup
+### 4. Backend Setup
+
+#### Express.js Server Configuration
+```bash
+# Backend environment variables
+DATABASE_URL=postgresql://user:password@host:port/database
+JWT_SECRET=your_jwt_secret
+FIREBASE_SERVICE_ACCOUNT_KEY=path_to_service_account.json
+
+# Payment Gateway Keys (Backend)
+STRIPE_SECRET_KEY=your_stripe_secret_key
+NOUPIA_SECRET_KEY=your_noupia_secret_key
+CAMPAY_SECRET_KEY=your_campay_secret_key
+```
+
+#### PostgreSQL Database Setup
+```sql
+-- Create database
+CREATE DATABASE eat_fast;
+
+-- Create tables
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    firebase_uid VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    phone VARCHAR(20),
+    role VARCHAR(50) DEFAULT 'customer',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE restaurants (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    address TEXT,
+    phone VARCHAR(20),
+    owner_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE orders (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    restaurant_id INTEGER REFERENCES restaurants(id),
+    status VARCHAR(50) DEFAULT 'pending',
+    total_amount DECIMAL(10,2),
+    payment_method VARCHAR(50),
+    payment_status VARCHAR(50) DEFAULT 'pending',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 5. Firebase Setup
 
 1. **Create Firebase Project**:
    - Go to [Firebase Console](https://console.firebase.google.com/)
@@ -235,6 +305,37 @@ VITE_SENTRY_DSN=your_sentry_dsn
 4. **Configure Cloud Messaging**:
    - Generate FCM server key
    - Set up notification topics
+
+### 6. Payment Gateway Setup
+
+#### Stripe Setup
+```bash
+# Install Stripe SDK
+npm install stripe
+
+# Configure Stripe
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+```
+
+#### Noupia Setup
+```bash
+# Install Noupia SDK
+npm install noupia-node
+
+# Configure Noupia
+const Noupia = require('noupia-node');
+const noupia = new Noupia(process.env.NOUPIA_SECRET_KEY);
+```
+
+#### Campay Setup
+```bash
+# Install Campay SDK
+npm install campay-node
+
+# Configure Campay
+const Campay = require('campay-node');
+const campay = new Campay(process.env.CAMPAY_SECRET_KEY);
+```
 
 ## ⚛️ Development
 
@@ -317,23 +418,22 @@ npm run build:simple
 3. **Environment Variables**: Add your environment variables in Netlify dashboard
 4. **Deploy**: Netlify will automatically deploy on every push
 
-### Backend Deployment (Firebase)
+### Backend Deployment (Render)
 
-1. **Install Firebase CLI**:
-   ```bash
-   npm install -g firebase-tools
-   ```
+1. **Create Render Account**: Sign up at [render.com](https://render.com)
+2. **Connect Repository**: Connect your backend repository
+3. **Configure Service**:
+   - **Build Command**: `npm install && npm run build`
+   - **Start Command**: `npm start`
+   - **Environment**: Node.js
+4. **Environment Variables**: Add all backend environment variables
+5. **Deploy**: Render will automatically deploy on every push
 
-2. **Initialize Firebase**:
-   ```bash
-   firebase login
-   firebase init
-   ```
+### Database Deployment (PostgreSQL)
 
-3. **Deploy Backend**:
-   ```bash
-   firebase deploy
-   ```
+1. **Render PostgreSQL**: Use Render's managed PostgreSQL service
+2. **External Database**: Use services like Supabase, Railway, or AWS RDS
+3. **Local Development**: Use Docker or local PostgreSQL installation
 
 ### Docker Deployment
 
@@ -436,8 +536,10 @@ npm run build
 - GPS tracking for deliveries
 
 ### Payment Integration
-- Mobile Money (MTN, Orange)
-- Cash on delivery
+- **Stripe**: International card payments
+- **Noupia**: Mobile money in Cameroon
+- **Campay**: Mobile money and local cards
+- **Cash on Delivery**: Traditional payment method
 - Secure payment processing
 - Transaction history
 
