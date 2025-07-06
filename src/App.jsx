@@ -1,361 +1,368 @@
-import { Routes, Route } from "react-router-dom";
+// src/App.jsx
+import React, { Suspense, lazy } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import ErrorBoundary from "./components/ErrorBoundary";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { Toaster } from "react-hot-toast";
 
-// Public pages
-import HomePage from "./pages/LandingPage/homepage";
-import AboutPage from "./pages/LandingPage/about_us";
-import ContactPage from "./pages/LandingPage/contact_us";
-import RestaurantPublicityPage from "./pages/LandingPage/Restaurants";
-import Login from "./pages/Authentication/login";
-import Register from "./pages/Authentication/register";
-import ForgotPassword from "./pages/Authentication/forgot_password";
-import BecomeAPartner from "./pages/LandingPage/BecomeAPartner.jsx";
-import MenuPage from "./pages/LandingPage/menus.jsx";
+// Error Boundary
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
 
+// Context Providers
+import { UserInformationProvider } from "./pages/Authentication/const_provider";
 
-// Privacy and policy pages
-import PrivacyPolicy from "./components/CommonShare/privacy.jsx";
-import RefundPolicy from "./components/CommonShare/refund.jsx";
-import TermsAndConditions from "./components/CommonShare/term.jsx";
-import FoodSafety from "./components/CommonShare/safety.jsx";
+// Loading Components
+import LoadingSpinner from "./components/CommonShare/LoadingSpinner";
+
+// Lazy load components for better performance
+const LandingPage = lazy(() => import("./pages/LandingPage/landing_page"));
+const LoginPage = lazy(() => import("./pages/Authentication/login_page"));
+const RegisterPage = lazy(() => import("./pages/Authentication/register_page"));
+const AboutPage = lazy(() => import("./pages/About/about_page"));
+const ContactPage = lazy(() => import("./pages/Contact/contact_page"));
+const FoodSafety = lazy(() => import("./pages/food_safety/food_safety"));
+const TermsPage = lazy(() => import("./pages/TermsConditions/terms_page"));
+const PrivacyPage = lazy(() => import("./pages/Privacy/privacy_page"));
+
+// Dashboard components
+const AdminDashboard = lazy(() => import("./pages/Dashboards/Admin/admin_dashboad"));
+const ClientDashboard = lazy(() => import("./pages/Dashboards/Clients/clients_dashboards"));
+const RestaurantDashboard = lazy(() => import("./pages/Dashboards/Restaurants/restaurants_dashboard"));
+const DeliveryDashboard = lazy(() => import("./pages/Dashboards/Delivery/delivery_dashboad"));
+const SupportAgentMainDashboard = lazy(() => import("./pages/Dashboards/Agent/agent_dashboard"));
 
 // Admin pages
-import AdminDashboard from "./pages/Dashboards/Admin/admin_dashboard";
-import UserListPage from "./pages/Dashboards/Admin/Utilisateurs/UserList";
-import RestaurantManagement, {
-  AdminRestaurantProvider,
-} from "./pages/Dashboards/Admin/Restaurants/RestaurantsList";
-import AdminContactMessages from "./pages/Dashboards/Admin/ContactMessages/Contact";
-import AdminOrdersPage from "./pages/Dashboards/Admin/Orders/orders";
-import StatisticsPage from "./pages/Dashboards/Admin/Statistics/StatisticsPage";
-import AdminDeliveryManagement from "./pages/Dashboards/Admin/Delivery/delivery_managemnet.jsx";
-import PromotionManagement from "./pages/Dashboards/Admin/Promotion/promotion.jsx";
+const UserListPage = lazy(() => import("./pages/Dashboards/Admin/User/userListPage"));
+const RestaurantManagement = lazy(() => import("./pages/Dashboards/Admin/Restaurants/restaurantManagement"));
+const AdminContactMessages = lazy(() => import("./pages/Dashboards/Admin/Contact/adminContactMessages"));
+const AdminOrdersPage = lazy(() => import("./pages/Dashboards/Admin/Orders/adminOrdersPage"));
+const StatisticsPage = lazy(() => import("./pages/Dashboards/Admin/Statistics/statisticsPage"));
+const AdminDeliveryManagement = lazy(() => import("./pages/Dashboards/Admin/Delivery/adminDeliveryManagement"));
+const PromotionManagement = lazy(() => import("./pages/Dashboards/Admin/Promotion/promotionManagement"));
+
+// Agent Support pages
+const SupportTicketsPage = lazy(() => import("./pages/Dashboards/Agent/Tickets/ticketsPage"));
+const SupportDisputesPage = lazy(() => import("./pages/Dashboards/Agent/Disputes/DisputesPage"));
+const SupportUserCommunication = lazy(() => import("./pages/Dashboards/Agent/User_communication/support_user_contact"));
+const SupportKnowledge = lazy(() => import("./pages/Dashboards/Agent/knowledge/agents_knowledge"));
+const SupportEscalation = lazy(() => import("./pages/Dashboards/Agent/Escalation/agents_escalation"));
 
 // Restaurant pages
-import RestaurantDashboard from "./pages/Dashboards/Restaurants/restaurant_dashboard.jsx";
-import RestaurantCommand from "./pages/Dashboards/Restaurants/command/restaurant_command.jsx";
-import MenuPlatsPage from "./pages/Dashboards/Restaurants/manager_menu/restuarantMenu.jsx";
-import RestaurantStatsPage from "./pages/Dashboards/Restaurants/statistic/RestaurantStats.jsx";
-import RestaurantReviews from "./pages/Dashboards/Restaurants/Review/restaurantreview.jsx";
+const RestaurantOrders = lazy(() => import("./pages/Dashboards/Restaurants/Orders/restaurant_orders"));
+const RestaurantMenuManagement = lazy(() => import("./pages/Dashboards/Restaurants/Menu/restaurant_menu"));
+const RestaurantStats = lazy(() => import("./pages/Dashboards/Restaurants/Stats/restaurantStats"));
+const RestaurantReviews = lazy(() => import("./pages/Dashboards/Restaurants/Review/restaurantreview"));
 
 // Delivery pages
-import DeliveryDashboard from "./pages/Dashboards/Delivery/delivery_dashboad.jsx";
-import MissionsPage from "./pages/Dashboards/Delivery/mission/delivey_mission.jsx";
-import RestaurantDeliverCommand from "./pages/Dashboards/Delivery/map_deliveries/restaurant_command.jsx";
-import DeliveryEarningsPage from "./pages/Dashboards/Delivery/earnings/delivery_earnings.jsx";
-import DeliveryHistoryPage from "./pages/Dashboards/Delivery/History/delivery_history.jsx";
-import DeliverySupport from "./pages/Dashboards/Delivery/support/delivery_support.jsx";
-
-// Agent support pages
-import SupportTicketsPage from "@/pages/Dashboards/Agent/Tickets/ticketsPage.jsx";
-import SupportDisputesPage from "@/pages/Dashboards/Agent/Disputes/DisputesPage.jsx";
-import SupportUserCommunication from "@/pages/Dashboards/Agent/User_communication/support_user_contact.jsx";
-import SupportKnowledge from "@/pages/Dashboards/Agent/knowledge/agents_knowledge.jsx";
-import SupportEscalation from "@/pages/Dashboards/Agent/Escalation/agents_escalation.jsx";
-import SupportAgentMainDashboard from "@/pages/Dashboards/Agent/agent_dashboard.jsx";
+const MissionsPage = lazy(() => import("./pages/Dashboards/Delivery/mission/delivey_mission"));
+const RestaurantDeliverCommand = lazy(() => import("./pages/Dashboards/Delivery/map_deliveries/restaurant_command"));
+const DeliveryEarningsPage = lazy(() => import("./pages/Dashboards/Delivery/earnings/delivery_earnings"));
+const DeliveryHistoryPage = lazy(() => import("./pages/Dashboards/Delivery/History/delivery_history"));
+const DeliveryChatSupport = lazy(() => import("./pages/Dashboards/Delivery/Support_chat/delivery_chat"));
 
 // Client pages
-import ClientDashboard from "./pages/Dashboards/Clients/clients_dashboards.jsx";
-import ClientMenus from "./pages/Dashboards/Clients/Restaurants/clients_restaurants.jsx";
-import ClientsCommande from "./pages/Dashboards/Clients/Commandes/clients_commandes.jsx";
-import ClientsCommandeHistory from "./pages/Dashboards/Clients//Historique/clients_history.jsx";
-import ClientsChatSupport from "./pages/Dashboards/Clients/Contact_support/clients_contact.jsx";
-import ClientsProfilePage from "./pages/Dashboards/Clients/Profil/clients_profile.jsx";
+const ClientMenus = lazy(() => import("./pages/Dashboards/Clients/Restaurants/clients_restaurants"));
+const ClientsCommande = lazy(() => import("./pages/Dashboards/Clients/Commandes/clients_commandes"));
+const ClientsCommandeHistory = lazy(() => import("./pages/Dashboards/Clients/Historique/clients_history"));
+const ClientsChatSupport = lazy(() => import("./pages/Dashboards/Clients/Contact_support/clients_contact"));
+const ClientsProfilePage = lazy(() => import("./pages/Dashboards/Clients/Profil/clients_profile"));
 
 // Layouts
-import ClientsLayout from "./layouts/clients_layout.jsx";
-import DeliveryLayout from "./layouts/delivery_layout.jsx";
-import RestaurantLayoutWithProviders from "./layouts/restaurants_layout.jsx";
+const ClientsLayout = lazy(() => import("./layouts/clients_layout"));
+const DeliveryLayout = lazy(() => import("./layouts/delivery_layout"));
+const RestaurantLayoutWithProviders = lazy(() => import("./layouts/restaurants_layout"));
+const AdminRestaurantProvider = lazy(() => import("./layouts/admin_layout"));
 
 // Common components
-import DashboardRedirect from "./components/CommonShare/test";
-import RestaurantChatSupport from "./pages/Dashboards/Restaurants/contact_support/restaurant-aide.jsx";
-import DeliveryChatSupport from "./pages/Dashboards/Delivery/contact_support/delivery_aide.jsx";
+const DashboardRedirect = lazy(() => import("./components/CommonShare/redirectToDashboard"));
 
-// Provider
-
-import { UserInformationProvider } from "./pages/Authentication/const_provider.jsx";
-// Create QueryClient
-
-
-// Loading component
-const LoadingSpinner = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-  </div>
-);
-
-// Create QueryClient with error handling
+// Create Query Client with optimized settings
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: (failureCount, error) => {
+        // Don't retry on 4xx errors
+        if (error?.status >= 400 && error?.status < 500) {
+          return false;
+        }
+        return failureCount < 3;
+      },
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: true,
+    },
+    mutations: {
+      retry: 1,
     },
   },
 });
 
+// Loading fallback component
+const PageLoader = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-red-50">
+    <LoadingSpinner size="large" />
+  </div>
+);
 
-
+// Main App Component
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="app">
-        <Routes>
-          {/* Public Routes */}
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <div className="App">
+            {/* Global Toast Notifications */}
+            <Toaster
+              position="top-right"
+              toastOptions={{
+                duration: 4000,
+                style: {
+                  background: '#363636',
+                  color: '#fff',
+                },
+                success: {
+                  duration: 3000,
+                  iconTheme: {
+                    primary: '#4ade80',
+                    secondary: '#fff',
+                  },
+                },
+                error: {
+                  duration: 5000,
+                  iconTheme: {
+                    primary: '#ef4444',
+                    secondary: '#fff',
+                  },
+                },
+              }}
+            />
 
-          <Route path="/" element={<HomePage />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/restaurants" element={<RestaurantPublicityPage />} />
-          <Route
-            path="/login"
-            element={
-              <UserInformationProvider>
-                <Login />
-              </UserInformationProvider>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <UserInformationProvider>
-                <Register />
-              </UserInformationProvider>
-            }
-          />
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/register" element={<RegisterPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/safety" element={<FoodSafety />} />
+                <Route path="/dashboard-redirect" element={<DashboardRedirect />} />
 
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/become" element={<BecomeAPartner />} />
-          <Route path="/menu" element={<MenuPage />} />
-          <Route path="/test" element={<DashboardRedirect />} />
+                {/* Admin Routes */}
+                <Route
+                  path="/admin"
+                  element={
+                    <AdminRestaurantProvider>
+                      <UserInformationProvider>
+                        <AdminDashboard />
+                      </UserInformationProvider>
+                    </AdminRestaurantProvider>
+                  }
+                />
+                <Route path="/admin/users" element={<UserListPage />} />
+                <Route path="/admin/restaurants" element={<RestaurantManagement />} />
+                <Route path="/admin/contact-messages" element={<AdminContactMessages />} />
+                <Route path="/admin/orders" element={<AdminOrdersPage />} />
+                <Route path="/admin/statistics" element={<StatisticsPage />} />
+                <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
+                <Route path="/admin/promotions" element={<PromotionManagement />} />
 
+                {/* Agent Support Routes */}
+                <Route
+                  path="/agent/dashboard"
+                  element={
+                    <UserInformationProvider>
+                      <SupportAgentMainDashboard />
+                    </UserInformationProvider>
+                  }
+                />
+                <Route path="/agent/tickets" element={<SupportTicketsPage />} />
+                <Route path="/agent/disputes" element={<SupportDisputesPage />} />
+                <Route path="/agent/contact-users" element={<SupportUserCommunication />} />
+                <Route path="/agent/knowledge-base" element={<SupportKnowledge />} />
+                <Route path="/agent/escalations" element={<SupportEscalation />} />
 
+                {/* Restaurant Manager Routes */}
+                <Route
+                  path="/restaurants_manager"
+                  element={
+                    <RestaurantLayoutWithProviders>
+                      <UserInformationProvider>
+                        <RestaurantDashboard />
+                      </UserInformationProvider>
+                    </RestaurantLayoutWithProviders>
+                  }
+                />
+                <Route
+                  path="/restaurant/orders"
+                  element={
+                    <RestaurantLayoutWithProviders>
+                      <RestaurantOrders />
+                    </RestaurantLayoutWithProviders>
+                  }
+                />
+                <Route
+                  path="/restaurant/menu"
+                  element={
+                    <RestaurantLayoutWithProviders>
+                      <RestaurantMenuManagement />
+                    </RestaurantLayoutWithProviders>
+                  }
+                />
+                <Route
+                  path="/restaurant/statistics"
+                  element={
+                    <RestaurantLayoutWithProviders>
+                      <RestaurantStats />
+                    </RestaurantLayoutWithProviders>
+                  }
+                />
+                <Route
+                  path="/restaurant/reviews"
+                  element={
+                    <RestaurantLayoutWithProviders>
+                      <RestaurantReviews />
+                    </RestaurantLayoutWithProviders>
+                  }
+                />
 
-          {/* term and condiction */}
+                {/* Delivery Routes */}
+                <Route
+                  path="/delivery"
+                  element={
+                    <UserInformationProvider>
+                      <DeliveryLayout>
+                        <DeliveryDashboard />
+                      </DeliveryLayout>
+                    </UserInformationProvider>
+                  }
+                />
+                <Route
+                  path="/delivery/missions"
+                  element={
+                    <DeliveryLayout>
+                      <MissionsPage />
+                    </DeliveryLayout>
+                  }
+                />
+                <Route
+                  path="/delivery/map"
+                  element={
+                    <DeliveryLayout>
+                      <RestaurantDeliverCommand />
+                    </DeliveryLayout>
+                  }
+                />
+                <Route
+                  path="/delivery/earnings"
+                  element={
+                    <DeliveryLayout>
+                      <DeliveryEarningsPage />
+                    </DeliveryLayout>
+                  }
+                />
+                <Route
+                  path="/delivery/history"
+                  element={
+                    <DeliveryLayout>
+                      <DeliveryHistoryPage />
+                    </DeliveryLayout>
+                  }
+                />
+                <Route
+                  path="/delivery/support/chat"
+                  element={
+                    <DeliveryLayout>
+                      <DeliveryChatSupport />
+                    </DeliveryLayout>
+                  }
+                />
 
-          <Route path="/terms" element={<PrivacyPolicy />} />
-          <Route path="/privacy" element={<RefundPolicy />} />
-          <Route path="/refund" element={<TermsAndConditions />} />
-          <Route path="/safety" element={<FoodSafety />} />
+                {/* Client Routes */}
+                <Route
+                  path="/clients"
+                  element={
+                    <UserInformationProvider>
+                      <ClientsLayout>
+                        <ClientDashboard />
+                      </ClientsLayout>
+                    </UserInformationProvider>
+                  }
+                />
+                <Route
+                  path="/clients/restaurants"
+                  element={
+                    <ClientsLayout>
+                      <ClientMenus />
+                    </ClientsLayout>
+                  }
+                />
+                <Route
+                  path="/clients/orders"
+                  element={
+                    <ClientsLayout>
+                      <ClientsCommande />
+                    </ClientsLayout>
+                  }
+                />
+                <Route
+                  path="/clients/order-history"
+                  element={
+                    <ClientsLayout>
+                      <ClientsCommandeHistory />
+                    </ClientsLayout>
+                  }
+                />
+                <Route
+                  path="/clients/support/chat"
+                  element={
+                    <ClientsLayout>
+                      <ClientsChatSupport />
+                    </ClientsLayout>
+                  }
+                />
+                <Route
+                  path="/clients/profile"
+                  element={
+                    <UserInformationProvider>
+                      <ClientsLayout>
+                        <ClientsProfilePage />
+                      </ClientsLayout>
+                    </UserInformationProvider>
+                  }
+                />
 
+                {/* 404 Route */}
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
+          </div>
+        </Router>
 
-
-          {/* Admin Routes */}
-          <Route
-            path="/admin"
-            element={
-              <AdminRestaurantProvider>
-                <UserInformationProvider>
-                  <AdminDashboard />
-                </UserInformationProvider>
-              </AdminRestaurantProvider>
-            }
-          />
-          <Route path="/admin/user" element={<UserListPage />} />
-          <Route path="/admin/restaurants" element={<RestaurantManagement />} />
-          <Route
-            path="/admin/contact-messages"
-            element={<AdminContactMessages />}
-          />
-          <Route path="/admin/orders" element={<AdminOrdersPage />} />
-          <Route path="/admin/statistics" element={<StatisticsPage />} />
-          <Route path="/admin/delivery" element={<AdminDeliveryManagement />} />
-          <Route path="/admin/promotion" element={<PromotionManagement />} />
-
-          {/* Agent Support Routes */}
-
-          <Route
-            path="/agent/dashboard"
-            element={
-              <UserInformationProvider>
-                <SupportAgentMainDashboard />
-              </UserInformationProvider>
-            }
-          />
-          <Route path="/agent/tickets" element={<SupportTicketsPage />} />
-          <Route path="/agent/disputes" element={<SupportDisputesPage />} />
-          <Route
-            path="/agent/contact-users"
-            element={<SupportUserCommunication />}
-          />
-          <Route path="/agent/knowledge-base" element={<SupportKnowledge />} />
-          <Route path="/agent/escalations" element={<SupportEscalation />} />
-
-          {/* Restaurant Router */}
-
-          <Route
-            path="/restaurants_manager"
-            element={
-              <RestaurantLayoutWithProviders>
-                <UserInformationProvider>
-                  <RestaurantDashboard />
-                </UserInformationProvider>
-              </RestaurantLayoutWithProviders>
-            }
-          />
-          <Route
-            path="/restaurant/orders"
-            element={
-              <RestaurantLayoutWithProviders>
-                <RestaurantCommand />
-              </RestaurantLayoutWithProviders>
-            }
-          />
-          <Route
-            path="/restaurant/menu"
-            element={
-              <RestaurantLayoutWithProviders>
-                <MenuPlatsPage />
-              </RestaurantLayoutWithProviders>
-            }
-          />
-          <Route
-            path="/restaurant/stats"
-            element={
-              <RestaurantLayoutWithProviders>
-                <RestaurantStatsPage />
-              </RestaurantLayoutWithProviders>
-            }
-          />
-          <Route
-            path="/restaurant/reviews"
-            element={
-              <RestaurantLayoutWithProviders>
-                <RestaurantReviews />
-              </RestaurantLayoutWithProviders>
-            }
-          />
-
-          <Route
-            path="/restaurant/support/chat"
-            element={
-              <RestaurantLayoutWithProviders>
-                <RestaurantChatSupport />
-              </RestaurantLayoutWithProviders>
-            }
-          />
-
-          {/* Delivery Router */}
-
-          <Route
-            path="/delivery/"
-            element={
-              <DeliveryLayout>
-                <UserInformationProvider>
-                  <DeliveryDashboard />
-                </UserInformationProvider>
-              </DeliveryLayout>
-            }
-          />
-          <Route
-            path="/delivery/missions"
-            element={
-              <DeliveryLayout>
-                <MissionsPage />
-              </DeliveryLayout>
-            }
-          />
-          {/*<Route path="/live-map" element={<CameroonDeliveryMap />} />*/}
-          <Route
-            path="/delivery/live-map"
-            element={
-              <DeliveryLayout>
-                <RestaurantDeliverCommand />
-              </DeliveryLayout>
-            }
-          />
-          <Route
-            path="/delivery/earnings"
-            element={
-              <DeliveryLayout>
-                <DeliveryEarningsPage />
-              </DeliveryLayout>
-            }
-          />
-          <Route
-            path="/delivery/history"
-            element={
-              <DeliveryLayout>
-                <DeliveryHistoryPage />
-              </DeliveryLayout>
-            }
-          />
-          {/* <Route path="/delivery/support" element={
-          <DeliveryLayout>
-          <DeliverySupport />
-          </DeliveryLayout>} /> */}
-
-          <Route
-            path="/delivery/support/chat"
-            element={
-              <DeliveryLayout>
-                <DeliveryChatSupport />
-              </DeliveryLayout>
-            }
-          />
-
-          {/* Clients Router */}
-
-          <Route
-            path="/clients"
-            element={
-              <UserInformationProvider>
-                <ClientsLayout>
-                  <ClientDashboard />
-                </ClientsLayout>
-              </UserInformationProvider>
-            }
-          />
-          <Route
-            path="/clients/restaurant"
-            element={
-              <ClientsLayout>
-                <ClientMenus />
-              </ClientsLayout>
-            }
-          />
-          <Route
-            path="/clients/orders"
-            element={
-              <ClientsLayout>
-                <ClientsCommande />
-              </ClientsLayout>
-            }
-          />
-          <Route
-            path="/clients/order-history"
-            element={
-              <ClientsLayout>
-                <ClientsCommandeHistory />
-              </ClientsLayout>
-            }
-          />
-
-          <Route
-            path="/clients/support/chat"
-            element={
-              <ClientsLayout>
-                <ClientsChatSupport />
-              </ClientsLayout>
-            }
-          />
-          <Route
-            path="/clients/profile"
-            element={
-              <UserInformationProvider>
-                <ClientsLayout>
-                  <ClientsProfilePage />
-                </ClientsLayout>
-              </UserInformationProvider>
-            }
-          />
-        </Routes>
-      </div>
-    </QueryClientProvider>
+        {/* React Query Devtools (only in development) */}
+        {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
+
+// 404 Not Found Component
+const NotFoundPage = () => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="text-center">
+      <h1 className="text-6xl font-bold text-gray-900 mb-4">404</h1>
+      <p className="text-xl text-gray-600 mb-8">Page not found</p>
+      <a
+        href="/"
+        className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg transition-colors"
+      >
+        Go Home
+      </a>
+    </div>
+  </div>
+);
 
 export default App;
