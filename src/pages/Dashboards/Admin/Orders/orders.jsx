@@ -387,218 +387,82 @@ const AdminOrdersPage = () => {
       subtotal: 16000,
       tax: 800,
       total: 18600,
-      specialInstructions: 'Apporter du ketchup supplémentaire'
-    },
-    {
-      id: 'ORD-1254782',
-      customer: {
-        name: 'Claire Eteki',
-        phone: '+237 677889966',
-        email: 'claire.e@example.com',
-        address: 'Rue des Palmiers 7, Douala'
-      },
-      restaurant: {
-        name: 'Saveurs d\'Afrique',
-        id: 'REST-5632'
-      },
-      items: [
-        { name: 'Poulet DG', price: 5000, quantity: 1, total: 5000 },
-        { name: 'Koki', price: 2500, quantity: 1, total: 2500 },
-        { name: 'Jus de gingembre', price: 1200, quantity: 1, total: 1200 }
-      ],
-      delivery: {
-        fee: 1500,
-        address: 'Rue des Palmiers 7, Douala',
-        courier: 'En attente',
-        courierPhone: '',
-        estimatedTime: '30 min'
-      },
-      status: 'pending',
-      paymentMethod: 'Mobile Money (Orange)',
-      paymentStatus: 'pending',
-      date: new Date(2025, 4, 17, 12, 50),
-      subtotal: 8700,
-      tax: 435,
-      total: 10635,
       specialInstructions: ''
     }
   ], []);
 
-  // Simulate loading orders with better UX
+  // Load orders on component mount
   useEffect(() => {
-    setIsLoading(true);
     const timer = setTimeout(() => {
       setOrders(mockOrders);
-      
-      // Calculate statistics
-      const stats = {
-        total: mockOrders.length,
-        pending: mockOrders.filter(order => order.status === 'pending').length,
-        preparing: mockOrders.filter(order => order.status === 'preparing').length,
-        delivering: mockOrders.filter(order => order.status === 'delivering').length,
-        completed: mockOrders.filter(order => order.status === 'completed').length,
-        cancelled: mockOrders.filter(order => order.status === 'cancelled').length
-      };
-      
-      setStatistics(stats);
       setIsLoading(false);
-    }, 800);
-
+    }, 1000);
+    
     return () => clearTimeout(timer);
-  }, [mockOrders]);
+  }, []);
 
-  // Optimized sort handler
-  const handleSort = useCallback((sortKey) => {
-    if (sortBy === sortKey) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortBy(sortKey);
-      setSortOrder('asc');
-    }
-  }, [sortBy, sortOrder]);
-
-  // Optimized filter orders
+  // Filter and sort orders
   const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
-      const searchTerm = searchQuery.toLowerCase();
-      const matchesSearch = !searchQuery || 
-        order.id.toLowerCase().includes(searchTerm) ||
-        order.customer.name.toLowerCase().includes(searchTerm) ||
-        order.restaurant.name.toLowerCase().includes(searchTerm) ||
-        order.customer.phone.toLowerCase().includes(searchTerm) ||
-        order.customer.email.toLowerCase().includes(searchTerm);
+    let filtered = orders.filter(order => {
+      const matchesSearch = order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           order.restaurant.name.toLowerCase().includes(searchQuery.toLowerCase());
       
       const matchesStatus = filterStatus === 'all' || order.status === filterStatus;
       
-      let matchesDateRange = true;
-      if (dateRange.start && dateRange.end) {
-        const orderDate = new Date(order.date);
-        const startDate = new Date(dateRange.start);
-        startDate.setHours(0, 0, 0, 0);
-        const endDate = new Date(dateRange.end);
-        endDate.setHours(23, 59, 59, 999);
-        matchesDateRange = orderDate >= startDate && orderDate <= endDate;
-      }
-      
-      return matchesSearch && matchesStatus && matchesDateRange;
+      return matchesSearch && matchesStatus;
     });
-  }, [orders, searchQuery, filterStatus, dateRange]);
 
-  // Optimized sort filtered orders
+    return filtered;
+  }, [orders, searchQuery, filterStatus]);
+
+  // Sort orders
   const sortedOrders = useMemo(() => {
     return [...filteredOrders].sort((a, b) => {
-      let compareResult = 0;
+      let aValue, bValue;
       
       switch (sortBy) {
         case 'date':
-          compareResult = new Date(a.date) - new Date(b.date);
-          break;
-        case 'status':
-          compareResult = a.status.localeCompare(b.status);
+          aValue = new Date(a.date);
+          bValue = new Date(b.date);
           break;
         case 'total':
-          compareResult = a.total - b.total;
+          aValue = a.total;
+          bValue = b.total;
           break;
-        case 'customer':
-          compareResult = a.customer.name.localeCompare(b.customer.name);
-          break;
-        case 'restaurant':
-          compareResult = a.restaurant.name.localeCompare(b.restaurant.name);
+        case 'id':
+          aValue = a.id;
+          bValue = b.id;
           break;
         default:
-          compareResult = 0;
+          aValue = new Date(a.date);
+          bValue = new Date(b.date);
       }
       
-      return sortOrder === 'asc' ? compareResult : -compareResult;
+      if (sortOrder === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
     });
   }, [filteredOrders, sortBy, sortOrder]);
 
-  // Calculate pagination
+  // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = sortedOrders.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedOrders.length / itemsPerPage);
 
-  // Optimized toggle row expansion
-  const toggleRowExpansion = useCallback((orderId) => {
-    setExpandedRows(prev => ({
-      ...prev,
-      [orderId]: !prev[orderId]
-    }));
-  }, []);
-
-  // Open order details modal
-  const openOrderDetails = useCallback((order) => {
-    setSelectedOrder(order);
-    setIsOrderDetailsOpen(true);
-  }, []);
-
-  // Close order details modal
-  const closeOrderDetails = useCallback(() => {
-    setIsOrderDetailsOpen(false);
-    setSelectedOrder(null);
-  }, []);
-
-  // Format date
-  const formatDate = useCallback((date) => {
-    return formatDistanceToNow(new Date(date), { 
-      addSuffix: true,
-      locale: fr
-    });
-  }, []);
-
-  // Get status info with improved styling
-  const getStatusInfo = useCallback((status) => {
-    const statusConfig = {
-      pending: { 
-        color: 'bg-gradient-to-r from-yellow-100 to-yellow-200 text-yellow-800 border border-yellow-300',
-        icon: <FiClock className="mr-1" />,
-        label: 'En attente',
-        pulse: 'animate-pulse'
-      },
-      preparing: { 
-        color: 'bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 border border-blue-300',
-        icon: <FiBriefcase className="mr-1" />,
-        label: 'En préparation',
-        pulse: ''
-      },
-      delivering: { 
-        color: 'bg-gradient-to-r from-purple-100 to-purple-200 text-purple-800 border border-purple-300',
-        icon: <FiTruck className="mr-1" />,
-        label: 'En livraison',
-        pulse: 'animate-bounce'
-      },
-      completed: { 
-        color: 'bg-gradient-to-r from-green-100 to-green-200 text-green-800 border border-green-300',
-        icon: <FiCheckCircle className="mr-1" />,
-        label: 'Terminé',
-        pulse: ''
-      },
-      cancelled: { 
-        color: 'bg-gradient-to-r from-red-100 to-red-200 text-red-800 border border-red-300',
-        icon: <FiXCircle className="mr-1" />,
-        label: 'Annulé',
-        pulse: ''
-      }
-    };
-    
-    return statusConfig[status] || { 
-      color: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800 border border-gray-300',
-      icon: <FiAlertTriangle className="mr-1" />,
-      label: 'Inconnu',
-      pulse: ''
-    };
-  }, []);
-
-  // Reset all filters
-  const resetFilters = useCallback(() => {
-    setSearchQuery('');
-    setFilterStatus('all');
-    setSortBy('date');
-    setSortOrder('desc');
-    setDateRange({ start: null, end: null });
+  // Handle sort
+  const handleSort = useCallback((field) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(field);
+      setSortOrder('desc');
+    }
     setCurrentPage(1);
-  }, []);
+  }, [sortBy, sortOrder]);
   
   // Handle page change
   const paginate = useCallback((pageNumber) => {
@@ -613,6 +477,24 @@ const AdminOrdersPage = () => {
     }));
   }, []);
 
+  // Get status label for export
+  const getStatusLabel = useCallback((status) => {
+    switch (status) {
+      case 'pending':
+        return 'En attente';
+      case 'preparing':
+        return 'En préparation';
+      case 'delivering':
+        return 'En livraison';
+      case 'completed':
+        return 'Livré';
+      case 'cancelled':
+        return 'Annulé';
+      default:
+        return 'Inconnu';
+    }
+  }, []);
+
   // Export orders to CSV
   const exportToCSV = useCallback(() => {
     try {
@@ -623,7 +505,7 @@ const AdminOrdersPage = () => {
         'Téléphone': order.customer.phone,
         'Email': order.customer.email,
         'Restaurant': order.restaurant.name,
-        'Statut': getStatusInfo(order.status).label,
+        'Statut': getStatusLabel(order.status),
         'Total': order.total,
         'Mode de paiement': order.paymentMethod,
         'Statut paiement': order.paymentStatus
@@ -635,7 +517,7 @@ const AdminOrdersPage = () => {
       console.error('Erreur lors de l\'export:', error);
       alert('Erreur lors de l\'export CSV.');
     }
-  }, [sortedOrders, getStatusInfo]);
+  }, [sortedOrders, getStatusLabel]);
 
   // Format currency
   const formatCurrency = useCallback((amount) => {
@@ -644,6 +526,26 @@ const AdminOrdersPage = () => {
       currency: 'XAF',
       minimumFractionDigits: 0
     }).format(amount);
+  }, []);
+
+  // Format date
+  const formatDate = useCallback((date) => {
+    return formatDistanceToNow(new Date(date), { 
+      addSuffix: true,
+      locale: fr
+    });
+  }, []);
+
+  // Open order details modal
+  const openOrderDetails = useCallback((order) => {
+    setSelectedOrder(order);
+    setIsOrderDetailsOpen(true);
+  }, []);
+
+  // Close order details modal
+  const closeOrderDetails = useCallback(() => {
+    setIsOrderDetailsOpen(false);
+    setSelectedOrder(null);
   }, []);
 
   // Loading skeleton component
@@ -686,10 +588,10 @@ const AdminOrdersPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              🛒 {t('orders.title', { ns: 'admin' })}
+              🛒 Gestion des Commandes
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              {t('orders.subtitle', { ns: 'admin' })}
+              Gérez et suivez toutes les commandes de vos restaurants partenaires
             </p>
           </div>
           <div className="flex items-center space-x-2 mt-4 sm:mt-0">
@@ -699,14 +601,14 @@ const AdminOrdersPage = () => {
               className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-800"
             >
               <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {t('common.refresh', { ns: 'translation' })}
+              Actualiser
             </button>
             <button
               className="flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors dark:bg-green-700 dark:hover:bg-green-800"
               onClick={exportToCSV}
             >
               <FiDownload className="mr-2" />
-              {t('common.export', { ns: 'translation' })}
+              Exporter
             </button>
           </div>
         </div>
@@ -723,7 +625,7 @@ const AdminOrdersPage = () => {
             <input
               type="text"
               className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"
-              placeholder={t('common.search', { ns: 'translation' })}
+              placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -732,42 +634,43 @@ const AdminOrdersPage = () => {
           {/* Status Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t('orders.filters.status', { ns: 'admin' })}
+              Statut
             </label>
             <select
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
-              <option value="all">{t('common.all', { ns: 'translation' })}</option>
-              <option value="pending">{t('orders.status.pending', { ns: 'admin' })}</option>
-              <option value="in_transit">{t('orders.status.inTransit', { ns: 'admin' })}</option>
-              <option value="delivered">{t('orders.status.delivered', { ns: 'admin' })}</option>
-              <option value="cancelled">{t('orders.status.cancelled', { ns: 'admin' })}</option>
+              <option value="all">Tous</option>
+              <option value="pending">En attente</option>
+              <option value="preparing">En préparation</option>
+              <option value="delivering">En livraison</option>
+              <option value="completed">Livré</option>
+              <option value="cancelled">Annulé</option>
             </select>
           </div>
           
           {/* Date Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t('orders.filters.date', { ns: 'admin' })}
+              Période
             </label>
             <select
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
             >
-              <option value="all">{t('common.all', { ns: 'translation' })}</option>
-              <option value="today">{t('common.today', { ns: 'translation' })}</option>
-              <option value="yesterday">{t('common.yesterday', { ns: 'translation' })}</option>
-              <option value="thisWeek">{t('common.thisWeek', { ns: 'translation' })}</option>
+              <option value="all">Toutes les dates</option>
+              <option value="today">Aujourd'hui</option>
+              <option value="yesterday">Hier</option>
+              <option value="thisWeek">Cette semaine</option>
             </select>
           </div>
           
           {/* Sort By */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t('orders.filters.sortBy', { ns: 'admin' })}
+              Trier par
             </label>
             <div className="flex">
               <select
@@ -775,9 +678,9 @@ const AdminOrdersPage = () => {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
-                <option value="date">{t('common.date', { ns: 'translation' })}</option>
-                <option value="total">{t('common.amount', { ns: 'translation' })}</option>
-                <option value="id">{t('common.orderId', { ns: 'translation' })}</option>
+                <option value="date">Date</option>
+                <option value="total">Montant</option>
+                <option value="id">ID Commande</option>
               </select>
               <button
                 className="border border-gray-300 dark:border-gray-600 rounded-r-lg px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-300"
@@ -795,7 +698,7 @@ const AdminOrdersPage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-blue-500 transition-colors duration-200">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('orders.totalOrders', { ns: 'admin' })}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total des commandes</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredOrders.length}</p>
             </div>
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -814,28 +717,28 @@ const AdminOrdersPage = () => {
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.orderId', { ns: 'translation' })}
+                  ID Commande
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.customer', { ns: 'translation' })}
+                  Client
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.restaurant', { ns: 'translation' })}
+                  Restaurant
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.date', { ns: 'translation' })}
+                  Date
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.total', { ns: 'translation' })}
+                  Total
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.status', { ns: 'translation' })}
+                  Statut
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.payment', { ns: 'translation' })}
+                  Paiement
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.actions', { ns: 'translation' })}
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -851,10 +754,10 @@ const AdminOrdersPage = () => {
                     <div className="flex flex-col items-center">
                       <FiPackage className="text-4xl mb-4 text-gray-400 dark:text-gray-500" />
                       <p className="text-lg font-medium">
-                        {t('common.noOrdersFound', { ns: 'translation' })}
+                        Aucune commande trouvée
                       </p>
                       <p className="text-sm max-w-sm mt-1">
-                        {t('common.tryAdjustingFilters', { ns: 'translation' })}
+                        Essayez d'ajuster vos filtres de recherche
                       </p>
                     </div>
                   </td>
@@ -884,7 +787,7 @@ const AdminOrdersPage = () => {
                       <StatusBadge status={order.status} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <PaymentBadge method={order.paymentMethod} />
+                      <PaymentBadge status={order.paymentStatus} />
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
@@ -892,7 +795,7 @@ const AdminOrdersPage = () => {
                         onClick={() => openOrderDetails(order)}
                       >
                         <FiEye className="inline mr-1" />
-                        {t('common.view', { ns: 'translation' })}
+                        Voir
                       </button>
                     </td>
                   </tr>
@@ -906,7 +809,7 @@ const AdminOrdersPage = () => {
         {filteredOrders.length > itemsPerPage && (
           <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div className="text-sm text-gray-700 dark:text-gray-300">
-              {t('common.showing', { ns: 'translation' })} <span className="font-medium">{indexOfFirstItem + 1}</span> {t('common.to', { ns: 'translation' })} <span className="font-medium">{Math.min(indexOfLastItem, filteredOrders.length)}</span> {t('common.of', { ns: 'translation' })} <span className="font-medium">{filteredOrders.length}</span> {t('common.results', { ns: 'translation' })}
+              Affichage de <span className="font-medium">{indexOfFirstItem + 1}</span> à <span className="font-medium">{Math.min(indexOfLastItem, filteredOrders.length)}</span> sur <span className="font-medium">{filteredOrders.length}</span> résultats
             </div>
             <div className="flex space-x-1">
               <button
