@@ -23,7 +23,7 @@ const AboutPage = lazy(() => import("./pages/LandingPage/about_us"));
 const ContactPage = lazy(() => import("./pages/LandingPage/contact_us"));
 const BecomeAPartnerPage = lazy(() => import("./pages/LandingPage/BecomeAPartner"));
 const MenuPage = lazy(() => import("./pages/LandingPage/menus"));
-const RestaurantsPage = lazy(() => import("./pages/LandingPage/Restaurants"));
+const RestaurantPartnershipsPage = lazy(() => import("./pages/LandingPage/Restaurants"));
 
 // Privacy and policy pages
 const PrivacyPolicy = lazy(() => import("./components/CommonShare/privacy"));
@@ -178,7 +178,7 @@ function App() {
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/become" element={<BecomeAPartnerPage />} />
                 <Route path="/menu" element={<MenuPage />} />
-                <Route path="/restaurants" element={<RestaurantsPage />} />
+                <Route path="/restaurants" element={<RestaurantPartnershipsPage />} />
                 <Route path="/test" element={<DashboardRedirect />} />
 
                 {/* Privacy and Policy Routes */}
