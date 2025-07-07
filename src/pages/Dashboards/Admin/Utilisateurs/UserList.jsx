@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiEdit2, FiTrash2, FiSearch, FiUserPlus, FiFilter, FiDownload, 
@@ -7,7 +6,7 @@ import {
   FiUsers, FiShield, FiTruck, FiHome, FiHeadphones, FiCheck, FiX,
   FiClock, FiAlertTriangle, FiFileText, FiUpload, FiWifi, FiWifiOff,
   FiPhone, FiMail, FiMapPin, FiCalendar, FiPackage, FiStar, FiActivity,
-  FiUser, FiLock, FiCamera, FiImage, FiFile, FiCheckCircle, FiXCircle,
+  FiUser, FiLock, FiCamera, FiImage, FiCheckCircle, FiXCircle,
   FiAlertCircle, FiInfo, FiTrendingUp, FiTrendingDown, FiZap, FiGlobe,
   FiPlus, FiSettings, FiBarChart2
 } from 'react-icons/fi';
@@ -134,7 +133,6 @@ const NotificationComponent = ({ notification, onClose }) => {
 };
 
 const UserListPage = () => {
-  const { t } = useTranslation();
   const isOnline = useOnlineStatus();
   const { notification, showNotification, hideNotification } = useNotification();
 
@@ -396,10 +394,10 @@ const UserListPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-            {t('admin.users.title', 'Gestion des Utilisateurs')}
+            Gestion des Utilisateurs
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-1">
-            {t('admin.users.subtitle', 'Gérez tous les utilisateurs de la plateforme')}
+            Gérez tous les utilisateurs de la plateforme
           </p>
         </div>
         <div className="flex items-center space-x-4 mt-4 sm:mt-0">
@@ -409,14 +407,14 @@ const UserListPage = () => {
             className="flex items-center space-x-2 px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
           >
             <FiRefreshCw size={16} className={isLoading ? 'animate-spin' : ''} />
-            <span>{t('common.refresh', 'Actualiser')}</span>
+            <span>Actualiser</span>
           </button>
           <button
             onClick={handleAddUser}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
           >
             <FiPlus size={16} />
-            <span>{t('admin.users.add_user', 'Ajouter Utilisateur')}</span>
+            <span>Ajouter Utilisateur</span>
           </button>
         </div>
       </div>
@@ -424,26 +422,26 @@ const UserListPage = () => {
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
-          title={t('admin.users.total_users', 'Total Utilisateurs')}
+          title="Total Utilisateurs"
           value={stats.totalUsers}
           icon={FiUsers}
           color="blue"
         />
         <StatCard
-          title={t('admin.users.active_users', 'Utilisateurs Actifs')}
+          title="Utilisateurs Actifs"
           value={stats.activeUsers}
           percentage={stats.activePercentage}
           icon={FiCheckCircle}
           color="green"
         />
         <StatCard
-          title={t('admin.users.pending_users', 'En Attente')}
+          title="En Attente"
           value={stats.pendingUsers}
           icon={FiClock}
           color="orange"
         />
         <StatCard
-          title={t('admin.users.clients', 'Clients')}
+          title="Clients"
           value={stats.clients}
           icon={FiUser}
           color="purple"
@@ -454,7 +452,7 @@ const UserListPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {t('admin.users.role_distribution', 'Répartition par Rôle')}
+            Répartition par Rôle
           </h3>
           <div className="space-y-4">
             <RoleStat label="Clients" value={stats.clients} total={stats.totalUsers} color="blue" />
@@ -466,30 +464,30 @@ const UserListPage = () => {
         
         <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-6">
           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-            {t('admin.users.quick_actions', 'Actions Rapides')}
+            Actions Rapides
           </h3>
           <div className="grid grid-cols-2 gap-4">
             <QuickActionButton
               icon={FiUserPlus}
-              label={t('admin.users.add_user', 'Ajouter Utilisateur')}
+              label="Ajouter Utilisateur"
               onClick={handleAddUser}
               color="blue"
             />
             <QuickActionButton
               icon={FiDownload}
-              label={t('admin.users.export_csv', 'Exporter CSV')}
+              label="Exporter CSV"
               onClick={exportToCSV}
               color="green"
             />
             <QuickActionButton
               icon={FiBarChart2}
-              label={t('admin.users.statistics', 'Statistiques')}
+              label="Statistiques"
               onClick={() => {}}
               color="purple"
             />
             <QuickActionButton
               icon={FiSettings}
-              label={t('admin.users.settings', 'Paramètres')}
+              label="Paramètres"
               onClick={() => {}}
               color="orange"
             />

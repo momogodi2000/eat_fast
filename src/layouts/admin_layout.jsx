@@ -20,7 +20,6 @@ import {
   FiSearch,
 } from "react-icons/fi";
 import { HiOutlineMoon, HiOutlineSun } from "react-icons/hi";
-import { useTranslation } from "react-i18next";
 import { userContextInformation } from "../pages/Authentication/const_provider";
 
 // Create context for theme
@@ -38,7 +37,6 @@ export const useTheme = () => {
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation(['admin', 'translation']);
   
   // Add error handling for context usage
   let userInformation, setUserInformation, updateUserInformation;
@@ -146,52 +144,52 @@ const AdminLayout = ({ children }) => {
     localStorage.setItem("admin-theme", isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
-  // Navigation items with translations
+  // Navigation items with French text
   const navigationItems = [
     {
-      name: t("navigation.dashboard", { ns: 'admin' }),
+      name: "Tableau de bord",
       href: "/admin",
       icon: FiHome,
       current: location.pathname === "/admin" || location.pathname === "/admin/dashboard",
     },
     {
-      name: t("navigation.restaurants", { ns: 'admin' }),
+      name: "Restaurants",
       href: "/admin/restaurants",
       icon: FiShoppingBag,
       current: location.pathname.startsWith("/admin/restaurants"),
     },
     {
-      name: t("navigation.users", { ns: 'admin' }),
+      name: "Utilisateurs",
       href: "/admin/users",
       icon: FiUsers,
       current: location.pathname.startsWith("/admin/users") || location.pathname.startsWith("/admin/user"),
     },
     {
-      name: t("navigation.delivery", { ns: 'admin' }),
+      name: "Livraison",
       href: "/admin/delivery",
       icon: FiTruck,
       current: location.pathname.startsWith("/admin/delivery"),
     },
     {
-      name: t("navigation.orders", { ns: 'admin' }),
+      name: "Commandes",
       href: "/admin/orders",
       icon: FiShoppingBag,
       current: location.pathname.startsWith("/admin/orders"),
     },
     {
-      name: t("navigation.contactMessages", { ns: 'admin' }),
+      name: "Messages de contact",
       href: "/admin/contact-messages",
       icon: FiMessageSquare,
       current: location.pathname.startsWith("/admin/contact-messages"),
     },
     {
-      name: t("navigation.statistics", { ns: 'admin' }),
+      name: "Statistiques",
       href: "/admin/statistics",
       icon: FiBarChart2,
       current: location.pathname.startsWith("/admin/statistics"),
     },
     {
-      name: t("navigation.promotion", { ns: 'admin' }),
+      name: "Promotions",
       href: "/admin/promotion",
       icon: FiTag,
       current: location.pathname.startsWith("/admin/promotion"),
@@ -330,7 +328,7 @@ const AdminLayout = ({ children }) => {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={t("common.search", { ns: 'translation' })}
+                      placeholder="Rechercher..."
                       className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </form>
@@ -343,7 +341,7 @@ const AdminLayout = ({ children }) => {
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
                   className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                  aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+                  aria-label={isDarkMode ? "Passer au mode clair" : "Passer au mode sombre"}
                 >
                   {isDarkMode ? (
                     <HiOutlineSun size={20} />
@@ -357,7 +355,7 @@ const AdminLayout = ({ children }) => {
                   <button
                     onClick={() => setShowNotifications(!showNotifications)}
                     className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 relative"
-                    aria-label="Show notifications"
+                    aria-label="Afficher les notifications"
                   >
                     <FiBell size={20} />
                     {notifications.length > 0 && (
@@ -372,13 +370,13 @@ const AdminLayout = ({ children }) => {
                     <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
                       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                          {t("common.notifications", { ns: 'translation' })}
+                          Notifications
                         </h3>
                       </div>
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.length === 0 ? (
                           <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                            {t("common.noData", { ns: 'translation' })}
+                            Aucune notification
                           </div>
                         ) : (
                           notifications.map((notification, index) => (
@@ -421,8 +419,8 @@ const AdminLayout = ({ children }) => {
                 <button
                   onClick={logout}
                   className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
-                  title={t("navigation.logout", { ns: 'admin' })}
-                  aria-label="Logout"
+                  title="Déconnexion"
+                  aria-label="Déconnexion"
                 >
                   <FiLogOut size={20} />
                 </button>

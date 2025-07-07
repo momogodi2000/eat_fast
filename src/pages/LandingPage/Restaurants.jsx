@@ -468,7 +468,7 @@ const Navigation = ({ darkMode, toggleTheme }) => {
             {[
               { name: 'Accueil', href: '/', active: false },
               { name: 'Partenaires', href: '/restaurants', active: true },
-              { name: 'Devenir Partenaire', href: '/partner', active: false },
+              { name: 'Devenir Partenaire', href: '/become', active: false },
               { name: 'À propos', href: '/about', active: false }
             ].map((item) => (
               <a 

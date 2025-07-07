@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiX, FiUser, FiMail, FiPhone, FiMapPin, FiShield, FiFileText,
@@ -192,7 +191,6 @@ const DocumentStatusBadge = ({ status }) => {
 };
 
 const UserDetailsPage = ({ user, isOpen, onClose, onEdit, onDocumentReview }) => {
-  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
 
   const formatDate = (date) => {

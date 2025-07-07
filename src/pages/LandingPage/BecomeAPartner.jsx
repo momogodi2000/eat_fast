@@ -1217,7 +1217,7 @@ const BecomeAPartner = () => {
             {['home', 'restaurants', 'about', 'contact'].map((item) => (
               <a
                 key={item}
-                href={`/${item}`}
+                href={item === 'home' ? '/' : `/${item}`}
                 className="font-medium hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors duration-200 relative group"
               >
                 {t(`nav.${item}`)}
@@ -1277,7 +1277,7 @@ const BecomeAPartner = () => {
                 {['home', 'restaurants', 'about', 'contact'].map((item) => (
                   <a
                     key={item}
-                    href={`/${item}`}
+                    href={item === 'home' ? '/' : `/${item}`}
                     className="block py-2 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
                     {t(`nav.${item}`)}

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiX, FiUser, FiMail, FiPhone, FiMapPin, FiShield, FiFileText,
@@ -195,7 +194,6 @@ const FileUploadComponent = ({
 };
 
 const UserFormPage = ({ user, isOpen, onClose, onSubmit, showNotification }) => {
-  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
