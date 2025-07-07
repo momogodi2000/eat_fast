@@ -80,10 +80,6 @@ const ClientsLayout = lazy(() => import("./layouts/clients_layout"));
 const DeliveryLayout = lazy(() => import("./layouts/delivery_layout"));
 const RestaurantLayoutWithProviders = lazy(() => import("./layouts/restaurants_layout"));
 const AdminLayout = lazy(() => import("./layouts/admin_layout"));
-const AdminRestaurantProvider = lazy(() => 
-  import("./pages/Dashboards/Admin/Restaurants/RestaurantsList")
-    .then(module => ({ default: module.AdminRestaurantProvider }))
-);
 
 // Common components
 const DashboardRedirect = lazy(() => import("./components/CommonShare/test"));
@@ -191,16 +187,14 @@ function App() {
                 <Route path="/refund" element={<TermsAndConditions />} />
                 <Route path="/safety" element={<FoodSafety />} />
 
-                {/* Admin Routes - Individual routes with AdminLayout */}
+                {/* Admin Routes - Simplified without AdminRestaurantProvider */}
                 <Route
                   path="/admin"
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminDashboard />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <AdminLayout>
+                        <AdminDashboard />
+                      </AdminLayout>
                     </UserInformationProvider>
                   }
                 />
@@ -208,11 +202,7 @@ function App() {
                   path="/admin/dashboard"
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminDashboard />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <AdminDashboard />
                     </UserInformationProvider>
                   }
                 />
@@ -220,11 +210,7 @@ function App() {
                   path="/admin/users" 
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <UserListPage />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <UserListPage />
                     </UserInformationProvider>
                   } 
                 />
@@ -232,11 +218,7 @@ function App() {
                   path="/admin/user" 
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <UserListPage />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <UserListPage />
                     </UserInformationProvider>
                   } 
                 />
@@ -244,11 +226,7 @@ function App() {
                   path="/admin/restaurants" 
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <RestaurantManagement />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <RestaurantManagement />
                     </UserInformationProvider>
                   } 
                 />
@@ -256,11 +234,7 @@ function App() {
                   path="/admin/contact-messages" 
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminContactMessages />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <AdminContactMessages />
                     </UserInformationProvider>
                   } 
                 />
@@ -268,11 +242,7 @@ function App() {
                   path="/admin/orders" 
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminOrdersPage />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <AdminOrdersPage />
                     </UserInformationProvider>
                   } 
                 />
@@ -280,11 +250,7 @@ function App() {
                   path="/admin/statistics" 
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <StatisticsPage />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <StatisticsPage />
                     </UserInformationProvider>
                   } 
                 />
@@ -292,11 +258,7 @@ function App() {
                   path="/admin/delivery" 
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <AdminDeliveryManagement />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <AdminDeliveryManagement />
                     </UserInformationProvider>
                   } 
                 />
@@ -304,11 +266,7 @@ function App() {
                   path="/admin/promotion" 
                   element={
                     <UserInformationProvider>
-                      <AdminRestaurantProvider>
-                        <AdminLayout>
-                          <PromotionManagement />
-                        </AdminLayout>
-                      </AdminRestaurantProvider>
+                      <PromotionManagement />
                     </UserInformationProvider>
                   } 
                 />

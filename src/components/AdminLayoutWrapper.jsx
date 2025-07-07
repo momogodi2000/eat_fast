@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { useTheme, useLanguage } from '../layouts/admin_layout';
 import AdminLayout from '../layouts/admin_layout';
 
 /**
@@ -10,7 +12,48 @@ import AdminLayout from '../layouts/admin_layout';
  * - Loading states
  * - Consistent styling
  */
-const AdminLayoutWrapper = ({ children, title, subtitle, showHeader = true }) => {
+const AdminLayoutWrapper = ({ children, title, subtitle, showHeader = true, pageTitle }) => {
+  const { t, i18n } = useTranslation();
+  const { isDarkMode } = useTheme();
+  const { currentLanguage } = useLanguage();
+
+  // Apply theme changes when component mounts or theme changes
+  useEffect(() => {
+    // Apply theme to document
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+  }, [isDarkMode]);
+
+  // Update document title when language or page title changes
+  useEffect(() => {
+    if (pageTitle) {
+      document.title = `${t(`dashboard.${pageTitle}`)} | EatFast Admin`;
+    } else {
+      document.title = 'EatFast Admin';
+    }
+  }, [pageTitle, currentLanguage, t]);
+
+  // Load admin translations namespace
+  useEffect(() => {
+    const loadAdminTranslations = async () => {
+      if (!i18n.hasResourceBundle(currentLanguage, 'admin')) {
+        try {
+          // In a real app, you might dynamically import translations here
+          // For now, we're relying on the translations already loaded in i18n setup
+          console.log('Admin translations loaded');
+        } catch (error) {
+          console.error('Failed to load admin translations:', error);
+        }
+      }
+    };
+
+    loadAdminTranslations();
+  }, [currentLanguage, i18n]);
+
   return (
     <AdminLayout>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

@@ -50,7 +50,7 @@ export const useLanguage = () => {
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation(['admin', 'translation']);
   
   // Add error handling for context usage
   let userInformation, setUserInformation, updateUserInformation;
@@ -97,7 +97,7 @@ const AdminLayout = ({ children }) => {
   // State management
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [currentLanguage, setCurrentLanguage] = useState("fr");
+  const [currentLanguage, setCurrentLanguage] = useState(i18n.language || "fr");
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -133,8 +133,9 @@ const AdminLayout = ({ children }) => {
     
     if (savedLanguage) {
       setCurrentLanguage(savedLanguage);
+      i18n.changeLanguage(savedLanguage);
     }
-  }, []);
+  }, [i18n]);
 
   // Apply theme to document
   useEffect(() => {
@@ -150,49 +151,49 @@ const AdminLayout = ({ children }) => {
   // Navigation items with translations
   const navigationItems = [
     {
-      name: t("navigation.dashboard"),
+      name: t("navigation.dashboard", { ns: 'admin' }),
       href: "/admin",
       icon: FiHome,
       current: location.pathname === "/admin" || location.pathname === "/admin/dashboard",
     },
     {
-      name: t("navigation.restaurants"),
+      name: t("navigation.restaurants", { ns: 'admin' }),
       href: "/admin/restaurants",
       icon: FiShoppingBag,
       current: location.pathname.startsWith("/admin/restaurants"),
     },
     {
-      name: t("navigation.users"),
+      name: t("navigation.users", { ns: 'admin' }),
       href: "/admin/users",
       icon: FiUsers,
       current: location.pathname.startsWith("/admin/users") || location.pathname.startsWith("/admin/user"),
     },
     {
-      name: t("navigation.delivery"),
+      name: t("navigation.delivery", { ns: 'admin' }),
       href: "/admin/delivery",
       icon: FiTruck,
       current: location.pathname.startsWith("/admin/delivery"),
     },
     {
-      name: t("navigation.orders"),
+      name: t("navigation.orders", { ns: 'admin' }),
       href: "/admin/orders",
       icon: FiShoppingBag,
       current: location.pathname.startsWith("/admin/orders"),
     },
     {
-      name: t("navigation.contactMessages"),
+      name: t("navigation.contactMessages", { ns: 'admin' }),
       href: "/admin/contact-messages",
       icon: FiMessageSquare,
       current: location.pathname.startsWith("/admin/contact-messages"),
     },
     {
-      name: t("navigation.statistics"),
+      name: t("navigation.statistics", { ns: 'admin' }),
       href: "/admin/statistics",
       icon: FiBarChart2,
       current: location.pathname.startsWith("/admin/statistics"),
     },
     {
-      name: t("navigation.promotion"),
+      name: t("navigation.promotion", { ns: 'admin' }),
       href: "/admin/promotion",
       icon: FiTag,
       current: location.pathname.startsWith("/admin/promotion"),
@@ -203,7 +204,7 @@ const AdminLayout = ({ children }) => {
   const handleLanguageChange = (language) => {
     setCurrentLanguage(language);
     localStorage.setItem("admin-language", language);
-    // You can add i18n language change logic here
+    i18n.changeLanguage(language);
   };
 
   // Handle search
@@ -217,17 +218,19 @@ const AdminLayout = ({ children }) => {
   const themeContextValue = {
     isDarkMode,
     setIsDarkMode,
+    toggleTheme: () => setIsDarkMode(prev => !prev)
   };
 
   const languageContextValue = {
     currentLanguage,
     setCurrentLanguage: handleLanguageChange,
+    toggleLanguage: () => handleLanguageChange(currentLanguage === "fr" ? "en" : "fr")
   };
 
   return (
     <ThemeContext.Provider value={themeContextValue}>
       <LanguageContext.Provider value={languageContextValue}>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
           {/* Mobile sidebar overlay */}
           {sidebarOpen && (
             <div
@@ -343,7 +346,7 @@ const AdminLayout = ({ children }) => {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder={t("common.search")}
+                        placeholder={t("common.search", { ns: 'translation' })}
                         className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                       />
                     </form>
@@ -364,6 +367,7 @@ const AdminLayout = ({ children }) => {
                   <button
                     onClick={() => setIsDarkMode(!isDarkMode)}
                     className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                    aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
                   >
                     {isDarkMode ? (
                       <HiOutlineSun size={20} />
@@ -377,6 +381,7 @@ const AdminLayout = ({ children }) => {
                     <button
                       onClick={() => setShowNotifications(!showNotifications)}
                       className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 relative"
+                      aria-label="Show notifications"
                     >
                       <FiBell size={20} />
                       {notifications.length > 0 && (
@@ -391,13 +396,13 @@ const AdminLayout = ({ children }) => {
                       <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
                         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                           <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                            {t("common.notifications")}
+                            {t("common.notifications", { ns: 'translation' })}
                           </h3>
                         </div>
                         <div className="max-h-96 overflow-y-auto">
                           {notifications.length === 0 ? (
                             <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                              {t("common.noData")}
+                              {t("common.noData", { ns: 'translation' })}
                             </div>
                           ) : (
                             notifications.map((notification, index) => (
@@ -440,7 +445,8 @@ const AdminLayout = ({ children }) => {
                   <button
                     onClick={logout}
                     className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
-                    title={t("navigation.logout")}
+                    title={t("navigation.logout", { ns: 'admin' })}
+                    aria-label="Logout"
                   >
                     <FiLogOut size={20} />
                   </button>
