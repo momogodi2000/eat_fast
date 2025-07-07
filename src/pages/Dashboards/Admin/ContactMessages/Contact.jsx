@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { 
   FiTrash2, 
   FiMessageSquare, 
@@ -184,7 +183,6 @@ L'équipe EatFast vous attend !`,
 ];
 
 const AdminContactMessages = () => {
-  const { t } = useTranslation(['admin', 'translation']);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('contact');
   const [messages, setMessages] = useState([]);
@@ -238,7 +236,7 @@ const AdminContactMessages = () => {
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [dateFilter, setDateFilter] = useState('all');
   const [showComposeModal, setShowComposeModal] = useState(false);
-
+  
   // Define tabs for message filtering
   const tabs = [
     { id: 'all', name: 'Tous' },
@@ -732,10 +730,10 @@ const AdminContactMessages = () => {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-              {t('contactMessages.title', { ns: 'admin' })}
+              Messages de contact
             </h1>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {t('contactMessages.subtitle', { ns: 'admin' })}
+              Gérer les messages de contact et les demandes des utilisateurs
             </p>
           </div>
           <div className="mt-4 md:mt-0 flex flex-wrap gap-3">
@@ -744,14 +742,14 @@ const AdminContactMessages = () => {
               onClick={handleRefresh}
             >
               <FiRefreshCw className={isRefreshing ? "animate-spin" : ""} />
-              {t('common.refresh', { ns: 'translation' })}
+              Actualiser
             </button>
             <button
               className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 transition-colors duration-200"
               onClick={() => setShowComposeModal(true)}
             >
               <FiSend />
-              {t('common.compose', { ns: 'translation' })}
+              Composer
             </button>
             <button
               className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center gap-2 transition-colors duration-200"
@@ -759,7 +757,7 @@ const AdminContactMessages = () => {
               disabled={selectedMessages.length === 0}
             >
               <FiTrash2 />
-              {t('contactMessages.deleteSelected', { ns: 'admin' })}
+              Supprimer la sélection
             </button>
           </div>
         </div>
@@ -802,7 +800,7 @@ const AdminContactMessages = () => {
               </div>
               <input
                 type="text"
-                placeholder={t('common.search', { ns: 'translation' })}
+                placeholder="Rechercher..."
                 className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -817,7 +815,7 @@ const AdminContactMessages = () => {
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
               >
                 <FiTag />
-                {t('common.category', { ns: 'translation' })}
+                Catégorie
                 {showCategoryFilter ? <FiChevronUp /> : <FiChevronDown />}
               </button>
               {showCategoryFilter && (
@@ -848,7 +846,7 @@ const AdminContactMessages = () => {
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
               >
                 <FiActivity />
-                {t('common.status', { ns: 'translation' })}
+                Statut
                 {showStatusFilter ? <FiChevronUp /> : <FiChevronDown />}
               </button>
               {showStatusFilter && (
@@ -879,7 +877,7 @@ const AdminContactMessages = () => {
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
               >
                 <FiCalendar />
-                {t('common.date', { ns: 'translation' })}
+                Date
                 {showDateFilter ? <FiChevronUp /> : <FiChevronDown />}
               </button>
               {showDateFilter && (
@@ -909,7 +907,7 @@ const AdminContactMessages = () => {
               className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
             >
               <FiX />
-              {t('common.reset', { ns: 'translation' })}
+              Réinitialiser
             </button>
           </div>
         </div>
@@ -920,7 +918,7 @@ const AdminContactMessages = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-blue-500 transition-colors duration-200">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.totalMessages', { ns: 'admin' })}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total des messages</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredMessages.length}</p>
             </div>
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -932,7 +930,7 @@ const AdminContactMessages = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-yellow-500 transition-colors duration-200">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.unreadMessages', { ns: 'admin' })}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Messages non lus</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{unreadCount}</p>
             </div>
             <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
@@ -944,7 +942,7 @@ const AdminContactMessages = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-red-500 transition-colors duration-200">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.pendingMessages', { ns: 'admin' })}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Messages en attente</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{pendingCount}</p>
             </div>
             <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
@@ -956,7 +954,7 @@ const AdminContactMessages = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-green-500 transition-colors duration-200">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.answeredMessages', { ns: 'admin' })}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Messages répondus</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{answeredCount}</p>
             </div>
             <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">

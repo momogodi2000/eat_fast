@@ -109,13 +109,30 @@ const AdminLayout = ({ children }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Initialize theme from localStorage
+  // Initialize theme from localStorage or system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem("admin-theme");
     
     if (savedTheme) {
       setIsDarkMode(savedTheme === "dark");
+    } else {
+      // Check system preference
+      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setIsDarkMode(prefersDarkMode);
+      localStorage.setItem("admin-theme", prefersDarkMode ? "dark" : "light");
     }
+
+    // Add listener for system theme changes
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleThemeChange = (e) => {
+      if (!localStorage.getItem("admin-theme")) {
+        setIsDarkMode(e.matches);
+        localStorage.setItem("admin-theme", e.matches ? "dark" : "light");
+      }
+    };
+    
+    darkModeMediaQuery.addEventListener('change', handleThemeChange);
+    return () => darkModeMediaQuery.removeEventListener('change', handleThemeChange);
   }, []);
 
   // Apply theme to document
