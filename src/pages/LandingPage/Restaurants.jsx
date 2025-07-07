@@ -565,53 +565,122 @@ const Navigation = ({ darkMode, toggleTheme }) => {
 };
 
 const SearchAndFilters = ({ searchQuery, setSearchQuery, selectedCategory, setSelectedCategory }) => {
+  const [showAllCategories, setShowAllCategories] = useState(false);
+  
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Search Bar */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="relative max-w-3xl mx-auto"
       >
-        <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-400" size={22} />
+        <Search className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Rechercher par nom, spécialité, quartier, type de cuisine..."
-          className="w-full pl-16 pr-6 py-5 text-lg rounded-2xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-green-500 focus:outline-none shadow-xl transition-all"
+          placeholder="Rechercher par nom, spécialité, quartier..."
+          className="w-full pl-12 md:pl-16 pr-4 md:pr-6 py-3 md:py-5 text-base md:text-lg rounded-xl md:rounded-2xl bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 focus:border-green-500 focus:outline-none shadow-xl transition-all"
         />
       </motion.div>
       
-      {/* Categories */}
+      {/* Categories - Mobile First Approach */}
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
-        className="flex justify-center"
+        className="w-full"
       >
-        <div className="flex overflow-x-auto pb-4 hide-scrollbar gap-4 max-w-6xl">
-          {mockData.categories.map((category) => (
-            <motion.button
-              key={category.id}
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setSelectedCategory(category.id)}
-              className={`flex flex-col items-center gap-2 px-6 py-4 rounded-2xl whitespace-nowrap font-medium transition-all min-w-[140px] ${
-                selectedCategory === category.id 
-                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-xl shadow-green-500/25' 
-                  : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-2 border-gray-200 dark:border-gray-700 hover:border-green-300 shadow-lg'
-              }`}
-            >
-              <span className="text-2xl">{category.icon}</span>
-              <div className="text-center">
-                <div className="font-semibold">{category.name}</div>
-                <div className={`text-xs ${selectedCategory === category.id ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>
-                  {category.description}
+        {/* Mobile: Grid Layout */}
+        <div className="block sm:hidden">
+          <div className="grid grid-cols-2 gap-3 px-4">
+            {mockData.categories.slice(0, showAllCategories ? mockData.categories.length : 4).map((category) => (
+              <motion.button
+                key={category.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`flex flex-col items-center gap-2 p-3 rounded-xl font-medium transition-all ${
+                  selectedCategory === category.id 
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg' 
+                    : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 shadow-md'
+                }`}
+              >
+                <span className="text-xl">{category.icon}</span>
+                <div className="text-center">
+                  <div className="text-xs font-semibold leading-tight">{category.name}</div>
                 </div>
-              </div>
+              </motion.button>
+            ))}
+          </div>
+          
+          {/* Show More/Less Button for Mobile */}
+          {mockData.categories.length > 4 && (
+            <motion.button
+              onClick={() => setShowAllCategories(!showAllCategories)}
+              className="w-full mt-3 py-2 text-sm font-medium text-green-600 hover:text-green-700 transition-colors"
+              whileHover={{ scale: 1.02 }}
+            >
+              {showAllCategories ? 'Voir moins' : `Voir plus (+${mockData.categories.length - 4})`}
             </motion.button>
-          ))}
+          )}
+        </div>
+
+        {/* Tablet: Horizontal Scroll */}
+        <div className="hidden sm:block lg:hidden">
+          <div className="overflow-x-auto pb-2">
+            <div className="flex gap-3 px-4 min-w-max">
+              {mockData.categories.map((category) => (
+                <motion.button
+                  key={category.id}
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`flex flex-col items-center gap-2 px-4 py-3 rounded-xl whitespace-nowrap font-medium transition-all min-w-[120px] ${
+                    selectedCategory === category.id 
+                      ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-xl shadow-green-500/25' 
+                      : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700 shadow-lg'
+                  }`}
+                >
+                  <span className="text-xl">{category.icon}</span>
+                  <div className="text-center">
+                    <div className="text-sm font-semibold">{category.name}</div>
+                    <div className={`text-xs leading-tight ${selectedCategory === category.id ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                      {category.description.length > 20 ? category.description.slice(0, 20) + '...' : category.description}
+                    </div>
+                  </div>
+                </motion.button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Desktop: Full Layout */}
+        <div className="hidden lg:flex justify-center">
+          <div className="grid grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-4 max-w-7xl">
+            {mockData.categories.map((category) => (
+              <motion.button
+                key={category.id}
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`flex flex-col items-center gap-3 px-4 py-4 rounded-2xl font-medium transition-all ${
+                  selectedCategory === category.id 
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-xl shadow-green-500/25' 
+                    : 'bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-2 border-gray-200 dark:border-gray-700 hover:border-green-300 shadow-lg'
+                }`}
+              >
+                <span className="text-2xl">{category.icon}</span>
+                <div className="text-center">
+                  <div className="font-semibold text-sm lg:text-base">{category.name}</div>
+                  <div className={`text-xs leading-tight ${selectedCategory === category.id ? 'text-green-100' : 'text-gray-500 dark:text-gray-400'}`}>
+                    {category.description}
+                  </div>
+                </div>
+              </motion.button>
+            ))}
+          </div>
         </div>
       </motion.div>
     </div>
