@@ -40,15 +40,9 @@ import {
   CartesianGrid
 } from 'recharts';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../../i18n';
 
 // Constants
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
-
-// Set default language to French
-useEffect(() => {
-  i18n.changeLanguage('fr');
-}, []);
 
 // Mock data for admin dashboard
 const mockRestaurants = [
@@ -122,11 +116,6 @@ const AdminDashboard = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
-
-  // Set default language to French
-  useEffect(() => {
-    i18n.changeLanguage('fr');
-  }, []);
 
   // Use mock data instead of contexts
   const listOfRestaurants = mockRestaurants;

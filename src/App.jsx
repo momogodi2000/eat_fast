@@ -1,6 +1,6 @@
 // src/App.jsx
 import React, { Suspense, lazy } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Toaster } from "react-hot-toast";
@@ -188,88 +188,24 @@ function App() {
                 <Route path="/safety" element={<FoodSafety />} />
 
                 {/* Admin Routes - Simplified without AdminRestaurantProvider */}
-                <Route
-                  path="/admin"
-                  element={
-                    <UserInformationProvider>
-                      <AdminLayout>
-                        <AdminDashboard />
-                      </AdminLayout>
-                    </UserInformationProvider>
-                  }
-                />
-                <Route
-                  path="/admin/dashboard"
-                  element={
-                    <UserInformationProvider>
-                      <AdminDashboard />
-                    </UserInformationProvider>
-                  }
-                />
-                <Route 
-                  path="/admin/users" 
-                  element={
-                    <UserInformationProvider>
-                      <UserListPage />
-                    </UserInformationProvider>
-                  } 
-                />
-                <Route 
-                  path="/admin/user" 
-                  element={
-                    <UserInformationProvider>
-                      <UserListPage />
-                    </UserInformationProvider>
-                  } 
-                />
-                <Route 
-                  path="/admin/restaurants" 
-                  element={
-                    <UserInformationProvider>
-                      <RestaurantManagement />
-                    </UserInformationProvider>
-                  } 
-                />
-                <Route 
-                  path="/admin/contact-messages" 
-                  element={
-                    <UserInformationProvider>
-                      <AdminContactMessages />
-                    </UserInformationProvider>
-                  } 
-                />
-                <Route 
-                  path="/admin/orders" 
-                  element={
-                    <UserInformationProvider>
-                      <AdminOrdersPage />
-                    </UserInformationProvider>
-                  } 
-                />
-                <Route 
-                  path="/admin/statistics" 
-                  element={
-                    <UserInformationProvider>
-                      <StatisticsPage />
-                    </UserInformationProvider>
-                  } 
-                />
-                <Route 
-                  path="/admin/delivery" 
-                  element={
-                    <UserInformationProvider>
-                      <AdminDeliveryManagement />
-                    </UserInformationProvider>
-                  } 
-                />
-                <Route 
-                  path="/admin/promotion" 
-                  element={
-                    <UserInformationProvider>
-                      <PromotionManagement />
-                    </UserInformationProvider>
-                  } 
-                />
+                <Route path="/admin" element={
+                  <UserInformationProvider>
+                    <AdminLayout>
+                      <Outlet />
+                    </AdminLayout>
+                  </UserInformationProvider>
+                }>
+                  <Route index element={<AdminDashboard />} />
+                  <Route path="dashboard" element={<AdminDashboard />} />
+                  <Route path="users" element={<UserListPage />} />
+                  <Route path="user" element={<UserListPage />} />
+                  <Route path="restaurants" element={<RestaurantManagement />} />
+                  <Route path="contact-messages" element={<AdminContactMessages />} />
+                  <Route path="orders" element={<AdminOrdersPage />} />
+                  <Route path="statistics" element={<StatisticsPage />} />
+                  <Route path="delivery" element={<AdminDeliveryManagement />} />
+                  <Route path="promotion" element={<PromotionManagement />} />
+                </Route>
 
                 {/* Agent Support Routes */}
                 <Route

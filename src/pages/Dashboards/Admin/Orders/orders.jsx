@@ -31,7 +31,106 @@ import {
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { useTranslation } from 'react-i18next';
-import i18n from '../../../../i18n';
+
+// Status Badge Component
+const StatusBadge = ({ status }) => {
+  const getStatusInfo = (status) => {
+    switch (status) {
+      case 'pending':
+        return { 
+          label: 'En attente', 
+          color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+          icon: <FiClock className="mr-1" />
+        };
+      case 'preparing':
+        return { 
+          label: 'En préparation', 
+          color: 'bg-blue-100 text-blue-800 border-blue-200',
+          icon: <FiActivity className="mr-1" />
+        };
+      case 'delivering':
+        return { 
+          label: 'En livraison', 
+          color: 'bg-purple-100 text-purple-800 border-purple-200',
+          icon: <FiTruck className="mr-1" />
+        };
+      case 'completed':
+        return { 
+          label: 'Livré', 
+          color: 'bg-green-100 text-green-800 border-green-200',
+          icon: <FiCheckCircle className="mr-1" />
+        };
+      case 'cancelled':
+        return { 
+          label: 'Annulé', 
+          color: 'bg-red-100 text-red-800 border-red-200',
+          icon: <FiXCircle className="mr-1" />
+        };
+      default:
+        return { 
+          label: 'Inconnu', 
+          color: 'bg-gray-100 text-gray-800 border-gray-200',
+          icon: <FiAlertTriangle className="mr-1" />
+        };
+    }
+  };
+
+  const { label, color, icon } = getStatusInfo(status);
+
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${color}`}>
+      {icon}
+      {label}
+    </span>
+  );
+};
+
+// Payment Badge Component
+const PaymentBadge = ({ status }) => {
+  const getStatusInfo = (status) => {
+    switch (status) {
+      case 'completed':
+        return { 
+          label: 'Payé', 
+          color: 'bg-green-100 text-green-800 border-green-200',
+          icon: <FiCheckCircle className="mr-1" />
+        };
+      case 'pending':
+        return { 
+          label: 'En attente', 
+          color: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+          icon: <FiClock className="mr-1" />
+        };
+      case 'failed':
+        return { 
+          label: 'Échoué', 
+          color: 'bg-red-100 text-red-800 border-red-200',
+          icon: <FiXCircle className="mr-1" />
+        };
+      case 'refunded':
+        return { 
+          label: 'Remboursé', 
+          color: 'bg-blue-100 text-blue-800 border-blue-200',
+          icon: <FiActivity className="mr-1" />
+        };
+      default:
+        return { 
+          label: 'Inconnu', 
+          color: 'bg-gray-100 text-gray-800 border-gray-200',
+          icon: <FiAlertTriangle className="mr-1" />
+        };
+    }
+  };
+
+  const { label, color, icon } = getStatusInfo(status);
+
+  return (
+    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${color}`}>
+      {icon}
+      {label}
+    </span>
+  );
+};
 
 const AdminOrdersPage = () => {
   const { t } = useTranslation(['admin', 'translation']);
@@ -59,11 +158,6 @@ const AdminOrdersPage = () => {
   const [showDateFilter, setShowDateFilter] = useState(false);
   const [dateFilter, setDateFilter] = useState('all');
   const [isRefreshing, setIsRefreshing] = useState(false);
-
-  // Set default language to French
-  useEffect(() => {
-    i18n.changeLanguage('fr');
-  }, []);
 
   // Mock data for demonstration purposes
   const mockOrders = useMemo(() => [

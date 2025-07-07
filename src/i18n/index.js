@@ -2,6 +2,7 @@
 import i18n from 'i18next';
 import { initReactI18next, useTranslation } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import Backend from 'i18next-http-backend';
 
 // Import translations
 import enTranslation from './locales/en/translation.json';
@@ -396,7 +397,8 @@ const resources = {
         trackOrder: 'Track Order',
         continueShopping: 'Continue Shopping'
       }
-    }
+    },
+    admin: enAdmin
   },
   fr: {
     translation: {
@@ -777,7 +779,8 @@ const resources = {
         trackOrder: 'Suivre la Commande',
         continueShopping: 'Continuer les Achats'
       }
-    }
+    },
+    admin: frAdmin
   }
 };
 
@@ -796,22 +799,24 @@ const initializeGeminiService = async () => {
 
 // Initialize i18n
 i18n
+  .use(Backend)
   .use(LanguageDetector)
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'en',
+    fallbackLng: 'fr',
+    lng: 'fr', // Set French as default language
     debug: false,
     interpolation: {
       escapeValue: false,
     },
-    detection: {
-      order: ['localStorage', 'navigator', 'htmlTag'],
-      caches: ['localStorage'],
-    },
     react: {
-      useSuspense: false,
+      useSuspense: true,
     },
+    detection: {
+      order: ['localStorage', 'navigator'],
+      caches: ['localStorage'],
+    }
   });
 
 // Initialize Gemini service after i18n is ready

@@ -47,11 +47,10 @@ import {
   FiFlag, 
   FiMeh, 
   FiSmile, 
-  FiHelpCircle
+  FiHelpCircle,
+  FiCheckCircle
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
-import AdminLayoutWrapper from '../../../../components/AdminLayoutWrapper';
-import { useTheme } from '../../../../layouts/admin_layout';
 
 // Données fictives pour les messages de contact
 const MOCK_CONTACT_MESSAGES = [
@@ -186,13 +185,13 @@ L'équipe EatFast vous attend !`,
 
 const AdminContactMessages = () => {
   const { t } = useTranslation(['admin', 'translation']);
-  const { isDarkMode } = useTheme();
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('contact');
   const [messages, setMessages] = useState([]);
   const [filteredMessages, setFilteredMessages] = useState([]);
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState('all');
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [replyContent, setReplyContent] = useState('');
@@ -228,6 +227,134 @@ const AdminContactMessages = () => {
     clickRate: 15,
     bounceRate: 3
   });
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedMessages, setSelectedMessages] = useState([]);
+  const [currentMessage, setCurrentMessage] = useState(null);
+  const [showMessageDetail, setShowMessageDetail] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("newest");
+  const [showCategoryFilter, setShowCategoryFilter] = useState(false);
+  const [showStatusFilter, setShowStatusFilter] = useState(false);
+  const [showDateFilter, setShowDateFilter] = useState(false);
+  const [dateFilter, setDateFilter] = useState('all');
+  const [showComposeModal, setShowComposeModal] = useState(false);
+
+  // Define tabs for message filtering
+  const tabs = [
+    { id: 'all', name: 'Tous' },
+    { id: 'unread', name: 'Non lus' },
+    { id: 'read', name: 'Lus' },
+    { id: 'flagged', name: 'Signalés' },
+    { id: 'archived', name: 'Archivés' }
+  ];
+
+  // Category options
+  const categoryOptions = {
+    'all': 'Toutes les catégories',
+    'delivery': 'Livraison',
+    'complaint': 'Réclamation',
+    'suggestion': 'Suggestion',
+    'business': 'Entreprise',
+    'recruitment': 'Recrutement',
+    'other': 'Autre'
+  };
+
+  // Status options
+  const statusOptions = {
+    'all': 'Tous les statuts',
+    'pending': 'En attente',
+    'answered': 'Répondu',
+    'urgent': 'Urgent',
+    'imported': 'Importé'
+  };
+
+  // Date filter options
+  const dateFilterOptions = [
+    { value: 'all', label: 'Toutes les dates' },
+    { value: 'today', label: 'Aujourd\'hui' },
+    { value: 'week', label: 'Cette semaine' },
+    { value: 'month', label: 'Ce mois' },
+    { value: 'year', label: 'Cette année' }
+  ];
+
+  // Reset all filters
+  const resetFilters = () => {
+    setSearchTerm('');
+    setFilterStatus('all');
+    setFilterCategory('all');
+    setDateFilter('all');
+    setShowCategoryFilter(false);
+    setShowStatusFilter(false);
+    setShowDateFilter(false);
+  };
+
+  // Close message details
+  const closeMessageDetails = () => {
+    setSelectedMessage(null);
+    setShowReplyForm(false);
+  };
+
+  // Count for stats
+  const unreadCount = useMemo(() => messages.filter(m => !m.isRead).length, [messages]);
+  const pendingCount = useMemo(() => messages.filter(m => m.status === 'pending').length, [messages]);
+  const answeredCount = useMemo(() => messages.filter(m => m.status === 'answered').length, [messages]);
+
+  // Check for dark mode from system or localStorage
+  useEffect(() => {
+    const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const savedTheme = localStorage.getItem('admin-theme');
+    
+    if (savedTheme) {
+      setIsDarkMode(savedTheme === 'dark');
+    } else {
+      setIsDarkMode(darkModeMediaQuery.matches);
+    }
+    
+    const handleChange = (e) => {
+      if (!savedTheme) {
+        setIsDarkMode(e.matches);
+      }
+    };
+    
+    darkModeMediaQuery.addEventListener('change', handleChange);
+    return () => darkModeMediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
+  // Handle refresh button click
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    
+    // Simulate API call
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setMessages(MOCK_CONTACT_MESSAGES);
+      setEmailStats(prev => ({
+        ...prev,
+        totalEmails: MOCK_CONTACT_MESSAGES.length
+      }));
+      setIsLoading(false);
+      showNotification('success', 'Messages actualisés avec succès');
+    } catch (error) {
+      showNotification('error', 'Erreur lors de l\'actualisation des messages');
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  // Handle delete selected messages
+  const handleDeleteSelected = useCallback(() => {
+    const selectedCount = messages.filter(msg => msg.isSelected).length;
+    
+    if (selectedCount === 0) {
+      showNotification('error', 'Aucun message sélectionné');
+      return;
+    }
+    
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer ${selectedCount} message(s) ?`)) {
+      setMessages(prev => prev.filter(msg => !msg.isSelected));
+      showNotification('success', `${selectedCount} message(s) supprimé(s)`);
+    }
+  }, [messages]);
 
   // Charger les messages au montage du composant
   useEffect(() => {
@@ -599,299 +726,297 @@ const AdminContactMessages = () => {
   }, [notification]);
 
   return (
-    <AdminLayoutWrapper pageTitle="contactMessages">
-      <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
-        {/* Header */}
-        <div className="mb-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                {t('contactMessages.title', { ns: 'admin' })}
-              </h1>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                {t('contactMessages.subtitle', { ns: 'admin' })}
-              </p>
-            </div>
-            <div className="mt-4 md:mt-0 flex flex-wrap gap-3">
-              <button
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors duration-200"
-                onClick={handleRefresh}
-              >
-                <FiRefreshCw className={isRefreshing ? "animate-spin" : ""} />
-                {t('common.refresh', { ns: 'translation' })}
-              </button>
-              <button
-                className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 transition-colors duration-200"
-                onClick={() => setShowComposeModal(true)}
-              >
-                <FiSend />
-                {t('common.compose', { ns: 'translation' })}
-              </button>
-              <button
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center gap-2 transition-colors duration-200"
-                onClick={handleDeleteSelected}
-                disabled={selectedMessages.length === 0}
-              >
-                <FiTrash2 />
-                {t('contactMessages.deleteSelected', { ns: 'admin' })}
-              </button>
-            </div>
+    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+      {/* Header */}
+      <div className="mb-6">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+              {t('contactMessages.title', { ns: 'admin' })}
+            </h1>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {t('contactMessages.subtitle', { ns: 'admin' })}
+            </p>
+          </div>
+          <div className="mt-4 md:mt-0 flex flex-wrap gap-3">
+            <button
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 transition-colors duration-200"
+              onClick={handleRefresh}
+            >
+              <FiRefreshCw className={isRefreshing ? "animate-spin" : ""} />
+              {t('common.refresh', { ns: 'translation' })}
+            </button>
+            <button
+              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg flex items-center gap-2 transition-colors duration-200"
+              onClick={() => setShowComposeModal(true)}
+            >
+              <FiSend />
+              {t('common.compose', { ns: 'translation' })}
+            </button>
+            <button
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg flex items-center gap-2 transition-colors duration-200"
+              onClick={handleDeleteSelected}
+              disabled={selectedMessages.length === 0}
+            >
+              <FiTrash2 />
+              {t('contactMessages.deleteSelected', { ns: 'admin' })}
+            </button>
           </div>
         </div>
+      </div>
 
-        {/* Tabs */}
-        <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-colors duration-300">
-          <div className="flex overflow-x-auto">
-            {tabs.map((tab) => (
-              <button
-                key={tab.value}
-                className={`px-6 py-4 text-sm font-medium whitespace-nowrap ${
-                  activeTab === tab.value
-                    ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
-                    : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
-                }`}
-                onClick={() => setActiveTab(tab.value)}
-              >
-                <div className="flex items-center gap-2">
-                  {tab.icon}
-                  <span>{tab.label}</span>
-                  {tab.count > 0 && (
-                    <span className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700">
-                      {tab.count}
-                    </span>
-                  )}
-                </div>
-              </button>
-            ))}
-          </div>
+      {/* Tabs */}
+      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-colors duration-300">
+        <div className="flex overflow-x-auto">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`px-6 py-4 text-sm font-medium whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400"
+                  : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
+              }`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              <div className="flex items-center gap-2">
+                {tab.icon}
+                <span>{tab.name}</span>
+                {tab.count > 0 && (
+                  <span className="px-2 py-1 text-xs rounded-full bg-gray-100 dark:bg-gray-700">
+                    {tab.count}
+                  </span>
+                )}
+              </div>
+            </button>
+          ))}
         </div>
+      </div>
 
-        {/* Filters */}
-        <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 transition-colors duration-300">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FiSearch className="text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  placeholder={t('common.search', { ns: 'translation' })}
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
+      {/* Filters */}
+      <div className="mb-6 bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 transition-colors duration-300">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <FiSearch className="text-gray-400" />
               </div>
+              <input
+                type="text"
+                placeholder={t('common.search', { ns: 'translation' })}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
             </div>
+          </div>
 
-            <div className="flex flex-wrap gap-2">
-              <div className="relative">
-                <button
-                  onClick={() => setShowCategoryFilter(!showCategoryFilter)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
-                >
-                  <FiTag />
-                  {t('common.category', { ns: 'translation' })}
-                  {showCategoryFilter ? <FiChevronUp /> : <FiChevronDown />}
-                </button>
-                {showCategoryFilter && (
-                  <div className="absolute z-10 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 transition-colors duration-200">
-                    {Object.keys(categoryOptions).map((category) => (
-                      <button
-                        key={category}
-                        className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ${
-                          filterCategory === category
-                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                            : "text-gray-700 dark:text-gray-200"
-                        }`}
-                        onClick={() => {
-                          setFilterCategory(category);
-                          setShowCategoryFilter(false);
-                        }}
-                      >
-                        {categoryOptions[category]}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="relative">
-                <button
-                  onClick={() => setShowStatusFilter(!showStatusFilter)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
-                >
-                  <FiActivity />
-                  {t('common.status', { ns: 'translation' })}
-                  {showStatusFilter ? <FiChevronUp /> : <FiChevronDown />}
-                </button>
-                {showStatusFilter && (
-                  <div className="absolute z-10 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 transition-colors duration-200">
-                    {Object.keys(statusOptions).map((status) => (
-                      <button
-                        key={status}
-                        className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ${
-                          filterStatus === status
-                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                            : "text-gray-700 dark:text-gray-200"
-                        }`}
-                        onClick={() => {
-                          setFilterStatus(status);
-                          setShowStatusFilter(false);
-                        }}
-                      >
-                        {statusOptions[status]}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="relative">
-                <button
-                  onClick={() => setShowDateFilter(!showDateFilter)}
-                  className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
-                >
-                  <FiCalendar />
-                  {t('common.date', { ns: 'translation' })}
-                  {showDateFilter ? <FiChevronUp /> : <FiChevronDown />}
-                </button>
-                {showDateFilter && (
-                  <div className="absolute z-10 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 transition-colors duration-200">
-                    {dateFilterOptions.map((option) => (
-                      <button
-                        key={option.value}
-                        className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ${
-                          dateFilter === option.value
-                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
-                            : "text-gray-700 dark:text-gray-200"
-                        }`}
-                        onClick={() => {
-                          setDateFilter(option.value);
-                          setShowDateFilter(false);
-                        }}
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-
+          <div className="flex flex-wrap gap-2">
+            <div className="relative">
               <button
-                onClick={resetFilters}
+                onClick={() => setShowCategoryFilter(!showCategoryFilter)}
                 className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
               >
-                <FiX />
-                {t('common.reset', { ns: 'translation' })}
+                <FiTag />
+                {t('common.category', { ns: 'translation' })}
+                {showCategoryFilter ? <FiChevronUp /> : <FiChevronDown />}
               </button>
+              {showCategoryFilter && (
+                <div className="absolute z-10 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 transition-colors duration-200">
+                  {Object.keys(categoryOptions).map((category) => (
+                    <button
+                      key={category}
+                      className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ${
+                        filterCategory === category
+                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                          : "text-gray-700 dark:text-gray-200"
+                      }`}
+                      onClick={() => {
+                        setFilterCategory(category);
+                        setShowCategoryFilter(false);
+                      }}
+                    >
+                      {categoryOptions[category]}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        </div>
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-blue-500 transition-colors duration-200">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.totalMessages', { ns: 'admin' })}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredMessages.length}</p>
-              </div>
-              <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                <FiMail className="text-blue-600 dark:text-blue-400 text-xl" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-yellow-500 transition-colors duration-200">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.unreadMessages', { ns: 'admin' })}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{unreadCount}</p>
-              </div>
-              <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
-                <FiAlertCircle className="text-yellow-600 dark:text-yellow-400 text-xl" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-red-500 transition-colors duration-200">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.pendingMessages', { ns: 'admin' })}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{pendingCount}</p>
-              </div>
-              <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
-                <FiClock className="text-red-600 dark:text-red-400 text-xl" />
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-green-500 transition-colors duration-200">
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.answeredMessages', { ns: 'admin' })}</p>
-                <p className="text-xl font-bold text-gray-900 dark:text-white">{answeredCount}</p>
-              </div>
-              <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                <FiCheckCircle className="text-green-600 dark:text-green-400 text-xl" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Messages Table */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-colors duration-200">
-          {/* Table content... */}
-        </div>
-
-        {/* Message Details Modal */}
-        <AnimatePresence>
-          {selectedMessage && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-              onClick={closeMessageDetails}
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden transition-colors duration-300"
+            <div className="relative">
+              <button
+                onClick={() => setShowStatusFilter(!showStatusFilter)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
               >
-                {/* Modal content... */}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <FiActivity />
+                {t('common.status', { ns: 'translation' })}
+                {showStatusFilter ? <FiChevronUp /> : <FiChevronDown />}
+              </button>
+              {showStatusFilter && (
+                <div className="absolute z-10 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 transition-colors duration-200">
+                  {Object.keys(statusOptions).map((status) => (
+                    <button
+                      key={status}
+                      className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ${
+                        filterStatus === status
+                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                          : "text-gray-700 dark:text-gray-200"
+                      }`}
+                      onClick={() => {
+                        setFilterStatus(status);
+                        setShowStatusFilter(false);
+                      }}
+                    >
+                      {statusOptions[status]}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-        {/* Compose Message Modal */}
-        <AnimatePresence>
-          {showComposeModal && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-              onClick={() => setShowComposeModal(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden transition-colors duration-300"
+            <div className="relative">
+              <button
+                onClick={() => setShowDateFilter(!showDateFilter)}
+                className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
               >
-                {/* Modal content... */}
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <FiCalendar />
+                {t('common.date', { ns: 'translation' })}
+                {showDateFilter ? <FiChevronUp /> : <FiChevronDown />}
+              </button>
+              {showDateFilter && (
+                <div className="absolute z-10 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 transition-colors duration-200">
+                  {dateFilterOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      className={`block w-full text-left px-4 py-2 text-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 ${
+                        dateFilter === option.value
+                          ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
+                          : "text-gray-700 dark:text-gray-200"
+                      }`}
+                      onClick={() => {
+                        setDateFilter(option.value);
+                        setShowDateFilter(false);
+                      }}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              onClick={resetFilters}
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 flex items-center gap-2 transition-colors duration-200"
+            >
+              <FiX />
+              {t('common.reset', { ns: 'translation' })}
+            </button>
+          </div>
+        </div>
       </div>
-    </AdminLayoutWrapper>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-blue-500 transition-colors duration-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.totalMessages', { ns: 'admin' })}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredMessages.length}</p>
+            </div>
+            <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+              <FiMail className="text-blue-600 dark:text-blue-400 text-xl" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-yellow-500 transition-colors duration-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.unreadMessages', { ns: 'admin' })}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{unreadCount}</p>
+            </div>
+            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg">
+              <FiAlertCircle className="text-yellow-600 dark:text-yellow-400 text-xl" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-red-500 transition-colors duration-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.pendingMessages', { ns: 'admin' })}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{pendingCount}</p>
+            </div>
+            <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
+              <FiClock className="text-red-600 dark:text-red-400 text-xl" />
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-green-500 transition-colors duration-200">
+          <div className="flex justify-between items-center">
+            <div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{t('contactMessages.answeredMessages', { ns: 'admin' })}</p>
+              <p className="text-xl font-bold text-gray-900 dark:text-white">{answeredCount}</p>
+            </div>
+            <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
+              <FiCheckCircle className="text-green-600 dark:text-green-400 text-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Messages Table */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden transition-colors duration-200">
+        {/* Table content... */}
+      </div>
+
+      {/* Message Details Modal */}
+      <AnimatePresence>
+        {selectedMessage && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={closeMessageDetails}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden transition-colors duration-300"
+            >
+              {/* Modal content... */}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Compose Message Modal */}
+      <AnimatePresence>
+        {showComposeModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setShowComposeModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden transition-colors duration-300"
+            >
+              {/* Modal content... */}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 
