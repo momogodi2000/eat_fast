@@ -18,9 +18,9 @@ import {
   FiX,
   FiBell,
   FiSearch,
+  FiPalette,
 } from "react-icons/fi";
 import { HiOutlineMoon, HiOutlineSun } from "react-icons/hi";
-import { useTranslation } from "react-i18next";
 import { userContextInformation } from "../pages/Authentication/const_provider";
 
 // Create context for theme
@@ -35,10 +35,21 @@ export const useTheme = () => {
   return context;
 };
 
+// Theme colors
+const themeColors = [
+  { name: 'Bleu', primary: '#3B82F6', secondary: '#1E40AF', accent: '#EBF5FF' },
+  { name: 'Vert', primary: '#10B981', secondary: '#047857', accent: '#ECFDF5' },
+  { name: 'Violet', primary: '#8B5CF6', secondary: '#5B21B6', accent: '#F3E8FF' },
+  { name: 'Rouge', primary: '#EF4444', secondary: '#DC2626', accent: '#FEF2F2' },
+  { name: 'Orange', primary: '#F59E0B', secondary: '#D97706', accent: '#FFFBEB' },
+  { name: 'Rose', primary: '#EC4899', secondary: '#BE185D', accent: '#FDF2F8' },
+  { name: 'Indigo', primary: '#6366F1', secondary: '#4338CA', accent: '#EEF2FF' },
+  { name: 'Teal', primary: '#14B8A6', secondary: '#0F766E', accent: '#F0FDFA' },
+];
+
 const AdminLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { t } = useTranslation(['admin', 'translation']);
   
   // Add error handling for context usage
   let userInformation, setUserInformation, updateUserInformation;
@@ -63,7 +74,7 @@ const AdminLayout = ({ children }) => {
   // Mock user data for now - replace with actual user data from context
   const user = {
     firstName: userInformation?.first_name || "Admin",
-    lastName: userInformation?.last_name || "User",
+    lastName: userInformation?.last_name || "Utilisateur",
     email: userInformation?.email || "admin@eatfast.com",
     avatar: "/src/assets/avartar/avatar1.jpg"
   };
@@ -85,6 +96,8 @@ const AdminLayout = ({ children }) => {
   // State management
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState(themeColors[0]);
+  const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [notifications, setNotifications] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -112,6 +125,7 @@ const AdminLayout = ({ children }) => {
   // Initialize theme from localStorage or system preference
   useEffect(() => {
     const savedTheme = localStorage.getItem("admin-theme");
+    const savedColor = localStorage.getItem("admin-theme-color");
     
     if (savedTheme) {
       setIsDarkMode(savedTheme === "dark");
@@ -120,6 +134,11 @@ const AdminLayout = ({ children }) => {
       const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
       setIsDarkMode(prefersDarkMode);
       localStorage.setItem("admin-theme", prefersDarkMode ? "dark" : "light");
+    }
+
+    if (savedColor) {
+      const savedThemeColor = themeColors.find(theme => theme.name === savedColor) || themeColors[0];
+      setCurrentTheme(savedThemeColor);
     }
 
     // Add listener for system theme changes
@@ -144,54 +163,67 @@ const AdminLayout = ({ children }) => {
       root.classList.remove("dark");
     }
     localStorage.setItem("admin-theme", isDarkMode ? "dark" : "light");
-  }, [isDarkMode]);
+    
+    // Apply theme colors to CSS variables
+    root.style.setProperty('--theme-primary', currentTheme.primary);
+    root.style.setProperty('--theme-secondary', currentTheme.secondary);
+    root.style.setProperty('--theme-accent', currentTheme.accent);
+    
+    localStorage.setItem("admin-theme-color", currentTheme.name);
+  }, [isDarkMode, currentTheme]);
 
-  // Navigation items with translations
+  // Handle theme color change
+  const handleThemeColorChange = (theme) => {
+    setCurrentTheme(theme);
+    setShowThemeSelector(false);
+  };
+
+  // Navigation items with French text
   const navigationItems = [
     {
-      name: t("navigation.dashboard", { ns: 'admin' }),
+      name: "Tableau de bord",
       href: "/admin",
       icon: FiHome,
       current: location.pathname === "/admin" || location.pathname === "/admin/dashboard",
     },
     {
-      name: t("navigation.restaurants", { ns: 'admin' }),
+      name: "Restaurants",
       href: "/admin/restaurants",
       icon: FiShoppingBag,
       current: location.pathname.startsWith("/admin/restaurants"),
     },
     {
-      name: t("navigation.users", { ns: 'admin' }),
+      name: "Utilisateurs",
       href: "/admin/users",
       icon: FiUsers,
       current: location.pathname.startsWith("/admin/users") || location.pathname.startsWith("/admin/user"),
     },
     {
-      name: t("navigation.delivery", { ns: 'admin' }),
+      name: "Livraison",
       href: "/admin/delivery",
       icon: FiTruck,
       current: location.pathname.startsWith("/admin/delivery"),
     },
     {
-      name: t("navigation.orders", { ns: 'admin' }),
+      name: "Commandes",
       href: "/admin/orders",
       icon: FiShoppingBag,
       current: location.pathname.startsWith("/admin/orders"),
     },
     {
-      name: t("navigation.contactMessages", { ns: 'admin' }),
+      name: "Messages de contact",
       href: "/admin/contact-messages",
       icon: FiMessageSquare,
       current: location.pathname.startsWith("/admin/contact-messages"),
     },
     {
-      name: t("navigation.statistics", { ns: 'admin' }),
+      name: "Statistiques",
       href: "/admin/statistics",
       icon: FiBarChart2,
       current: location.pathname.startsWith("/admin/statistics"),
     },
     {
-      name: t("navigation.promotion", { ns: 'admin' }),
+      name: "Promotions",
       href: "/admin/promotion",
       icon: FiTag,
       current: location.pathname.startsWith("/admin/promotion"),
@@ -202,14 +234,17 @@ const AdminLayout = ({ children }) => {
   const handleSearch = (e) => {
     e.preventDefault();
     // Implement search functionality
-    console.log("Searching for:", searchQuery);
+    console.log("Recherche pour:", searchQuery);
   };
 
   // Context values
   const themeContextValue = {
     isDarkMode,
     setIsDarkMode,
-    toggleTheme: () => setIsDarkMode(prev => !prev)
+    toggleTheme: () => setIsDarkMode(prev => !prev),
+    currentTheme,
+    setCurrentTheme,
+    themeColors
   };
 
   return (
@@ -259,7 +294,7 @@ const AdminLayout = ({ children }) => {
                   href={item.href}
                   className={`group flex items-center px-3 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
                     item.current
-                      ? "bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border-r-2 border-blue-500"
+                      ? `bg-[var(--theme-accent)] text-[var(--theme-primary)] border-r-2 border-[var(--theme-primary)]`
                       : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white"
                   }`}
                   onClick={(e) => {
@@ -274,7 +309,7 @@ const AdminLayout = ({ children }) => {
                     size={20}
                     className={`mr-3 flex-shrink-0 ${
                       item.current
-                        ? "text-blue-500"
+                        ? "text-[var(--theme-primary)]"
                         : "text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300"
                     }`}
                   />
@@ -291,7 +326,7 @@ const AdminLayout = ({ children }) => {
                 <img
                   className="h-8 w-8 rounded-full"
                   src={user?.avatar || "/src/assets/avartar/avatar1.jpg"}
-                  alt="User avatar"
+                  alt="Avatar utilisateur"
                 />
               </div>
               <div className="flex-1 min-w-0">
@@ -330,8 +365,8 @@ const AdminLayout = ({ children }) => {
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={t("common.search", { ns: 'translation' })}
-                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Rechercher..."
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] focus:border-[var(--theme-primary)]"
                     />
                   </form>
                 </div>
@@ -339,11 +374,48 @@ const AdminLayout = ({ children }) => {
 
               {/* Right side */}
               <div className="flex items-center space-x-4">
+                {/* Theme color selector */}
+                <div className="relative">
+                  <button
+                    onClick={() => setShowThemeSelector(!showThemeSelector)}
+                    className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                    aria-label="Changer la couleur du thème"
+                  >
+                    <FiPalette size={20} />
+                  </button>
+
+                  {/* Theme color dropdown */}
+                  {showThemeSelector && (
+                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
+                      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                          Couleur du thème
+                        </h3>
+                      </div>
+                      <div className="p-4 grid grid-cols-4 gap-3">
+                        {themeColors.map((theme) => (
+                          <button
+                            key={theme.name}
+                            onClick={() => handleThemeColorChange(theme)}
+                            className={`w-12 h-12 rounded-lg border-2 transition-all hover:scale-110 ${
+                              currentTheme.name === theme.name 
+                                ? 'border-gray-400 dark:border-gray-300 ring-2 ring-gray-300' 
+                                : 'border-gray-200 dark:border-gray-600'
+                            }`}
+                            style={{ backgroundColor: theme.primary }}
+                            title={theme.name}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
                 {/* Theme toggle */}
                 <button
                   onClick={() => setIsDarkMode(!isDarkMode)}
                   className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                  aria-label={isDarkMode ? "Switch to light mode" : "Switch to dark mode"}
+                  aria-label={isDarkMode ? "Passer au mode clair" : "Passer au mode sombre"}
                 >
                   {isDarkMode ? (
                     <HiOutlineSun size={20} />
@@ -357,7 +429,7 @@ const AdminLayout = ({ children }) => {
                   <button
                     onClick={() => setShowNotifications(!showNotifications)}
                     className="p-2 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 relative"
-                    aria-label="Show notifications"
+                    aria-label="Afficher les notifications"
                   >
                     <FiBell size={20} />
                     {notifications.length > 0 && (
@@ -372,13 +444,13 @@ const AdminLayout = ({ children }) => {
                     <div className="absolute right-0 mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50">
                       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
                         <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                          {t("common.notifications", { ns: 'translation' })}
+                          Notifications
                         </h3>
                       </div>
                       <div className="max-h-96 overflow-y-auto">
                         {notifications.length === 0 ? (
                           <div className="p-4 text-center text-gray-500 dark:text-gray-400">
-                            {t("common.noData", { ns: 'translation' })}
+                            Aucune notification
                           </div>
                         ) : (
                           notifications.map((notification, index) => (
@@ -409,7 +481,7 @@ const AdminLayout = ({ children }) => {
                     <img
                       className="h-8 w-8 rounded-full"
                       src={user?.avatar || "/src/assets/avartar/avatar1.jpg"}
-                      alt="User avatar"
+                      alt="Avatar utilisateur"
                     />
                     <span className="hidden sm:block text-sm font-medium text-gray-900 dark:text-white">
                       {user?.firstName}
@@ -421,8 +493,8 @@ const AdminLayout = ({ children }) => {
                 <button
                   onClick={logout}
                   className="p-2 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
-                  title={t("navigation.logout", { ns: 'admin' })}
-                  aria-label="Logout"
+                  title="Déconnexion"
+                  aria-label="Déconnexion"
                 >
                   <FiLogOut size={20} />
                 </button>

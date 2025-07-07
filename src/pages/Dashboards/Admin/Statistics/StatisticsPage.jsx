@@ -9,24 +9,16 @@ import {
   FiTrendingUp, FiTrendingDown, FiDollarSign, FiShoppingCart,
   FiUsers, FiTruck, FiStar, FiClock
 } from 'react-icons/fi';
-import { useTranslation } from 'react-i18next';
-import i18n from '../../../../i18n';
 
 // Constants
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
 const StatisticsPage = () => {
-  const { t } = useTranslation(['admin', 'translation']);
   const [isLoading, setIsLoading] = useState(true);
   const [timeRange, setTimeRange] = useState('7d');
   const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Set default language to French
-  useEffect(() => {
-    i18n.changeLanguage('fr');
-  }, []);
 
-  // Mock data for statistics
+  // Mock data for statistics with French labels
   const revenueData = [
     { date: '2023-06-01', revenue: 45000, orders: 23 },
     { date: '2023-06-02', revenue: 52000, orders: 28 },
@@ -38,30 +30,30 @@ const StatisticsPage = () => {
   ];
 
   const monthlyData = [
-    { month: t('common.months.jan', { ns: 'translation' }), revenue: 1200000, orders: 620, restaurants: 15 },
-    { month: t('common.months.feb', { ns: 'translation' }), revenue: 1350000, orders: 680, restaurants: 17 },
-    { month: t('common.months.mar', { ns: 'translation' }), revenue: 1500000, orders: 750, restaurants: 20 },
-    { month: t('common.months.apr', { ns: 'translation' }), revenue: 1400000, orders: 700, restaurants: 22 },
-    { month: t('common.months.may', { ns: 'translation' }), revenue: 1650000, orders: 820, restaurants: 25 },
-    { month: t('common.months.jun', { ns: 'translation' }), revenue: 1800000, orders: 900, restaurants: 28 }
+    { month: 'Jan', revenue: 1200000, orders: 620, restaurants: 15 },
+    { month: 'Fév', revenue: 1350000, orders: 680, restaurants: 17 },
+    { month: 'Mar', revenue: 1500000, orders: 750, restaurants: 20 },
+    { month: 'Avr', revenue: 1400000, orders: 700, restaurants: 22 },
+    { month: 'Mai', revenue: 1650000, orders: 820, restaurants: 25 },
+    { month: 'Juin', revenue: 1800000, orders: 900, restaurants: 28 }
   ];
 
   const categoryData = [
-    { name: t('restaurants.categories.african', { ns: 'admin' }), value: 15 },
-    { name: t('restaurants.categories.fastFood', { ns: 'admin' }), value: 8 },
-    { name: t('restaurants.categories.asian', { ns: 'admin' }), value: 5 },
-    { name: t('restaurants.categories.european', { ns: 'admin' }), value: 7 },
-    { name: t('restaurants.categories.other', { ns: 'admin' }), value: 3 }
+    { name: 'Africain', value: 15 },
+    { name: 'Fast Food', value: 8 },
+    { name: 'Asiatique', value: 5 },
+    { name: 'Européen', value: 7 },
+    { name: 'Autre', value: 3 }
   ];
 
   const deliveryPerformanceData = [
-    { day: t('common.days.mon', { ns: 'translation' }), avgTime: 25, onTime: 92 },
-    { day: t('common.days.tue', { ns: 'translation' }), avgTime: 23, onTime: 94 },
-    { day: t('common.days.wed', { ns: 'translation' }), avgTime: 28, onTime: 88 },
-    { day: t('common.days.thu', { ns: 'translation' }), avgTime: 24, onTime: 93 },
-    { day: t('common.days.fri', { ns: 'translation' }), avgTime: 30, onTime: 85 },
-    { day: t('common.days.sat', { ns: 'translation' }), avgTime: 22, onTime: 95 },
-    { day: t('common.days.sun', { ns: 'translation' }), avgTime: 26, onTime: 90 }
+    { day: 'Lun', avgTime: 25, onTime: 92 },
+    { day: 'Mar', avgTime: 23, onTime: 94 },
+    { day: 'Mer', avgTime: 28, onTime: 88 },
+    { day: 'Jeu', avgTime: 24, onTime: 93 },
+    { day: 'Ven', avgTime: 30, onTime: 85 },
+    { day: 'Sam', avgTime: 22, onTime: 95 },
+    { day: 'Dim', avgTime: 26, onTime: 90 }
   ];
 
   const userActivityData = [
@@ -117,7 +109,7 @@ const StatisticsPage = () => {
           {payload.map((entry, index) => (
             <p key={index} style={{ color: entry.color }} className="text-sm">
               {entry.name}: {
-                entry.name === t('common.revenue', { ns: 'translation' }) 
+                entry.name === 'Chiffre d\'affaires' 
                   ? formatCurrency(entry.value) 
                   : entry.value
               }
@@ -134,7 +126,7 @@ const StatisticsPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">{t('statistics.loading', { ns: 'admin' })}</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Chargement des statistiques...</p>
         </div>
       </div>
     );
@@ -147,10 +139,10 @@ const StatisticsPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              📊 {t('statistics.title', { ns: 'admin' })}
+              📊 Statistiques
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              {t('statistics.subtitle', { ns: 'admin' })}
+              Analyses détaillées des performances de la plateforme
             </p>
           </div>
           <div className="flex items-center space-x-2 mt-4 sm:mt-0">
@@ -160,10 +152,10 @@ const StatisticsPage = () => {
                 value={timeRange}
                 onChange={(e) => setTimeRange(e.target.value)}
               >
-                <option value="7d">{t('common.last7Days', { ns: 'translation' })}</option>
-                <option value="30d">{t('common.last30Days', { ns: 'translation' })}</option>
-                <option value="90d">{t('common.last90Days', { ns: 'translation' })}</option>
-                <option value="1y">{t('common.lastYear', { ns: 'translation' })}</option>
+                <option value="7d">7 derniers jours</option>
+                <option value="30d">30 derniers jours</option>
+                <option value="90d">90 derniers jours</option>
+                <option value="1y">Dernière année</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700 dark:text-gray-300">
                 <FiCalendar />
@@ -175,11 +167,11 @@ const StatisticsPage = () => {
               className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-800"
             >
               <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {t('common.refresh', { ns: 'translation' })}
+              Actualiser
             </button>
             <button className="flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors dark:bg-green-700 dark:hover:bg-green-800">
               <FiDownload className="mr-2" />
-              {t('common.export', { ns: 'translation' })}
+              Exporter
             </button>
           </div>
         </div>
@@ -190,7 +182,7 @@ const StatisticsPage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('common.totalRevenue', { ns: 'translation' })}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Chiffre d'affaires total</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(1800000)}</p>
             </div>
             <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-full">
@@ -200,14 +192,14 @@ const StatisticsPage = () => {
           <div className="mt-4 flex items-center text-sm">
             <FiTrendingUp className="text-green-500 dark:text-green-400 mr-1" />
             <span className="text-green-600 dark:text-green-400">+18%</span>
-            <span className="text-gray-500 dark:text-gray-400 ml-1">{t('common.vsLastMonth', { ns: 'translation' })}</span>
+            <span className="text-gray-500 dark:text-gray-400 ml-1">vs le mois dernier</span>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('orders.totalOrders', { ns: 'admin' })}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total des commandes</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">900</p>
             </div>
             <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
@@ -217,14 +209,14 @@ const StatisticsPage = () => {
           <div className="mt-4 flex items-center text-sm">
             <FiTrendingUp className="text-green-500 dark:text-green-400 mr-1" />
             <span className="text-green-600 dark:text-green-400">+12%</span>
-            <span className="text-gray-500 dark:text-gray-400 ml-1">{t('common.vsLastMonth', { ns: 'translation' })}</span>
+            <span className="text-gray-500 dark:text-gray-400 ml-1">vs le mois dernier</span>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('restaurants.activeRestaurants', { ns: 'admin' })}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Restaurants actifs</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">28</p>
             </div>
             <div className="p-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-full">
@@ -234,14 +226,14 @@ const StatisticsPage = () => {
           <div className="mt-4 flex items-center text-sm">
             <FiTrendingUp className="text-green-500 dark:text-green-400 mr-1" />
             <span className="text-green-600 dark:text-green-400">+5%</span>
-            <span className="text-gray-500 dark:text-gray-400 ml-1">{t('common.vsLastMonth', { ns: 'translation' })}</span>
+            <span className="text-gray-500 dark:text-gray-400 ml-1">vs le mois dernier</span>
           </div>
         </div>
 
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{t('delivery.onTimeDelivery', { ns: 'admin' })}</p>
+              <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Livraisons à l'heure</p>
               <p className="text-2xl font-bold text-gray-900 dark:text-white">91%</p>
             </div>
             <div className="p-3 bg-red-100 dark:bg-red-900/30 rounded-full">
@@ -251,7 +243,7 @@ const StatisticsPage = () => {
           <div className="mt-4 flex items-center text-sm">
             <FiTrendingDown className="text-red-500 dark:text-red-400 mr-1" />
             <span className="text-red-600 dark:text-red-400">-2%</span>
-            <span className="text-gray-500 dark:text-gray-400 ml-1">{t('common.vsLastMonth', { ns: 'translation' })}</span>
+            <span className="text-gray-500 dark:text-gray-400 ml-1">vs le mois dernier</span>
           </div>
         </div>
       </div>
@@ -260,7 +252,7 @@ const StatisticsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Revenue Chart */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('statistics.revenueAndOrders', { ns: 'admin' })}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Chiffre d'affaires et commandes</h3>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={revenueData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -278,7 +270,7 @@ const StatisticsPage = () => {
                 type="monotone" 
                 dataKey="revenue" 
                 stroke="#3B82F6" 
-                name={t('common.revenue', { ns: 'translation' })}
+                name="Chiffre d'affaires"
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
@@ -288,7 +280,7 @@ const StatisticsPage = () => {
                 type="monotone" 
                 dataKey="orders" 
                 stroke="#10B981" 
-                name={t('common.orders', { ns: 'translation' })}
+                name="Commandes"
                 strokeWidth={2}
                 dot={{ r: 4 }}
                 activeDot={{ r: 6 }}
@@ -299,7 +291,7 @@ const StatisticsPage = () => {
 
         {/* Restaurant Categories */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('statistics.restaurantCategories', { ns: 'admin' })}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Catégories de restaurants</h3>
           <ResponsiveContainer width="100%" height={300}>
             <PieChart>
               <Pie
@@ -326,7 +318,7 @@ const StatisticsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
         {/* Monthly Performance */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('statistics.monthlyPerformance', { ns: 'admin' })}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Performance mensuelle</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={monthlyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -334,15 +326,15 @@ const StatisticsPage = () => {
               <YAxis tick={{ fill: '#4B5563' }} />
               <Tooltip content={<CustomTooltip />} />
               <Legend />
-              <Bar dataKey="orders" fill="#3B82F6" name={t('common.orders', { ns: 'translation' })} />
-              <Bar dataKey="restaurants" fill="#10B981" name={t('common.restaurants', { ns: 'translation' })} />
+              <Bar dataKey="orders" fill="#3B82F6" name="Commandes" />
+              <Bar dataKey="restaurants" fill="#10B981" name="Restaurants" />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
         {/* Delivery Performance */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('statistics.deliveryPerformance', { ns: 'admin' })}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Performance de livraison</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={deliveryPerformanceData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -356,7 +348,7 @@ const StatisticsPage = () => {
                 stroke="#F59E0B" 
                 fill="#F59E0B" 
                 fillOpacity={0.3} 
-                name={t('delivery.avgTime', { ns: 'admin' })}
+                name="Temps moyen"
               />
               <Area 
                 type="monotone" 
@@ -364,7 +356,7 @@ const StatisticsPage = () => {
                 stroke="#3B82F6" 
                 fill="#3B82F6" 
                 fillOpacity={0.3} 
-                name={t('delivery.onTime', { ns: 'admin' })}
+                name="À l'heure"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -375,7 +367,7 @@ const StatisticsPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* User Activity */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('statistics.userActivity', { ns: 'admin' })}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Activité des utilisateurs</h3>
           <ResponsiveContainer width="100%" height={300}>
             <AreaChart data={userActivityData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
@@ -388,7 +380,7 @@ const StatisticsPage = () => {
                 stroke="#8B5CF6" 
                 fill="#8B5CF6" 
                 fillOpacity={0.3} 
-                name={t('common.activeUsers', { ns: 'translation' })}
+                name="Utilisateurs actifs"
               />
             </AreaChart>
           </ResponsiveContainer>
@@ -396,14 +388,14 @@ const StatisticsPage = () => {
 
         {/* Popular Dishes */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">{t('statistics.popularDishes', { ns: 'admin' })}</h3>
+          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Plats populaires</h3>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={popularDishesData} layout="vertical">
               <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
               <XAxis type="number" tick={{ fill: '#4B5563' }} />
               <YAxis dataKey="name" type="category" tick={{ fill: '#4B5563' }} width={100} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="orders" fill="#06B6D4" name={t('common.orders', { ns: 'translation' })} />
+              <Bar dataKey="orders" fill="#06B6D4" name="Commandes" />
             </BarChart>
           </ResponsiveContainer>
         </div>

@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef, createContext } from 'react';
-import { useTranslation } from 'react-i18next';
+import React, { useState, useEffect, useRef, createContext, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiSearch, 
@@ -25,16 +24,22 @@ import {
   FiCheck, 
   FiX, 
   FiSend, 
- 
-
+  FiEye,
+  FiEdit2,
+  FiMoreVertical,
+  FiXCircle,
+  FiActivity,
+  FiTrendingUp,
+  FiUsers,
+  FiBriefcase,
+  FiCalendar,
+  FiCheckCircle,
+  FiChevronUp
 } from 'react-icons/fi';
 import { HiOutlineSpeakerphone } from 'react-icons/hi';
 import { Tooltip, Badge, Modal, Progress } from '../../../../components/ui/ui-components';
 
 import { useFetcher } from 'react-router-dom';
- 
-import { FiBarChart2, FiCalendar, FiTrendingUp, FiImage } from 'react-icons/fi';
-
 
 export const adminRestaurantContext = createContext();
 

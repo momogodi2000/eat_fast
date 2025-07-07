@@ -1,6 +1,0 @@
-{
-  "localeDir": "locales",
-  "sourceLocale": "fr",
-  "locales": ["fr", "en"],
-  "format": "po"
-}

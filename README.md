@@ -624,3 +624,39 @@ npm run dev
 **Eat Fast** - Fast. Fresh. Delivered. 🍕
 
 **Made with ❤️ for Cameroon**
+
+## ✨ Fonctionnalités
+
+### 🎯 Fonctionnalités principales
+- **Interface utilisateur moderne** : Design responsive avec Tailwind CSS
+- **Gestion multi-rôles** : Client, Restaurant, Livreur, Admin, Agent support
+- **Système de commandes avancé** : Panier, paiement, suivi en temps réel
+- **Tableau de bord analytique** : Statistiques et métriques détaillées
+- **Système de thèmes** : Mode sombre/clair avec sélecteur de couleurs
+- **Langue française** : Interface entièrement en français
+- **PWA Ready** : Application web progressive pour mobile
+- **Optimisé SEO** : Métadonnées et structure optimisées
+
+### 🛠 Technologies utilisées
+- **Frontend** : React 18 + Vite
+- **Styling** : Tailwind CSS + Framer Motion
+- **Icônes** : React Icons (Feather Icons)
+- **Graphiques** : Recharts
+- **Routage** : React Router v6
+- **Base de données** : Firebase/Firestore
+- **Authentification** : Firebase Auth
+- **Déploiement** : Netlify + Docker
+
+### 🎨 Interface utilisateur
+- **Design System** : Composants réutilisables avec Tailwind
+- **Animations** : Micro-interactions avec Framer Motion
+- **Thèmes personnalisables** : 8 couleurs de thème avec détection automatique du mode système
+- **Responsive** : Adapté mobile, tablette et desktop
+- **Accessibilité** : Conforme aux standards WCAG
+
+### 📊 Tableaux de bord
+- **Admin** : Gestion complète de la plateforme
+- **Restaurant** : Gestion menu, commandes, statistiques
+- **Livreur** : Missions, historique, carte interactive
+- **Client** : Commandes, historique, profil
+- **Support** : Tickets, base de connaissances, rapports

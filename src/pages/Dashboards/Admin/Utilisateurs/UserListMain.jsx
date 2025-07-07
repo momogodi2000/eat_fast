@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FiEdit2, FiTrash2, FiSearch, FiUserPlus, FiFilter, FiDownload, 
@@ -7,8 +6,9 @@ import {
   FiUsers, FiShield, FiTruck, FiHome, FiHeadphones, FiCheck, FiX,
   FiClock, FiAlertTriangle, FiFileText, FiUpload, FiWifi, FiWifiOff,
   FiPhone, FiMail, FiMapPin, FiCalendar, FiPackage, FiStar, FiActivity,
-  FiUser, FiLock, FiCamera, FiImage, FiFile, FiCheckCircle, FiXCircle,
-  FiAlertCircle, FiInfo, FiTrendingUp, FiTrendingDown, FiZap, FiGlobe
+  FiUser, FiLock, FiCamera, FiImage, FiCheckCircle, FiXCircle,
+  FiAlertCircle, FiInfo, FiTrendingUp, FiTrendingDown, FiZap, FiGlobe,
+  FiChevronDown, FiChevronUp, FiPlus
 } from 'react-icons/fi';
 
 // Constants
@@ -233,7 +233,6 @@ const UserListMain = ({
   onExportCSV,
   onAddUser
 }) => {
-  const { t } = useTranslation();
   const isOnline = useOnlineStatus();
   const { notification, showNotification, hideNotification } = useNotification();
 

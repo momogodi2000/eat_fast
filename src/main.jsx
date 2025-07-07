@@ -4,9 +4,6 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import App from './App.jsx';
 
-// Import i18n configuration
-import './i18n';
-
 const root = createRoot(document.getElementById('root'));
 
 // Simplified initialization without waiting for i18n

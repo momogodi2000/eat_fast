@@ -30,7 +30,6 @@ import {
 } from 'react-icons/fi';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { useTranslation } from 'react-i18next';
 
 // Status Badge Component
 const StatusBadge = ({ status }) => {
@@ -133,7 +132,6 @@ const PaymentBadge = ({ status }) => {
 };
 
 const AdminOrdersPage = () => {
-  const { t } = useTranslation(['admin', 'translation']);
   const [isLoading, setIsLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -675,7 +673,7 @@ const AdminOrdersPage = () => {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
-          <p className="mt-4 text-gray-600 dark:text-gray-300">{t('orders.loading', { ns: 'admin' })}</p>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Chargement des commandes...</p>
         </div>
       </div>
     );
@@ -688,10 +686,10 @@ const AdminOrdersPage = () => {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              🛒 {t('orders.title', { ns: 'admin' })}
+              🛒 Commandes
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
-              {t('orders.subtitle', { ns: 'admin' })}
+              Gérer les commandes et les suivre
             </p>
           </div>
           <div className="flex items-center space-x-2 mt-4 sm:mt-0">
@@ -701,14 +699,14 @@ const AdminOrdersPage = () => {
               className="flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-800"
             >
               <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              {t('common.refresh', { ns: 'translation' })}
+              Actualiser
             </button>
             <button
               className="flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors dark:bg-green-700 dark:hover:bg-green-800"
               onClick={exportToCSV}
             >
               <FiDownload className="mr-2" />
-              {t('common.export', { ns: 'translation' })}
+              Exporter
             </button>
           </div>
         </div>
@@ -725,7 +723,7 @@ const AdminOrdersPage = () => {
             <input
               type="text"
               className="pl-10 pr-4 py-2 w-full border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"
-              placeholder={t('common.search', { ns: 'translation' })}
+              placeholder="Rechercher"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -734,42 +732,42 @@ const AdminOrdersPage = () => {
           {/* Status Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t('orders.filters.status', { ns: 'admin' })}
+              Statut
             </label>
             <select
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"
               value={filterStatus}
               onChange={(e) => setFilterStatus(e.target.value)}
             >
-              <option value="all">{t('common.all', { ns: 'translation' })}</option>
-              <option value="pending">{t('orders.status.pending', { ns: 'admin' })}</option>
-              <option value="in_transit">{t('orders.status.inTransit', { ns: 'admin' })}</option>
-              <option value="delivered">{t('orders.status.delivered', { ns: 'admin' })}</option>
-              <option value="cancelled">{t('orders.status.cancelled', { ns: 'admin' })}</option>
+              <option value="all">Tout</option>
+              <option value="pending">En attente</option>
+              <option value="in_transit">En cours de transport</option>
+              <option value="delivered">Livré</option>
+              <option value="cancelled">Annulé</option>
             </select>
           </div>
           
           {/* Date Filter */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t('orders.filters.date', { ns: 'admin' })}
+              Date
             </label>
             <select
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
             >
-              <option value="all">{t('common.all', { ns: 'translation' })}</option>
-              <option value="today">{t('common.today', { ns: 'translation' })}</option>
-              <option value="yesterday">{t('common.yesterday', { ns: 'translation' })}</option>
-              <option value="thisWeek">{t('common.thisWeek', { ns: 'translation' })}</option>
+              <option value="all">Tout</option>
+              <option value="today">Aujourd'hui</option>
+              <option value="yesterday">Hier</option>
+              <option value="thisWeek">Cette semaine</option>
             </select>
           </div>
           
           {/* Sort By */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              {t('orders.filters.sortBy', { ns: 'admin' })}
+              Trier par
             </label>
             <div className="flex">
               <select
@@ -777,9 +775,9 @@ const AdminOrdersPage = () => {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
               >
-                <option value="date">{t('common.date', { ns: 'translation' })}</option>
-                <option value="total">{t('common.amount', { ns: 'translation' })}</option>
-                <option value="id">{t('common.orderId', { ns: 'translation' })}</option>
+                <option value="date">Date</option>
+                <option value="total">Montant</option>
+                <option value="id">ID</option>
               </select>
               <button
                 className="border border-gray-300 dark:border-gray-600 rounded-r-lg px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-300"
@@ -797,7 +795,7 @@ const AdminOrdersPage = () => {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border-l-4 border-blue-500 transition-colors duration-200">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{t('orders.totalOrders', { ns: 'admin' })}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">Total des commandes</p>
               <p className="text-xl font-bold text-gray-900 dark:text-white">{filteredOrders.length}</p>
             </div>
             <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
@@ -816,28 +814,28 @@ const AdminOrdersPage = () => {
             <thead className="bg-gray-50 dark:bg-gray-700">
               <tr>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.orderId', { ns: 'translation' })}
+                  ID Commande
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.customer', { ns: 'translation' })}
+                  Client
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.restaurant', { ns: 'translation' })}
+                  Restaurant
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.date', { ns: 'translation' })}
+                  Date
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.total', { ns: 'translation' })}
+                  Total
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.status', { ns: 'translation' })}
+                  Statut
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.payment', { ns: 'translation' })}
+                  Paiement
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  {t('common.actions', { ns: 'translation' })}
+                  Actions
                 </th>
               </tr>
             </thead>
@@ -853,10 +851,10 @@ const AdminOrdersPage = () => {
                     <div className="flex flex-col items-center">
                       <FiPackage className="text-4xl mb-4 text-gray-400 dark:text-gray-500" />
                       <p className="text-lg font-medium">
-                        {t('common.noOrdersFound', { ns: 'translation' })}
+                        Aucune commande trouvée
                       </p>
                       <p className="text-sm max-w-sm mt-1">
-                        {t('common.tryAdjustingFilters', { ns: 'translation' })}
+                        Essayez d'ajuster les filtres
                       </p>
                     </div>
                   </td>
@@ -894,7 +892,7 @@ const AdminOrdersPage = () => {
                         onClick={() => openOrderDetails(order)}
                       >
                         <FiEye className="inline mr-1" />
-                        {t('common.view', { ns: 'translation' })}
+                        Voir
                       </button>
                     </td>
                   </tr>
@@ -908,7 +906,7 @@ const AdminOrdersPage = () => {
         {filteredOrders.length > itemsPerPage && (
           <div className="px-6 py-4 bg-gray-50 dark:bg-gray-700 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
             <div className="text-sm text-gray-700 dark:text-gray-300">
-              {t('common.showing', { ns: 'translation' })} <span className="font-medium">{indexOfFirstItem + 1}</span> {t('common.to', { ns: 'translation' })} <span className="font-medium">{Math.min(indexOfLastItem, filteredOrders.length)}</span> {t('common.of', { ns: 'translation' })} <span className="font-medium">{filteredOrders.length}</span> {t('common.results', { ns: 'translation' })}
+              Affichage <span className="font-medium">{indexOfFirstItem + 1}</span> à <span className="font-medium">{Math.min(indexOfLastItem, filteredOrders.length)}</span> sur <span className="font-medium">{filteredOrders.length}</span> résultats
             </div>
             <div className="flex space-x-1">
               <button

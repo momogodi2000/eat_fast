@@ -120,7 +120,8 @@ export default defineConfig({
           router: ['react-router-dom'],
           ui: ['framer-motion', 'lucide-react'],
           charts: ['chart.js', 'react-chartjs-2', 'recharts'],
-          maps: ['leaflet', 'react-leaflet']
+          maps: ['leaflet', 'react-leaflet'],
+          utils: ['date-fns']
         }
       }
     },
@@ -146,7 +147,8 @@ export default defineConfig({
       'lucide-react',
       'axios',
       'i18next',
-      'react-i18next'
+      'react-i18next',
+      'date-fns'
     ],
     exclude: ['@lingui/macro']
   },
@@ -156,12 +158,12 @@ export default defineConfig({
       "@": resolve(__dirname, "src"),
       "@components": resolve(__dirname, "src/components"),
       "@pages": resolve(__dirname, "src/pages"),
+      "@layouts": resolve(__dirname, "src/layouts"),
       "@services": resolve(__dirname, "src/Services"),
       "@utils": resolve(__dirname, "src/utils"),
       "@assets": resolve(__dirname, "src/assets"),
       "@styles": resolve(__dirname, "src/styles"),
-      "@theme": resolve(__dirname, "src/theme"),
-      "@i18n": resolve(__dirname, "src/i18n")
+      "@theme": resolve(__dirname, "src/theme")
     },
   },
   
