@@ -187,7 +187,7 @@ function App() {
                 <Route path="/refund" element={<TermsAndConditions />} />
                 <Route path="/safety" element={<FoodSafety />} />
 
-                {/* Admin Routes - Simplified without AdminRestaurantProvider */}
+                {/* Admin Routes - All wrapped with AdminLayout */}
                 <Route
                   path="/admin"
                   element={
@@ -202,7 +202,9 @@ function App() {
                   path="/admin/dashboard"
                   element={
                     <UserInformationProvider>
-                      <AdminDashboard />
+                      <AdminLayout>
+                        <AdminDashboard />
+                      </AdminLayout>
                     </UserInformationProvider>
                   }
                 />
@@ -210,7 +212,9 @@ function App() {
                   path="/admin/users" 
                   element={
                     <UserInformationProvider>
-                      <UserListPage />
+                      <AdminLayout>
+                        <UserListPage />
+                      </AdminLayout>
                     </UserInformationProvider>
                   } 
                 />
@@ -218,7 +222,9 @@ function App() {
                   path="/admin/user" 
                   element={
                     <UserInformationProvider>
-                      <UserListPage />
+                      <AdminLayout>
+                        <UserListPage />
+                      </AdminLayout>
                     </UserInformationProvider>
                   } 
                 />
@@ -226,7 +232,9 @@ function App() {
                   path="/admin/restaurants" 
                   element={
                     <UserInformationProvider>
-                      <RestaurantManagement />
+                      <AdminLayout>
+                        <RestaurantManagement />
+                      </AdminLayout>
                     </UserInformationProvider>
                   } 
                 />
@@ -234,7 +242,9 @@ function App() {
                   path="/admin/contact-messages" 
                   element={
                     <UserInformationProvider>
-                      <AdminContactMessages />
+                      <AdminLayout>
+                        <AdminContactMessages />
+                      </AdminLayout>
                     </UserInformationProvider>
                   } 
                 />
@@ -242,7 +252,9 @@ function App() {
                   path="/admin/orders" 
                   element={
                     <UserInformationProvider>
-                      <AdminOrdersPage />
+                      <AdminLayout>
+                        <AdminOrdersPage />
+                      </AdminLayout>
                     </UserInformationProvider>
                   } 
                 />
@@ -250,7 +262,9 @@ function App() {
                   path="/admin/statistics" 
                   element={
                     <UserInformationProvider>
-                      <StatisticsPage />
+                      <AdminLayout>
+                        <StatisticsPage />
+                      </AdminLayout>
                     </UserInformationProvider>
                   } 
                 />
@@ -258,7 +272,9 @@ function App() {
                   path="/admin/delivery" 
                   element={
                     <UserInformationProvider>
-                      <AdminDeliveryManagement />
+                      <AdminLayout>
+                        <AdminDeliveryManagement />
+                      </AdminLayout>
                     </UserInformationProvider>
                   } 
                 />
@@ -266,7 +282,9 @@ function App() {
                   path="/admin/promotion" 
                   element={
                     <UserInformationProvider>
-                      <PromotionManagement />
+                      <AdminLayout>
+                        <PromotionManagement />
+                      </AdminLayout>
                     </UserInformationProvider>
                   } 
                 />
