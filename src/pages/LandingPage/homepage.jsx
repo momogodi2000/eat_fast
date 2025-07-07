@@ -3,7 +3,7 @@ import { motion, AnimatePresence, useAnimation, useScroll, useTransform } from '
 import { 
   Sun, Moon, Search, MapPin, Clock, Star, ChevronDown, User, ShoppingBag, 
   Menu, X, Award, ThumbsUp, Gift, ChevronLeft, ChevronRight, Shield,
-  Truck, Phone, Mail, Facebook, Twitter, Instagram, Youtube, CheckCircle
+  Truck, Phone, Mail, Facebook, Twitter, Instagram, Youtube, CheckCircle, ArrowRight
 } from 'lucide-react';
 
 import Footer from '../../components/CommonShare/Footer';
@@ -22,7 +22,6 @@ import grandmere from '../../assets/images/TKC2.jpg';
 import mama from '../../assets/images/TKC3.png';
 import greengarden from '../../assets/images/resto6.jpeg';
 import goodFood from '../../assets/images/resto3.jpeg';
-import tchop from '../../assets/images/carroussel_3.png';
 
 
 // Mock translation function for demo
@@ -90,7 +89,6 @@ const HomePage = () => {
   // State management
   const [darkMode, setDarkMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeCategory, setActiveCategory] = useState('tous');
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotification, setShowNotification] = useState(false);
@@ -102,17 +100,7 @@ const HomePage = () => {
   const { scrollYProgress } = useScroll();
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
 
-  // Theme colors
-  const theme = {
-    primary: 'emerald',
-    secondary: 'amber',
-    accent: 'rose',
-    colors: {
-      emerald: { 500: '#10b981', 600: '#059669', 700: '#047857' },
-      amber: { 500: '#f59e0b', 600: '#d97706' },
-      rose: { 500: '#f43f5e', 600: '#e11d48' }
-    }
-  };
+
 
   // Hero carousel data
   const heroSlides = [
@@ -127,14 +115,14 @@ const HomePage = () => {
       id: 2,
       image: livraison,
       title: 'Livraison Rapide',
-      subtitle: 'En moins de 30 minutes',
+      subtitle: 'En moins de 40 minutes',
       cta: 'Commander maintenant'
     },
     {
       id: 3,
-      image: tchop,
+      image: mama,
       title: 'Restaurants Partenaires',
-      subtitle: 'Plus de 500 restaurants',
+      subtitle: 'Plus de 50 restaurants',
       cta: 'Voir les restaurants'
     }
   ];
@@ -171,78 +159,9 @@ const HomePage = () => {
     }
   ];
 
-  // Featured restaurants data
-  const featuredRestaurants = [
-    {
-      id: 1,
-      name: 'Saveurs du Pays',
-      image: saveur,
-      rating: 4.8,
-      deliveryTime: '20-30',
-      category: 'traditionnel',
-      address: 'Yaoundé, Bastos',
-      specialty: 'Cuisine traditionnelle'
-    },
-    {
-      id: 2,
-      name: 'Fast & Fresh',
-      image: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=400&h=300&fit=crop',
-      rating: 4.6,
-      deliveryTime: '15-25',
-      category: 'fast_food',
-      address: 'Yaoundé, Centre-ville',
-      specialty: 'Burgers & Pizza'
-    },
-    {
-      id: 3,
-      name: 'Ocean Délices',
-      image: goodFood,
-      rating: 4.7,
-      deliveryTime: '25-35',
-      category: 'fruits_de_mer',
-      address: 'Yaoundé, Mvan',
-      specialty: 'Fruits de mer frais'
-    },
-    {
-      id: 4,
-      name: 'Green Garden',
-      image: greengarden,
-      rating: 4.9,
-      deliveryTime: '20-30',
-      category: 'vegetarien',
-      address: 'Yaoundé, Essos',
-      specialty: 'Cuisine végétarienne'
-    },
-    {
-      id: 5,
-      name: 'Mama Italia',
-      image: mama,
-      rating: 4.5,
-      deliveryTime: '30-40',
-      category: 'italien',
-      address: 'Yaoundé, Nlongkak',
-      specialty: 'Pasta & Pizza authentique'
-    },
-    {
-      id: 6,
-      name: 'Chez Grand-Mère',
-      image: grandmere,
-      rating: 4.8,
-      deliveryTime: '25-35',
-      category: 'traditionnel',
-      address: 'Yaoundé, Mendong',
-      specialty: 'Recettes ancestrales'
-    }
-  ];
 
-  const categories = [
-    { id: 'tous', name: t('categories.all') },
-    { id: 'traditionnel', name: t('categories.traditional') },
-    { id: 'fast_food', name: t('categories.fastFood') },
-    { id: 'vegetarien', name: t('categories.vegetarian') },
-    { id: 'italien', name: t('categories.italian') },
-    { id: 'fruits_de_mer', name: t('categories.seafood') }
-  ];
+
+
 
   // Effects
   useEffect(() => {
@@ -288,9 +207,7 @@ const HomePage = () => {
     console.log('Recherche:', searchQuery);
   };
 
-  const filteredRestaurants = activeCategory === 'tous' 
-    ? featuredRestaurants 
-    : featuredRestaurants.filter(restaurant => restaurant.category === activeCategory);
+
 
   // Animation variants
   const fadeInUp = {
@@ -590,9 +507,9 @@ const HomePage = () => {
                   className="grid grid-cols-3 gap-6"
                 >
                   {[
-                    { label: 'Restaurants', value: '500+', color: 'emerald' },
-                    { label: 'Livraison moy.', value: '25min', color: 'amber' },
-                    { label: 'Clients', value: '10k+', color: 'rose' }
+                    { label: 'Restaurants', value: '50+', color: 'emerald' },
+                    { label: 'Livraison moy.', value: '40min', color: 'amber' },
+                    { label: 'Clients', value: '100+', color: 'rose' }
                   ].map((stat, index) => (
                     <div key={index} className={`text-center p-4 rounded-xl ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} backdrop-blur-sm shadow-lg`}>
                       <div className={`text-2xl md:text-3xl font-bold text-${stat.color}-600 dark:text-${stat.color}-400 mb-1`}>
@@ -610,27 +527,27 @@ const HomePage = () => {
                   transition={{ delay: 0.8 }}
                   className="flex flex-col sm:flex-row gap-4"
                 >
-<Link to="/menu">
-  <motion.button
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl transition-all"
-  >
-    <span>Explorer les menus</span>
-    <ChevronDown size={20} className="rotate-270" />
-  </motion.button>
-</Link>
+                  <Link to="/menu">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl transition-all"
+                    >
+                      <span>Explorer les menus</span>
+                      <ChevronDown size={20} className="rotate-270" />
+                    </motion.button>
+                  </Link>
 
-<Link to="/become">
-  <motion.button
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.98 }}
-    className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl transition-all"
-  >
-    <span>Devenir partenaire</span>
-    <ChevronDown size={20} className="rotate-270" />
-  </motion.button>
-</Link>
+                  <Link to="/become">
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white px-8 py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 shadow-xl hover:shadow-2xl transition-all"
+                    >
+                      <span>Devenir partenaire</span>
+                      <ChevronDown size={20} className="rotate-270" />
+                    </motion.button>
+                  </Link>
 
                 </motion.div>
               </motion.div>
@@ -719,7 +636,7 @@ const HomePage = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-sm">Livraison gratuite</p>
-                      <p className="text-emerald-600 dark:text-emerald-400 text-xs">Commande +5000 FCFA</p>
+                      <p className="text-emerald-600 dark:text-emerald-400 text-xs">Commande + 10000 FCFA</p>
                     </div>
                   </div>
                 </motion.div>
@@ -747,20 +664,18 @@ const HomePage = () => {
       </section>
 
       {/* Traditional Foods */}
-      <section className="py-16 relative">
+      <section className="py-16">
         <div className="container mx-auto px-4">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Saveurs Authentiques du Cameroun
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Plats Traditionnels Camerounais</h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-              Découvrez la richesse culinaire camerounaise avec nos plats traditionnels 
-              préparés selon les recettes ancestrales
+              Découvrez les saveurs authentiques du Cameroun, préparées avec amour par nos chefs traditionnels. 
+              Chaque plat raconte une histoire et transporte vos papilles dans un voyage culinaire unique.
             </p>
           </motion.div>
 
@@ -769,14 +684,14 @@ const HomePage = () => {
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           >
             {traditionalFoods.map((food, index) => (
               <motion.div
                 key={food.id}
                 variants={fadeInUp}
-                whileHover={{ y: -10, transition: { duration: 0.2 } }}
-                className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all ${darkMode ? 'bg-gray-800' : 'bg-white'} border border-gray-200 dark:border-gray-700`}
               >
                 <div className="relative h-48 overflow-hidden">
                   <img 
@@ -784,81 +699,166 @@ const HomePage = () => {
                     alt={food.name} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                  <div className="absolute bottom-4 left-4 right-4">
-                    <h3 className="text-white font-bold text-xl mb-1">{food.name}</h3>
-                    <p className="text-emerald-400 font-semibold">{food.price}</p>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                    {food.price}
+                  </div>
+                  <div className="absolute bottom-4 left-4">
+                    <span className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-medium text-gray-700 dark:text-gray-300">
+                      ⭐ 4.8
+                    </span>
                   </div>
                 </div>
+                
                 <div className="p-6">
-                  <p className="text-gray-600 dark:text-gray-300 text-sm leading-relaxed">
+                  <h3 className="font-bold text-xl mb-2 text-gray-900 dark:text-white">{food.name}</h3>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed">
                     {food.description}
                   </p>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full mt-4 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white py-2 rounded-lg font-medium hover:shadow-lg transition-all"
-                  >
-                    Commander
-                  </motion.button>
+                  <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                    <Clock size={16} className="text-emerald-500" />
+                    <span>25-35 min</span>
+                  </div>
                 </div>
               </motion.div>
             ))}
           </motion.div>
-        </div>
-      </section>
 
-      {/* Categories */}
-      <section className="py-8">
-        <div className="container mx-auto px-4">
-          <h2 className="text-2xl font-bold mb-6">{t('sections.categories')}</h2>
-          <div className="flex overflow-x-auto pb-4 scrollbar-hide">
-            <div className="flex gap-4">
-              {categories.map((category) => (
-                <motion.button
-                  key={category.id}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`px-6 py-3 rounded-full whitespace-nowrap font-medium transition-all ${
-                    activeCategory === category.id 
-                      ? 'bg-emerald-500 text-white shadow-lg' 
-                      : darkMode 
-                        ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' 
-                        : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
-                  }`}
-                >
-                  {category.name}
-                </motion.button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Featured Restaurants */}
-      <section className="py-12">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-3xl font-bold">{t('sections.featuredRestaurants')}</h2>
-            <button className="text-emerald-600 hover:text-emerald-700 font-medium">
-              Voir tout →
-            </button>
-          </div>
-          
-          <motion.div 
-            variants={staggerChildren}
-            initial="hidden"
-            whileInView="visible"
+          {/* Voir tous les menus button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="text-center"
           >
-            {filteredRestaurants.map((restaurant, index) => (
+            <Link to="/menu">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 mx-auto"
+              >
+                <span>Voir tous les menus</span>
+                <ArrowRight size={20} />
+              </motion.button>
+            </Link>
+            <p className="text-gray-600 dark:text-gray-400 mt-4 text-sm">
+              Plus de 200 plats traditionnels et modernes disponibles
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Categories - Updated to show restaurant partners only */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-800/50">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-12"
+          >
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Nos Restaurants Partenaires</h2>
+            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+              Découvrez notre réseau de restaurants partenaires, tous sélectionnés avec soin pour vous offrir 
+              la meilleure expérience culinaire. Chaque restaurant partage notre passion pour la qualité et l'authenticité.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              {
+                id: 1,
+                name: "Chez Mama Africa",
+                image: saveur,
+                category: "Cuisine Traditionnelle",
+                rating: 4.8,
+                totalReviews: 245,
+                location: "Bastos, Yaoundé",
+                specialties: ["Ndolé", "Eru", "Koki"],
+                description: "Restaurant familial spécialisé dans la cuisine camerounaise authentique depuis 1985. Nos plats sont préparés avec des ingrédients frais et des recettes transmises de génération en génération.",
+                deliveryTime: "20-30 min",
+                verified: true,
+                featured: true
+              },
+              {
+                id: 2,
+                name: "Le Palais du Ndolé",
+                image: grandmere,
+                category: "Spécialités du Sud",
+                rating: 4.7,
+                totalReviews: 189,
+                location: "Mvan, Yaoundé",
+                specialties: ["Eru", "Bâton de manioc", "Poulet DG"],
+                description: "Découvrez les saveurs authentiques du Sud Cameroun avec nos plats traditionnels préparés selon les méthodes ancestrales. Une expérience culinaire unique qui vous transporte dans le cœur de l'Afrique.",
+                deliveryTime: "25-35 min",
+                verified: true,
+                featured: true
+              },
+              {
+                id: 3,
+                name: "Saveurs du Nord",
+                image: mama,
+                category: "Cuisine du Nord",
+                rating: 4.6,
+                totalReviews: 156,
+                location: "Centre-ville, Yaoundé",
+                specialties: ["Koki", "Achu", "Brochettes"],
+                description: "Spécialiste de la cuisine du Nord Cameroun, nous vous proposons des plats riches en saveurs et en traditions. Nos épices et herbes aromatiques sont importées directement de la région.",
+                deliveryTime: "30-40 min",
+                verified: true,
+                featured: false
+              },
+              {
+                id: 4,
+                name: "Green Garden",
+                image: greengarden,
+                category: "Cuisine Végétarienne",
+                rating: 4.5,
+                totalReviews: 134,
+                location: "Essos, Yaoundé",
+                specialties: ["Plats végétariens", "Jus naturels", "Salades"],
+                description: "Pour les amateurs de cuisine saine et équilibrée. Nos plats végétariens sont préparés avec des légumes frais et bio, offrant une alternative gourmande et nutritive.",
+                deliveryTime: "20-25 min",
+                verified: true,
+                featured: false
+              },
+              {
+                id: 5,
+                name: "Good Food Express",
+                image: goodFood,
+                category: "Cuisine Rapide",
+                rating: 4.4,
+                totalReviews: 98,
+                location: "Akwa, Douala",
+                specialties: ["Burgers", "Pizza", "Plats rapides"],
+                description: "Pour les gourmands pressés ! Notre cuisine rapide ne sacrifie jamais la qualité. Des plats délicieux préparés rapidement pour satisfaire vos envies en un temps record.",
+                deliveryTime: "15-20 min",
+                verified: true,
+                featured: false
+              },
+              {
+                id: 6,
+                name: "Restaurant du Soleil",
+                image: saveur,
+                category: "Cuisine Moderne",
+                rating: 4.7,
+                totalReviews: 167,
+                location: "Bastos, Yaoundé",
+                specialties: ["Fusion", "Plats gastronomiques", "Desserts"],
+                description: "Une fusion audacieuse entre tradition et modernité. Nos chefs créent des plats innovants qui respectent les saveurs traditionnelles tout en apportant une touche contemporaine.",
+                deliveryTime: "35-45 min",
+                verified: true,
+                featured: true
+              }
+            ].map((restaurant, index) => (
               <motion.div
                 key={restaurant.id}
-                variants={fadeInUp}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all ${darkMode ? 'bg-gray-800' : 'bg-white'}`}
+                className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all ${darkMode ? 'bg-gray-800' : 'bg-white'} border border-gray-200 dark:border-gray-700`}
               >
                 <div className="relative h-48 overflow-hidden">
                   <img 
@@ -867,44 +867,92 @@ const HomePage = () => {
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                  {restaurant.featured && (
+                    <div className="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-medium">
+                      ⭐ En vedette
+                    </div>
+                  )}
                   <div className="absolute top-4 right-4 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1">
                     <Star className="text-yellow-500" size={16} fill="currentColor" />
                     <span className="font-semibold text-sm">{restaurant.rating}</span>
                   </div>
                   <div className="absolute bottom-4 left-4">
                     <span className="bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium">
-                      {restaurant.specialty}
+                      {restaurant.category}
                     </span>
                   </div>
                 </div>
                 
                 <div className="p-6">
-                  <h3 className="font-bold text-xl mb-2">{restaurant.name}</h3>
-                  <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm mb-4">
-                    <MapPin size={16} className="mr-2" />
-                    <span>{restaurant.address}</span>
+                  <div className="flex items-start justify-between mb-3">
+                    <h3 className="font-bold text-xl text-gray-900 dark:text-white">{restaurant.name}</h3>
+                    {restaurant.verified && (
+                      <div className="flex items-center gap-1 text-emerald-500">
+                        <CheckCircle size={16} />
+                        <span className="text-xs font-medium">Vérifié</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Clock size={16} className="text-emerald-500" />
-                      <span className="text-gray-700 dark:text-gray-300">
-                        {restaurant.deliveryTime} {t('restaurants.minutes')}
-                      </span>
+                  
+                  <div className="flex items-center text-gray-600 dark:text-gray-400 text-sm mb-3">
+                    <MapPin size={16} className="mr-2" />
+                    <span>{restaurant.location}</span>
+                  </div>
+                  
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed">
+                    {restaurant.description}
+                  </p>
+                  
+                  <div className="mb-4">
+                    <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2">Spécialités :</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {restaurant.specialties.map((specialty, idx) => (
+                        <span key={idx} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full text-xs">
+                          {specialty}
+                        </span>
+                      ))}
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-md"
-                    >
-                      {t('restaurants.order')}
-                    </motion.button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                      <Clock size={16} className="text-emerald-500" />
+                      <span>{restaurant.deliveryTime}</span>
+                    </div>
+                    <div className="text-gray-500 dark:text-gray-400">
+                      {restaurant.totalReviews} avis
+                    </div>
                   </div>
                 </div>
               </motion.div>
             ))}
+          </div>
+
+          {/* Voir tous les restaurants button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mt-12"
+          >
+            <Link to="/restaurants">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white px-8 py-4 rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 flex items-center gap-3 mx-auto"
+              >
+                <span>Voir tous nos restaurants</span>
+                <ArrowRight size={20} />
+              </motion.button>
+            </Link>
+            <p className="text-gray-600 dark:text-gray-400 mt-4 text-sm">
+              Plus de 50 restaurants partenaires dans tout le Cameroun
+            </p>
           </motion.div>
         </div>
       </section>
+
+
 
       {/* How It Works */}
       <section ref={howItWorksRef} className={`py-16 ${darkMode ? 'bg-gray-800/50' : 'bg-emerald-50'}`}>
