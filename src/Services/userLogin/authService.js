@@ -1,302 +1,374 @@
 // src/Services/userLogin/authService.js
 import { baseURI } from "../db_connection";
-import { 
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signOut,
-  sendEmailVerification,
-  updateProfile,
-  getAuth,
-  onAuthStateChanged
-} from 'firebase/auth';
-import { auth, authHelpers } from '../firebase/config'; // Use safe auth helpers
+import axios from 'axios';
 
+/**
+ * Authentication service for handling user authentication
+ * with JWT tokens instead of Firebase
+ */
 class AuthService {
   constructor() {
     this.baseEndpoint = `${baseURI}/auth`;
     this.userEndpoint = `${baseURI}/users`;
-    this.currentUser = null;
+    this.accessToken = localStorage.getItem('accessToken') || null;
+    this.refreshToken = localStorage.getItem('refreshToken') || null;
+    this.userProfile = JSON.parse(localStorage.getItem('userProfile') || 'null');
     
-    // Listen to auth state changes using safe helper
-    this.initAuthListener();
+    // Set up axios interceptor for token refresh
+    this.setupAxiosInterceptor();
   }
 
-  // Initialize Firebase Auth listener using safe helper
-  initAuthListener() {
-    if (!authHelpers.isAvailable()) {
-      console.warn('Firebase Auth not available for listener');
-      return;
-    }
-    
-    authHelpers.onAuthStateChanged((user) => {
-      this.currentUser = user;
-      if (user) {
-        // Store Firebase token for API calls
-        user.getIdToken().then(token => {
-          localStorage.setItem('firebaseToken', token);
-        }).catch(error => {
-          console.error('Error getting user token:', error);
-        });
-      } else {
-        localStorage.removeItem('firebaseToken');
-        localStorage.removeItem('userProfile');
+  /**
+   * Set up axios interceptor to handle token refresh
+   */
+  setupAxiosInterceptor() {
+    axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const originalRequest = error.config;
+        
+        // If error is 401 and not already retrying
+        if (error.response?.status === 401 && !originalRequest._retry && this.refreshToken) {
+          originalRequest._retry = true;
+          
+          try {
+            // Try to refresh token
+            const newTokens = await this.refreshTokens();
+            
+            // Update authorization header
+            originalRequest.headers['Authorization'] = `Bearer ${newTokens.access_token}`;
+            
+            // Retry original request
+            return axios(originalRequest);
+          } catch (refreshError) {
+            // If refresh fails, logout
+            this.logout();
+            return Promise.reject(refreshError);
+          }
+        }
+        
+        return Promise.reject(error);
       }
-    });
+    );
   }
 
-  // Register new user with Firebase + Express backend
+  /**
+   * Register a new user
+   * @param {Object} userData - User registration data
+   * @returns {Promise} Registration result
+   */
   async createUser(userData) {
     try {
-      if (!auth) {
-        throw new Error('Firebase Auth not initialized');
-      }
-      
-      // 1. Create user in Firebase
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        userData.email,
-        userData.password
-      );
-      
-      const firebaseUser = userCredential.user;
-      
-      // 2. Update Firebase profile
-      await updateProfile(firebaseUser, {
-        displayName: `${userData.first_name} ${userData.last_name}`,
-      });
-      
-      // 3. Send email verification
-      await sendEmailVerification(firebaseUser);
-      
-      // 4. Get Firebase token
-      const firebaseToken = await firebaseUser.getIdToken();
-      
-      // 5. Create user profile in Express backend
-      const backendUserData = {
-        firebase_uid: firebaseUser.uid,
+      // Register user with backend
+      const response = await axios.post(`${this.baseEndpoint}/register`, {
         email: userData.email,
+        password: userData.password,
         first_name: userData.first_name,
         last_name: userData.last_name,
         phone_number: userData.phone_number,
-        user_type: userData.user_type || 'client',
-        role: userData.user_type || 'client',
-      };
-      
-      const options = {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${firebaseToken}`
-        },
-        body: JSON.stringify(backendUserData),
-      };
-      
-      const response = await fetch(`${this.userEndpoint}/create`, options);
-      const responseData = await response.json();
-      
-      if (!response.ok) {
-        // If backend fails, delete Firebase user
-        await firebaseUser.delete();
-        throw new Error(responseData.error || "Failed to create user profile");
-      }
+        user_type: userData.user_type || 'client'
+      });
       
       return {
         success: true,
-        message: "Account created successfully. Please verify your email.",
-        user: {
-          firebase_uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          ...responseData.user
-        },
-        requiresEmailVerification: true
+        message: "Compte créé avec succès. Veuillez vérifier le code 2FA envoyé à votre téléphone.",
+        requires2FA: true,
+        userId: response.data.userId,
+        contactMethod: response.data.contactMethod
       };
-      
     } catch (error) {
       console.error("Registration error:", error);
       
-      // Handle Firebase specific errors
-      if (error.code) {
-        switch (error.code) {
-          case 'auth/email-already-in-use':
-            throw new Error("This email is already registered");
-          case 'auth/weak-password':
-            throw new Error("Password is too weak. Use at least 6 characters");
-          case 'auth/invalid-email':
-            throw new Error("Invalid email address");
-          default:
-            throw new Error(error.message);
-        }
+      // Handle specific error responses
+      if (error.response) {
+        const errorData = error.response.data;
+        throw new Error(errorData.message || "Erreur lors de l'inscription");
       }
       
-      throw error;
+      throw new Error("Erreur de connexion au serveur");
     }
   }
 
-  // Login user with Firebase
+  /**
+   * Login user
+   * @param {Object} loginData - Login credentials
+   * @returns {Promise} Login result
+   */
   async getUserByLogin(loginData) {
     try {
-      if (!auth) {
-        throw new Error('Firebase Auth not initialized');
-      }
-      
-      // 1. Authenticate with Firebase
-      const userCredential = await signInWithEmailAndPassword(
-        auth,
-        loginData.email,
-        loginData.password
-      );
-      
-      const firebaseUser = userCredential.user;
-      
-      // 2. Check if email is verified
-      if (!firebaseUser.emailVerified) {
-        await signOut(auth);
-        throw new Error("Please verify your email before logging in");
-      }
-      
-      // 3. Get Firebase token
-      const firebaseToken = await firebaseUser.getIdToken();
-      
-      // 4. Get user profile from Express backend
-      const options = {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${firebaseToken}`
-        },
-      };
-      
-      const response = await fetch(`${this.userEndpoint}/profile`, options);
-      const responseData = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(responseData.error || "Failed to get user profile");
-      }
-      
-      // 5. Store user data
-      localStorage.setItem('userProfile', JSON.stringify(responseData.user));
+      // Login with backend
+      const response = await axios.post(`${this.baseEndpoint}/login`, {
+        email: loginData.email,
+        password: loginData.password
+      });
       
       return {
         success: true,
-        message: "Login successful",
-        user: {
-          firebase_uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          emailVerified: firebaseUser.emailVerified,
-          ...responseData.user
-        },
-        token: firebaseToken
+        message: "Veuillez entrer le code de vérification envoyé à votre téléphone.",
+        requires2FA: true,
+        userId: response.data.userId
       };
-      
     } catch (error) {
       console.error("Login error:", error);
       
-      // Handle Firebase specific errors
-      if (error.code) {
-        switch (error.code) {
-          case 'auth/user-not-found':
-            throw new Error("No account found with this email");
-          case 'auth/wrong-password':
-            throw new Error("Incorrect password");
-          case 'auth/invalid-email':
-            throw new Error("Invalid email address");
-          case 'auth/user-disabled':
-            throw new Error("This account has been disabled");
-          case 'auth/too-many-requests':
-            throw new Error("Too many failed attempts. Please try again later");
-          default:
-            throw new Error(error.message);
-        }
+      // Handle specific error responses
+      if (error.response) {
+        const errorData = error.response.data;
+        throw new Error(errorData.message || "Identifiants invalides");
       }
       
-      throw error;
+      throw new Error("Erreur de connexion au serveur");
     }
   }
 
-  // Logout user
+  /**
+   * Verify 2FA code
+   * @param {Object} verificationData - 2FA verification data
+   * @returns {Promise} Verification result
+   */
+  async verify2FA(verificationData) {
+    try {
+      const response = await axios.post(`${this.baseEndpoint}/verify-2fa`, {
+        userId: verificationData.userId,
+        code: verificationData.code
+      });
+      
+      // Store tokens and user profile
+      this.setAuthData(response.data);
+      
+      return {
+        success: true,
+        message: "Connexion réussie",
+        user: response.data.user
+      };
+    } catch (error) {
+      console.error("2FA verification error:", error);
+      
+      // Handle specific error responses
+      if (error.response) {
+        const errorData = error.response.data;
+        throw new Error(errorData.message || "Code de vérification invalide");
+      }
+      
+      throw new Error("Erreur de connexion au serveur");
+    }
+  }
+
+  /**
+   * Resend 2FA code
+   * @param {string} userId - User ID
+   * @returns {Promise} Resend result
+   */
+  async resend2FA(userId) {
+    try {
+      const response = await axios.post(`${this.baseEndpoint}/resend-2fa`, {
+        userId
+      });
+      
+      return {
+        success: true,
+        message: "Nouveau code envoyé",
+        contactMethod: response.data.contactMethod
+      };
+    } catch (error) {
+      console.error("Resend 2FA error:", error);
+      
+      // Handle specific error responses
+      if (error.response) {
+        const errorData = error.response.data;
+        throw new Error(errorData.message || "Erreur lors de l'envoi du code");
+      }
+      
+      throw new Error("Erreur de connexion au serveur");
+    }
+  }
+
+  /**
+   * Refresh access token
+   * @returns {Promise} New tokens
+   */
+  async refreshTokens() {
+    try {
+      const response = await axios.post(`${this.baseEndpoint}/refresh-token`, {
+        refresh_token: this.refreshToken
+      });
+      
+      // Update stored tokens
+      this.accessToken = response.data.tokens.access_token;
+      this.refreshToken = response.data.tokens.refresh_token;
+      
+      // Save to localStorage
+      localStorage.setItem('accessToken', this.accessToken);
+      localStorage.setItem('refreshToken', this.refreshToken);
+      
+      return response.data.tokens;
+    } catch (error) {
+      console.error("Token refresh error:", error);
+      this.logout();
+      throw new Error("Session expirée. Veuillez vous reconnecter.");
+    }
+  }
+
+  /**
+   * Logout user
+   * @returns {Promise} Logout result
+   */
   async logout() {
     try {
-      await signOut(auth);
-      localStorage.removeItem('firebaseToken');
-      localStorage.removeItem('userProfile');
+      // Only call backend if we have a refresh token
+      if (this.refreshToken) {
+        await axios.post(`${this.baseEndpoint}/logout`, {
+          refresh_token: this.refreshToken
+        }, {
+          headers: {
+            'Authorization': `Bearer ${this.accessToken}`
+          }
+        }).catch(error => {
+          // Ignore errors during logout
+          console.warn("Logout API error:", error);
+        });
+      }
+      
+      // Clear local storage and memory
+      this.clearAuthData();
       
       return {
         success: true,
-        message: "Logged out successfully"
+        message: "Déconnexion réussie"
       };
     } catch (error) {
+      // Still clear local data even if API call fails
+      this.clearAuthData();
+      
       console.error("Logout error:", error);
-      throw new Error("Failed to logout");
+      return {
+        success: true,
+        message: "Déconnexion réussie"
+      };
     }
   }
 
-  // Get current user
+  /**
+   * Store authentication data
+   * @param {Object} authData - Authentication data from server
+   */
+  setAuthData(authData) {
+    if (authData.tokens) {
+      this.accessToken = authData.tokens.access_token;
+      this.refreshToken = authData.tokens.refresh_token;
+      
+      localStorage.setItem('accessToken', this.accessToken);
+      localStorage.setItem('refreshToken', this.refreshToken);
+    }
+    
+    if (authData.user) {
+      this.userProfile = authData.user;
+      localStorage.setItem('userProfile', JSON.stringify(authData.user));
+    }
+  }
+
+  /**
+   * Clear authentication data
+   */
+  clearAuthData() {
+    this.accessToken = null;
+    this.refreshToken = null;
+    this.userProfile = null;
+    
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+    localStorage.removeItem('userProfile');
+  }
+
+  /**
+   * Get current user profile
+   * @returns {Object|null} User profile or null if not authenticated
+   */
   getCurrentUser() {
-    const userProfile = localStorage.getItem('userProfile');
-    return userProfile ? JSON.parse(userProfile) : null;
+    return this.userProfile;
   }
 
-  // Check if user is authenticated
+  /**
+   * Check if user is authenticated
+   * @returns {boolean} Authentication status
+   */
   isAuthenticated() {
-    return !!this.currentUser && !!localStorage.getItem('firebaseToken');
+    return !!this.accessToken && !!this.userProfile;
   }
 
-  // Update user profile
+  /**
+   * Get authorization header
+   * @returns {Object} Headers with authorization
+   */
+  getAuthHeader() {
+    return {
+      'Authorization': `Bearer ${this.accessToken}`
+    };
+  }
+
+  /**
+   * Update user profile
+   * @param {Object} userData - User profile data to update
+   * @returns {Promise} Update result
+   */
   async updateUserProfile(userData) {
     try {
-      const firebaseToken = localStorage.getItem('firebaseToken');
-      if (!firebaseToken) {
-        throw new Error("User not authenticated");
+      if (!this.isAuthenticated()) {
+        throw new Error("Utilisateur non authentifié");
       }
       
-      const options = {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${firebaseToken}`
-        },
-        body: JSON.stringify(userData),
+      const response = await axios.put(`${this.userEndpoint}/profile`, userData, {
+        headers: this.getAuthHeader()
+      });
+      
+      // Update stored profile
+      this.userProfile = {
+        ...this.userProfile,
+        ...response.data.user
       };
       
-      const response = await fetch(`${this.userEndpoint}/profile`, options);
-      const responseData = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(responseData.error || "Failed to update profile");
-      }
-      
-      // Update local storage
-      localStorage.setItem('userProfile', JSON.stringify(responseData.user));
+      localStorage.setItem('userProfile', JSON.stringify(this.userProfile));
       
       return {
         success: true,
-        message: "Profile updated successfully",
-        user: responseData.user
+        message: "Profil mis à jour avec succès",
+        user: this.userProfile
       };
-      
     } catch (error) {
       console.error("Profile update error:", error);
-      throw error;
+      
+      if (error.response) {
+        const errorData = error.response.data;
+        throw new Error(errorData.message || "Erreur lors de la mise à jour du profil");
+      }
+      
+      throw new Error("Erreur de connexion au serveur");
     }
   }
 
-  // Send password reset email
+  /**
+   * Request password reset
+   * @param {string} email - User email
+   * @returns {Promise} Reset request result
+   */
   async resetPassword(email) {
     try {
-      const { sendPasswordResetEmail } = await import('firebase/auth');
-      await sendPasswordResetEmail(auth, email);
+      const response = await axios.post(`${this.baseEndpoint}/forgot-password`, {
+        email
+      });
       
       return {
         success: true,
-        message: "Password reset email sent"
+        message: "Si votre email est enregistré, vous recevrez un lien de réinitialisation"
       };
     } catch (error) {
       console.error("Password reset error:", error);
       
-      if (error.code === 'auth/user-not-found') {
-        throw new Error("No account found with this email");
-      }
-      
-      throw new Error("Failed to send password reset email");
+      // Always return success for security
+      return {
+        success: true,
+        message: "Si votre email est enregistré, vous recevrez un lien de réinitialisation"
+      };
     }
   }
 
@@ -447,8 +519,6 @@ class AuthService {
   }
 }
 
-// Create singleton instance
-const AuthServices = new AuthService();
-
-export { AuthServices };
-export default AuthServices;
+// Create and export singleton instance
+const authService = new AuthService();
+export default authService;

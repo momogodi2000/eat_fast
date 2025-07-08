@@ -10,6 +10,15 @@ const API_CONFIG = {
 
 export const baseURI = `${API_CONFIG.BASE_URL}/api/${API_CONFIG.VERSION}`;
 
+// API endpoints for public services
+export const API_ENDPOINTS = {
+  PARTNER_APPLICATIONS: '/partner-applications',
+  STATUS: (id) => `/partner-applications/${id}/status`,
+  CONTACT: '/contact',
+  NEWSLETTER: '/newsletter',
+  HEALTH: '/health',
+};
+
 // Create axios instance with default configuration
 export const apiClient = axios.create({
   baseURL: baseURI,
@@ -22,8 +31,8 @@ export const apiClient = axios.create({
 // Request interceptor - Add auth token if available
 apiClient.interceptors.request.use(
   (config) => {
-    // Add Firebase Auth token if available
-    const token = localStorage.getItem('firebaseToken');
+    // Add JWT token if available
+    const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -37,7 +46,7 @@ apiClient.interceptors.request.use(
         method: config.method?.toUpperCase(),
         url: config.url,
         baseURL: config.baseURL,
-        headers: config.headers,
+        headers: { ...config.headers, Authorization: config.headers.Authorization ? 'Bearer ***' : undefined },
       });
     }
 
@@ -90,12 +99,8 @@ apiClient.interceptors.response.use(
       
       switch (status) {
         case 401:
-          // Unauthorized - clear token and redirect to login
-          localStorage.removeItem('firebaseToken');
-          localStorage.removeItem('authToken');
-          if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
-          }
+          // Token might be expired, but don't redirect - let auth service handle refresh
+          console.warn('Authentication required - token may be invalid or expired');
           break;
           
         case 403:
@@ -290,98 +295,43 @@ class DBConnection {
       }
     };
   }
+
+  // Health check endpoint
+  async healthCheck() {
+    try {
+      const response = await this.client.get(`${API_ENDPOINTS.HEALTH}`);
+      return {
+        status: 'online',
+        message: response.data.message || 'Service is operational',
+        timestamp: new Date().toISOString(),
+      };
+    } catch (error) {
+      return {
+        status: 'offline',
+        message: 'Service is currently unavailable',
+        timestamp: new Date().toISOString(),
+      };
+    }
+  }
 }
 
 // Create singleton instance
 const dbConnection = new DBConnection();
-
-// Export both the class and instance
 export default dbConnection;
-export { DBConnection };
 
-// Export configuration for testing/customization
-export const API_ENDPOINTS = {
-  // Authentication endpoints
-  AUTH: {
-    REGISTER: '/auth/register',
-    LOGIN: '/auth/login',
-    LOGOUT: '/auth/logout',
-    REFRESH: '/auth/refresh-token',
-    VERIFY_EMAIL: '/auth/verify-email',
-    RESET_PASSWORD: '/auth/reset-password',
-  },
-  
-  // User endpoints
-  USERS: {
-    PROFILE: '/users/profile',
-    UPDATE: '/users/update',
-    DELETE: '/users/delete',
-    LIST: '/users',
-  },
-  
-  // Restaurant endpoints
-  RESTAURANTS: {
-    LIST: '/restaurants',
-    CREATE: '/restaurants',
-    UPDATE: (id) => `/restaurants/${id}`,
-    DELETE: (id) => `/restaurants/${id}`,
-    MENU: (id) => `/restaurants/${id}/menu`,
-  },
-  
-  // Order endpoints
-  ORDERS: {
-    LIST: '/orders',
-    CREATE: '/orders',
-    UPDATE: (id) => `/orders/${id}`,
-    CANCEL: (id) => `/orders/${id}/cancel`,
-    TRACK: (id) => `/orders/${id}/track`,
-  },
-  
-  // Payment endpoints
-  PAYMENTS: {
-    PROCESS: '/payments/process',
-    VERIFY: '/payments/verify',
-    REFUND: '/payments/refund',
-  },
-  
-  // File upload endpoints
-  UPLOADS: {
-    IMAGE: '/uploads/image',
-    DOCUMENT: '/uploads/document',
-  },
-  
-  // Partner application endpoints
-  PARTNER_APPLICATIONS: '/partner/applications',
-  STATUS: (id) => `/partner/applications/${id}/status`,
-  
-  // Contact endpoints
-  CONTACT: '/contact',
-  
-  // Health check endpoint
-  HEALTH: '/health',
-};
-
-// Utility functions
 export const isOnline = () => navigator.onLine;
 
 export const handleNetworkError = (callback) => {
-  if (!isOnline()) {
+  if (!navigator.onLine) {
     callback({
-      success: false,
-      message: 'You are offline. Please check your internet connection.',
+      status: 0,
+      message: 'Vous êtes hors ligne. Veuillez vérifier votre connexion internet.',
     });
     return true;
   }
   return false;
 };
 
-// Health check function
 export const healthCheck = async () => {
-  try {
-    const response = await dbConnection.get('/health');
-    return response;
-  } catch (error) {
-    console.error('Health check failed:', error);
-    return { status: 'error', message: 'Service unavailable' };
-  }
+  return await dbConnection.healthCheck();
 };

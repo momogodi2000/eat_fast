@@ -1,11 +1,12 @@
 // src/Services/Public/BecomeAPartnerServices.js
-// Simplified partner services that will work reliably
+// Partner application service for restaurant and delivery partners
 
 import dbConnection, { API_ENDPOINTS, handleNetworkError } from '../db_connection';
 
 class PartnerServices {
   constructor() {
     this.dbConnection = dbConnection;
+    this.baseEndpoint = API_ENDPOINTS.PARTNER_APPLICATIONS;
     this.uploadProgress = 0;
     this.isUploading = false;
   }
@@ -16,7 +17,7 @@ class PartnerServices {
       console.log('📤 Starting partner application submission...');
       
       // Check network
-      if (handleNetworkError((error) => Promise.reject(error))) {
+      if (!navigator.onLine) {
         return { success: false, message: 'Pas de connexion internet' };
       }
 
@@ -51,7 +52,7 @@ class PartnerServices {
 
       // Submit the application
       const response = await this.dbConnection.uploadFiles(
-        API_ENDPOINTS.PARTNER_APPLICATIONS,
+        this.baseEndpoint,
         submissionData,
         progressHandler
       );
@@ -76,7 +77,7 @@ class PartnerServices {
       return {
         success: false,
         message: this.getErrorMessage(error),
-        errors: [],
+        errors: error.errors || [],
       };
     }
   }
@@ -95,7 +96,7 @@ class PartnerServices {
 
       const response = await this.dbConnection.get(
         API_ENDPOINTS.STATUS(applicationId),
-        { email, id: applicationId }
+        { email: this.sanitizeInput(email), id: applicationId }
       );
 
       return {
@@ -203,7 +204,8 @@ class PartnerServices {
       if (value !== null && value !== undefined && 
           !(value instanceof File) && !Array.isArray(value) &&
           typeof value !== 'object') {
-        multipartData.append(key, value.toString());
+        // Sanitize text inputs
+        multipartData.append(key, this.sanitizeInput(value.toString()));
       }
     });
 
@@ -248,171 +250,198 @@ class PartnerServices {
         if (formData.businessPlan instanceof File) {
           multipartData.append('business_plan', formData.businessPlan);
         }
-        if (formData.financialStatements instanceof File) {
-          multipartData.append('financial_statements', formData.financialStatements);
-        }
         break;
     }
-
-    // Add photos
-    if (Array.isArray(formData.photos)) {
-      formData.photos.forEach((photo, index) => {
-        if (photo instanceof File) {
-          multipartData.append(`photo_${index}`, photo);
-        }
-      });
-    }
   }
 
-  // Simple file validation
+  // Validate file
   validateFile(file, type = 'document') {
+    if (!file) return { isValid: false, error: 'Fichier manquant' };
+
+    // Check file size (10MB max)
     const maxSize = 10 * 1024 * 1024; // 10MB
-    const documentTypes = [
-      'application/pdf',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    ];
-    const imageTypes = ['image/jpeg', 'image/jpg', 'image/png'];
-    
-    const allowedTypes = type === 'image' ? imageTypes : [...documentTypes, ...imageTypes];
-    
-    const errors = [];
-
     if (file.size > maxSize) {
-      errors.push('Fichier trop volumineux (max 10MB)');
+      return { 
+        isValid: false, 
+        error: `Le fichier est trop volumineux (max 10MB)` 
+      };
     }
 
-    if (!allowedTypes.includes(file.type)) {
-      errors.push('Type de fichier non supporté');
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors,
+    // Check file type
+    const validTypes = {
+      document: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+      image: ['image/jpeg', 'image/png', 'image/jpg'],
+      any: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png', 'image/jpg']
     };
+
+    const allowedTypes = validTypes[type] || validTypes.any;
+    if (!allowedTypes.includes(file.type)) {
+      return { 
+        isValid: false, 
+        error: `Type de fichier non autorisé. Formats acceptés: ${type === 'document' ? 'PDF, DOC, DOCX' : 'PDF, DOC, DOCX, JPG, PNG'}` 
+      };
+    }
+
+    return { isValid: true };
   }
 
-  // Utility methods
+  // Email validation
   isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
+  // Error message formatter
   getErrorMessage(error) {
-    if (typeof error === 'string') return error;
-    if (error?.message) return error.message;
-    return 'Une erreur inattendue est survenue';
+    if (error.status === 429) return 'Trop de tentatives. Veuillez réessayer plus tard.';
+    if (error.status === 413) return 'Fichier trop volumineux. Maximum 10MB par fichier.';
+    if (error.status === 400) return error.message || 'Données invalides. Veuillez vérifier vos informations.';
+    if (error.status === 415) return 'Type de fichier non supporté. Formats acceptés: PDF, DOC, DOCX, JPG, PNG.';
+    
+    return error.message || 'Erreur lors de la soumission. Veuillez réessayer.';
   }
 
+  // Get current upload progress
   getUploadProgress() {
     return this.uploadProgress;
   }
 
+  // Check if upload is in progress
   getIsUploading() {
     return this.isUploading;
   }
 
+  // Reset upload progress
   resetUploadProgress() {
     this.uploadProgress = 0;
     this.isUploading = false;
   }
+
+  /**
+   * Sanitize user input to prevent XSS attacks
+   * @param {string} input - User input to sanitize
+   * @returns {string} Sanitized input
+   */
+  sanitizeInput(input) {
+    if (!input) return input;
+    
+    // Convert to string if not already
+    const str = String(input);
+    
+    // Replace potentially dangerous characters
+    return str
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 }
 
-// Create and export singleton
+// Create singleton instance
 const partnerServices = new PartnerServices();
 export default partnerServices;
 
-// Export utility functions
+// Export helper functions
 export const formatPartnerError = (error) => partnerServices.getErrorMessage(error);
 
 export const getPartnerTypeDisplay = (type) => {
-  const displays = {
+  const types = {
     'restaurant': 'Restaurant',
-    'delivery-agent': 'Agent Livreur', 
+    'delivery-agent': 'Livreur',
     'investor': 'Investisseur',
-    'other': 'Autre Service'
+    'other': 'Autre partenaire'
   };
-  return displays[type] || type;
+  
+  return types[type] || 'Partenaire';
 };
 
 export const getStatusDisplay = (status) => {
-  const displays = {
+  const statuses = {
     'pending': {
       label: 'En attente',
-      bgColor: 'bg-orange-100',
-      textColor: 'text-orange-800',
-      icon: '⏳',
-      description: 'Votre candidature est en cours de traitement'
+      color: '#f59e0b',
+      description: 'Votre candidature est en cours d\'examen.'
+    },
+    'reviewing': {
+      label: 'En cours de revue',
+      color: '#3b82f6',
+      description: 'Votre candidature est en cours d\'examen par notre équipe.'
     },
     'approved': {
       label: 'Approuvée',
-      bgColor: 'bg-green-100', 
-      textColor: 'text-green-800',
-      icon: '✅',
-      description: 'Félicitations ! Votre candidature a été approuvée'
+      color: '#10b981',
+      description: 'Félicitations! Votre candidature a été approuvée.'
     },
     'rejected': {
       label: 'Refusée',
-      bgColor: 'bg-red-100',
-      textColor: 'text-red-800', 
-      icon: '❌',
-      description: 'Votre candidature n\'a pas été retenue'
+      color: '#ef4444',
+      description: 'Malheureusement, votre candidature n\'a pas été retenue.'
+    },
+    'incomplete': {
+      label: 'Incomplète',
+      color: '#f97316',
+      description: 'Votre candidature est incomplète. Veuillez fournir les informations manquantes.'
+    },
+    'verification': {
+      label: 'Vérification',
+      color: '#8b5cf6',
+      description: 'Nous procédons à la vérification de vos informations.'
+    },
+    'on_hold': {
+      label: 'En attente',
+      color: '#6b7280',
+      description: 'Votre candidature est temporairement en attente.'
     }
   };
   
-  return displays[status] || {
+  return statuses[status] || {
     label: 'Inconnu',
-    bgColor: 'bg-gray-100',
-    textColor: 'text-gray-800',
-    icon: '❓',
+    color: '#6b7280',
     description: 'Statut inconnu'
   };
 };
 
-// Additional utility functions
 export const validateFile = (file, type = 'document') => partnerServices.validateFile(file, type);
 export const isValidCameroonPhone = (phone) => {
-  const phoneRegex = /^(\+237|237)?[236789][0-9]{8}$/;
-  return phoneRegex.test(phone.replace(/\s/g, ''));
+  const phoneRegex = /^(237|\+237)?[2368]\d{8}$/;
+  return phoneRegex.test(phone);
 };
 export const isValidEmail = (email) => partnerServices.isValidEmail(email);
 export const formatFileSize = (bytes) => {
-  if (bytes === 0) return '0 Bytes';
-  const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
 };
+
 export const formatCurrency = (amount, currency = 'XAF') => {
-  return new Intl.NumberFormat('fr-CM', {
-    style: 'currency',
-    currency: currency,
+  return new Intl.NumberFormat('fr-FR', { 
+    style: 'currency', 
+    currency 
   }).format(amount);
 };
+
 export const formatDate = (date) => {
-  return new Intl.DateTimeFormat('fr-CM', {
+  if (!date) return '';
+  
+  return new Intl.DateTimeFormat('fr-FR', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   }).format(new Date(date));
 };
 
 export const getDefaultPartnerConfig = () => ({
-  partnerTypes: [
-    { value: 'restaurant', label: 'Restaurant', icon: '🍽️' },
-    { value: 'delivery-agent', label: 'Agent Livreur', icon: '🚚' },
-    { value: 'investor', label: 'Investisseur', icon: '💰' },
-    { value: 'other', label: 'Autre Service', icon: '🔧' }
-  ],
   maxFileSize: 10 * 1024 * 1024, // 10MB
   allowedFileTypes: {
-    documents: ['.pdf', '.doc', '.docx'],
-    images: ['.jpg', '.jpeg', '.png']
+    documents: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+    images: ['image/jpeg', 'image/png', 'image/jpg'],
   },
-  requiredFields: {
-    restaurant: ['businessName', 'cuisineType', 'address', 'city'],
-    'delivery-agent': ['vehicleType', 'address', 'city'],
-    investor: ['investmentAmount', 'investmentType'],
-    other: ['serviceType']
-  }
+  partnerTypes: [
+    { id: 'restaurant', label: 'Restaurant' },
+    { id: 'delivery-agent', label: 'Livreur' },
+    { id: 'investor', label: 'Investisseur' },
+    { id: 'other', label: 'Autre' }
+  ]
 });

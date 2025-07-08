@@ -1,4 +1,4 @@
-import dbConnection from '../db_connection';
+import dbConnection, { API_ENDPOINTS } from '../db_connection';
 
 /**
  * Contact Services for EatFast Platform
@@ -32,7 +32,7 @@ Utility Functions
 class ContactServices {
   constructor() {
     this.db = dbConnection;
-    this.baseEndpoint = '/contact';
+    this.baseEndpoint = API_ENDPOINTS.CONTACT;
   }
 
   /**
@@ -52,15 +52,15 @@ class ContactServices {
         };
       }
 
-      // Prepare data for submission
+      // Prepare data for submission with sanitization
       const formData = {
-        name: contactData.name?.trim(),
-        email: contactData.email?.toLowerCase().trim(),
-        phone: contactData.phone?.trim() || null,
-        subject: contactData.subject || 'general',
-        message: contactData.message?.trim(),
-        company: contactData.company?.trim() || null,
-        website: contactData.website?.trim() || null,
+        name: this.sanitizeInput(contactData.name?.trim()),
+        email: this.sanitizeInput(contactData.email?.toLowerCase().trim()),
+        phone: this.sanitizeInput(contactData.phone?.trim()) || null,
+        subject: this.sanitizeInput(contactData.subject) || 'general',
+        message: this.sanitizeInput(contactData.message?.trim()),
+        company: this.sanitizeInput(contactData.company?.trim()) || null,
+        website: this.sanitizeInput(contactData.website?.trim()) || null,
         preferred_contact_method: contactData.preferred_contact_method || 'email',
         // Add UTM parameters if present in URL
         utm_source: this.getUtmParameter('utm_source'),
@@ -101,6 +101,14 @@ class ContactServices {
         };
       }
 
+      if (error.status === 400 && error.errors?.length > 0) {
+        return {
+          success: false,
+          message: 'Veuillez corriger les erreurs suivantes:',
+          errors: error.errors
+        };
+      }
+
       return {
         success: false,
         message: error.message || 'Erreur lors de l\'envoi du message. Veuillez réessayer.',
@@ -123,6 +131,8 @@ class ContactServices {
         priority: options.priority || undefined,
         subject: options.subject || undefined,
         search: options.search || undefined,
+        sort_by: options.sort_by || 'created_at',
+        sort_order: options.sort_order || 'desc'
       };
 
       // Remove undefined values
@@ -166,6 +176,8 @@ class ContactServices {
           total: response.total || 0,
           today: response.today || 0,
           by_status: response.by_status || {},
+          by_subject: response.by_subject || {},
+          response_time: response.response_time || {}
         },
         data: response
       };
@@ -178,7 +190,9 @@ class ContactServices {
         stats: {
           total: 0,
           today: 0,
-          by_status: {}
+          by_status: {},
+          by_subject: {},
+          response_time: {}
         }
       };
     }
@@ -199,7 +213,13 @@ class ContactServices {
         };
       }
 
-      const response = await this.db.put(`${this.baseEndpoint}/${contactId}`, updateData);
+      // Sanitize update data
+      const sanitizedData = {};
+      for (const key in updateData) {
+        sanitizedData[key] = this.sanitizeInput(updateData[key]);
+      }
+
+      const response = await this.db.put(`${this.baseEndpoint}/${contactId}`, sanitizedData);
       
       return {
         success: true,
@@ -212,7 +232,8 @@ class ContactServices {
       console.error('❌ Failed to update contact status:', error);
       return {
         success: false,
-        message: error.message || 'Erreur lors de la mise à jour du message'
+        message: error.message || 'Erreur lors de la mise à jour du message',
+        errors: error.errors || []
       };
     }
   }
@@ -250,68 +271,22 @@ class ContactServices {
   }
 
   /**
-   * Add a response to a contact inquiry (for admin)
-   * @param {String} contactId - Contact message ID
-   * @param {Object} responseData - Response data
-   * @returns {Promise<Object>} Created response
+   * Sanitize user input to prevent XSS attacks
+   * @param {string} input - User input to sanitize
+   * @returns {string} Sanitized input
    */
-  async addContactResponse(contactId, responseData) {
-    try {
-      if (!contactId) {
-        throw {
-          success: false,
-          message: 'Contact ID is required'
-        };
-      }
-
-      const response = await this.db.post(`${this.baseEndpoint}/${contactId}/responses`, responseData);
-      
-      return {
-        success: true,
-        message: response.message || 'Réponse ajoutée avec succès',
-        response: response.response,
-        data: response
-      };
-
-    } catch (error) {
-      console.error('❌ Failed to add contact response:', error);
-      return {
-        success: false,
-        message: error.message || 'Erreur lors de l\'ajout de la réponse'
-      };
-    }
-  }
-
-  /**
-   * Get responses for a contact inquiry (for admin)
-   * @param {String} contactId - Contact message ID
-   * @returns {Promise<Object>} Contact responses
-   */
-  async getContactResponses(contactId) {
-    try {
-      if (!contactId) {
-        throw {
-          success: false,
-          message: 'Contact ID is required'
-        };
-      }
-
-      const response = await this.db.get(`${this.baseEndpoint}/${contactId}/responses`);
-      
-      return {
-        success: true,
-        responses: response.responses || [],
-        data: response
-      };
-
-    } catch (error) {
-      console.error('❌ Failed to fetch contact responses:', error);
-      return {
-        success: false,
-        message: error.message || 'Erreur lors du chargement des réponses',
-        responses: []
-      };
-    }
+  sanitizeInput(input) {
+    if (!input) return input;
+    
+    // Convert to string if not already
+    const str = String(input);
+    
+    // Replace potentially dangerous characters
+    return str
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   /**
@@ -615,20 +590,14 @@ export const getContactFormConfig = () => contactServices.getContactFormConfig()
 // Add missing utility functions
 export const formatErrorMessages = (errors) => {
   if (!errors || !Array.isArray(errors)) return '';
-  return errors.join(', ');
+  return errors.map(err => typeof err === 'string' ? err : err.message || '').join(', ');
 };
 
 export const getCharacterCount = (text, maxLength = 5000) => {
-  const current = text ? text.length : 0;
-  const remaining = Math.max(0, maxLength - current);
-  const percentage = Math.round((current / maxLength) * 100);
-  const isValid = current <= maxLength;
+  if (!text) return { current: 0, max: maxLength, percentage: 0 };
   
-  return {
-    current,
-    max: maxLength,
-    remaining,
-    isValid,
-    percentage
-  };
+  const current = text.length;
+  const percentage = Math.min(Math.round((current / maxLength) * 100), 100);
+  
+  return { current, max: maxLength, percentage };
 };

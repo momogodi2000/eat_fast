@@ -143,54 +143,64 @@ const PWADataManager = () => {
   const [pwaInstallPromptShown, setPwaInstallPromptShown] = useState(false);
 
   useEffect(() => {
-    // Initialize offline database
-    offlineDB.init().then(() => {
-      console.log('Offline database initialized');
-      
-      // Prefetch data for offline use when online
-      if (navigator.onLine) {
-        // Define API endpoints for prefetching
-        const apiEndpoints = {
-          restaurants: '/api/restaurants',
-          popularMenuItems: '/api/menu/popular',
-          // User-specific endpoints will be added if user is logged in
-        };
-        
-        // Check if user is logged in
-        const userId = localStorage.getItem('userId');
-        if (userId) {
-          apiEndpoints.userData = `/api/users/${userId}`;
-          apiEndpoints.userOrders = `/api/users/${userId}/orders`;
-        }
-        
-        // Prefetch data
-        offlineDB.prefetchData(apiEndpoints).catch(err => {
-          console.error('Error prefetching data:', err);
-        });
-      }
-      
-      // Set up background sync for offline data
-      if ('serviceWorker' in navigator && 'SyncManager' in window) {
-        navigator.serviceWorker.ready.then(registration => {
-          // Register for background sync
-          registration.sync.register('background-sync').catch(err => {
-            console.error('Error registering for background sync:', err);
-          });
+    try {
+      // Initialize offline database
+      if (typeof offlineDB.init === 'function') {
+        offlineDB.init().then(() => {
+          console.log('Offline database initialized');
           
-          // Register for order sync
-          registration.sync.register('sync-orders').catch(err => {
-            console.error('Error registering for order sync:', err);
-          });
+          // Prefetch data for offline use when online
+          if (navigator.onLine) {
+            // Define API endpoints for prefetching
+            const apiEndpoints = {
+              restaurants: '/api/restaurants',
+              popularMenuItems: '/api/menu/popular',
+              // User-specific endpoints will be added if user is logged in
+            };
+            
+            // Check if user is logged in
+            const userId = localStorage.getItem('userId');
+            if (userId) {
+              apiEndpoints.userData = `/api/users/${userId}`;
+              apiEndpoints.userOrders = `/api/users/${userId}/orders`;
+            }
+            
+            // Prefetch data
+            if (typeof offlineDB.prefetchData === 'function') {
+              offlineDB.prefetchData(apiEndpoints).catch(err => {
+                console.error('Error prefetching data:', err);
+              });
+            }
+          }
+          
+          // Set up background sync for offline data
+          if ('serviceWorker' in navigator && 'SyncManager' in window) {
+            navigator.serviceWorker.ready.then(registration => {
+              // Register for background sync
+              registration.sync.register('background-sync').catch(err => {
+                console.error('Error registering for background sync:', err);
+              });
+              
+              // Register for order sync
+              registration.sync.register('sync-orders').catch(err => {
+                console.error('Error registering for order sync:', err);
+              });
+            });
+          }
+        }).catch(err => {
+          console.error('Error initializing offline database:', err);
         });
+      } else {
+        console.error('offlineDB.init is not a function');
       }
-    }).catch(err => {
-      console.error('Error initializing offline database:', err);
-    });
+    } catch (error) {
+      console.error('Error in PWADataManager:', error);
+    }
     
     // Handle online event to sync data
     const handleOnline = () => {
       console.log('App is back online');
-      if (offlineDB.isInitialized) {
+      if (offlineDB.isInitialized && typeof offlineDB.syncOfflineData === 'function') {
         offlineDB.syncOfflineData().catch(err => {
           console.error('Error syncing offline data:', err);
         });
