@@ -40,6 +40,10 @@ const HomePage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [showNotification, setShowNotification] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const [isIos, setIsIos] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
 
   // Refs and animations
   const howItWorksRef = useRef(null);
@@ -68,6 +72,16 @@ const HomePage = () => {
       window.removeEventListener('show-ios-install-prompt', handleShowIOSInstallPrompt);
       window.removeEventListener('show-install-prompt', handleShowInstallPrompt);
     };
+  }, []);
+
+  useEffect(() => {
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    setIsIos(/iphone|ipad|ipod/.test(userAgent));
+    setIsAndroid(/android/.test(userAgent));
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    });
   }, []);
 
   // Hero carousel data
@@ -165,6 +179,14 @@ const HomePage = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     console.log('Recherche:', searchQuery);
+  };
+
+  const handleDownloadClick = () => {
+    if (isAndroid && deferredPrompt) {
+      deferredPrompt.prompt();
+    } else {
+      setShowInstallGuide(true);
+    }
   };
 
   // Animation variants
@@ -973,7 +995,7 @@ const HomePage = () => {
               className="text-center mb-16"
             >
               <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                Téléchargez EatFast
+                Télécharger EatFast
               </h2>
               <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
                 Commandez vos plats préférés en quelques clics. Disponible sur iOS, Android et en version PWA pour tous vos appareils.
@@ -1018,15 +1040,7 @@ const HomePage = () => {
                   </div>
 
                   <button
-                    onClick={() => {
-                      // Trigger PWA install prompt
-                      if ('serviceWorker' in navigator && 'BeforeInstallPromptEvent' in window) {
-                        window.dispatchEvent(new Event('beforeinstallprompt'));
-                      } else {
-                        // Fallback for browsers that don't support PWA
-                        window.open(window.location.href, '_blank');
-                      }
-                    }}
+                    onClick={handleDownloadClick}
                     className="mt-6 w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
                   >
                     <div className="flex items-center justify-center gap-3">
@@ -1278,6 +1292,42 @@ const HomePage = () => {
       
       {/* PWA Install Component */}
       <PWAInstall />
+
+      {/* Install Guide Modal */}
+      {showInstallGuide && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white p-8 rounded-xl shadow-lg">
+            <h3 className="text-xl font-semibold mb-4">Comment installer l'application ?</h3>
+            {isIos ? (
+              <ol className="list-decimal pl-6 space-y-2">
+                <li>Ouvrez ce site dans Safari.</li>
+                <li>Touchez le bouton de partage <span role="img" aria-label="Partager">��</span> en bas de l'écran.</li>
+                <li>Faites défiler et touchez « Ajouter à l'écran d'accueil ».</li>
+                <li>Confirmez en appuyant sur « Ajouter ».</li>
+              </ol>
+            ) : isAndroid ? (
+              <ol className="list-decimal pl-6 space-y-2">
+                <li>Ouvrez ce site dans Chrome.</li>
+                <li>Touchez le menu (⋮) en haut à droite.</li>
+                <li>Sélectionnez « Installer l'application » ou « Ajouter à l'écran d'accueil ».</li>
+                <li>Confirmez l'installation.</li>
+              </ol>
+            ) : (
+              <ol className="list-decimal pl-6 space-y-2">
+                <li>Ouvrez ce site dans votre navigateur.</li>
+                <li>Cliquez sur l'icône d'installation dans la barre d'adresse ou le menu.</li>
+                <li>Sélectionnez « Installer ».</li>
+              </ol>
+            )}
+            <button
+              className="mt-6 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-6 rounded-lg"
+              onClick={() => setShowInstallGuide(false)}
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
