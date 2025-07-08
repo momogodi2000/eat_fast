@@ -9,6 +9,9 @@ import {
 import Footer from '../../components/CommonShare/Footer';
 import PWAInstall from '../../components/PWAInstall';
 import QRCode from '../../components/QRCode';
+import MobileAppBanner from '../../components/MobileAppBanner';
+import MobileAppInstall from '../../components/MobileAppInstall';
+import MobileAppSection from '../../components/MobileAppSection';
 
 import koki from '../../assets/images/koki.jpeg';
 import achu from '../../assets/images/achue.jpeg';
@@ -22,7 +25,6 @@ import grandmere from '../../assets/images/TKC2.jpg';
 import mama from '../../assets/images/TKC3.png';
 import greengarden from '../../assets/images/resto6.jpeg';
 import goodFood from '../../assets/images/resto3.jpeg';
-
 
 // Mock translation function for demo
 const useTranslation = () => ({
@@ -100,7 +102,28 @@ const HomePage = () => {
   const { scrollYProgress } = useScroll();
   const backgroundY = useTransform(scrollYProgress, [0, 1], ['0%', '20%']);
 
+  // Listen for custom events from mobile app components
+  useEffect(() => {
+    const handleShowIOSInstallPrompt = () => {
+      // Find the MobileAppInstall component and trigger its iOS installation flow
+      const event = new CustomEvent('show-ios-install-steps');
+      window.dispatchEvent(event);
+    };
 
+    const handleShowInstallPrompt = () => {
+      // Show the PWA install prompt
+      const event = new CustomEvent('show-pwa-install-prompt');
+      window.dispatchEvent(event);
+    };
+
+    window.addEventListener('show-ios-install-prompt', handleShowIOSInstallPrompt);
+    window.addEventListener('show-install-prompt', handleShowInstallPrompt);
+
+    return () => {
+      window.removeEventListener('show-ios-install-prompt', handleShowIOSInstallPrompt);
+      window.removeEventListener('show-install-prompt', handleShowInstallPrompt);
+    };
+  }, []);
 
   // Hero carousel data
   const heroSlides = [
@@ -159,10 +182,6 @@ const HomePage = () => {
     }
   ];
 
-
-
-
-
   // Effects
   useEffect(() => {
     const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -207,8 +226,6 @@ const HomePage = () => {
     console.log('Recherche:', searchQuery);
   };
 
-
-
   // Animation variants
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
@@ -228,6 +245,12 @@ const HomePage = () => {
       darkMode ? 'dark bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'
     }`}>
       
+      {/* Mobile App Banner */}
+      <MobileAppBanner />
+
+      {/* Mobile App Install Prompt */}
+      <MobileAppInstall />
+
       {/* Notification Toast */}
       <AnimatePresence>
         {showNotification && (
@@ -254,7 +277,7 @@ const HomePage = () => {
                   onClick={() => setShowNotification(false)}
                   className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
                 >
-                  <X size={16} />
+                  <X size={18} />
                 </button>
               </div>
             </div>
@@ -283,7 +306,7 @@ const HomePage = () => {
             </span>
           </motion.div>
 
-{/* Desktop Navigation */}
+          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <nav className="flex items-center gap-6">
               <Link 
@@ -952,8 +975,6 @@ const HomePage = () => {
         </div>
       </section>
 
-
-
       {/* How It Works */}
       <section ref={howItWorksRef} className={`py-16 ${darkMode ? 'bg-gray-800/50' : 'bg-emerald-50'}`}>
         <div className="container mx-auto px-4">
@@ -1317,9 +1338,14 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Add Mobile App Section before the footer */}
+      <MobileAppSection />
+
       {/* Footer */}
+      <Footer />
+      
+      {/* PWA Install Component */}
       <PWAInstall />
-      <Footer darkMode={darkMode} />
     </div>
   );
 };

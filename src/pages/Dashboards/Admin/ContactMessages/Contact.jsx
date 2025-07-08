@@ -50,6 +50,7 @@ import {
   FiCheckCircle
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import AdminLayout from '../../../../layouts/admin_layout';
 
 // Données fictives pour les messages de contact
 const MOCK_CONTACT_MESSAGES = [
@@ -724,7 +725,8 @@ const AdminContactMessages = () => {
   }, [notification]);
 
   return (
-    <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
+    <AdminLayout>
+      <div className="p-6 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-300">
       {/* Header */}
       <div className="mb-6">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between">
@@ -1014,7 +1016,8 @@ const AdminContactMessages = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

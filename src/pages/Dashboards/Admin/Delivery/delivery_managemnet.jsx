@@ -38,6 +38,7 @@ import {
   FiGlobe
 } from 'react-icons/fi';
 import { motion, AnimatePresence } from 'framer-motion';
+import AdminLayout from '../../../../layouts/admin_layout';
 
 // Fonction pour générer des données de livraison fictives
 const generateMockDeliveries = () => {
@@ -447,7 +448,8 @@ const AdminDeliveryManagement = () => {
   }, [filteredAndSortedDeliveries, getStatusText, formatCurrency]);
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <AdminLayout>
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* En-tête amélioré */}
       <motion.div 
         initial={{ opacity: 0, y: -20 }}
@@ -1398,7 +1400,8 @@ const AdminDeliveryManagement = () => {
           </motion.button>
         </motion.div>
       </motion.div>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

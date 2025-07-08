@@ -15,6 +15,7 @@ import {
 import UserListMain from './UserListMain';
 import UserFormPage from './UserFormPage';
 import UserDetailsPage from './UserDetailsPage';
+import AdminLayout from '../../../../layouts/admin_layout';
 
 // Constants
 const USER_ROLES = {
@@ -389,7 +390,8 @@ const UserListPage = () => {
   }, [users]);
 
   return (
-    <div className="p-6 space-y-6">
+    <AdminLayout>
+      <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -569,6 +571,7 @@ const UserListPage = () => {
         }}
               />
       </div>
+    </AdminLayout>
   );
 };
 

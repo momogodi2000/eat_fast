@@ -33,6 +33,7 @@ import { Tooltip, Badge, Modal, Progress } from '../../../../components/ui/ui-co
 import { useFetcher } from 'react-router-dom';
  
 import { FiBarChart2, FiCalendar, FiTrendingUp, FiImage } from 'react-icons/fi';
+import AdminLayout from '../../../../layouts/admin_layout';
 
 
 export const adminRestaurantContext = createContext();
@@ -383,7 +384,8 @@ const RestaurantManagement = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+    <AdminLayout>
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
       {/* En-tête de page */}
       <div className="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
         <div className="p-6">
@@ -1256,7 +1258,8 @@ const RestaurantManagement = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

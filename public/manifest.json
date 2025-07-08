@@ -2,14 +2,18 @@
   "name": "Eat Fast - Food Delivery Cameroon",
   "short_name": "Eat Fast",
   "description": "Order delicious food online in Cameroon. Fast delivery to your doorstep in Yaoundé, Douala, and across Cameroon.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#FF6B35",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "scope": "/",
   "lang": "en",
+  "dir": "ltr",
   "categories": ["food", "lifestyle", "shopping"],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "iarc_rating_id": "",
   "icons": [
     {
       "src": "/src/assets/logo/eat_fast.png",
@@ -59,7 +63,7 @@
       "name": "Order Food",
       "short_name": "Order",
       "description": "Quick access to order food",
-      "url": "/restaurants",
+      "url": "/restaurants?source=shortcut",
       "icons": [
         {
           "src": "/src/assets/logo/eat_fast.png",
@@ -71,7 +75,19 @@
       "name": "My Orders",
       "short_name": "Orders",
       "description": "View your order history",
-      "url": "/client/orders",
+      "url": "/client/orders?source=shortcut",
+      "icons": [
+        {
+          "src": "/src/assets/logo/eat_fast.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Nearby Restaurants",
+      "short_name": "Nearby",
+      "description": "Find restaurants near you",
+      "url": "/restaurants/nearby?source=shortcut",
       "icons": [
         {
           "src": "/src/assets/logo/eat_fast.png",
@@ -94,6 +110,37 @@
       "type": "image/png",
       "form_factor": "wide",
       "label": "Restaurant Selection"
+    },
+    {
+      "src": "/src/assets/images/resto.jpeg",
+      "sizes": "1280x720",
+      "type": "image/jpeg",
+      "form_factor": "narrow",
+      "label": "Mobile Restaurant View"
     }
-  ]
+  ],
+  "handle_links": "preferred",
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "file_handlers": [
+    {
+      "action": "/open-order",
+      "accept": {
+        "application/json": [".eatfast-order"]
+      }
+    }
+  ],
+  "share_target": {
+    "action": "/share-target",
+    "method": "GET",
+    "params": {
+      "title": "title",
+      "text": "text",
+      "url": "url"
+    }
+  }
 } 

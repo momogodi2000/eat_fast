@@ -5,13 +5,14 @@ class OfflineDatabase {
     this.version = 1;
     this.db = null;
     this.isInitialized = false;
+    this.syncInProgress = false;
   }
 
   // Initialize the database
   async init() {
     if (this.isInitialized) return this.db;
 
-    return new Promise((resolve, reject) => {
+    const initPromise = new Promise((resolve, reject) => {
       const request = indexedDB.open(this.dbName, this.version);
 
       request.onerror = () => {
@@ -40,18 +41,21 @@ class OfflineDatabase {
           orderStore.createIndex('userId', 'userId', { unique: false });
           orderStore.createIndex('status', 'status', { unique: false });
           orderStore.createIndex('createdAt', 'createdAt', { unique: false });
+          orderStore.createIndex('synced', 'synced', { unique: false });
         }
 
         if (!db.objectStoreNames.contains('restaurants')) {
           const restaurantStore = db.createObjectStore('restaurants', { keyPath: 'id' });
           restaurantStore.createIndex('name', 'name', { unique: false });
           restaurantStore.createIndex('category', 'category', { unique: false });
+          restaurantStore.createIndex('lastUpdated', 'lastUpdated', { unique: false });
         }
 
         if (!db.objectStoreNames.contains('menuItems')) {
           const menuStore = db.createObjectStore('menuItems', { keyPath: 'id' });
           menuStore.createIndex('restaurantId', 'restaurantId', { unique: false });
           menuStore.createIndex('category', 'category', { unique: false });
+          menuStore.createIndex('lastUpdated', 'lastUpdated', { unique: false });
         }
 
         if (!db.objectStoreNames.contains('cart')) {
@@ -63,15 +67,33 @@ class OfflineDatabase {
           const offlineStore = db.createObjectStore('offlineData', { keyPath: 'id', autoIncrement: true });
           offlineStore.createIndex('type', 'type', { unique: false });
           offlineStore.createIndex('status', 'status', { unique: false });
+          offlineStore.createIndex('createdAt', 'createdAt', { unique: false });
         }
 
         if (!db.objectStoreNames.contains('userPreferences')) {
           const preferencesStore = db.createObjectStore('userPreferences', { keyPath: 'userId' });
         }
 
+        if (!db.objectStoreNames.contains('appCache')) {
+          const appCacheStore = db.createObjectStore('appCache', { keyPath: 'key' });
+          appCacheStore.createIndex('expires', 'expires', { unique: false });
+        }
+
         console.log('Database schema created successfully');
       };
     });
+
+    // Register network listeners after initialization
+    initPromise.then(() => {
+      this.registerNetworkListeners();
+      
+      // Set up periodic cleanup
+      setInterval(() => {
+        this.clearOldData();
+      }, 24 * 60 * 60 * 1000); // Once a day
+    });
+    
+    return initPromise;
   }
 
   // Generic CRUD operations
@@ -144,6 +166,8 @@ class OfflineDatabase {
 
   // User operations
   async saveUser(user) {
+    // Add timestamp for sync purposes
+    user.lastUpdated = new Date().toISOString();
     return this.update('users', user);
   }
 
@@ -158,9 +182,11 @@ class OfflineDatabase {
 
   // Order operations
   async saveOrder(order) {
+    const timestamp = new Date().toISOString();
     return this.add('orders', {
       ...order,
-      createdAt: new Date().toISOString(),
+      createdAt: timestamp,
+      lastUpdated: timestamp,
       synced: false
     });
   }
@@ -170,22 +196,27 @@ class OfflineDatabase {
   }
 
   async getPendingOrders() {
-    const orders = await this.getAll('orders');
-    return orders.filter(order => !order.synced);
+    const orders = await this.getAll('orders', 'synced', false);
+    return orders;
   }
 
   async markOrderSynced(orderId) {
     const order = await this.get('orders', orderId);
     if (order) {
       order.synced = true;
+      order.lastUpdated = new Date().toISOString();
       return this.update('orders', order);
     }
   }
 
   // Restaurant operations
   async saveRestaurants(restaurants) {
+    const timestamp = new Date().toISOString();
     const promises = restaurants.map(restaurant => 
-      this.update('restaurants', restaurant)
+      this.update('restaurants', {
+        ...restaurant,
+        lastUpdated: timestamp
+      })
     );
     return Promise.all(promises);
   }
@@ -200,8 +231,12 @@ class OfflineDatabase {
 
   // Menu operations
   async saveMenuItems(menuItems) {
+    const timestamp = new Date().toISOString();
     const promises = menuItems.map(item => 
-      this.update('menuItems', item)
+      this.update('menuItems', {
+        ...item,
+        lastUpdated: timestamp
+      })
     );
     return Promise.all(promises);
   }
@@ -212,6 +247,7 @@ class OfflineDatabase {
 
   // Cart operations
   async addToCart(cartItem) {
+    cartItem.addedAt = new Date().toISOString();
     return this.add('cart', cartItem);
   }
 
@@ -237,8 +273,7 @@ class OfflineDatabase {
   }
 
   async getPendingOfflineData() {
-    const offlineData = await this.getAll('offlineData');
-    return offlineData.filter(data => data.status === 'pending');
+    return this.getAll('offlineData', 'status', 'pending');
   }
 
   async markOfflineDataSynced(id) {
@@ -249,104 +284,266 @@ class OfflineDatabase {
     }
   }
 
-  // User preferences operations
   async saveUserPreferences(userId, preferences) {
     return this.update('userPreferences', {
       userId,
-      preferences,
-      updatedAt: new Date().toISOString()
+      ...preferences,
+      lastUpdated: new Date().toISOString()
     });
   }
 
   async getUserPreferences(userId) {
-    const prefs = await this.get('userPreferences', userId);
-    return prefs ? prefs.preferences : null;
+    return this.get('userPreferences', userId);
   }
 
-  // Sync operations
-  async syncOfflineData() {
-    const pendingData = await this.getPendingOfflineData();
-    const results = [];
-
-    for (const data of pendingData) {
-      try {
-        // Attempt to sync with server
-        const response = await fetch(data.url, {
-          method: data.method,
-          headers: data.headers,
-          body: data.body
-        });
-
-        if (response.ok) {
-          await this.markOfflineDataSynced(data.id);
-          results.push({ id: data.id, status: 'success' });
-        } else {
-          results.push({ id: data.id, status: 'failed', error: response.statusText });
-        }
-      } catch (error) {
-        results.push({ id: data.id, status: 'failed', error: error.message });
-      }
+  // Data prefetching for offline use
+  async prefetchData(apiEndpoints = {}) {
+    if (!navigator.onLine) {
+      console.log('Cannot prefetch data while offline');
+      return;
     }
 
-    return results;
+    try {
+      console.log('Prefetching data for offline use...');
+      
+      // Prefetch restaurants
+      if (apiEndpoints.restaurants) {
+        const response = await fetch(apiEndpoints.restaurants);
+        if (response.ok) {
+          const restaurants = await response.json();
+          await this.saveRestaurants(restaurants);
+          console.log(`Prefetched ${restaurants.length} restaurants`);
+        }
+      }
+      
+      // Prefetch popular menu items
+      if (apiEndpoints.popularMenuItems) {
+        const response = await fetch(apiEndpoints.popularMenuItems);
+        if (response.ok) {
+          const menuItems = await response.json();
+          await this.saveMenuItems(menuItems);
+          console.log(`Prefetched ${menuItems.length} popular menu items`);
+        }
+      }
+      
+      // Prefetch user data if logged in
+      if (apiEndpoints.userData) {
+        const response = await fetch(apiEndpoints.userData);
+        if (response.ok) {
+          const userData = await response.json();
+          await this.saveUser(userData);
+          console.log('Prefetched user data');
+        }
+      }
+      
+      // Prefetch user orders if logged in
+      if (apiEndpoints.userOrders) {
+        const response = await fetch(apiEndpoints.userOrders);
+        if (response.ok) {
+          const orders = await response.json();
+          // Save each order individually
+          for (const order of orders) {
+            order.synced = true; // These are from the server, so they're synced
+            await this.update('orders', order);
+          }
+          console.log(`Prefetched ${orders.length} user orders`);
+        }
+      }
+      
+      console.log('Data prefetching complete');
+    } catch (error) {
+      console.error('Error prefetching data:', error);
+    }
   }
 
-  // Database maintenance
+  // Sync offline data when connection is restored
+  async syncOfflineData() {
+    if (!navigator.onLine || this.syncInProgress) {
+      return;
+    }
+
+    this.syncInProgress = true;
+    
+    try {
+      console.log('Syncing offline data...');
+      
+      // Sync pending orders
+      const pendingOrders = await this.getPendingOrders();
+      if (pendingOrders.length > 0) {
+        console.log(`Syncing ${pendingOrders.length} pending orders`);
+        
+        for (const order of pendingOrders) {
+          try {
+            const response = await fetch('/api/orders', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(order)
+            });
+            
+            if (response.ok) {
+              await this.markOrderSynced(order.id);
+              console.log(`Order ${order.id} synced successfully`);
+              
+              // Dispatch event to notify UI
+              window.dispatchEvent(new CustomEvent('order-synced', { detail: order }));
+            } else {
+              console.error(`Failed to sync order ${order.id}:`, await response.text());
+            }
+          } catch (error) {
+            console.error(`Error syncing order ${order.id}:`, error);
+          }
+        }
+      }
+      
+      // Sync other offline data
+      const pendingData = await this.getPendingOfflineData();
+      if (pendingData.length > 0) {
+        console.log(`Syncing ${pendingData.length} pending offline data items`);
+        
+        for (const item of pendingData) {
+          try {
+            const response = await fetch(item.url, {
+              method: item.method || 'POST',
+              headers: item.headers || {
+                'Content-Type': 'application/json'
+              },
+              body: item.body ? JSON.stringify(item.body) : undefined
+            });
+            
+            if (response.ok) {
+              await this.markOfflineDataSynced(item.id);
+              console.log(`Offline data ${item.id} synced successfully`);
+            } else {
+              console.error(`Failed to sync offline data ${item.id}:`, await response.text());
+            }
+          } catch (error) {
+            console.error(`Error syncing offline data ${item.id}:`, error);
+          }
+        }
+      }
+      
+      console.log('Offline data sync complete');
+    } catch (error) {
+      console.error('Error during offline data sync:', error);
+    } finally {
+      this.syncInProgress = false;
+    }
+  }
+
+  // Cache application data with expiration
+  async cacheData(key, data, expirationMinutes = 60) {
+    const expires = new Date();
+    expires.setMinutes(expires.getMinutes() + expirationMinutes);
+    
+    await this.update('appCache', {
+      key,
+      data,
+      expires: expires.toISOString()
+    });
+  }
+
+  async getCachedData(key) {
+    const cachedItem = await this.get('appCache', key);
+    
+    if (!cachedItem) {
+      return null;
+    }
+    
+    // Check if expired
+    if (new Date(cachedItem.expires) < new Date()) {
+      await this.delete('appCache', key);
+      return null;
+    }
+    
+    return cachedItem.data;
+  }
+
+  // Clear old data to prevent storage issues
   async clearOldData(daysOld = 30) {
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
-
-    const stores = ['orders', 'offlineData'];
-    const results = [];
-
-    for (const storeName of stores) {
-      const items = await this.getAll(storeName);
-      const oldItems = items.filter(item => {
-        const itemDate = new Date(item.createdAt);
-        return itemDate < cutoffDate;
-      });
-
-      const promises = oldItems.map(item => this.delete(storeName, item.id));
-      const deleted = await Promise.all(promises);
-      results.push({ store: storeName, deleted: deleted.length });
+    const cutoffString = cutoffDate.toISOString();
+    
+    try {
+      // Clear old orders that have been synced
+      const oldOrders = await this.getAll('orders');
+      for (const order of oldOrders) {
+        if (order.synced && order.createdAt < cutoffString) {
+          await this.delete('orders', order.id);
+        }
+      }
+      
+      // Clear old offline data that has been synced
+      const oldOfflineData = await this.getAll('offlineData');
+      for (const item of oldOfflineData) {
+        if (item.status === 'synced' && item.createdAt < cutoffString) {
+          await this.delete('offlineData', item.id);
+        }
+      }
+      
+      // Clear expired cache items
+      const cacheItems = await this.getAll('appCache');
+      const now = new Date();
+      for (const item of cacheItems) {
+        if (new Date(item.expires) < now) {
+          await this.delete('appCache', item.key);
+        }
+      }
+      
+      console.log('Old data cleanup complete');
+    } catch (error) {
+      console.error('Error clearing old data:', error);
     }
-
-    return results;
   }
 
-  // Export/Import data
+  // Export all data for backup
   async exportData() {
+    await this.init();
     const data = {};
-    const stores = ['users', 'orders', 'restaurants', 'menuItems', 'userPreferences'];
-
-    for (const storeName of stores) {
+    
+    for (const storeName of this.db.objectStoreNames) {
       data[storeName] = await this.getAll(storeName);
     }
-
+    
     return data;
   }
 
+  // Import data from backup
   async importData(data) {
-    const results = {};
-
+    await this.init();
+    
     for (const [storeName, items] of Object.entries(data)) {
-      const promises = items.map(item => this.update(storeName, item));
-      results[storeName] = await Promise.all(promises);
+      if (this.db.objectStoreNames.contains(storeName)) {
+        for (const item of items) {
+          await this.update(storeName, item);
+        }
+      }
     }
-
-    return results;
   }
 
-  // Close database
+  // Register online/offline event listeners
+  registerNetworkListeners() {
+    window.addEventListener('online', () => {
+      console.log('App is online. Starting data sync...');
+      this.syncOfflineData();
+    });
+
+    window.addEventListener('offline', () => {
+      console.log('App is offline. Data will be synced when connection is restored.');
+    });
+  }
+
   close() {
     if (this.db) {
       this.db.close();
       this.isInitialized = false;
+      this.db = null;
     }
   }
 }
 
-// Create singleton instance
+// Create and export singleton instance
 const offlineDB = new OfflineDatabase();
-
 export default offlineDB; 

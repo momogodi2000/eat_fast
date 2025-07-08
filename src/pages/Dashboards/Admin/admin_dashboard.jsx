@@ -39,6 +39,7 @@ import {
   AreaChart,
   CartesianGrid
 } from 'recharts';
+import AdminLayout from '../../../layouts/admin_layout';
 
 // Constants
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
@@ -327,36 +328,37 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 transition-colors duration-300">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              🏢 Tableau de bord
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
-              Sous-titre du tableau de bord
-            </p>
-          </div>
-          <div className="flex items-center space-x-4 mt-4 sm:mt-0">
-            <div className="text-right">
-              <p className="text-sm text-gray-500 dark:text-gray-400">Heure actuelle</p>
-              <p className="text-lg font-semibold text-gray-900 dark:text-white">
-                {currentTime.toLocaleTimeString('fr-FR')}
+    <AdminLayout>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 transition-colors duration-300">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+                🏢 Tableau de bord
+              </h1>
+              <p className="text-gray-600 dark:text-gray-300">
+                Sous-titre du tableau de bord
               </p>
             </div>
-            <button
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-              className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-800"
-            >
-              <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-              Actualiser
-            </button>
+            <div className="flex items-center space-x-4 mt-4 sm:mt-0">
+              <div className="text-right">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Heure actuelle</p>
+                <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                  {currentTime.toLocaleTimeString('fr-FR')}
+                </p>
+              </div>
+              <button
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 dark:bg-blue-700 dark:hover:bg-blue-800"
+              >
+                <FiRefreshCw className={`mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+                Actualiser
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
@@ -511,7 +513,8 @@ const AdminDashboard = () => {
           ))}
         </div>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

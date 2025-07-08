@@ -10,6 +10,7 @@ import {
   FiActivity, FiAward, FiSend, FiMail, FiSmartphone,FiPieChart
 } from 'react-icons/fi';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, BarChart, Bar, AreaChart, Area } from 'recharts';
+import AdminLayout from '../../../../layouts/admin_layout';
 
 // Données mockées pour les promotions
 const mockPromotions = [
@@ -366,7 +367,8 @@ const PromotionManagement = () => {
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6">
+    <AdminLayout>
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 lg:p-6">
       {/* En-tête */}
       <motion.div 
         className="mb-8"
@@ -1410,7 +1412,8 @@ const PromotionManagement = () => {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Offline - Eat Fast</title>
+    <link rel="icon" href="/src/assets/logo/eat_fast.png" type="image/png">
     <style>
         * {
             margin: 0;
@@ -16,37 +17,67 @@
             background: linear-gradient(135deg, #FF6B35 0%, #F7931E 100%);
             min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
+            flex-direction: column;
             color: white;
         }
 
-        .offline-container {
+        .offline-header {
+            padding: 1.5rem;
             text-align: center;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .offline-logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 1rem;
+            background-color: white;
+            border-radius: 50%;
+            padding: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .offline-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             padding: 2rem;
-            max-width: 500px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .offline-card {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 20px;
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            width: 100%;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
         .offline-icon {
             font-size: 4rem;
             margin-bottom: 1rem;
+            text-align: center;
         }
 
         h1 {
-            font-size: 2.5rem;
+            font-size: 2rem;
             margin-bottom: 1rem;
             font-weight: 700;
+            text-align: center;
         }
 
         p {
             font-size: 1.1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             opacity: 0.9;
             line-height: 1.6;
+            text-align: center;
         }
 
         .retry-button {
@@ -60,6 +91,9 @@
             transition: all 0.3s ease;
             text-decoration: none;
             display: inline-block;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 1rem;
         }
 
         .retry-button:hover {
@@ -68,8 +102,9 @@
         }
 
         .features {
-            margin-top: 2rem;
+            margin-top: 1rem;
             text-align: left;
+            width: 100%;
         }
 
         .feature {
@@ -84,80 +119,503 @@
             font-size: 1.2rem;
         }
 
+        .tabs {
+            display: flex;
+            margin-bottom: 1rem;
+            width: 100%;
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            border: none;
+            background: transparent;
+            color: white;
+        }
+
+        .tab.active {
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .cached-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .cached-item {
+            background: rgba(255, 255, 255, 0.1);
+            margin-bottom: 0.5rem;
+            padding: 1rem;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cached-item:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .cached-item-icon {
+            margin-right: 0.8rem;
+            font-size: 1.5rem;
+        }
+
+        .cached-item-content {
+            flex: 1;
+        }
+
+        .cached-item-title {
+            font-weight: 500;
+            margin-bottom: 0.2rem;
+        }
+
+        .cached-item-subtitle {
+            font-size: 0.8rem;
+            opacity: 0.8;
+        }
+
+        .offline-footer {
+            text-align: center;
+            padding: 1rem;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .connection-status {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .status-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .status-offline {
+            background-color: #ff4757;
+        }
+
+        .status-online {
+            background-color: #2ed573;
+        }
+
+        .status-checking {
+            background-color: #ffa502;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 0.4; }
+            50% { opacity: 1; }
+            100% { opacity: 0.4; }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
         @media (max-width: 768px) {
             .offline-container {
                 margin: 1rem;
-                padding: 1.5rem;
+                padding: 1rem;
             }
 
             h1 {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
 
             p {
                 font-size: 1rem;
             }
+
+            .offline-logo {
+                width: 60px;
+                height: 60px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="offline-container">
-        <div class="offline-icon">📱</div>
-        <h1>You're Offline</h1>
-        <p>Don't worry! You can still browse cached content and view your previous orders. Check your internet connection and try again.</p>
-        
-        <button class="retry-button" onclick="window.location.reload()">
-            🔄 Try Again
-        </button>
+    <div class="connection-status">
+        <div class="status-indicator status-offline" id="statusIndicator"></div>
+        <span id="statusText">Offline</span>
+    </div>
 
-        <div class="features">
-            <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Browse cached restaurants and menus</span>
+    <header class="offline-header">
+        <div class="offline-logo">
+            <img src="/src/assets/logo/eat_fast.png" alt="Eat Fast Logo" style="width: 100%; height: 100%; object-fit: contain;">
+        </div>
+        <h1>Eat Fast</h1>
+    </header>
+
+    <div class="offline-container">
+        <div class="offline-card">
+            <div class="offline-icon">📱</div>
+            <h1>You're Offline</h1>
+            <p>Don't worry! You can still browse cached content and view your previous orders.</p>
+            
+            <button class="retry-button" id="retryButton">
+                <div class="loading-spinner" id="loadingSpinner" style="display: none;"></div>
+                <span>🔄 Check Connection</span>
+            </button>
+
+            <div class="tabs">
+                <button class="tab active" data-tab="features">Features</button>
+                <button class="tab" data-tab="restaurants">Restaurants</button>
+                <button class="tab" data-tab="orders">Orders</button>
             </div>
-            <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>View your order history</span>
+
+            <div class="tab-content active" id="features-tab">
+                <div class="features">
+                    <div class="feature">
+                        <span class="feature-icon">✅</span>
+                        <span>Browse cached restaurants and menus</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">✅</span>
+                        <span>View your order history</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">✅</span>
+                        <span>Access your profile and settings</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">⏳</span>
+                        <span>New orders will sync when online</span>
+                    </div>
+                    <div class="feature">
+                        <span class="feature-icon">📱</span>
+                        <span>Install app for better offline experience</span>
+                    </div>
+                </div>
             </div>
-            <div class="feature">
-                <span class="feature-icon">✅</span>
-                <span>Access your profile and settings</span>
+
+            <div class="tab-content" id="restaurants-tab">
+                <p>Cached restaurants you can browse offline:</p>
+                <ul class="cached-list" id="restaurantsList">
+                    <li class="cached-item">
+                        <div class="loading-spinner"></div>
+                        <div class="cached-item-content">
+                            <div class="cached-item-title">Loading cached restaurants...</div>
+                        </div>
+                    </li>
+                </ul>
             </div>
-            <div class="feature">
-                <span class="feature-icon">⏳</span>
-                <span>New orders will sync when online</span>
+
+            <div class="tab-content" id="orders-tab">
+                <p>Your recent orders:</p>
+                <ul class="cached-list" id="ordersList">
+                    <li class="cached-item">
+                        <div class="loading-spinner"></div>
+                        <div class="cached-item-content">
+                            <div class="cached-item-title">Loading cached orders...</div>
+                        </div>
+                    </li>
+                </ul>
             </div>
+        </div>
+
+        <div class="offline-card">
+            <h2 style="text-align: center; margin-bottom: 1rem;">Install the App</h2>
+            <p style="margin-bottom: 0.5rem;">For the best offline experience, install Eat Fast as an app on your device.</p>
+            <button class="retry-button" id="installButton">
+                📱 Install App
+            </button>
         </div>
     </div>
 
+    <footer class="offline-footer">
+        <p>Eat Fast &copy; 2023 - All cached content is available offline</p>
+    </footer>
+
     <script>
-        // Check connection status periodically
-        function checkConnection() {
+        // Tab functionality
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Remove active class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to current tab and content
+                tab.classList.add('active');
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+                
+                // Load content for the tab if needed
+                if (tabId === 'restaurants') {
+                    loadCachedRestaurants();
+                } else if (tabId === 'orders') {
+                    loadCachedOrders();
+                }
+            });
+        });
+
+        // Check connection status
+        const statusIndicator = document.getElementById('statusIndicator');
+        const statusText = document.getElementById('statusText');
+        const retryButton = document.getElementById('retryButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+
+        function updateConnectionStatus() {
             if (navigator.onLine) {
-                window.location.reload();
+                statusIndicator.className = 'status-indicator status-online';
+                statusText.textContent = 'Online';
+                
+                // Redirect to home page after a short delay
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                statusIndicator.className = 'status-indicator status-offline';
+                statusText.textContent = 'Offline';
             }
         }
 
-        // Listen for online event
-        window.addEventListener('online', () => {
-            window.location.reload();
-        });
+        // Check connection on page load
+        updateConnectionStatus();
 
-        // Check connection every 5 seconds
-        setInterval(checkConnection, 5000);
+        // Listen for online/offline events
+        window.addEventListener('online', updateConnectionStatus);
+        window.addEventListener('offline', updateConnectionStatus);
 
-        // Add some animation
-        document.addEventListener('DOMContentLoaded', () => {
-            const container = document.querySelector('.offline-container');
-            container.style.opacity = '0';
-            container.style.transform = 'translateY(20px)';
+        // Retry button functionality
+        retryButton.addEventListener('click', () => {
+            statusIndicator.className = 'status-indicator status-checking';
+            statusText.textContent = 'Checking...';
+            loadingSpinner.style.display = 'inline-block';
             
-            setTimeout(() => {
-                container.style.transition = 'all 0.5s ease';
-                container.style.opacity = '1';
-                container.style.transform = 'translateY(0)';
-            }, 100);
+            // Try to fetch the homepage
+            fetch('/', { method: 'HEAD', cache: 'no-store' })
+                .then(() => {
+                    window.location.reload();
+                })
+                .catch(() => {
+                    statusIndicator.className = 'status-indicator status-offline';
+                    statusText.textContent = 'Still Offline';
+                    loadingSpinner.style.display = 'none';
+                });
         });
+
+        // Load cached restaurants from IndexedDB
+        async function loadCachedRestaurants() {
+            const restaurantsList = document.getElementById('restaurantsList');
+            
+            try {
+                const db = await openDB();
+                const restaurants = await getAll(db, 'restaurants');
+                
+                if (restaurants && restaurants.length > 0) {
+                    restaurantsList.innerHTML = '';
+                    
+                    restaurants.forEach(restaurant => {
+                        const li = document.createElement('li');
+                        li.className = 'cached-item';
+                        li.innerHTML = `
+                            <div class="cached-item-icon">🍽️</div>
+                            <div class="cached-item-content">
+                                <div class="cached-item-title">${restaurant.name || 'Restaurant'}</div>
+                                <div class="cached-item-subtitle">${restaurant.category || 'Food'}</div>
+                            </div>
+                        `;
+                        li.addEventListener('click', () => {
+                            // Store the selected restaurant ID in localStorage
+                            localStorage.setItem('selectedRestaurant', restaurant.id);
+                            // Redirect to restaurant page when online
+                            window.location.href = `/restaurants/${restaurant.id}`;
+                        });
+                        restaurantsList.appendChild(li);
+                    });
+                } else {
+                    restaurantsList.innerHTML = `
+                        <li class="cached-item">
+                            <div class="cached-item-content">
+                                <div class="cached-item-title">No cached restaurants found</div>
+                                <div class="cached-item-subtitle">Connect to the internet to browse restaurants</div>
+                            </div>
+                        </li>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading cached restaurants:', error);
+                restaurantsList.innerHTML = `
+                    <li class="cached-item">
+                        <div class="cached-item-content">
+                            <div class="cached-item-title">Error loading cached data</div>
+                            <div class="cached-item-subtitle">Please try again later</div>
+                        </div>
+                    </li>
+                `;
+            }
+        }
+
+        // Load cached orders from IndexedDB
+        async function loadCachedOrders() {
+            const ordersList = document.getElementById('ordersList');
+            
+            try {
+                const db = await openDB();
+                const orders = await getAll(db, 'orders');
+                
+                if (orders && orders.length > 0) {
+                    ordersList.innerHTML = '';
+                    
+                    orders.forEach(order => {
+                        const date = new Date(order.createdAt || Date.now()).toLocaleDateString();
+                        const li = document.createElement('li');
+                        li.className = 'cached-item';
+                        li.innerHTML = `
+                            <div class="cached-item-icon">🛒</div>
+                            <div class="cached-item-content">
+                                <div class="cached-item-title">Order #${order.id || 'Unknown'}</div>
+                                <div class="cached-item-subtitle">${date} - ${order.status || 'Unknown status'}</div>
+                            </div>
+                        `;
+                        li.addEventListener('click', () => {
+                            // Store the selected order ID in localStorage
+                            localStorage.setItem('selectedOrder', order.id);
+                            // Redirect to order page when online
+                            window.location.href = `/client/orders/${order.id}`;
+                        });
+                        ordersList.appendChild(li);
+                    });
+                } else {
+                    ordersList.innerHTML = `
+                        <li class="cached-item">
+                            <div class="cached-item-content">
+                                <div class="cached-item-title">No cached orders found</div>
+                                <div class="cached-item-subtitle">Connect to the internet to view your orders</div>
+                            </div>
+                        </li>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading cached orders:', error);
+                ordersList.innerHTML = `
+                    <li class="cached-item">
+                        <div class="cached-item-content">
+                            <div class="cached-item-title">Error loading cached data</div>
+                            <div class="cached-item-subtitle">Please try again later</div>
+                        </div>
+                    </li>
+                `;
+            }
+        }
+
+        // Open IndexedDB
+        async function openDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open('EatFastDB', 1);
+                
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => resolve(request.result);
+                
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+                    
+                    // Create object stores if they don't exist
+                    if (!db.objectStoreNames.contains('restaurants')) {
+                        db.createObjectStore('restaurants', { keyPath: 'id' });
+                    }
+                    
+                    if (!db.objectStoreNames.contains('orders')) {
+                        db.createObjectStore('orders', { keyPath: 'id', autoIncrement: true });
+                    }
+                };
+            });
+        }
+
+        // Get all items from an object store
+        async function getAll(db, storeName) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([storeName], 'readonly');
+                const store = transaction.objectStore(storeName);
+                const request = store.getAll();
+                
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Install button functionality
+        const installButton = document.getElementById('installButton');
+        let deferredPrompt;
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installButton.style.display = 'block';
+        });
+
+        installButton.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    console.log('User accepted the install prompt');
+                } else {
+                    console.log('User dismissed the install prompt');
+                }
+                
+                deferredPrompt = null;
+            } else {
+                // Show manual installation instructions
+                alert('To install the app:\n\n' + 
+                      '- On iOS: Tap the share button and select "Add to Home Screen"\n' +
+                      '- On Android: Tap the menu button and select "Install app"\n' +
+                      '- On Desktop: Click the install icon in the address bar');
+            }
+        });
+
+        // Check if already installed
+        if (window.matchMedia('(display-mode: standalone)').matches || 
+            window.navigator.standalone === true) {
+            document.querySelector('.offline-card:last-child').style.display = 'none';
+        }
     </script>
 </body>
 </html> 

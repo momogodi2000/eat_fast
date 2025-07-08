@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { Suspense, lazy } from "react";
+import React, { Suspense, lazy, useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -8,11 +8,17 @@ import { Toaster } from "react-hot-toast";
 // Error Boundary
 import ErrorBoundary from "./components/ErrorBoundary";
 
+// PWA Components
+import PWAInstall from "./components/PWAInstall";
+
 // Context Providers
 import { UserInformationProvider } from "./pages/Authentication/const_provider";
 
 // Loading Components
 import LoadingSpinner from "./components/CommonShare/LoadingSpinner";
+
+// Offline Database
+import offlineDB from "./Services/offlineDatabase";
 
 // Lazy load components for better performance
 const LandingPage = lazy(() => import("./pages/LandingPage/homepage"));
@@ -79,7 +85,6 @@ const ClientsProfilePage = lazy(() => import("./pages/Dashboards/Clients/Profil/
 const ClientsLayout = lazy(() => import("./layouts/clients_layout"));
 const DeliveryLayout = lazy(() => import("./layouts/delivery_layout"));
 const RestaurantLayoutWithProviders = lazy(() => import("./layouts/restaurants_layout"));
-const AdminLayout = lazy(() => import("./layouts/admin_layout"));
 
 // Common components
 const DashboardRedirect = lazy(() => import("./components/CommonShare/test"));
@@ -113,13 +118,146 @@ const PageLoader = () => (
   </div>
 );
 
+// Offline detection component
+const OfflineDetector = () => {
+  useEffect(() => {
+    const handleOffline = () => {
+      // Store the current URL to return to after reconnection
+      localStorage.setItem('lastOnlinePath', window.location.pathname);
+      // Redirect to offline page
+      window.location.href = '/offline.html';
+    };
+
+    window.addEventListener('offline', handleOffline);
+    
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
+  return null;
+};
+
+// PWA Data Manager component
+const PWADataManager = () => {
+  const [pwaInstallPromptShown, setPwaInstallPromptShown] = useState(false);
+
+  useEffect(() => {
+    // Initialize offline database
+    offlineDB.init().then(() => {
+      console.log('Offline database initialized');
+      
+      // Prefetch data for offline use when online
+      if (navigator.onLine) {
+        // Define API endpoints for prefetching
+        const apiEndpoints = {
+          restaurants: '/api/restaurants',
+          popularMenuItems: '/api/menu/popular',
+          // User-specific endpoints will be added if user is logged in
+        };
+        
+        // Check if user is logged in
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+          apiEndpoints.userData = `/api/users/${userId}`;
+          apiEndpoints.userOrders = `/api/users/${userId}/orders`;
+        }
+        
+        // Prefetch data
+        offlineDB.prefetchData(apiEndpoints).catch(err => {
+          console.error('Error prefetching data:', err);
+        });
+      }
+      
+      // Set up background sync for offline data
+      if ('serviceWorker' in navigator && 'SyncManager' in window) {
+        navigator.serviceWorker.ready.then(registration => {
+          // Register for background sync
+          registration.sync.register('background-sync').catch(err => {
+            console.error('Error registering for background sync:', err);
+          });
+          
+          // Register for order sync
+          registration.sync.register('sync-orders').catch(err => {
+            console.error('Error registering for order sync:', err);
+          });
+        });
+      }
+    }).catch(err => {
+      console.error('Error initializing offline database:', err);
+    });
+    
+    // Handle online event to sync data
+    const handleOnline = () => {
+      console.log('App is back online');
+      if (offlineDB.isInitialized) {
+        offlineDB.syncOfflineData().catch(err => {
+          console.error('Error syncing offline data:', err);
+        });
+      }
+      
+      // Check if we need to redirect back to the last page
+      const lastPath = localStorage.getItem('lastOnlinePath');
+      if (lastPath && window.location.pathname === '/offline.html') {
+        window.location.href = lastPath;
+      }
+    };
+
+    // Handle PWA installation events
+    const handleShowPWAInstallPrompt = () => {
+      if (!pwaInstallPromptShown) {
+        setPwaInstallPromptShown(true);
+        window.dispatchEvent(new CustomEvent('pwa-install-prompt'));
+      }
+    };
+
+    const handleShowIOSInstallSteps = () => {
+      window.dispatchEvent(new CustomEvent('ios-install-steps'));
+    };
+    
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('show-pwa-install-prompt', handleShowPWAInstallPrompt);
+    window.addEventListener('show-ios-install-steps', handleShowIOSInstallSteps);
+    
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('show-pwa-install-prompt', handleShowPWAInstallPrompt);
+      window.removeEventListener('show-ios-install-steps', handleShowIOSInstallSteps);
+    };
+  }, [pwaInstallPromptShown]);
+
+  return null;
+};
+
 // Main App Component
 function App() {
+  // Check if the device is mobile
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Detect if the device is mobile
+    const checkIfMobile = () => {
+      const userAgent = navigator.userAgent.toLowerCase();
+      return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+    };
+
+    setIsMobile(checkIfMobile());
+  }, []);
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <Router>
           <div className="App">
+            {/* PWA Install Prompt */}
+            <PWAInstall />
+            
+            {/* Offline Detection */}
+            <OfflineDetector />
+            
+            {/* PWA Data Management */}
+            <PWADataManager />
+
             {/* Global Toast Notifications */}
             <Toaster
               position="top-right"
@@ -187,25 +325,80 @@ function App() {
                 <Route path="/refund" element={<TermsAndConditions />} />
                 <Route path="/safety" element={<FoodSafety />} />
 
-                {/* Admin Routes - Simplified without AdminRestaurantProvider */}
-                <Route path="/admin" element={
-                  <UserInformationProvider>
-                    <AdminLayout>
-                      <Outlet />
-                    </AdminLayout>
-                  </UserInformationProvider>
-                }>
-                  <Route index element={<AdminDashboard />} />
-                  <Route path="dashboard" element={<AdminDashboard />} />
-                  <Route path="users" element={<UserListPage />} />
-                  <Route path="user" element={<UserListPage />} />
-                  <Route path="restaurants" element={<RestaurantManagement />} />
-                  <Route path="contact-messages" element={<AdminContactMessages />} />
-                  <Route path="orders" element={<AdminOrdersPage />} />
-                  <Route path="statistics" element={<StatisticsPage />} />
-                  <Route path="delivery" element={<AdminDeliveryManagement />} />
-                  <Route path="promotion" element={<PromotionManagement />} />
-                </Route>
+                {/* Admin Routes - Each page handles its own layout */}
+                <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+                <Route 
+                  path="/admin/dashboard" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminDashboard />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/users" 
+                  element={
+                    <UserInformationProvider>
+                      <UserListPage />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/user" 
+                  element={
+                    <UserInformationProvider>
+                      <UserListPage />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/restaurants" 
+                  element={
+                    <UserInformationProvider>
+                      <RestaurantManagement />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/contact-messages" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminContactMessages />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/orders" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminOrdersPage />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/statistics" 
+                  element={
+                    <UserInformationProvider>
+                      <StatisticsPage />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/delivery" 
+                  element={
+                    <UserInformationProvider>
+                      <AdminDeliveryManagement />
+                    </UserInformationProvider>
+                  } 
+                />
+                <Route 
+                  path="/admin/promotion" 
+                  element={
+                    <UserInformationProvider>
+                      <PromotionManagement />
+                    </UserInformationProvider>
+                  } 
+                />
 
                 {/* Agent Support Routes */}
                 <Route

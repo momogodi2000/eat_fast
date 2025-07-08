@@ -10,6 +10,7 @@ import {
   FiUsers, FiTruck, FiStar, FiClock
 } from 'react-icons/fi';
 import i18n from '../../../../i18n';
+import AdminLayout from '../../../../layouts/admin_layout';
 
 // Constants
 const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
@@ -139,7 +140,8 @@ const StatisticsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 transition-colors duration-300">
+    <AdminLayout>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900 p-6 transition-colors duration-300">
       {/* Header */}
       <div className="mb-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -406,7 +408,8 @@ const StatisticsPage = () => {
           </ResponsiveContainer>
         </div>
       </div>
-    </div>
+      </div>
+    </AdminLayout>
   );
 };
 
