@@ -1285,6 +1285,72 @@ const HomePage = () => {
         <MobileAppSection />
       </Suspense>
 
+        {/* New Install Guide Section */}
+        <section className="py-12 bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 text-center">
+        <motion.h2 
+          initial={{ opacity: 0, y: 30 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.6 }}
+          className="text-2xl md:text-3xl font-bold mb-4"
+        >
+          Comment installer l'application Eat Fast ?
+        </motion.h2>
+        <motion.div 
+          initial={{ opacity: 0, y: 40 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          transition={{ duration: 0.7, delay: 0.2 }}
+          className="max-w-3xl mx-auto grid md:grid-cols-3 gap-8 text-left"
+        >
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }} 
+            whileInView={{ opacity: 1, scale: 1 }} 
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 border-t-4 border-emerald-500"
+          >
+            <h3 className="text-lg font-semibold mb-2 text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
+              <span role="img" aria-label="Android">🤖</span> Sur Android
+            </h3>
+            <ol className="list-decimal pl-6 space-y-2 text-gray-700 dark:text-gray-200">
+              <li>Ouvrez ce site dans Chrome.</li>
+              <li>Touchez le menu (⋮) en haut à droite.</li>
+              <li>Sélectionnez « Installer l'application » ou « Ajouter à l'écran d'accueil ».</li>
+              <li>Confirmez l'installation.</li>
+            </ol>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }} 
+            whileInView={{ opacity: 1, scale: 1 }} 
+            transition={{ duration: 0.5, delay: 0.4 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 border-t-4 border-orange-500"
+          >
+            <h3 className="text-lg font-semibold mb-2 text-orange-700 dark:text-orange-400 flex items-center gap-2">
+              <span role="img" aria-label="iOS">🍏</span> Sur iPhone/iPad (iOS)
+            </h3>
+            <ol className="list-decimal pl-6 space-y-2 text-gray-700 dark:text-gray-200">
+              <li>Ouvrez ce site dans Safari.</li>
+              <li>Touchez le bouton de partage <span role="img" aria-label="Partager">📤</span> en bas de l'écran.</li>
+              <li>Faites défiler et touchez « Ajouter à l'écran d'accueil ».</li>
+              <li>Confirmez en appuyant sur « Ajouter ».</li>
+            </ol>
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }} 
+            whileInView={{ opacity: 1, scale: 1 }} 
+            transition={{ duration: 0.5, delay: 0.5 }}
+            className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 border-t-4 border-blue-500"
+          >
+            <h3 className="text-lg font-semibold mb-2 text-blue-700 dark:text-blue-400 flex items-center gap-2">
+              <span role="img" aria-label="Desktop">💻</span> Sur ordinateur
+            </h3>
+            <ol className="list-decimal pl-6 space-y-2 text-gray-700 dark:text-gray-200">
+              <li>Ouvrez ce site dans votre navigateur.</li>
+              <li>Cliquez sur l'icône d'installation dans la barre d'adresse ou le menu.</li>
+              <li>Sélectionnez « Installer ».</li>
+            </ol>
+          </motion.div>
+        </motion.div>
+      </section>
+
       {/* Footer */}
       <Suspense fallback={<div>Loading footer...</div>}>
         <Footer darkMode={darkMode} />
@@ -1301,7 +1367,7 @@ const HomePage = () => {
             {isIos ? (
               <ol className="list-decimal pl-6 space-y-2">
                 <li>Ouvrez ce site dans Safari.</li>
-                <li>Touchez le bouton de partage <span role="img" aria-label="Partager">��</span> en bas de l'écran.</li>
+                <li>Touchez le bouton de partage <span role="img" aria-label="Partager">📤</span> en bas de l'écran.</li>
                 <li>Faites défiler et touchez « Ajouter à l'écran d'accueil ».</li>
                 <li>Confirmez en appuyant sur « Ajouter ».</li>
               </ol>
@@ -1328,6 +1394,8 @@ const HomePage = () => {
           </div>
         </div>
       )}
+
+    
     </div>
   );
 };
