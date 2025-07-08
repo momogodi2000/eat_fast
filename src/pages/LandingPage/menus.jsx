@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Sun, Moon, Search, MapPin, Clock, Star, ChevronDown, User, ShoppingBag, 
@@ -6,7 +6,12 @@ import {
   Heart, MessageCircle, Send, ChevronLeft, ChevronRight, ThumbsUp, ThumbsDown,
   Award, Users, TrendingUp, Filter, SortAsc
 } from 'lucide-react';
-import Footer from '../../components/CommonShare/Footer';
+// import Footer from '../../components/CommonShare/Footer';
+const Footer = lazy(() => import('../../components/CommonShare/Footer'));
+// import QRCode from '../../components/QRCode';
+const QRCode = lazy(() => import('../../components/QRCode'));
+// import MobileAppSection from '../../components/MobileAppSection';
+const MobileAppSection = lazy(() => import('../../components/MobileAppSection'));
 
 
 // Import images
@@ -1531,7 +1536,9 @@ const MenuPage = () => {
       </main>
 
       {/* Footer avec thème camerounais */}
-    <Footer darkMode={darkMode} />
+      <Suspense fallback={<div>Loading footer...</div>}>
+        <Footer darkMode={darkMode} />
+      </Suspense>
 
       {/* Modal de commande avec thème camerounais */}
       <AnimatePresence>
@@ -1616,6 +1623,14 @@ const MenuPage = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Suspense pour charger le QRCode et la section mobile */}
+      <Suspense fallback={<div>Loading QR code...</div>}>
+        <QRCode value={...} />
+      </Suspense>
+      <Suspense fallback={<div>Loading mobile app section...</div>}>
+        <MobileAppSection />
+      </Suspense>
     </div>
   );
 };

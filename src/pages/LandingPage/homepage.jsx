@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { motion, AnimatePresence, useAnimation, useScroll, useTransform } from 'framer-motion';
 import { 
   Sun, Moon, Search, MapPin, Clock, Star, ChevronDown, User, ShoppingBag, 
@@ -6,12 +6,11 @@ import {
   Truck, Phone, Mail, Facebook, Twitter, Instagram, Youtube, CheckCircle, ArrowRight
 } from 'lucide-react';
 
-import Footer from '../../components/CommonShare/Footer';
 import PWAInstall from '../../components/PWAInstall';
-import QRCode from '../../components/QRCode';
+const QRCode = lazy(() => import('../../components/QRCode'));
 import MobileAppBanner from '../../components/MobileAppBanner';
 import MobileAppInstall from '../../components/MobileAppInstall';
-import MobileAppSection from '../../components/MobileAppSection';
+const MobileAppSection = lazy(() => import('../../components/MobileAppSection'));
 
 import koki from '../../assets/images/koki.jpeg';
 import achu from '../../assets/images/achue.jpeg';
@@ -19,6 +18,7 @@ import ndole from '../../assets/images/ndoles.jpeg';
 import eru from '../../assets/images/eru.jpeg';
 import livraison from '../../assets/images/carroussel_1.png';
 import authentique from '../../assets/images/carroussel_2.png';
+import carroussel3 from '../../assets/images/carroussel_3.png';
 
 import saveur from '../../assets/images/resto.jpeg';
 import grandmere from '../../assets/images/TKC2.jpg';
@@ -26,68 +26,13 @@ import mama from '../../assets/images/TKC3.png';
 import greengarden from '../../assets/images/resto6.jpeg';
 import goodFood from '../../assets/images/resto3.jpeg';
 
-// Mock translation function for demo
-const useTranslation = () => ({
-  t: (key, fallback) => {
-    const translations = {
-      'nav.home': 'Accueil',
-      'nav.restaurants': 'Restaurants',
-      'nav.about': 'À propos',
-      'nav.contact': 'Contact',
-      'nav.account': 'Compte',
-      'nav.cart': 'Panier',
-      'categories.all': 'Tous',
-      'categories.traditional': 'Traditionnel',
-      'categories.fastFood': 'Fast Food',
-      'categories.vegetarian': 'Végétarien',
-      'categories.italian': 'Italien',
-      'categories.seafood': 'Fruits de mer',
-      'sections.categories': 'Catégories',
-      'sections.featuredRestaurants': 'Restaurants en vedette',
-      'sections.howItWorks': 'Comment ça marche',
-      'restaurants.minutes': 'min',
-      'restaurants.order': 'Commander',
-      'howItWorks.description': 'Commandez en 3 étapes simples',
-      'howItWorks.step1Title': '1. Choisissez',
-      'howItWorks.step1Description': 'Parcourez nos restaurants et sélectionnez vos plats préférés',
-      'howItWorks.step2Title': '2. Commandez',
-      'howItWorks.step2Description': 'Passez votre commande et effectuez le paiement sécurisé',
-      'howItWorks.step3Title': '3. Dégustez',
-      'howItWorks.step3Description': 'Recevez votre commande chaude à votre porte',
-      'app.downloadOn': 'Télécharger sur',
-      'app.getItOn': 'Disponible sur',
-      'footer.quickLinks': 'Liens rapides',
-      'footer.aboutUs': 'À propos',
-      'footer.restaurants': 'Restaurants',
-      'footer.becomePartner': 'Devenir partenaire',
-      'footer.careers': 'Carrières',
-      'footer.contactUs': 'Nous contacter',
-      'footer.legal': 'Légal',
-      'footer.terms': 'Conditions d\'utilisation',
-      'footer.privacy': 'Politique de confidentialité',
-      'footer.cookies': 'Politique des cookies',
-      'footer.licensing': 'Licences',
-      'footer.contact': 'Contact',
-      'footer.newsletter': 'Newsletter',
-      'footer.emailPlaceholder': 'Votre email',
-      'footer.subscribe': 'S\'abonner',
-      'footer.allRightsReserved': 'Tous droits réservés'
-    };
-    return translations[key] || fallback || key;
-  },
-  i18n: {
-    language: 'fr',
-    changeLanguage: (lang) => console.log('Language changed to:', lang)
-  }
-});
-
 const Link = ({ to, children, className, ...props }) => (
   <a href={to} className={className} {...props}>{children}</a>
 );
 
+const Footer = lazy(() => import('../../components/CommonShare/Footer'));
+
 const HomePage = () => {
-  const { t, i18n } = useTranslation();
-  
   // State management
   const [darkMode, setDarkMode] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -143,7 +88,7 @@ const HomePage = () => {
     },
     {
       id: 3,
-      image: mama,
+      image: carroussel3,
       title: 'Restaurants Partenaires',
       subtitle: 'Plus de 50 restaurants',
       cta: 'Voir les restaurants'
@@ -217,10 +162,6 @@ const HomePage = () => {
   // Handlers
   const toggleDarkMode = () => setDarkMode(!darkMode);
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
-  const changeLanguage = () => {
-    const newLang = i18n.language === 'en' ? 'fr' : 'en';
-    i18n.changeLanguage(newLang);
-  };
   const handleSearch = (e) => {
     e.preventDefault();
     console.log('Recherche:', searchQuery);
@@ -313,28 +254,28 @@ const HomePage = () => {
                 to="/"
                 className="font-medium hover:text-emerald-500 transition-colors relative group"
               >
-                {t('nav.home')}
+                Accueil
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
               </Link>
               <Link 
                 to="/restaurants"
                 className="font-medium hover:text-emerald-500 transition-colors relative group"
               >
-                {t('nav.restaurants')}
+                Restaurants
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
               </Link>
               <Link 
                 to="/about"
                 className="font-medium hover:text-emerald-500 transition-colors relative group"
               >
-                {t('nav.about')}
+                À propos
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
               </Link>
               <Link 
                 to="/contact"
                 className="font-medium hover:text-emerald-500 transition-colors relative group"
               >
-                {t('nav.contact')}
+                Contact
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-emerald-500 transition-all group-hover:w-full"></span>
               </Link>
             </nav>
@@ -404,38 +345,38 @@ const HomePage = () => {
                 to="/"
                 className="block py-2 font-medium hover:text-emerald-500 transition-colors"
               >
-                {t('nav.home')}
+                Accueil
               </Link>
               <Link 
                 to="/restaurants"
                 className="block py-2 font-medium hover:text-emerald-500 transition-colors"
               >
-                {t('nav.restaurants')}
+                Restaurants
               </Link>
               <Link 
                 to="/about"
                 className="block py-2 font-medium hover:text-emerald-500 transition-colors"
               >
-                {t('nav.about')}
+                À propos
               </Link>
               <Link 
                 to="/contact"
                 className="block py-2 font-medium hover:text-emerald-500 transition-colors"
               >
-                {t('nav.contact')}
+                Contact
               </Link>
               <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
-                <button onClick={changeLanguage} className="flex items-center gap-2 py-2">
-                  <span>{i18n.language === 'en' ? 'Français' : 'English'}</span>
+                <button onClick={toggleDarkMode} className="flex items-center gap-2 py-2">
+                  <span>{darkMode ? 'Français' : 'English'}</span>
                 </button>
                 <div className="flex items-center gap-4">
                   <Link to="/login" className="flex items-center gap-2 py-2">
                     <User size={20} />
-                    <span>{t('nav.account')}</span>
+                    <span>Compte</span>
                   </Link>
                   <button className="relative flex items-center gap-2 py-2">
                     <ShoppingBag size={20} />
-                    <span>{t('nav.cart')}</span>
+                    <span>Panier</span>
                     <span className="bg-rose-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">2</span>
                   </button>
                 </div>
@@ -533,8 +474,8 @@ const HomePage = () => {
                     { label: 'Restaurants', value: '50+', color: 'emerald' },
                     { label: 'Livraison moy.', value: '40min', color: 'amber' },
                     { label: 'Clients', value: '100+', color: 'rose' }
-                  ].map((stat, index) => (
-                    <div key={index} className={`text-center p-4 rounded-xl ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} backdrop-blur-sm shadow-lg`}>
+                  ].map((stat) => (
+                    <div key={stat.label} className={`text-center p-4 rounded-xl ${darkMode ? 'bg-gray-800/50' : 'bg-white/70'} backdrop-blur-sm shadow-lg`}>
                       <div className={`text-2xl md:text-3xl font-bold text-${stat.color}-600 dark:text-${stat.color}-400 mb-1`}>
                         {stat.value}
                       </div>
@@ -585,16 +526,7 @@ const HomePage = () => {
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                   <div className="aspect-[4/3] relative">
                     <AnimatePresence mode="wait">
-                      <motion.img
-                        key={currentSlide}
-                        src={heroSlides[currentSlide].image}
-                        alt={heroSlides[currentSlide].title}
-                        initial={{ opacity: 0, scale: 1.1 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9 }}
-                        transition={{ duration: 0.7 }}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={authentique} alt="Carroussel 2" loading="lazy" />
                     </AnimatePresence>
                     
                     {/* Overlay */}
@@ -633,12 +565,12 @@ const HomePage = () => {
 
                     {/* Dots */}
                     <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2">
-                      {heroSlides.map((_, index) => (
+                      {heroSlides.map((_) => (
                         <button
-                          key={index}
-                          onClick={() => setCurrentSlide(index)}
+                          key={_.id}
+                          onClick={() => setCurrentSlide(_.id - 1)}
                           className={`w-2 h-2 rounded-full transition-all ${
-                            index === currentSlide ? 'bg-white w-6' : 'bg-white/50'
+                            _.id - 1 === currentSlide ? 'bg-white w-6' : 'bg-white/50'
                           }`}
                         />
                       ))}
@@ -709,7 +641,7 @@ const HomePage = () => {
             viewport={{ once: true }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
           >
-            {traditionalFoods.map((food, index) => (
+            {traditionalFoods.map((food) => (
               <motion.div
                 key={food.id}
                 variants={fadeInUp}
@@ -721,6 +653,7 @@ const HomePage = () => {
                     src={food.image} 
                     alt={food.name} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   <div className="absolute top-4 right-4 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-medium">
@@ -873,13 +806,13 @@ const HomePage = () => {
                 verified: true,
                 featured: true
               }
-            ].map((restaurant, index) => (
+            ].map((restaurant) => (
               <motion.div
                 key={restaurant.id}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
+                transition={{ delay: restaurant.id * 0.1 }}
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
                 className={`group rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all ${darkMode ? 'bg-gray-800' : 'bg-white'} border border-gray-200 dark:border-gray-700`}
               >
@@ -888,6 +821,7 @@ const HomePage = () => {
                     src={restaurant.image} 
                     alt={restaurant.name} 
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                   {restaurant.featured && (
@@ -929,8 +863,8 @@ const HomePage = () => {
                   <div className="mb-4">
                     <h4 className="font-semibold text-sm text-gray-700 dark:text-gray-300 mb-2">Spécialités :</h4>
                     <div className="flex flex-wrap gap-2">
-                      {restaurant.specialties.map((specialty, idx) => (
-                        <span key={idx} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full text-xs">
+                      {restaurant.specialties.map((specialty) => (
+                        <span key={specialty} className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded-full text-xs">
                           {specialty}
                         </span>
                       ))}
@@ -984,9 +918,9 @@ const HomePage = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">{t('sections.howItWorks')}</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">Comment ça marche</h2>
             <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              {t('howItWorks.description')}
+              Commandez en 3 étapes simples
             </p>
           </motion.div>
           
@@ -997,12 +931,12 @@ const HomePage = () => {
             className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto"
           >
             {[
-              { icon: Search, title: t('howItWorks.step1Title'), desc: t('howItWorks.step1Description'), color: 'emerald' },
-              { icon: ShoppingBag, title: t('howItWorks.step2Title'), desc: t('howItWorks.step2Description'), color: 'amber' },
-              { icon: Clock, title: t('howItWorks.step3Title'), desc: t('howItWorks.step3Description'), color: 'rose' }
-            ].map((step, index) => (
+              { icon: Search, title: '1. Choisissez', desc: 'Parcourez nos restaurants et sélectionnez vos plats préférés', color: 'emerald' },
+              { icon: ShoppingBag, title: '2. Commandez', desc: 'Passez votre commande et effectuez le paiement sécurisé', color: 'amber' },
+              { icon: Clock, title: '3. Dégustez', desc: 'Recevez votre commande chaude à votre porte', color: 'rose' }
+            ].map((step) => (
               <motion.div 
-                key={index}
+                key={step.title}
                 variants={fadeInUp}
                 className="relative flex flex-col items-center text-center group"
               >
@@ -1012,13 +946,13 @@ const HomePage = () => {
                 >
                   <step.icon className={`text-${step.color}-600 dark:text-${step.color}-400`} size={32} />
                   <div className={`absolute -top-2 -right-2 w-8 h-8 bg-${step.color}-500 text-white rounded-full flex items-center justify-center text-sm font-bold`}>
-                    {index + 1}
+                    1
                   </div>
                 </motion.div>
                 <h3 className="font-bold text-xl mb-3">{step.title}</h3>
                 <p className="text-gray-600 dark:text-gray-400 leading-relaxed">{step.desc}</p>
                 
-                {index < 2 && (
+                {step.title !== '3. Dégustez' && (
                   <div className="hidden md:block absolute top-10 -right-4 w-8 h-0.5 bg-gradient-to-r from-gray-300 to-transparent dark:from-gray-600" />
                 )}
               </motion.div>
@@ -1160,13 +1094,13 @@ const HomePage = () => {
                     { label: 'Note moyenne', value: '4.9★', icon: '⭐' },
                     { label: 'Villes couvertes', value: '8', icon: '🌍' },
                     { label: 'Satisfaction', value: '98%', icon: '😊' }
-                  ].map((stat, index) => (
+                  ].map((stat) => (
                     <motion.div
-                      key={index}
+                      key={stat.label}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      transition={{ delay: index * 0.1 }}
+                      transition={{ delay: 0.1 }}
                       className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800/50' : 'bg-white/80'} backdrop-blur-sm border border-orange-200 dark:border-orange-800`}
                     >
                       <div className="text-2xl mb-2">{stat.icon}</div>
@@ -1246,20 +1180,13 @@ const HomePage = () => {
                   </motion.div>
                   
                   {/* QR Code */}
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.5 }}
-                    className="absolute -bottom-8 -left-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg border border-orange-200"
-                  >
+                  <Suspense fallback={<div>Loading QR code...</div>}>
                     <QRCode 
                       value={window.location.href} 
                       size={64} 
-                      className="w-16 h-16"
+                      className="absolute -bottom-8 -left-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg border border-orange-200"
                     />
-                    <div className="text-xs text-center mt-2 text-gray-600 dark:text-gray-400">Scanner</div>
-                  </motion.div>
+                  </Suspense>
                 </div>
               </motion.div>
             </div>
@@ -1308,9 +1235,9 @@ const HomePage = () => {
                 rating: 5,
                 text: 'En tant que restauratrice, EatFast a multiplié mes ventes par 3. La plateforme est intuitive et les paiements arrivent rapidement.'
               }
-            ].map((testimonial, index) => (
+            ].map((testimonial) => (
               <motion.div
-                key={index}
+                key={testimonial.name}
                 variants={fadeInUp}
                 className={`p-8 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg hover:shadow-xl transition-all`}
               >
@@ -1319,12 +1246,13 @@ const HomePage = () => {
                     src={testimonial.avatar} 
                     alt={testimonial.name}
                     className="w-12 h-12 rounded-full mr-4 object-cover"
+                    loading="lazy"
                   />
                   <div>
                     <h4 className="font-semibold">{testimonial.name}</h4>
                     <div className="flex">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} size={16} className="text-yellow-500 fill-current" />
+                      {[...Array(testimonial.rating)].map((_) => (
+                        <Star key={_} size={16} className="text-yellow-500 fill-current" />
                       ))}
                     </div>
                   </div>
@@ -1339,10 +1267,14 @@ const HomePage = () => {
       </section>
 
       {/* Add Mobile App Section before the footer */}
-      <MobileAppSection />
+      <Suspense fallback={<div>Loading mobile app section...</div>}>
+        <MobileAppSection />
+      </Suspense>
 
       {/* Footer */}
-      <Footer />
+      <Suspense fallback={<div>Loading footer...</div>}>
+        <Footer darkMode={darkMode} />
+      </Suspense>
       
       {/* PWA Install Component */}
       <PWAInstall />

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
 import newsletterService, { validateNewsletterEmail } from '../../Services/Public/NewsletterService';
 import { toast } from 'react-toastify';
 
 const Footer = ({ darkMode }) => {
-  const { t } = useTranslation();
   const [isDark, setIsDark] = useState(false);
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -39,12 +37,12 @@ const Footer = ({ darkMode }) => {
         }
       });
       
-      toast.success(t('newsletter.success') || 'Inscription réussie à la newsletter!');
+      toast.success('Inscription réussie à la newsletter!');
       setEmail('');
     } catch (error) {
       console.error('Newsletter subscription error:', error);
-      setError(error.message || t('newsletter.error') || 'Erreur lors de l\'inscription à la newsletter');
-      toast.error(error.message || t('newsletter.error') || 'Erreur lors de l\'inscription à la newsletter');
+      setError(error.message || 'Erreur lors de l\'inscription à la newsletter');
+      toast.error(error.message || 'Erreur lors de l\'inscription à la newsletter');
     } finally {
       setLoading(false);
     }
@@ -60,39 +58,40 @@ const Footer = ({ darkMode }) => {
               Eat Fast
             </Link>
             <p className={`mt-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              {t('footer.description') || 'Livraison rapide de repas de qualité dans toute la ville. Commandez en quelques clics et recevez votre repas en un temps record.'}
+              {/* Replace with actual description */}
+              Livraison rapide de repas de qualité dans toute la ville. Commandez en quelques clics et recevez votre repas en un temps record.
             </p>
           </div>
 
           {/* Quick Links */}
           <div>
             <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {t('footer.quickLinks') || 'Liens rapides'}
+              Liens rapides
             </h3>
             <ul className="space-y-2">
               <li>
                 <Link to="/about" className={`${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition`}>
-                  {t('footer.aboutUs') || 'À propos'}
+                  À propos
                 </Link>
               </li>
               <li>
                 <Link to="/contact" className={`${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition`}>
-                  {t('footer.contactUs') || 'Contact'}
+                  Contact
                 </Link>
               </li>
               <li>
                 <Link to="/become-partner" className={`${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition`}>
-                  {t('footer.becomePartner') || 'Devenir partenaire'}
+                  Devenir partenaire
                 </Link>
               </li>
               <li>
                 <Link to="/privacy" className={`${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition`}>
-                  {t('footer.privacy') || 'Confidentialité'}
+                  Confidentialité
                 </Link>
               </li>
               <li>
                 <Link to="/terms" className={`${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition`}>
-                  {t('footer.terms') || 'Conditions'}
+                  Conditions
                 </Link>
               </li>
             </ul>
@@ -101,7 +100,7 @@ const Footer = ({ darkMode }) => {
           {/* Contact Info */}
           <div>
             <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {t('footer.contactInfo') || 'Coordonnées'}
+              Coordonnées
             </h3>
             <ul className="space-y-3">
               <li className="flex items-start">
@@ -110,7 +109,7 @@ const Footer = ({ darkMode }) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
                 <span className={`${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-                  {t('footer.address') || 'Douala, Cameroun'}
+                  Douala, Cameroun
                 </span>
               </li>
               <li className="flex items-start">
@@ -131,10 +130,10 @@ const Footer = ({ darkMode }) => {
           {/* Newsletter */}
           <div>
             <h3 className={`text-lg font-semibold mb-4 ${isDark ? 'text-white' : 'text-gray-900'}`}>
-              {t('footer.newsletter') || 'Newsletter'}
+              Newsletter
             </h3>
             <p className={`mb-4 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
-              {t('footer.newsletterDesc') || 'Inscrivez-vous pour recevoir nos offres et actualités'}
+              Inscrivez-vous pour recevoir nos offres et actualités
             </p>
             <form onSubmit={handleSubmit} className="space-y-2">
               <div className="relative">
@@ -142,7 +141,7 @@ const Footer = ({ darkMode }) => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t('footer.emailPlaceholder') || 'Votre adresse email'}
+                  placeholder="Votre adresse email"
                   className={`w-full px-4 py-2 rounded-md ${
                     isDark 
                       ? 'bg-gray-800 text-white border-gray-700' 
@@ -167,7 +166,7 @@ const Footer = ({ darkMode }) => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                   </svg>
                 )}
-                {t('footer.subscribe') || 'S\'abonner'}
+                S'abonner
               </button>
             </form>
           </div>
@@ -177,7 +176,7 @@ const Footer = ({ darkMode }) => {
         <div className={`mt-8 pt-6 border-t ${isDark ? 'border-gray-800' : 'border-gray-200'}`}>
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className={`${isDark ? 'text-gray-400' : 'text-gray-600'} text-sm`}>
-              &copy; {new Date().getFullYear()} Eat Fast. {t('footer.allRights') || 'Tous droits réservés'}
+              &copy; {new Date().getFullYear()} Eat Fast. Tous droits réservés
             </p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <a href="#" className={`${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition`}>

@@ -1,7 +1,7 @@
-const CACHE_NAME = 'eat-fast-v1.1.0';
-const STATIC_CACHE = 'eat-fast-static-v1.1.0';
-const DYNAMIC_CACHE = 'eat-fast-dynamic-v1.1.0';
-const DATA_CACHE = 'eat-fast-data-v1.1.0';
+const CACHE_NAME = 'eat-fast-v2.1.0';
+const STATIC_CACHE = 'eat-fast-static-v2.1.0';
+const DYNAMIC_CACHE = 'eat-fast-dynamic-v2.1.0';
+const DATA_CACHE = 'eat-fast-data-v2.1.0';
 
 // Files to cache immediately
 const STATIC_FILES = [
@@ -19,14 +19,29 @@ const STATIC_FILES = [
   '/src/assets/images/resto3.jpeg',
   '/src/assets/images/resto4.jpeg',
   '/src/assets/images/resto5.jpeg',
-  '/src/assets/images/resto6.jpeg'
+  '/src/assets/images/resto6.jpeg',
+  // Landing and policy pages
+  '/about',
+  '/contact',
+  '/become',
+  '/menu',
+  '/restaurants',
+  '/test',
+  '/terms',
+  '/privacy',
+  '/refund',
+  '/safety',
+  // Auth pages
+  '/login',
+  '/register'
 ];
 
 // Critical API routes to prefetch
 const API_ROUTES_TO_PREFETCH = [
   '/api/restaurants/featured',
   '/api/restaurants/categories',
-  '/api/menu/popular'
+  '/api/menu/popular',
+  '/api/auth/config'
 ];
 
 // Install event - cache static files
@@ -62,7 +77,7 @@ async function prefetchApiData(cache) {
       try {
         const response = await fetch(route);
         if (response.ok) {
-          await cache.put(route, response);
+          await cache.put(route, response.clone());
           console.log(`Prefetched: ${route}`);
         }
       } catch (error) {

@@ -6,7 +6,7 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#FF6B35",
-  "orientation": "any",
+  "orientation": "portrait-primary",
   "scope": "/",
   "lang": "en",
   "dir": "ltr",
@@ -29,33 +29,38 @@
     },
     {
       "src": "/src/assets/logo/eat_fast.png",
-      "sizes": "72x72",
-      "type": "image/png"
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any",
+      "ios": true
     },
     {
       "src": "/src/assets/logo/eat_fast.png",
-      "sizes": "96x96",
-      "type": "image/png"
-    },
-    {
-      "src": "/src/assets/logo/eat_fast.png",
-      "sizes": "128x128",
-      "type": "image/png"
-    },
-    {
-      "src": "/src/assets/logo/eat_fast.png",
-      "sizes": "144x144",
-      "type": "image/png"
+      "sizes": "167x167",
+      "type": "image/png",
+      "purpose": "any",
+      "ios": true
     },
     {
       "src": "/src/assets/logo/eat_fast.png",
       "sizes": "152x152",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any",
+      "ios": true
     },
     {
       "src": "/src/assets/logo/eat_fast.png",
-      "sizes": "384x384",
-      "type": "image/png"
+      "sizes": "120x120",
+      "type": "image/png",
+      "purpose": "any",
+      "ios": true
+    },
+    {
+      "src": "/src/assets/logo/eat_fast.png",
+      "sizes": "76x76",
+      "type": "image/png",
+      "purpose": "any",
+      "ios": true
     }
   ],
   "shortcuts": [
@@ -142,5 +147,12 @@
       "text": "text",
       "url": "url"
     }
+  },
+  "ios": {
+    "web_app_capable": true,
+    "precomposed": true,
+    "apple_mobile_web_app_title": "Eat Fast",
+    "apple_mobile_web_app_capable": "yes",
+    "apple_mobile_web_app_status_bar_style": "black-translucent"
   }
 } 
