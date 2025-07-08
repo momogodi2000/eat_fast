@@ -9,6 +9,7 @@ import {
   FiUser, FiLock, FiCamera, FiImage, FiCheckCircle, FiXCircle,
   FiAlertCircle, FiInfo, FiTrendingUp, FiTrendingDown, FiZap, FiGlobe
 } from 'react-icons/fi';
+import adminService from '../../../Services/admin/adminService';
 
 // Constants
 const USER_ROLES = {
@@ -234,6 +235,7 @@ const UserListMain = ({
 }) => {
   const isOnline = useOnlineStatus();
   const { notification, showNotification, hideNotification } = useNotification();
+  const [actionModal, setActionModal] = useState({ open: false, user: null, action: '', reason: '' });
 
   const indexOfLastUser = currentPage * usersPerPage;
   const indexOfFirstUser = indexOfLastUser - usersPerPage;
@@ -242,6 +244,26 @@ const UserListMain = ({
 
   const handleSort = (key) => {
     // Implement sorting logic
+  };
+
+  const handleStatusAction = async (action, user) => {
+    setActionModal({ open: true, user, action, reason: '' });
+  };
+
+  const handleModalConfirm = async () => {
+    const { user, action, reason } = actionModal;
+    let status = '';
+    if (action === 'approve') status = 'active';
+    if (action === 'suspend') status = 'suspended';
+    if (action === 'reject') status = 'rejected';
+    try {
+      await adminService.updateUserStatus(user.id, { status, reason });
+      showNotification(`Statut mis à jour et email envoyé à l'utilisateur.`, 'success');
+      fetchUsers();
+    } catch (e) {
+      showNotification("Erreur lors de la mise à jour du statut de l'utilisateur", 'error');
+    }
+    setActionModal({ open: false, user: null, action: '', reason: '' });
   };
 
   return (
@@ -632,6 +654,38 @@ const UserListMain = ({
           )}
         </motion.div>
       </div>
+
+      {actionModal.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl w-full max-w-md">
+            <h2 className="text-lg font-bold mb-4">{actionModal.action === 'approve' ? 'Approuver' : actionModal.action === 'suspend' ? 'Suspendre' : 'Rejeter'} l'utilisateur</h2>
+            {(actionModal.action === 'suspend' || actionModal.action === 'reject') && (
+              <textarea
+                className="w-full border rounded p-2 mb-4"
+                placeholder="Raison (obligatoire)"
+                value={actionModal.reason}
+                onChange={e => setActionModal({ ...actionModal, reason: e.target.value })}
+              />
+            )}
+            {actionModal.action === 'approve' && (
+              <textarea
+                className="w-full border rounded p-2 mb-4"
+                placeholder="Message (optionnel)"
+                value={actionModal.reason}
+                onChange={e => setActionModal({ ...actionModal, reason: e.target.value })}
+              />
+            )}
+            <div className="flex justify-end space-x-2">
+              <button onClick={() => setActionModal({ open: false, user: null, action: '', reason: '' })} className="px-4 py-2 bg-gray-300 rounded">Annuler</button>
+              <button
+                onClick={handleModalConfirm}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+                disabled={(actionModal.action !== 'approve' && !actionModal.reason)}
+              >Confirmer</button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };
