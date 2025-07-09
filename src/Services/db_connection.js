@@ -3,20 +3,59 @@ import axios from 'axios';
 
 // API Configuration for Express.js Backend
 const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://your-express-backend.onrender.com',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
   TIMEOUT: 30000, // 30 seconds
-  VERSION: 'v1',
+  VERSION: import.meta.env.VITE_API_VERSION || 'v1',
 };
 
 export const baseURI = `${API_CONFIG.BASE_URL}/api/${API_CONFIG.VERSION}`;
 
 // API endpoints for public services
 export const API_ENDPOINTS = {
-  PARTNER_APPLICATIONS: '/partner-applications',
-  STATUS: (id) => `/partner-applications/${id}/status`,
-  CONTACT: '/contact',
-  NEWSLETTER: '/newsletter',
-  HEALTH: '/health',
+  // Auth endpoints
+  AUTH: {
+    REGISTER: '/auth/register',
+    LOGIN: '/auth/login',
+    VERIFY_2FA: '/auth/verify-2fa',
+    RESEND_2FA: '/auth/resend-2fa',
+    REFRESH: '/auth/refresh',
+    LOGOUT: '/auth/logout',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+  },
+  // Order endpoints
+  ORDERS: {
+    GUEST_ORDER: '/orders/guest',
+    ATTACH_GUEST_ORDER: '/orders/guest/attach-user',
+    RECEIPT: (orderId) => `/orders/receipt/${orderId}`,
+    UPDATE_STATUS: (orderId) => `/orders/${orderId}/status`,
+  },
+  // Menu endpoints
+  MENU: {
+    DISHES: '/menu/dishes',
+    CREATE_DISH: '/menu/dishes',
+    UPDATE_DISH: (dishId) => `/menu/dishes/${dishId}`,
+    DELETE_DISH: (dishId) => `/menu/dishes/${dishId}`,
+    TOGGLE_AVAILABILITY: (dishId) => `/menu/dishes/${dishId}/availability`,
+    TOGGLE_FEATURED: (dishId) => `/menu/dishes/${dishId}/featured`,
+    CATEGORIES: '/menu/categories',
+    STATISTICS: '/menu/statistics',
+  },
+  // Public endpoints
+  PUBLIC: {
+    PARTNER_APPLICATIONS: '/partner-applications',
+    STATUS: (id) => `/partner-applications/${id}/status`,
+    CONTACT: '/contact',
+    NEWSLETTER: '/newsletter',
+    HEALTH: '/health',
+  },
+  // Admin endpoints
+  ADMIN: {
+    USERS: '/admin/users',
+    RESTAURANTS: '/admin/restaurants',
+    ORDERS: '/admin/orders',
+    STATISTICS: '/admin/statistics',
+  },
 };
 
 // Create axios instance with default configuration
@@ -26,12 +65,13 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true, // Important for cookies
 });
 
 // Request interceptor - Add auth token if available
 apiClient.interceptors.request.use(
   (config) => {
-    // Add JWT token if available
+    // Add JWT token if available (for non-cookie auth)
     const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -194,6 +234,16 @@ class DBConnection {
     }
   }
 
+  // Generic PATCH request
+  async patch(url, data = {}, config = {}) {
+    try {
+      const response = await this.client.patch(url, data, config);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
   // Generic DELETE request
   async delete(url, config = {}) {
     try {
@@ -219,7 +269,7 @@ class DBConnection {
     }
   }
 
-  // Multiple files upload with progress
+  // Multiple file upload with progress
   async uploadFiles(url, formData, onProgress) {
     try {
       const response = await this.client.post(url, formData, {
@@ -238,95 +288,88 @@ class DBConnection {
   handleError(error) {
     if (error.response) {
       return {
-        success: false,
         status: error.response.status,
-        message: error.response.data?.message || 'Server error occurred',
+        message: error.response.data?.message || error.message,
         errors: error.response.data?.errors || [],
         data: error.response.data,
       };
+    } else if (error.request) {
+      return {
+        status: 0,
+        message: 'Network error - please check your connection',
+        errors: ['Unable to connect to server'],
+      };
+    } else {
+      return {
+        status: 0,
+        message: error.message,
+        errors: ['Request configuration error'],
+      };
     }
-    
-    return {
-      success: false,
-      status: 0,
-      message: error.message || 'Network error occurred',
-      errors: [error.message || 'Unknown error'],
-    };
   }
 
   // File validation
   validateFile(file, options = {}) {
     const {
       maxSize = 5 * 1024 * 1024, // 5MB default
-      allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'],
+      allowedTypes = ['image/jpeg', 'image/png', 'image/webp'],
+      maxFiles = 1,
     } = options;
 
-    const errors = [];
+    if (!file) {
+      throw new Error('No file provided');
+    }
 
-    // Check file size
     if (file.size > maxSize) {
-      errors.push(`File too large. Maximum size: ${Math.round(maxSize / 1024 / 1024)}MB`);
+      throw new Error(`File size exceeds ${maxSize / 1024 / 1024}MB limit`);
     }
 
-    // Check file type
     if (!allowedTypes.includes(file.type)) {
-      errors.push(`File type not allowed. Allowed types: ${allowedTypes.join(', ')}`);
+      throw new Error(`File type ${file.type} not allowed`);
     }
 
-    return {
-      isValid: errors.length === 0,
-      errors,
-    };
+    return true;
   }
 
-  // Get upload progress handler
+  // Upload progress handler
   getUploadProgressHandler(onProgress) {
     return (progressEvent) => {
-      const percentCompleted = Math.round(
-        (progressEvent.loaded * 100) / progressEvent.total
-      );
-      
-      if (onProgress) {
+      if (onProgress && progressEvent.total) {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
         onProgress(percentCompleted);
-      }
-      
-      if (import.meta.env.DEV) {
-        console.log(`Upload progress: ${percentCompleted}%`);
       }
     };
   }
 
-  // Health check endpoint
+  // Health check
   async healthCheck() {
     try {
-      const response = await this.client.get(`${API_ENDPOINTS.HEALTH}`);
+      const response = await this.client.get('/health');
       return {
-        status: 'online',
-        message: response.data.message || 'Service is operational',
-        timestamp: new Date().toISOString(),
+        status: 'healthy',
+        data: response.data,
       };
     } catch (error) {
       return {
-        status: 'offline',
-        message: 'Service is currently unavailable',
-        timestamp: new Date().toISOString(),
+        status: 'unhealthy',
+        error: error.message,
       };
     }
   }
 }
 
-// Create singleton instance
-const dbConnection = new DBConnection();
+// Export instances
+export const dbConnection = new DBConnection();
 export default dbConnection;
 
+// Utility functions
 export const isOnline = () => navigator.onLine;
 
 export const handleNetworkError = (callback) => {
-  if (!navigator.onLine) {
-    callback({
-      status: 0,
-      message: 'Vous êtes hors ligne. Veuillez vérifier votre connexion internet.',
-    });
+  if (!isOnline()) {
+    callback('No internet connection');
     return true;
   }
   return false;

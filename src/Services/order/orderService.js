@@ -5,7 +5,7 @@
  * Uses db_connection.js for backend API calls.
  * Integrates with offlineDatabase.js for offline order saving.
  */
-import { apiClient } from '../db_connection';
+import { apiClient, API_ENDPOINTS } from '../db_connection';
 import offlineDB from '../offlineDatabase';
 
 /**
@@ -14,7 +14,7 @@ import offlineDB from '../offlineDatabase';
  */
 export async function checkOrderEndpoints() {
   try {
-    const res = await apiClient.get('/orders/health');
+    const res = await apiClient.get('/health');
     return res.status === 200;
   } catch (e) {
     return false;
@@ -22,6 +22,32 @@ export async function checkOrderEndpoints() {
 }
 
 const orderService = {
+  /**
+   * Create a guest order (no authentication required).
+   * @param {Object} data - { items, deliveryAddress, customerName, customerPhone, customerEmail, restaurantId }
+   */
+  createGuestOrder: (data) => apiClient.post(API_ENDPOINTS.ORDERS.GUEST_ORDER, data),
+
+  /**
+   * Attach guest order to user after login/registration.
+   * @param {Object} data - { guestToken }
+   */
+  attachGuestOrder: (data) => apiClient.post(API_ENDPOINTS.ORDERS.ATTACH_GUEST_ORDER, data),
+
+  /**
+   * Get order receipt (by guest token or user).
+   * @param {string} orderId - Order ID
+   * @param {Object} params - Query params (e.g., { token: 'guest-token' })
+   */
+  getReceipt: (orderId, params) => apiClient.get(API_ENDPOINTS.ORDERS.RECEIPT(orderId), { params }),
+
+  /**
+   * Update order status (delivery flow) - requires authentication and proper role.
+   * @param {string} orderId - Order ID
+   * @param {Object} data - { status }
+   */
+  updateOrderStatus: (orderId, data) => apiClient.patch(API_ENDPOINTS.ORDERS.UPDATE_STATUS(orderId), data),
+
   /**
    * Create a new order (online or offline fallback).
    * @param {Object} data
@@ -66,30 +92,42 @@ const orderService = {
   getOrders: (params) => apiClient.get('/orders', { params }),
 
   /**
-   * Create a guest order.
-   * @param {Object} data
+   * Get orders for current user.
+   * @param {Object} params - Query params
    */
-  createGuestOrder: (data) => apiClient.post('/orders/guest', data),
+  getUserOrders: (params) => apiClient.get('/orders/my-orders', { params }),
 
   /**
-   * Attach guest order to user after login/registration.
-   * @param {Object} data
+   * Get orders for restaurant (restaurant manager only).
+   * @param {Object} params - Query params
    */
-  attachGuestOrder: (data) => apiClient.post('/orders/guest/attach-user', data),
+  getRestaurantOrders: (params) => apiClient.get('/orders/restaurant', { params }),
 
   /**
-   * Get order receipt (by guest token or user).
-   * @param {string|number} orderId
-   * @param {Object} params
+   * Cancel an order.
+   * @param {string} orderId - Order ID
+   * @param {Object} data - { reason }
    */
-  getReceipt: (orderId, params) => apiClient.get(`/orders/receipt/${orderId}`, { params }),
+  cancelOrder: (orderId, data) => apiClient.post(`/orders/${orderId}/cancel`, data),
 
   /**
-   * Update order status (delivery flow).
-   * @param {string|number} orderId
-   * @param {Object} data
+   * Rate an order after delivery.
+   * @param {string} orderId - Order ID
+   * @param {Object} data - { rating, review }
    */
-  updateOrderStatus: (orderId, data) => apiClient.patch(`/orders/${orderId}/status`, data),
+  rateOrder: (orderId, data) => apiClient.post(`/orders/${orderId}/rate`, data),
+
+  /**
+   * Track order delivery.
+   * @param {string} orderId - Order ID
+   */
+  trackOrder: (orderId) => apiClient.get(`/orders/${orderId}/track`),
+
+  /**
+   * Get order analytics/statistics.
+   * @param {Object} params - Query params
+   */
+  getOrderStats: (params) => apiClient.get('/orders/statistics', { params }),
 };
 
 export default orderService;

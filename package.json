@@ -32,7 +32,9 @@
     "test:coverage": "vitest --coverage",
     "type-check": "tsc --noEmit",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "setup:integration": "node setup-integration.js",
+    "check:api": "node setup-integration.js"
   },
   "dependencies": {
     "@google/generative-ai": "^0.21.0",

@@ -1626,7 +1626,7 @@ const MenuPage = () => {
 
       {/* Suspense pour charger le QRCode et la section mobile */}
       <Suspense fallback={<div>Loading QR code...</div>}>
-        <QRCode value={...} />
+        <QRCode value="https://eatfast.cm" />
       </Suspense>
       <Suspense fallback={<div>Loading mobile app section...</div>}>
         <MobileAppSection />
