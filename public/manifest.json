@@ -63,44 +63,6 @@
       "ios": true
     }
   ],
-  "shortcuts": [
-    {
-      "name": "Order Food",
-      "short_name": "Order",
-      "description": "Quick access to order food",
-      "url": "/restaurants?source=shortcut",
-      "icons": [
-        {
-          "src": "/src/assets/logo/eat_fast.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "My Orders",
-      "short_name": "Orders",
-      "description": "View your order history",
-      "url": "/client/orders?source=shortcut",
-      "icons": [
-        {
-          "src": "/src/assets/logo/eat_fast.png",
-          "sizes": "96x96"
-        }
-      ]
-    },
-    {
-      "name": "Nearby Restaurants",
-      "short_name": "Nearby",
-      "description": "Find restaurants near you",
-      "url": "/restaurants/nearby?source=shortcut",
-      "icons": [
-        {
-          "src": "/src/assets/logo/eat_fast.png",
-          "sizes": "96x96"
-        }
-      ]
-    }
-  ],
   "screenshots": [
     {
       "src": "/src/assets/images/carroussel_1.png",
