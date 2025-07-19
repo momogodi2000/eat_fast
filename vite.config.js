@@ -35,22 +35,7 @@ export default defineConfig({
             purpose: 'any maskable'
           }
         ],
-        // shortcuts: [
-        //   {
-        //     name: 'Order Food',
-        //     short_name: 'Order',
-        //     description: 'Quick access to order food',
-        //     url: '/restaurants',
-        //     icons: [{ src: '/src/assets/logo/eat_fast.png', sizes: '96x96' }]
-        //   },
-        //   {
-        //     name: 'My Orders',
-        //     short_name: 'Orders',
-        //     description: 'View your order history',
-        //     url: '/client/orders',
-        //     icons: [{ src: '/src/assets/logo/eat_fast.png', sizes: '96x96' }]
-        //   }
-        // ],
+        // Remove the shortcuts property entirely from the manifest
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,gif,woff,woff2,ttf,eot}'],
