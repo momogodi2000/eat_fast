@@ -983,373 +983,139 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Enhanced App Download Section */}
-      <section className={`py-20 ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-orange-50 to-red-50'}`}>
-        <div className="container mx-auto px-4">
-          <div className="max-w-7xl mx-auto">
-            {/* Header */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="text-center mb-16"
-            >
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
-                Télécharger EatFast
-              </h2>
-              <p className="text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                Commandez vos plats préférés en quelques clics. Disponible sur iOS, Android et en version PWA pour tous vos appareils.
-              </p>
-            </motion.div>
-
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              {/* Left Column - Download Options */}
-              <motion.div
-                initial={{ opacity: 0, x: -50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="space-y-8"
-              >
-                {/* PWA Install Section */}
-                <div className={`p-8 rounded-2xl ${darkMode ? 'bg-gray-800/50' : 'bg-white/80'} backdrop-blur-sm border border-orange-200 dark:border-orange-800`}>
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-500 rounded-xl flex items-center justify-center">
-                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Application Web Progressive (PWA)</h3>
-                      <p className="text-gray-600 dark:text-gray-300">Installez directement depuis votre navigateur</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span>Fonctionne hors ligne</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span>Notifications push</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-sm text-gray-600 dark:text-gray-300">
-                      <CheckCircle className="w-5 h-5 text-green-500" />
-                      <span>Mise à jour automatique</span>
-                    </div>
-                  </div>
-
-                  <button
-                    onClick={handleDownloadClick}
-                    className="mt-6 w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-4 px-6 rounded-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
-                  >
-                    <div className="flex items-center justify-center gap-3">
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd"/>
-                      </svg>
-                      Installer l'App
-                    </div>
-                  </button>
-                </div>
-
-                {/* Mobile App Stores */}
-                <div className="space-y-6">
-                  <h3 className="text-2xl font-bold text-gray-900 dark:text-white">Applications Mobiles</h3>
-                  
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    {/* App Store */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`p-6 rounded-2xl ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'} border border-gray-200 dark:border-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl`}
-                      onClick={() => window.open('https://apps.apple.com/app/eatfast', '_blank')}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
-                          <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-                          </svg>
-                        </div>
-                        <div className="text-left">
-                          <div className="text-xs text-gray-500 dark:text-gray-400">Télécharger sur</div>
-                          <div className="font-bold text-gray-900 dark:text-white">App Store</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">iOS 12.0+</div>
-                        </div>
-                      </div>
-                    </motion.button>
-
-                    {/* Google Play */}
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className={`p-6 rounded-2xl ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-50'} border border-gray-200 dark:border-gray-700 transition-all duration-300 shadow-lg hover:shadow-xl`}
-                      onClick={() => window.open('https://play.google.com/store/apps/details?id=com.eatfast.app', '_blank')}
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-black rounded-xl flex items-center justify-center">
-                          <svg className="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M3,20.5V3.5C3,2.91 3.34,2.39 3.84,2.15L13.69,12L3.84,21.85C3.34,21.61 3,21.09 3,20.5M16.81,15.12L6.05,21.34L14.54,12.85L16.81,15.12M20.16,10.81C20.5,11.08 20.75,11.5 20.75,12C20.75,12.5 20.53,12.9 20.18,13.18L17.89,14.5L15.39,12L17.89,9.5L20.16,10.81M6.05,2.66L16.81,8.88L14.54,11.15L6.05,2.66Z"/>
-                          </svg>
-                        </div>
-                        <div className="text-left">
-                          <div className="text-xs text-gray-500 dark:text-gray-400">Disponible sur</div>
-                          <div className="font-bold text-gray-900 dark:text-white">Google Play</div>
-                          <div className="text-xs text-gray-500 dark:text-gray-400">Android 6.0+</div>
-                        </div>
-                      </div>
-                    </motion.button>
-                  </div>
-                </div>
-
-                {/* App Features */}
-                <div className="grid grid-cols-2 gap-4">
-                  {[
-                    { label: 'Téléchargements', value: '100K+', icon: '📱' },
-                    { label: 'Note moyenne', value: '4.9★', icon: '⭐' },
-                    { label: 'Villes couvertes', value: '8', icon: '🌍' },
-                    { label: 'Satisfaction', value: '98%', icon: '😊' }
-                  ].map((stat) => (
-                    <motion.div
-                      key={stat.label}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ delay: 0.1 }}
-                      className={`p-4 rounded-xl ${darkMode ? 'bg-gray-800/50' : 'bg-white/80'} backdrop-blur-sm border border-orange-200 dark:border-orange-800`}
-                    >
-                      <div className="text-2xl mb-2">{stat.icon}</div>
-                      <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">
-                        {stat.value}
-                      </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-300">
-                        {stat.label}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Right Column - App Preview */}
-              <motion.div
-                initial={{ opacity: 0, x: 50 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="relative flex justify-center"
-              >
-                <div className="relative">
-                  {/* Main Phone Mockup */}
-                  <div className="w-80 h-96 bg-gradient-to-b from-orange-500 to-red-500 rounded-[3rem] p-2 shadow-2xl">
-                    <div className={`w-full h-full ${darkMode ? 'bg-gray-900' : 'bg-white'} rounded-[2.5rem] overflow-hidden relative`}>
-                      {/* App Header */}
-                      <div className="p-6 space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="w-6 h-6 bg-orange-500 rounded-full" />
-                          <div className="text-sm font-bold text-gray-900 dark:text-white">EatFast</div>
-                          <div className="w-6 h-6" />
-                        </div>
-                        
-                        {/* Search Bar */}
-                        <div className="flex items-center gap-2 p-3 bg-gray-100 dark:bg-gray-800 rounded-xl">
-                          <Search className="w-4 h-4 text-gray-400" />
-                          <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4" />
-                        </div>
-                        
-                        {/* Restaurant Cards */}
-                        <div className="space-y-3">
-                          {[1, 2, 3].map((i) => (
-                            <div key={i} className={`h-16 ${darkMode ? 'bg-gray-800' : 'bg-gray-100'} rounded-lg flex items-center gap-3 p-3`}>
-                              <div className="w-10 h-10 bg-orange-200 dark:bg-orange-800 rounded-lg" />
-                              <div className="flex-1 space-y-1">
-                                <div className={`h-3 w-2/3 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded`} />
-                                <div className={`h-2 w-1/2 ${darkMode ? 'bg-gray-700' : 'bg-gray-300'} rounded`} />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Floating Elements */}
-                  <motion.div
-                    animate={{ y: [0, -10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute -top-4 -left-4 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg border border-orange-200"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">En ligne</span>
-                    </div>
-                  </motion.div>
-                  
-                  <motion.div
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
-                    className="absolute -bottom-4 -right-4 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-lg border border-orange-200"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Truck className="text-orange-500" size={16} />
-                      <span className="text-xs font-medium text-gray-700 dark:text-gray-300">En livraison</span>
-                    </div>
-                  </motion.div>
-                  
-                  {/* QR Code */}
-                  <Suspense fallback={<div>Loading QR code...</div>}>
-                    <QRCode 
-                      value={window.location.href} 
-                      size={64} 
-                      className="absolute -bottom-8 -left-8 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-lg border border-orange-200"
-                    />
-                  </Suspense>
-                </div>
-              </motion.div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className={`py-16 ${darkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Ce que nos clients disent</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Plus de 10 000 clients satisfaits nous font confiance chaque jour
-            </p>
-          </motion.div>
-          
-          <motion.div 
-            variants={staggerChildren}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
-          >
-            {[
-              {
-                name: 'Martine N.',
-                avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop&crop=face',
-                rating: 5,
-                text: 'Enfin une application qui me permet de commander du Ndolè authentique comme ma grand-mère le préparait. Livraison rapide et emballage soigné !'
-              },
-              {
-                name: 'Jean-Paul A.',
-                avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-                rating: 5,
-                text: 'Je suis expatrié et EatFast me permet de retrouver les saveurs de mon pays. Le Poulet DG est exactement comme à Bonabéri !'
-              },
-              {
-                name: 'Amina K.',
-                avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
-                rating: 5,
-                text: 'En tant que restauratrice, EatFast a multiplié mes ventes par 3. La plateforme est intuitive et les paiements arrivent rapidement.'
-              }
-            ].map((testimonial) => (
-              <motion.div
-                key={testimonial.name}
-                variants={fadeInUp}
-                className={`p-8 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg hover:shadow-xl transition-all`}
-              >
-                <div className="flex items-center mb-6">
-                  <img 
-                    src={testimonial.avatar} 
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full mr-4 object-cover"
-                    loading="lazy"
-                  />
-                  <div>
-                    <h4 className="font-semibold">{testimonial.name}</h4>
-                    <div className="flex">
-                      {[...Array(testimonial.rating)].map((_) => (
-                        <Star key={_} size={16} className="text-yellow-500 fill-current" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
-                  "{testimonial.text}"
-                </p>
-              </motion.div>
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
       {/* Add Mobile App Section before the footer */}
       <Suspense fallback={<div>Loading mobile app section...</div>}>
         <MobileAppSection />
       </Suspense>
 
-        {/* New Install Guide Section */}
-        <section className="py-12 bg-gradient-to-br from-orange-50 to-red-50 dark:from-gray-900 dark:to-gray-800 text-center">
-        <motion.h2 
-          initial={{ opacity: 0, y: 30 }} 
-          whileInView={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.6 }}
-          className="text-2xl md:text-3xl font-bold mb-4"
+
+
+{/* Témoignages */}
+<section className={`py-16 ${darkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+  <div className="container mx-auto px-4">
+    <motion.div
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      viewport={{ once: true }}
+      className="text-center mb-12"
+    >
+      <h2 className="text-3xl md:text-4xl font-bold mb-4">Nos clients témoignent</h2>
+      <p className="text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+        Rejoignez les milliers d'africains satisfaits par notre service
+      </p>
+    </motion.div>
+    
+    <motion.div 
+      variants={staggerChildren}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true }}
+      className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto"
+    >
+      {[
+        {
+          name: 'Fatoumata B.',
+          location: 'Bamako, Mali',
+          avatar: 'https://images.unsplash.com/photo-1554151228-14d9def656e4?w=100&h=100&fit=crop&crop=face',
+          rating: 5,
+          text: 'Grâce à EatFast, je découvre des plats de toute l\'Afrique. Le Thiéboudienne sénégalais est exceptionnel ! Livraison toujours à l\'heure.'
+        },
+        {
+          name: 'Kwame A.',
+          location: 'Accra, Ghana',
+          avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+          rating: 5,
+          text: 'En tant qu\'étudiant, EatFast me sauve la vie. Le Jollof rice ghanéen me rappelle ma mère. Prix très abordables.'
+        },
+        {
+          name: 'Aminata D.',
+          location: 'Dakar, Sénégal',
+          avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop&crop=face',
+          rating: 5,
+          text: 'Je commande le Yassa poulet chaque vendredi pour ma famille. Les portions sont généreuses et le goût authentique.'
+        },
+        {
+          name: 'Oumar S.',
+          location: 'Abidjan, Côte d\'Ivoire',
+          avatar: 'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=100&h=100&fit=crop&crop=face',
+          rating: 5,
+          text: 'Le Garba est exactement comme au maquis. Je recommande à tous les ivoiriens nostalgiques de leur pays.'
+        },
+        {
+          name: 'Ngozi E.',
+          location: 'Lagos, Nigeria',
+          avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face',
+          rating: 5,
+          text: 'Enfin du Jollof rice nigérian comme il faut ! Ma commande arrive encore chaud malgré le trafic de Lagos.'
+        },
+        {
+          name: 'Jean-Baptiste K.',
+          location: 'Douala, Cameroun',
+          avatar: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=100&h=100&fit=crop&crop=face',
+          rating: 5,
+          text: 'Le Ndolè est parfait, avec la bonne quantité de pistache. EatFast a révolutionné mes déjeuners au bureau.'
+        }
+      ].map((testimonial) => (
+        <motion.div
+          key={testimonial.name}
+          variants={fadeInUp}
+          className={`p-8 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg hover:shadow-xl transition-all h-full flex flex-col`}
         >
-          Comment installer l'application Eat Fast ?
-        </motion.h2>
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }} 
-          whileInView={{ opacity: 1, y: 0 }} 
-          transition={{ duration: 0.7, delay: 0.2 }}
-          className="max-w-3xl mx-auto grid md:grid-cols-3 gap-8 text-left"
-        >
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} 
-            whileInView={{ opacity: 1, scale: 1 }} 
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 border-t-4 border-emerald-500"
-          >
-            <h3 className="text-lg font-semibold mb-2 text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
-              <span role="img" aria-label="Android">🤖</span> Sur Android
-            </h3>
-            <ol className="list-decimal pl-6 space-y-2 text-gray-700 dark:text-gray-200">
-              <li>Ouvrez ce site dans Chrome.</li>
-              <li>Touchez le menu (⋮) en haut à droite.</li>
-              <li>Sélectionnez « Installer l'application » ou « Ajouter à l'écran d'accueil ».</li>
-              <li>Confirmez l'installation.</li>
-            </ol>
-          </motion.div>
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} 
-            whileInView={{ opacity: 1, scale: 1 }} 
-            transition={{ duration: 0.5, delay: 0.4 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 border-t-4 border-orange-500"
-          >
-            <h3 className="text-lg font-semibold mb-2 text-orange-700 dark:text-orange-400 flex items-center gap-2">
-              <span role="img" aria-label="iOS">🍏</span> Sur iPhone/iPad (iOS)
-            </h3>
-            <ol className="list-decimal pl-6 space-y-2 text-gray-700 dark:text-gray-200">
-              <li>Ouvrez ce site dans Safari.</li>
-              <li>Touchez le bouton de partage <span role="img" aria-label="Partager">📤</span> en bas de l'écran.</li>
-              <li>Faites défiler et touchez « Ajouter à l'écran d'accueil ».</li>
-              <li>Confirmez en appuyant sur « Ajouter ».</li>
-            </ol>
-          </motion.div>
-          <motion.div 
-            initial={{ opacity: 0, scale: 0.9 }} 
-            whileInView={{ opacity: 1, scale: 1 }} 
-            transition={{ duration: 0.5, delay: 0.5 }}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-xl p-6 border-t-4 border-blue-500"
-          >
-            <h3 className="text-lg font-semibold mb-2 text-blue-700 dark:text-blue-400 flex items-center gap-2">
-              <span role="img" aria-label="Desktop">💻</span> Sur ordinateur
-            </h3>
-            <ol className="list-decimal pl-6 space-y-2 text-gray-700 dark:text-gray-200">
-              <li>Ouvrez ce site dans votre navigateur.</li>
-              <li>Cliquez sur l'icône d'installation dans la barre d'adresse ou le menu.</li>
-              <li>Sélectionnez « Installer ».</li>
-            </ol>
-          </motion.div>
+          <div className="flex items-center mb-6">
+            <img 
+              src={testimonial.avatar} 
+              alt={testimonial.name}
+              className="w-12 h-12 rounded-full mr-4 object-cover"
+              loading="lazy"
+            />
+            <div>
+              <h4 className="font-semibold">{testimonial.name}</h4>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{testimonial.location}</p>
+              <div className="flex mt-1">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star key={i} size={16} className="text-yellow-500 fill-current" />
+                ))}
+              </div>
+            </div>
+          </div>
+          <p className="text-gray-600 dark:text-gray-300 leading-relaxed flex-grow">
+            "{testimonial.text}"
+          </p>
+          <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
+            Client depuis {Math.floor(Math.random() * 3) + 1} an{Math.floor(Math.random() * 3) + 1 > 1 ? 's' : ''}
+          </div>
         </motion.div>
-      </section>
+      ))}
+    </motion.div>
+
+    {/* Statistiques */}
+    <motion.div
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ delay: 0.4 }}
+      viewport={{ once: true }}
+      className={`mt-16 p-8 rounded-2xl ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-lg max-w-4xl mx-auto`}
+    >
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+        {[
+          { value: "50 000+", label: "Clients satisfaits" },
+          { value: "15+", label: "Pays africains desservis" },
+          { value: "98%", label: "Commandes à l'heure" },
+          { value: "4.9/5", label: "Note moyenne" }
+        ].map((stat, index) => (
+          <div key={index} className="p-4">
+            <div className="text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
+              {stat.value}
+            </div>
+            <div className="text-gray-600 dark:text-gray-300">
+              {stat.label}
+            </div>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  </div>
+</section>
 
       {/* Footer */}
       <Suspense fallback={<div>Loading footer...</div>}>
