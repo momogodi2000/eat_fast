@@ -7,38 +7,10 @@
   NPM_VERSION = "9"
   NODE_OPTIONS = "--max-old-space-size=4096"
 
-# Redirects for SPA routing
+# SPA routing
 [[redirects]]
   from = "/*"
   to = "/index.html"
-  status = 200
-
-# Redirects for SEO
-[[redirects]]
-  from = "/home"
-  to = "/"
-  status = 301
-
-[[redirects]]
-  from = "/index"
-  to = "/"
-  status = 301
-
-# Admin dashboard redirects
-[[redirects]]
-  from = "/admin/dashboard"
-  to = "/admin"
-  status = 301
-
-[[redirects]]
-  from = "/admin/user"
-  to = "/admin/users"
-  status = 301
-
-# API redirects (if using Netlify Functions)
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/:splat"
   status = 200
 
 # Security headers
@@ -53,76 +25,51 @@
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
 
-# PWA headers
-[[headers]]
-  for = "/manifest.json"
-  [headers.values]
-    Content-Type = "application/manifest+json"
-    Cache-Control = "no-cache, must-revalidate"
-
-[[headers]]
-  for = "/sw.js"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
-
 # Static asset caching
 [[headers]]
   for = "*.js"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.css"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.png"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.jpg"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.jpeg"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.gif"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.svg"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.ico"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.woff"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.woff2"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.ttf"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
-
 [[headers]]
   for = "*.eot"
   [headers.values]
@@ -140,22 +87,12 @@
   [headers.values]
     Content-Type = "application/xml"
     Cache-Control = "public, max-age=86400"
-
 [[headers]]
   for = "/robots.txt"
   [headers.values]
     Content-Type = "text/plain"
     Cache-Control = "public, max-age=86400"
 
-# Admin dashboard specific headers
-[[headers]]
-  for = "/admin/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-
-# Environment variables (set these in Netlify dashboard)
 [context.production.environment]
   NODE_ENV = "production"
   VITE_API_URL = "https://api.eatfast.cm"
@@ -176,90 +113,3 @@
   VITE_GA_MEASUREMENT_ID = "GA_MEASUREMENT_ID_DEV"
   VITE_APP_VERSION = "2.0.0-dev"
   VITE_BUILD_DATE = "2024-01-20"
-
-# Functions (if using Netlify Functions)
-# [functions]
-#   directory = "netlify/functions"
-#   node_bundler = "esbuild"
-#   external_node_modules = ["@prisma/client"]
-
-# Edge functions (if using Netlify Edge Functions)
-# [[edge_functions]]
-#   path = "/api/edge"
-#   function = "edge-function"
-
-# Forms (if using Netlify Forms)
-[[redirects]]
-  from = "/contact"
-  to = "/.netlify/functions/contact"
-  status = 200
-
-# Admin contact form
-[[redirects]]
-  from = "/admin/contact"
-  to = "/.netlify/functions/admin-contact"
-  status = 200
-
-# Analytics
-[analytics]
-  enabled = true
-
-# Build optimization (Netlify handles this automatically)
-# [build.processing]
-#   skip_processing = false
-
-# [build.processing.css]
-#   bundle = true
-#   minify = true
-
-# [build.processing.js]
-#   bundle = true
-#   minify = true
-
-# [build.processing.html]
-#   pretty_urls = true
-
-# [build.processing.images]
-#   compress = true
-
-# Post processing
-# [build.post_processing]
-#   auto_minify = true
-
-# Plugin configuration (uncomment if needed)
-# [[plugins]]
-#   package = "@netlify/plugin-lighthouse"
-
-# [[plugins]]
-#   package = "@netlify/plugin-sitemap"
-
-# Custom headers for admin dashboard
-[[headers]]
-  for = "/admin/dashboard"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
-
-[[headers]]
-  for = "/admin/users"
-  [headers.values]
-    Cache-Control = "no-cache, no-store, must-revalidate"
-    Pragma = "no-cache"
-    Expires = "0"
-
-# Performance optimization
-[[headers]]
-  for = "/assets/*"
-  [headers.values]
-    Cache-Control = "public, max-age=31536000, immutable"
-    Vary = "Accept-Encoding"
-
-# Security for sensitive routes
-[[headers]]
-  for = "/admin/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https:;"

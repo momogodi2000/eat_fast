@@ -19,7 +19,6 @@ COPY . .
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV VITE_API_BASE_URL=https://your-backend-api.com/api/v1
 
 # Build the application
 RUN npm run build
@@ -33,9 +32,6 @@ RUN rm -rf ./*
 
 # Copy static assets from builder stage
 COPY --from=builder /app/dist .
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
 
 # Expose port 80
 EXPOSE 80
