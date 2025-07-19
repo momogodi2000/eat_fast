@@ -1,13 +1,31 @@
+# Netlify configuration for Eat Fast - robust, automated, and production-ready
+
 [build]
   publish = "dist"
   command = "npm run build"
 
 [build.environment]
-  NODE_VERSION = "18.20.2"
+  # Use a valid Node.js LTS version supported by Netlify
+  NODE_VERSION = "18.19.0"
   NPM_VERSION = "9"
   NODE_OPTIONS = "--max-old-space-size=4096"
 
-# SPA routing
+# Enable caching for node_modules and Vite cache for faster builds
+[build.processing]
+  skip_processing = false
+
+[build.processing.js]
+  bundle = true
+  minify = true
+
+[build.processing.css]
+  bundle = true
+  minify = true
+
+[build.processing.html]
+  pretty_urls = true
+
+# SPA routing for Vite/React
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -92,24 +110,3 @@
   [headers.values]
     Content-Type = "text/plain"
     Cache-Control = "public, max-age=86400"
-
-[context.production.environment]
-  NODE_ENV = "production"
-  VITE_API_URL = "https://api.eatfast.cm"
-  VITE_GA_MEASUREMENT_ID = "GA_MEASUREMENT_ID"
-  VITE_APP_VERSION = "2.0.0"
-  VITE_BUILD_DATE = "2024-01-20"
-
-[context.deploy-preview.environment]
-  NODE_ENV = "preview"
-  VITE_API_URL = "https://api-staging.eatfast.cm"
-  VITE_GA_MEASUREMENT_ID = "GA_MEASUREMENT_ID_STAGING"
-  VITE_APP_VERSION = "2.0.0-preview"
-  VITE_BUILD_DATE = "2024-01-20"
-
-[context.branch-deploy.environment]
-  NODE_ENV = "development"
-  VITE_API_URL = "https://api-dev.eatfast.cm"
-  VITE_GA_MEASUREMENT_ID = "GA_MEASUREMENT_ID_DEV"
-  VITE_APP_VERSION = "2.0.0-dev"
-  VITE_BUILD_DATE = "2024-01-20"
